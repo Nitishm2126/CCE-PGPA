@@ -1,0 +1,16 @@
+register_number,full_name,email,section,mentor_reference
+# ==============================================================================
+# CCE Achieve — 2nd Year Student Roster CSV Template
+# Cohort Size: Exactly 61 students
+# ==============================================================================
+# Instructions:
+# - Replace example rows with the authorized 61 student records.
+# - Lines starting with '#' are treated as comments and ignored by the bootstrap importer.
+# - register_number: College register number (unique).
+# - full_name: Full legal/college name.
+# - email: Official college email (unique).
+# - section: Cohort section (e.g. A, B).
+# - mentor_reference: Must match either the email or staff_id of one of the 3 mentors in the staff roster.
+# ==============================================================================
+# Example format:
+# 212623106001,Student Name One,student1@sairam.edu.in,A,mentor1@sairam.edu.in

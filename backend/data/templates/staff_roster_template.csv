@@ -1,0 +1,20 @@
+role,full_name,email,staff_id,department,designation
+# ==============================================================================
+# CCE Achieve — Staff Roster CSV Template
+# Required Count: Exactly 4 staff members (1 HOD and 3 Mentors)
+# ==============================================================================
+# Instructions:
+# - Replace example rows with authorized department staff records.
+# - Lines starting with '#' are treated as comments and ignored by the bootstrap importer.
+# - role: Must be either 'hod' or 'mentor'.
+# - full_name: Full academic name and title.
+# - email: Official college email (unique).
+# - staff_id: Unique staff/faculty identification number.
+# - department: Academic department (default: 'CCE').
+# - designation: Official academic designation (e.g., 'Professor & Head', 'Assistant Professor').
+# ==============================================================================
+# Example format:
+# hod,Dr. Department HOD,hod.cce@sairam.edu.in,STF_HOD01,CCE,Professor & Head
+# mentor,Dr. Faculty Mentor 1,mentor1@sairam.edu.in,STF_M01,CCE,Assistant Professor
+# mentor,Dr. Faculty Mentor 2,mentor2@sairam.edu.in,STF_M02,CCE,Assistant Professor
+# mentor,Dr. Faculty Mentor 3,mentor3@sairam.edu.in,STF_M03,CCE,Assistant Professor

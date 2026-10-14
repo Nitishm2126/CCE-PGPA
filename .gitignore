@@ -45,6 +45,11 @@ venv.bak/
 service_account*.json
 credentials.json
 client_secret*.json
+*credentials*.csv
+*credential*.csv
+credentials_distribution_report.csv
+roster_credentials_*.csv
+credentials_*.csv
 
 # Unit test / coverage / linter caches
 .pytest_cache/

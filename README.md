@@ -323,7 +323,48 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/v1/auth/logout" `
 
 ---
 
-## 8. Interactive API Documentation
+## 9. Phase 4: Cohort Roster Import & Provisioning CLI
+
+Phase 4 introduces transactional onboarding and roster validation for the 2nd-year CCE cohort (exactly 61 students, 3 faculty mentors, and 1 HOD).
+
+### CSV Templates
+Pre-formatted CSV templates with headers and instructions are provided in `backend/data/templates/`:
+- **`backend/data/templates/students_roster_template.csv`**:
+  Columns: `register_number,full_name,email,section,mentor_reference` (requires exactly 61 rows; `mentor_reference` matches staff mentor email or staff ID).
+- **`backend/data/templates/staff_roster_template.csv`**:
+  Columns: `role,full_name,email,staff_id,department,designation` (requires exactly 4 rows: 1 `hod` and 3 `mentor` records).
+
+### CLI Script (`backend/app/cli/bootstrap_roster.py`)
+
+#### 1. Dry-Run Verification (Safe, Non-Destructive):
+Validates count constraints, duplicate emails/register numbers, format validity, and mentor reference resolution without touching the database:
+```powershell
+cd backend
+python -m app.cli.bootstrap_roster `
+    --students-file data/templates/students_roster_template.csv `
+    --staff-file data/templates/staff_roster_template.csv `
+    --dry-run
+```
+
+#### 2. Transactional Production Import:
+Creates all User accounts, StudentProfiles, MentorProfiles, and active MentorAssignments atomically:
+```powershell
+cd backend
+python -m app.cli.bootstrap_roster `
+    --students-file path/to/authorized_students.csv `
+    --staff-file path/to/authorized_staff.csv `
+    --output-credentials credentials_distribution_report.csv
+```
+
+### Security & Privacy Rules:
+- **No Invented Identities**: The CLI strictly requires authorized CSV data. Production user accounts are not created until real, authorized rosters are provided.
+- **Secure Password Hashing**: All accounts are initialized with high-entropy temporary passwords hashed with **Argon2id**.
+- **No Console Password Leaks**: Passwords and secret hashes are **never printed** to the terminal or logged.
+- **Secure Credential Distribution**: The initial credentials CSV report is generated at `--output-credentials` and is ignored by Git (`.gitignore`). It should be distributed securely through official administrative channels and deleted or archived offsite.
+
+---
+
+## 10. Interactive API Documentation
 
 Once the server is running, open your browser:
 - **Swagger Interactive UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
