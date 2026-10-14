@@ -42,9 +42,12 @@ venv.bak/
 *.key
 *.p12
 *.json_credentials
+*service_account*.json
+*service-account*.json
 service_account*.json
 credentials.json
 client_secret*.json
+*google*.json
 *credentials*.csv
 *credential*.csv
 credentials_distribution_report.csv

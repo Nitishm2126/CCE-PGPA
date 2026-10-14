@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field
 
+from app.schemas.file import GoogleDriveStatus
+
 
 class DatabaseStatus(BaseModel):
     connected: bool
@@ -18,6 +20,10 @@ class HealthResponse(BaseModel):
     environment: str
     timestamp: datetime
     database: DatabaseStatus
+    storage: Optional[GoogleDriveStatus] = Field(
+        default=None,
+        description="Google Drive integration operational status.",
+    )
     storage_rule: str = Field(
         default="All uploaded certificate and photo file binaries reside in Google Drive; PostgreSQL stores structured records and file metadata only."
     )

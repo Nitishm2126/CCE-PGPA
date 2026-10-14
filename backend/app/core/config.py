@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Union
+from typing import List, Optional, Union
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -49,6 +49,29 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "change-this-jwt-secret-key-in-production-min-32-chars"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
+    # Google Drive Storage Configuration (Phase 5)
+    GOOGLE_SERVICE_ACCOUNT_FILE: Optional[str] = None
+    GOOGLE_SERVICE_ACCOUNT_JSON: Optional[str] = None
+    GOOGLE_DRIVE_FOLDER_ID: Optional[str] = None
+    MAX_UPLOAD_SIZE_MB: int = 10
+    ALLOWED_UPLOAD_EXTENSIONS: List[str] = [".pdf", ".png", ".jpg", ".jpeg"]
+    ALLOWED_UPLOAD_MIME_TYPES: List[str] = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+    ]
+
+    @property
+    def max_upload_size_bytes(self) -> int:
+        """Maximum file upload size in bytes."""
+        return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+
+    @property
+    def is_google_drive_configured(self) -> bool:
+        """True if sufficient credentials and root folder ID are configured."""
+        has_credentials = bool(self.GOOGLE_SERVICE_ACCOUNT_FILE or self.GOOGLE_SERVICE_ACCOUNT_JSON)
+        return has_credentials and bool(self.GOOGLE_DRIVE_FOLDER_ID)
 
 
 settings = Settings()

@@ -364,7 +364,70 @@ python -m app.cli.bootstrap_roster `
 
 ---
 
-## 10. Interactive API Documentation
+## 10. Phase 5: Google Drive Storage Integration
+
+Phase 5 establishes the Google Drive integration as the sole permanent binary storage for evidence files (certificates, photographs, and supporting documents). PostgreSQL strictly stores structured records and file metadata.
+
+### Architectural Rules
+- **No Binaries in PostgreSQL**: File binaries are **never** stored in PostgreSQL `BYTEA`/`BLOB` columns or permanently on the application server.
+- **Privacy & Least Privilege**: Drive files and folders remain private to the application service account and authorized department administrators. No public share links or public permissions are ever created.
+- **Opaque Identifiers**: Drive folders and filenames use opaque UUIDs (`student_{student_id} / achievement_{achievement_id} / {prefix}_{filename}`) rather than student names or register numbers to prevent leaking student PII.
+- **Backend Streaming Proxy**: The frontend never communicates directly with Google Drive or accesses private Drive URLs. File viewing and downloading are proxied securely through authenticated FastAPI endpoints (`GET /api/v1/files/{file_id}/content`).
+- **Transactional Rollback & Cleanup**: If a database write fails after a Drive upload succeeds, the uploaded Drive file is automatically deleted. If deletion fails, an orphan reconciliation record is logged in `audit_logs`.
+
+### Google Cloud Setup Instructions
+1. **Create or Select Google Cloud Project**:
+   - Open the [Google Cloud Console](https://console.cloud.google.com/).
+   - Create a project (e.g., `cce-achieve-pgpa`).
+2. **Enable Google Drive API**:
+   - Navigate to **APIs & Services > Library**.
+   - Search for **Google Drive API** and click **Enable**.
+3. **Create a Service Account**:
+   - Navigate to **IAM & Admin > Service Accounts**.
+   - Click **Create Service Account** (e.g., `cce-achieve-storage`).
+   - Click **Done** (no project-level roles are necessary).
+4. **Generate Key File**:
+   - Click on the created service account > **Keys** tab > **Add Key > Create new key**.
+   - Select **JSON** and download the key file (e.g., `service_account.json`).
+   - Store it securely in `backend/` or your system secrets directory.
+   - *(Note: `.gitignore` is pre-configured to ignore all `*service_account*.json` files).*
+5. **Create and Share Dedicated Drive Folder**:
+   - In Google Drive, create a dedicated folder (e.g., `CCE Achieve Evidence Storage`).
+   - Open folder sharing settings and share with the **Service Account email address** (found in the JSON key file, e.g. `cce-achieve-storage@...iam.gserviceaccount.com`).
+   - Assign the role: **Editor**.
+   - Copy the folder ID from the browser URL (`https://drive.google.com/drive/folders/<FOLDER_ID>`).
+
+### Environment Configuration (`backend/.env`)
+Add the following settings to your local `backend/.env`:
+```dotenv
+GOOGLE_DRIVE_FOLDER_ID="your_google_drive_folder_id"
+GOOGLE_SERVICE_ACCOUNT_FILE="service_account.json"
+MAX_UPLOAD_SIZE_MB=10
+```
+*(Alternatively, for cloud or CI/CD deployments where key files are not mounted, specify `GOOGLE_SERVICE_ACCOUNT_JSON='{"type": "service_account", ...}'`)*
+
+### Supported Evidence Formats & Constraints
+- **Allowed Extensions**: `.pdf`, `.png`, `.jpg`, `.jpeg`
+- **Allowed MIME Types**: `application/pdf`, `image/png`, `image/jpeg`
+- **Max File Size**: Configurable via `MAX_UPLOAD_SIZE_MB` (default: 10 MB)
+- **Categories**: `certificate`, `photo`, `supporting_document`
+
+### Evidence File API Endpoints
+- `POST /api/v1/achievements/{achievement_id}/files`: Uploads evidence file (Multipart: `file`, `file_category`). Only the student owner can upload; rejected if achievement is already `approved`.
+- `GET /api/v1/achievements/{achievement_id}/files`: Lists file metadata attached to an achievement.
+- `GET /api/v1/files/{file_id}/content`: Authenticated binary streaming proxy with `inline` disposition. Enforces student ownership, assigned mentor authorization, or HOD role.
+- `DELETE /api/v1/files/{file_id}`: Deletes file metadata from PostgreSQL and removes binary from Google Drive.
+
+### Automated Testing (Mocked Google Drive)
+The unit and integration test suite uses mocked Google Drive interactions and requires **no real Google credentials**:
+```powershell
+cd backend
+pytest tests/test_drive_integration.py -v
+```
+
+---
+
+## 11. Interactive API Documentation
 
 Once the server is running, open your browser:
 - **Swagger Interactive UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
