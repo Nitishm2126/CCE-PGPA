@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1.endpoints.health import get_health
 from app.api.v1.router import api_router
 from app.core.config import settings
+from app.schemas.health import HealthResponse
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -52,3 +54,17 @@ def root():
             "PostgreSQL stores structured records and file metadata only."
         ),
     }
+
+
+@app.get(
+    "/health",
+    response_model=HealthResponse,
+    summary="Root Health Check",
+    tags=["Health"],
+)
+def root_health() -> HealthResponse:
+    """
+    Root-level health check endpoint confirming service operational status,
+    PostgreSQL connectivity, and Google Drive storage configuration.
+    """
+    return get_health()

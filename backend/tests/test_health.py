@@ -27,3 +27,18 @@ def test_health_endpoint(client: TestClient):
     assert data["database"]["database"] == "cce_achieve"
     assert "Google Drive" in data["storage_rule"]
     assert "PostgreSQL" in data["storage_rule"]
+
+
+def test_root_health_endpoint(client: TestClient):
+    """
+    Test that root GET /health returns health status, timestamp, and database connectivity info.
+    """
+    response = client.get("/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "healthy"
+    assert "database" in data
+    assert isinstance(data["database"]["connected"], bool)
+    assert data["database"]["database"] == "cce_achieve"
+    assert "Google Drive" in data["storage_rule"]
+    assert "PostgreSQL" in data["storage_rule"]
