@@ -15,6 +15,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!frontend/lib/
 lib64/
 parts/
 sdist/
@@ -53,6 +54,12 @@ client_secret*.json
 credentials_distribution_report.csv
 roster_credentials_*.csv
 credentials_*.csv
+
+# Data imports & student rosters (contain PII - NEVER commit to git)
+backend/data/import/
+*students_roster*.csv
+students_roster*.csv
+*.xlsx
 
 # Unit test / coverage / linter caches
 .pytest_cache/

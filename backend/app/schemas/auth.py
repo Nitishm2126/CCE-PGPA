@@ -49,6 +49,8 @@ class StudentProfileResponse(BaseModel):
     department: str
     year: int
     section: Optional[str] = None
+    semester: Optional[str] = None
+    original_mentor_name: Optional[str] = None
     batch: Optional[str] = None
     phone_number: Optional[str] = None
 

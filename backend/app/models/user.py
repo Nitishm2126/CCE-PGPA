@@ -142,6 +142,8 @@ class StudentProfile(Base):
         nullable=False,
     )
     section: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
+    semester: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    original_mentor_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     batch: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     phone_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
