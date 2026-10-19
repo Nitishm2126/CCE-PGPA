@@ -1,6 +1,14 @@
 """
 Pydantic schemas package for request/response serialization and validation.
 """
+from app.schemas.achievement import (
+    AchievementCreate,
+    AchievementResponse,
+    AchievementUpdate,
+    PGPAComponentResponse,
+    ReviewSubmissionRequest,
+    VerificationLogResponse,
+)
 from app.schemas.auth import (
     HODStudentItem,
     LoginRequest,
@@ -11,6 +19,11 @@ from app.schemas.auth import (
     StudentProfileResponse,
     TokenResponse,
     UserResponse,
+)
+from app.schemas.file import (
+    AchievementFileResponse,
+    FileCategoryEnum,
+    GoogleDriveStatus,
 )
 from app.schemas.health import DatabaseStatus, HealthResponse
 
@@ -26,4 +39,13 @@ __all__ = [
     "MentorStudentItem",
     "HODStudentItem",
     "MessageResponse",
+    "PGPAComponentResponse",
+    "AchievementCreate",
+    "AchievementUpdate",
+    "AchievementResponse",
+    "VerificationLogResponse",
+    "ReviewSubmissionRequest",
+    "AchievementFileResponse",
+    "FileCategoryEnum",
+    "GoogleDriveStatus",
 ]

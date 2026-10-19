@@ -1,3 +1,4 @@
+
 import React from "react";
 import { UserRole } from "@/types/auth";
 
@@ -19,6 +20,11 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({ role, size = "md" }) => {
       label: "Faculty Mentor",
       classes: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30",
       dot: "bg-indigo-500",
+    },
+    admin: {
+      label: "System Administrator",
+      classes: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+      dot: "bg-amber-500",
     },
     hod: {
       label: "Head of Department",

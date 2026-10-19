@@ -1,131 +1,798 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { RoleBadge } from "@/components/RoleBadge";
+import { api, getStoredToken } from "@/lib/api-client";
+import { MentorStudentItem } from "@/types/auth";
+import { AchievementResponse } from "@/types/achievement";
 
 export default function MentorDashboardPage() {
   const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, token: authToken, isLoading: authLoading, logout } = useAuth();
+  const token = authToken || getStoredToken();
 
+  const [students, setStudents] = useState<MentorStudentItem[]>([]);
+  const [submissions, setSubmissions] = useState<AchievementResponse[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
+  const [dataError, setDataError] = useState<string | null>(null);
+
+  // Filters & State
+  const [activeTab, setActiveTab] = useState<"submissions" | "roster">("submissions");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedMenteeId, setSelectedMenteeId] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedSubmission, setSelectedSubmission] = useState<AchievementResponse | null>(null);
+  const [isOpeningFile, setIsOpeningFile] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  // Authentication Guard
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
       return;
     }
-
     if (!authLoading && user && user.role !== "mentor") {
       router.push(`/${user.role}`);
+      return;
+    }
+    if (!authLoading && user && user.must_change_password) {
+      router.push("/change-password");
+      return;
     }
   }, [user, authLoading, router]);
 
+  // Reload data for retry button
+  const loadData = useCallback(async () => {
+    if (!token) return;
+    try {
+      setIsLoadingData(true);
+      setDataError(null);
+      const [studentsRes, submissionsRes] = await Promise.all([
+        api.getMentorStudents(token),
+        api.getMentorSubmissions(undefined, token),
+      ]);
+      setStudents(studentsRes);
+      setSubmissions(submissionsRes);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load mentor data from PostgreSQL.";
+      setDataError(msg);
+    } finally {
+      setIsLoadingData(false);
+    }
+  }, [token]);
+
+  // Initial load via asynchronous fetch
+  useEffect(() => {
+    let ignore = false;
+    if (!token || !user || user.role !== "mentor") return;
+
+    const fetchInitial = async () => {
+      try {
+        const [studentsRes, submissionsRes] = await Promise.all([
+          api.getMentorStudents(token),
+          api.getMentorSubmissions(undefined, token),
+        ]);
+        if (ignore) return;
+        setStudents(studentsRes);
+        setSubmissions(submissionsRes);
+        setDataError(null);
+      } catch (err: unknown) {
+        if (ignore) return;
+        const msg = err instanceof Error ? err.message : "Failed to load mentor data from PostgreSQL.";
+        setDataError(msg);
+      } finally {
+        if (!ignore) {
+          setIsLoadingData(false);
+        }
+      }
+    };
+
+    fetchInitial();
+
+    return () => {
+      ignore = true;
+    };
+  }, [user, token]);
+
+  // Filtered submissions based on mentee selector, status, and search
+  const filteredSubmissions = useMemo(() => {
+    return submissions.filter((sub) => {
+      // Mentee filter
+      if (selectedMenteeId !== "all" && sub.student_id !== selectedMenteeId) {
+        return false;
+      }
+      // Status filter
+      if (statusFilter !== "all" && sub.status !== statusFilter) {
+        return false;
+      }
+      // Search query (student name, reg number, title, organizer, component)
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const studentName = sub.student_name?.toLowerCase() || "";
+        const regNum = sub.student_register_number?.toLowerCase() || "";
+        const title = sub.title?.toLowerCase() || "";
+        const org = sub.organizer?.toLowerCase() || "";
+        const comp = sub.component_name?.toLowerCase() || "";
+        if (
+          !studentName.includes(query) &&
+          !regNum.includes(query) &&
+          !title.includes(query) &&
+          !org.includes(query) &&
+          !comp.includes(query)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [submissions, selectedMenteeId, statusFilter, searchQuery]);
+
+  // Securely download / open evidence file via backend proxy
+  const handleViewEvidence = async (fileId: string) => {
+    try {
+      setIsOpeningFile(fileId);
+      setFileError(null);
+      const { url } = await api.downloadFile(fileId, token);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unable to retrieve evidence file.";
+      setFileError(msg);
+    } finally {
+      setIsOpeningFile(null);
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
+
+  // Date formatting helper
+  const formatDate = (dateStr?: string | null) => {
+    if (!dateStr) return "—";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Status Badge Helper
+  const renderStatusBadge = (status: string) => {
+    switch (status) {
+      case "approved":
+        return (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Verified
+          </span>
+        );
+      case "pending":
+        return (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+            Submitted
+          </span>
+        );
+      case "rejected":
+        return (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700 border border-rose-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+            Action Required
+          </span>
+        );
+      case "draft":
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 border border-slate-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+            Draft
+          </span>
+        );
+    }
+  };
+
   if (authLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-8 min-h-[60vh] bg-[#fafbfc]">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
-          <p className="text-sm text-slate-500">Loading mentor dashboard from PostgreSQL...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-3 border-blue-600 border-t-transparent" />
+          <p className="text-xs font-semibold text-slate-700">Loading faculty mentor portal...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl w-full px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-      {/* Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-indigo-700 via-indigo-800 to-slate-900 p-6 sm:p-8 text-white shadow-lg shadow-indigo-500/15">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300">
-                Faculty Mentor Portal
-              </span>
-              <span className="text-xs text-indigo-400">&bull;</span>
-              <span className="text-xs text-indigo-300">Evaluation & Verification</span>
+    <div className="min-h-screen bg-[#fafbfc] text-slate-900 pb-16">
+      {/* Sairam Institutional Header */}
+      <header className="border-b border-slate-200/90 bg-white shadow-2xs">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-700 via-indigo-700 to-slate-900 text-white font-extrabold text-sm shadow-xs">
+                CCE
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+                    Sri Sairam Engineering College
+                  </span>
+                  <span className="text-xs text-slate-300">&bull;</span>
+                  <span className="text-[11px] font-semibold text-slate-500">Autonomous</span>
+                </div>
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                  Department of Computer and Communication Engineering
+                </h1>
+                <p className="text-xs text-slate-500">
+                  CCE-PGPA &bull; Faculty Mentor Portal (View-Only Faculty Access)
+                </p>
+              </div>
             </div>
-            <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight">
-              {user?.full_name}
-            </h1>
-            <p className="mt-1 text-sm text-indigo-200">
-              Department of Computer and Communication Engineering
-            </p>
-          </div>
 
-          <div className="flex sm:flex-col items-start sm:items-end gap-2">
-            <RoleBadge role="mentor" />
-            <span className="text-xs text-indigo-300">
-              Account Status: {user?.is_active ? "Active" : "Inactive"}
-            </span>
+            <div className="flex items-center gap-3 self-end sm:self-auto">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-bold text-slate-900">{user?.full_name}</p>
+                <p className="text-[11px] text-slate-500">{user?.email}</p>
+              </div>
+              <RoleBadge role="mentor" />
+              <button
+                type="button"
+                onClick={() => router.push("/change-password")}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors cursor-pointer"
+              >
+                Change Password
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Review Queue & Assigned Mentees Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Verification Queue Card */}
-        <div className="lg:col-span-2 rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+      {/* Main Container */}
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+        {/* Mentor Overview Banner */}
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                Pending Achievement Reviews
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-200 mb-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                View-Only Faculty Access Enabled
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                Welcome, {user?.full_name}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Submissions awaiting faculty mentor verification
+              <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
+                You have view-only access to activities and supporting evidence submitted by your assigned mentees.
+                No approval or rejection action is required; student submissions are automatically recorded in PostgreSQL.
               </p>
             </div>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-              0 Pending
-            </span>
-          </div>
 
-          {/* Real Empty State */}
-          <div className="py-16 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
-              Queue is clear
-            </h3>
-            <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
-              No student submissions are currently awaiting review. When students upload certificates for PGPA verification, they will appear here.
-            </p>
-          </div>
-        </div>
-
-        {/* Mentees Summary Card */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white pb-4 border-b border-slate-100 dark:border-slate-800">
-              Assigned Mentee Cohort
-            </h2>
-
-            <div className="mt-6 space-y-4">
-              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/40">
-                <p className="text-xs text-slate-500 font-medium">Cohort Batch</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
-                  CCE II Year Section A (2023-2027)
+            {/* Quick Metrics */}
+            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-center min-w-[110px]">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  Assigned Mentees
                 </p>
+                <p className="text-2xl font-bold text-slate-900 mt-0.5">
+                  {students.length}
+                </p>
+                <p className="text-[10px] text-slate-400">CCE II Year Section A</p>
               </div>
 
-              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/40">
-                <p className="text-xs text-slate-500 font-medium">Audit Cycle</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
-                  III Semester Evaluation
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-center min-w-[110px]">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-700">
+                  Submissions
                 </p>
+                <p className="text-2xl font-bold text-slate-900 mt-0.5">
+                  {submissions.length}
+                </p>
+                <p className="text-[10px] text-blue-600 font-medium">Recorded activities</p>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <p className="text-[11px] text-slate-400 leading-tight">
-              Mentee lists are governed by HOD allocations in PostgreSQL.
-            </p>
+          {/* Navigation Tabs */}
+          <div className="mt-6 flex items-center gap-2 border-t border-slate-100 pt-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab("submissions")}
+              className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === "submissions"
+                  ? "bg-blue-600 text-white shadow-2xs"
+                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+              }`}
+            >
+              Mentee Submissions ({submissions.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("roster")}
+              className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === "roster"
+                  ? "bg-blue-600 text-white shadow-2xs"
+                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+              }`}
+            >
+              Assigned Mentee Cohort ({students.length})
+            </button>
           </div>
         </div>
-      </div>
+
+        {/* Global Error Banner */}
+        {dataError && (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-700 flex items-center justify-between">
+            <span>{dataError}</span>
+            <button
+              type="button"
+              onClick={loadData}
+              className="font-bold underline hover:no-underline cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {/* Tab 1: Submissions Explorer */}
+        {activeTab === "submissions" && (
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-5">
+            {/* Filter and Search Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+              <div className="relative flex-1 max-w-md">
+                <input
+                  type="text"
+                  placeholder="Search by student, register number, or activity title..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 pl-9 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                />
+                <svg
+                  className="absolute left-3 top-2.5 h-4 w-4 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Mentee Selector */}
+                <select
+                  value={selectedMenteeId}
+                  onChange={(e) => setSelectedMenteeId(e.target.value)}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-blue-500 shadow-2xs"
+                >
+                  <option value="all">All Assigned Mentees ({students.length})</option>
+                  {students.map((st) => (
+                    <option key={st.student_id} value={st.student_id}>
+                      {st.full_name} ({st.register_number || "No Reg"})
+                    </option>
+                  ))}
+                </select>
+
+                {/* Status Selector */}
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-blue-500 shadow-2xs"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Submitted</option>
+                  <option value="approved">Verified (Approved)</option>
+                  <option value="rejected">Action Required</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Submissions List */}
+            {isLoadingData ? (
+              <div className="space-y-3 py-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-20 bg-slate-100 rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : filteredSubmissions.length === 0 ? (
+              <div className="py-14 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-3">
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">No submissions found</h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  {submissions.length === 0
+                    ? "Your assigned mentees have not submitted any PGPA activities yet. When they record activities and evidence, they will appear here automatically."
+                    : "No submissions matched your search or filter criteria. Try clearing the filters."}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/50">
+                      <th className="py-3 px-4">Student</th>
+                      <th className="py-3 px-4">Component</th>
+                      <th className="py-3 px-4">Activity Title</th>
+                      <th className="py-3 px-4">Event Date</th>
+                      <th className="py-3 px-4">Submitted</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4">Evidence</th>
+                      <th className="py-3 px-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredSubmissions.map((sub) => {
+                      const hasFiles = sub.files && sub.files.length > 0;
+                      return (
+                        <tr
+                          key={sub.id}
+                          className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
+                          onClick={() => setSelectedSubmission(sub)}
+                        >
+                          {/* Student Details */}
+                          <td className="py-3 px-4">
+                            <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                              {sub.student_name || "Assigned Student"}
+                            </p>
+                            <p className="font-mono text-[11px] text-slate-500">
+                              {sub.student_register_number || "—"}
+                            </p>
+                          </td>
+
+                          {/* Component */}
+                          <td className="py-3 px-4">
+                            <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+                              {sub.component_name || "PGPA Component"}
+                            </span>
+                          </td>
+
+                          {/* Title & Organizer */}
+                          <td className="py-3 px-4 max-w-xs">
+                            <p className="font-semibold text-slate-900 truncate" title={sub.title}>
+                              {sub.title}
+                            </p>
+                            {sub.organizer && (
+                              <p className="text-[11px] text-slate-500 truncate">{sub.organizer}</p>
+                            )}
+                          </td>
+
+                          {/* Event Date */}
+                          <td className="py-3 px-4 text-slate-600 font-medium">
+                            {formatDate(sub.event_date)}
+                          </td>
+
+                          {/* Submitted Date */}
+                          <td className="py-3 px-4 text-slate-500">
+                            {formatDate(sub.submitted_at || sub.created_at)}
+                          </td>
+
+                          {/* Status */}
+                          <td className="py-3 px-4">
+                            {renderStatusBadge(sub.status)}
+                          </td>
+
+                          {/* Evidence link */}
+                          <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                            {hasFiles ? (
+                              <button
+                                type="button"
+                                onClick={() => handleViewEvidence(sub.files[0].id)}
+                                disabled={isOpeningFile === sub.files[0].id}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/70 px-2.5 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-100 transition-colors cursor-pointer disabled:opacity-50"
+                              >
+                                {isOpeningFile === sub.files[0].id ? (
+                                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                                ) : (
+                                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                )}
+                                <span>View File</span>
+                              </button>
+                            ) : (
+                              <span className="text-[11px] text-slate-400">None</span>
+                            )}
+                          </td>
+
+                          {/* Action */}
+                          <td className="py-3 px-4 text-right">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedSubmission(sub);
+                              }}
+                              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                            >
+                              Inspect
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 2: Assigned Mentee Roster */}
+        {activeTab === "roster" && (
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Assigned Mentee Cohort ({students.length} Students)
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Authoritative student assignments in PostgreSQL for CCE II Year Section A
+                </p>
+              </div>
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-200">
+                Department Isolated: CCE
+              </span>
+            </div>
+
+            {isLoadingData ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="h-36 bg-slate-100 rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : students.length === 0 ? (
+              <div className="py-14 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-3">
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">No assigned mentees found</h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  You currently have no students assigned to your cohort. If you have been newly designated as a faculty mentor, please verify your mentee allocation with the Head of Department or System Administrator.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {students.map((st) => {
+                  const menteeSubmissions = submissions.filter((s) => s.student_id === st.student_id);
+                  const displayCount = st.submission_count !== undefined ? st.submission_count : menteeSubmissions.length;
+                  return (
+                    <div
+                      key={st.student_id}
+                      className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 hover:border-blue-300 hover:bg-white transition-all shadow-2xs space-y-3"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 leading-snug">
+                            {st.full_name}
+                          </p>
+                          <p className="font-mono text-xs font-semibold text-blue-600 mt-0.5">
+                            {st.register_number || "Registration Pending"}
+                          </p>
+                        </div>
+                        <span className="inline-flex items-center rounded-md bg-white px-2 py-0.5 text-[10px] font-bold text-slate-600 border border-slate-200">
+                          Sec {st.section || "A"}
+                        </span>
+                      </div>
+
+                      <div className="text-[11px] text-slate-500 space-y-0.5">
+                        <p className="truncate">{st.email}</p>
+                        <p>Year {st.year} &bull; {st.department}</p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                        <span className="font-medium text-slate-600">
+                          {displayCount} submissions
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMenteeId(st.student_id);
+                            setActiveTab("submissions");
+                          }}
+                          className="font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                        >
+                          Filter Activities &rarr;
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* Read-Only Activity Inspector Modal */}
+      {selectedSubmission && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+          <div
+            onClick={() => setSelectedSubmission(null)}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+          />
+
+          <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
+            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200/90 my-auto">
+              {/* Modal Header */}
+              <div className="flex items-start justify-between pb-4 border-b border-slate-100">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200">
+                      {selectedSubmission.component_name || "PGPA Component"}
+                    </span>
+                    {renderStatusBadge(selectedSubmission.status)}
+                  </div>
+                  <h3 className="mt-2 text-lg font-bold text-slate-900 leading-snug">
+                    {selectedSubmission.title}
+                  </h3>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedSubmission(null)}
+                  className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="mt-4 space-y-4 text-xs">
+                {/* Student Identity Card */}
+                <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Submitting Student
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 mt-0.5">
+                      {selectedSubmission.student_name || "Assigned Student"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono text-xs font-semibold text-blue-700">
+                      {selectedSubmission.student_register_number || "—"}
+                    </p>
+                    <p className="text-[11px] text-slate-400">Department of CCE</p>
+                  </div>
+                </div>
+
+                {/* Event Details Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="rounded-lg border border-slate-200/70 p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Activity Type</span>
+                    <span className="font-semibold text-slate-800">{selectedSubmission.activity_type || "Standard"}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-200/70 p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Organizer / Host</span>
+                    <span className="font-semibold text-slate-800 truncate block">{selectedSubmission.organizer || "—"}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-200/70 p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Event Date</span>
+                    <span className="font-semibold text-slate-800">{formatDate(selectedSubmission.event_date)}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-200/70 p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Outcome / Score</span>
+                    <span className="font-semibold text-slate-800">{selectedSubmission.outcome || "Completed"}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-200/70 p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Date Submitted</span>
+                    <span className="font-semibold text-slate-800">{formatDate(selectedSubmission.submitted_at || selectedSubmission.created_at)}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-200/70 p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Submission State</span>
+                    <span className="font-semibold text-slate-800 capitalize">{selectedSubmission.status}</span>
+                  </div>
+                </div>
+
+                {/* Description */}
+                {selectedSubmission.description && (
+                  <div>
+                    <p className="font-semibold uppercase tracking-wider text-slate-500 text-[11px] mb-1">
+                      Summary & Description
+                    </p>
+                    <div className="rounded-xl border border-slate-200/80 p-3 bg-slate-50/50 text-slate-700 leading-relaxed">
+                      {selectedSubmission.description}
+                    </div>
+                  </div>
+                )}
+
+                {/* Evidence Files */}
+                <div>
+                  <p className="font-semibold uppercase tracking-wider text-slate-500 text-[11px] mb-1.5">
+                    Supporting Evidence ({selectedSubmission.files?.length || 0})
+                  </p>
+                  {selectedSubmission.files && selectedSubmission.files.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedSubmission.files.map((file) => (
+                        <div
+                          key={file.id}
+                          className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-2xs"
+                        >
+                          <div className="flex items-center gap-2.5 truncate">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                            <div className="truncate">
+                              <p className="font-semibold text-slate-900 truncate">{file.original_filename}</p>
+                              <p className="text-[11px] text-slate-400">
+                                {(file.size_bytes / 1024).toFixed(1)} KB &bull; {file.mime_type}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleViewEvidence(file.id)}
+                            disabled={isOpeningFile === file.id}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1.5 transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                          >
+                            {isOpeningFile === file.id ? (
+                              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            ) : (
+                              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            )}
+                            <span>Open Document</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 italic">No evidence files were attached to this submission.</p>
+                  )}
+
+                  {fileError && (
+                    <p className="mt-2 text-xs text-rose-600 font-medium">{fileError}</p>
+                  )}
+                </div>
+
+                {/* Audit & Workflow Notice */}
+                <div className="rounded-xl border border-blue-200/70 bg-blue-50/50 p-3.5 text-slate-600 leading-relaxed text-[11px]">
+                  <p className="font-bold text-blue-900 mb-0.5">Faculty View-Only Interface</p>
+                  <p>
+                    In accordance with institutional guidelines, student submissions are recorded directly upon submission and made viewable to assigned faculty mentors and HOD. No approval action is required.
+                  </p>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setSelectedSubmission(null)}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Close Inspection
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

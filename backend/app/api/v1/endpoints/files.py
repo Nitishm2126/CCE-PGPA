@@ -1,7 +1,7 @@
 import uuid
 from typing import List
 
-from fastapi import APIRouter, Depends, File, Form, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.core.permissions import get_current_user
@@ -48,18 +48,25 @@ def _format_file_response(record) -> AchievementFileResponse:
 )
 async def upload_file(
     achievement_id: uuid.UUID,
-    file: UploadFile = File(..., description="Evidence file (PDF, PNG, JPG, max 10MB)"),
-    file_category: FileCategory = Form(..., description="Category: certificate, photo, or supporting_document"),
+    file: UploadFile = File(..., description="Evidence file (PDF only, max 5MB)"),
+    file_category: FileCategory = Form(FileCategory.CERTIFICATE, description="Category: certificate, photo, or supporting_document"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AchievementFileResponse:
+    raw_filename = (file.filename or "").strip()
+    if file_category == FileCategory.CERTIFICATE and not raw_filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only PDF documents (.pdf) are accepted for achievement certificate evidence.",
+        )
+
     content = await file.read()
     file_record = upload_achievement_file(
         session=db,
         current_user=current_user,
         achievement_id=achievement_id,
         file_category=file_category,
-        filename=file.filename or "uploaded_file",
+        filename=raw_filename,
         content=content,
         content_type=file.content_type,
     )

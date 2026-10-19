@@ -16,10 +16,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CCE Achieve - PGPA Management System",
+  title: "CCE-PGPA - Student Achievement Management System",
   description:
     "Student Achievement and Point-Grade-Performance-Audit (PGPA) Management System for the Department of Computer and Communication Engineering, Sri Sairam Engineering College.",
 };
+
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 
 export default function RootLayout({
   children,
@@ -34,6 +36,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans">
         <AuthProvider>
           <Navbar />
+          <EmailVerificationBanner />
           <main className="flex-1 flex flex-col">{children}</main>
           <Footer />
         </AuthProvider>

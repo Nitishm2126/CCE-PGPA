@@ -52,11 +52,20 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
-    # Google Drive Storage Configuration (Phase 5)
+    # Google Drive Storage & OAuth 2.0 Configuration
+    GOOGLE_OAUTH_CLIENT_ID: Optional[str] = None
+    GOOGLE_OAUTH_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_OAUTH_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
+    GOOGLE_OAUTH_SCOPES: List[str] = ["https://www.googleapis.com/auth/drive.file"]
+    GOOGLE_OAUTH_TOKEN_FILE: Optional[str] = None
+    OAUTH_ENCRYPTION_KEY: Optional[str] = None
+
     GOOGLE_SERVICE_ACCOUNT_FILE: Optional[str] = None
     GOOGLE_SERVICE_ACCOUNT_JSON: Optional[str] = None
     GOOGLE_DRIVE_FOLDER_ID: Optional[str] = None
-    MAX_UPLOAD_SIZE_MB: int = 10
+
+    # Storage rules: strictly 5 MiB max upload for evidence documents
+    MAX_UPLOAD_SIZE_MB: int = 5
     ALLOWED_UPLOAD_EXTENSIONS: List[str] = [".pdf", ".png", ".jpg", ".jpeg"]
     ALLOWED_UPLOAD_MIME_TYPES: List[str] = [
         "application/pdf",
@@ -66,14 +75,31 @@ class Settings(BaseSettings):
 
     @property
     def max_upload_size_bytes(self) -> int:
-        """Maximum file upload size in bytes."""
+        """Maximum file upload size in bytes (5 MiB default)."""
         return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024
 
     @property
     def is_google_drive_configured(self) -> bool:
         """True if sufficient credentials and root folder ID are configured."""
-        has_credentials = bool(self.GOOGLE_SERVICE_ACCOUNT_FILE or self.GOOGLE_SERVICE_ACCOUNT_JSON)
-        return has_credentials and bool(self.GOOGLE_DRIVE_FOLDER_ID)
+        has_oauth = bool(self.GOOGLE_OAUTH_CLIENT_ID and self.GOOGLE_OAUTH_CLIENT_SECRET)
+        has_sa = bool(self.GOOGLE_SERVICE_ACCOUNT_FILE or self.GOOGLE_SERVICE_ACCOUNT_JSON)
+        return (has_oauth or has_sa) and bool(self.GOOGLE_DRIVE_FOLDER_ID)
+
+    # Firebase Admin SDK Configuration (Phase 6)
+    FIREBASE_PROJECT_ID: str = "cce-pgpa"
+    FIREBASE_SERVICE_ACCOUNT_FILE: Optional[str] = None
+    FIREBASE_SERVICE_ACCOUNT_JSON: Optional[str] = None
+    FIREBASE_AUTH_ENABLED: bool = True
+
+    @property
+    def is_firebase_configured(self) -> bool:
+        """True if service account file, service account json, or ADC credentials are configured."""
+        import os
+        return bool(
+            self.FIREBASE_SERVICE_ACCOUNT_FILE
+            or self.FIREBASE_SERVICE_ACCOUNT_JSON
+            or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        )
 
 
 settings = Settings()

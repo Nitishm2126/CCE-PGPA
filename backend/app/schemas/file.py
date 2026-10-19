@@ -45,6 +45,8 @@ class GoogleDriveStatus(BaseModel):
     """
     configured: bool = Field(..., description="Whether credentials and root folder are configured.")
     connected: bool = Field(..., description="Whether API authentication and folder access succeeded.")
+    oauth_authorized: Optional[bool] = Field(default=None, description="Whether OAuth credentials are saved in PostgreSQL.")
+    authorized_email: Optional[str] = Field(default=None, description="Email address of the authorized Google account.")
     root_folder_id: Optional[str] = Field(None, description="Configured Google Drive root folder ID.")
     message: str = Field(..., description="Human-readable status summary.")
     detail: Optional[str] = Field(None, description="Error detail if connection failed.")

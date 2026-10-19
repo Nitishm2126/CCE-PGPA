@@ -54,7 +54,7 @@ client_secret*.json
 credentials_distribution_report.csv
 roster_credentials_*.csv
 credentials_*.csv
-
+backend/secrets/
 # Data imports & student rosters (contain PII - NEVER commit to git)
 backend/data/import/
 *students_roster*.csv
@@ -98,3 +98,20 @@ out/
 # Database dumps / sqlite test files
 *.sqlite3
 *.db
+
+# Logs
+*.log
+
+!.env.sample
+secrets/
+**/secrets/
+*credentials*.json
+*token*.json
+
+# Archives
+*.zip
+
+# Local AI agent skills
+.agents/skills/
+.claude/skills/
+skills-lock.json

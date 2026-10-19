@@ -19,7 +19,9 @@ if TYPE_CHECKING:
 class UserRole(str, enum.Enum):
     """
     Role enumeration for CCE Achieve users.
+    Four-role architecture: admin, hod, mentor, student.
     """
+    ADMIN = "admin"
     STUDENT = "student"
     MENTOR = "mentor"
     HOD = "hod"
@@ -44,6 +46,12 @@ class User(Base):
         nullable=False,
     )
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
+    firebase_uid: Mapped[Optional[str]] = mapped_column(
+        String(128),
+        unique=True,
+        index=True,
+        nullable=True,
+    )
     role: Mapped[UserRole] = mapped_column(
         sa.Enum(
             UserRole,
@@ -55,6 +63,7 @@ class User(Base):
         index=True,
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default=sa.text("false"))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -76,6 +85,12 @@ class User(Base):
     )
     mentor_profile: Mapped[Optional["MentorProfile"]] = relationship(
         "MentorProfile",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    hod_profile: Mapped[Optional["HodProfile"]] = relationship(
+        "HodProfile",
         back_populates="user",
         uselist=False,
         cascade="all, delete-orphan",
@@ -146,6 +161,7 @@ class StudentProfile(Base):
     original_mentor_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     batch: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     phone_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    google_drive_folder_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -203,3 +219,52 @@ class MentorProfile(Base):
     )
 
     user: Mapped["User"] = relationship("User", back_populates="mentor_profile")
+
+
+class HodProfile(Base):
+    """
+    Profile extension for Head of Department (HOD).
+    Manages department oversight, staff identifier, and designation.
+    """
+    __tablename__ = "hod_profiles"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+    staff_id: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        unique=True,
+        nullable=True,
+    )
+    department: Mapped[str] = mapped_column(
+        String(50),
+        default="CCE",
+        nullable=False,
+    )
+    designation: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        default="Head of Department",
+        nullable=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    user: Mapped["User"] = relationship("User", back_populates="hod_profile")

@@ -22,7 +22,7 @@ router = APIRouter()
 )
 def get_health() -> HealthResponse:
     db_status = check_db_connection()
-    drive_status = get_drive_service().verify_connectivity()
+    drive_status = get_drive_service(reload=True).verify_connectivity()
 
     return HealthResponse(
         status="healthy",
@@ -40,6 +40,8 @@ def get_health() -> HealthResponse:
         storage=GoogleDriveStatus(
             configured=drive_status["configured"],
             connected=drive_status["connected"],
+            oauth_authorized=drive_status.get("oauth_authorized"),
+            authorized_email=drive_status.get("authorized_email"),
             root_folder_id=drive_status.get("root_folder_id"),
             message=drive_status["message"],
             detail=drive_status.get("detail"),

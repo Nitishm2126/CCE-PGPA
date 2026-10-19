@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
             Password Recovery
           </h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            CCE Achieve Account Recovery Protocol
+            CCE-PGPA Account Recovery Protocol
           </p>
         </div>
 
@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
           <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 text-xs text-indigo-900 dark:border-indigo-950 dark:bg-indigo-950/40 dark:text-indigo-200 space-y-2">
             <p className="font-semibold text-sm">Institutional Security Protocol</p>
             <p>
-              In accordance with Sri Sairam Engineering College IT security guidelines, CCE Achieve accounts are strictly linked to verified register numbers and official faculty rosters.
+              In accordance with Sri Sairam Engineering College IT security guidelines, CCE-PGPA accounts are strictly linked to verified register numbers and official faculty rosters.
             </p>
           </div>
 

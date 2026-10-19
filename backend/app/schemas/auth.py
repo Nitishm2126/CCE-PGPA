@@ -14,6 +14,14 @@ class LoginRequest(BaseModel):
     password: str = Field(..., min_length=1, description="Account password")
 
 
+class ChangePasswordRequest(BaseModel):
+    """
+    Payload for changing user password.
+    """
+    current_password: Optional[str] = Field(default=None, description="Current password for verification")
+    new_password: str = Field(..., min_length=6, description="New password (minimum 6 characters)")
+
+
 class TokenResponse(BaseModel):
     """
     JWT Access token response payload.
@@ -35,6 +43,8 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: UserRole
     is_active: bool
+    firebase_uid: Optional[str] = None
+    must_change_password: bool = False
     created_at: datetime
 
 
@@ -98,6 +108,7 @@ class MentorStudentItem(BaseModel):
     section: Optional[str] = None
     assignment_id: uuid.UUID
     assigned_at: datetime
+    submission_count: int = 0
 
 
 class HODStudentItem(BaseModel):

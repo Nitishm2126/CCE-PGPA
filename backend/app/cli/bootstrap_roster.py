@@ -168,7 +168,7 @@ def validate_students_roster(
     default_semester: str = "III SEM",
     default_department: str = "CCE",
     default_year: int = 2,
-    default_batch: str = "2023-2027",
+    default_batch: str = "2025-2029",
 ) -> List[Dict[str, Any]]:
     """
     Validates student roster records:
@@ -343,7 +343,7 @@ def execute_roster_import(
     output_credentials_path: Optional[Path] = None,
     department: str = "CCE",
     year: int = 2,
-    batch: str = "2023-2027",
+    batch: str = "2025-2029",
     semester: str = "III SEM",
     allow_unassigned_mentors: bool = False,
 ) -> Dict[str, Any]:
@@ -584,8 +584,8 @@ def main():
     parser.add_argument(
         "--batch",
         type=str,
-        default="2023-2027",
-        help="Cohort batch identifier (default: 2023-2027).",
+        default="2025-2029",
+        help="Cohort batch identifier (default: 2025-2029).",
     )
 
     args = parser.parse_args()

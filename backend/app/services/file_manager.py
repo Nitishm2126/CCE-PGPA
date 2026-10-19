@@ -46,8 +46,8 @@ def check_achievement_read_authorization(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access forbidden: You are not assigned as a mentor to this student.",
             )
-    elif current_user.role == UserRole.HOD:
-        # HOD has department-wide inspection permissions
+    elif current_user.role in (UserRole.HOD, UserRole.ADMIN):
+        # HOD and System Administrator have institutional inspection permissions
         pass
     else:
         raise HTTPException(
@@ -72,6 +72,18 @@ def upload_achievement_file(
     is automatically cleaned up. If cleanup fails, an orphan reconciliation audit log is written.
     """
     ds = drive_service or get_drive_service()
+
+    # Verify storage configuration and authorization
+    if not ds.is_configured:
+        if ds.is_oauth_credentials_configured and not ds.refresh_token:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Google Drive OAuth 2.0 authorization required. Visit Admin Console to connect.",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google Drive storage is not configured. Please contact the system administrator.",
+        )
 
     # 1. Authorize achievement ownership
     achievement = session.get(Achievement, achievement_id)
@@ -112,18 +124,35 @@ def upload_achievement_file(
             detail=str(ve),
         )
 
-    # 3. Resolve opaque folder hierarchy in Google Drive
+    # 3. Resolve student's dedicated folder in Google Drive ({REGISTER_NUMBER}_{NORMALIZED_NAME})
+    folder_id = None
     try:
-        folder_id = ds.ensure_achievement_folder(
+        from app.services.drive_provisioning import ensure_student_folder
+        folder_id = ensure_student_folder(
+            session=session,
             student_id=achievement.student_id,
-            achievement_id=achievement.id,
+            drive_service=ds,
         )
     except Exception as e:
-        logger.error("Failed to ensure Google Drive folder hierarchy: %s", e)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Google Drive folder management failed: {e}",
-        )
+        logger.warning("Dedicated student folder resolution failed (%s), attempting fallback...", e)
+        if hasattr(ds, "ensure_achievement_folder"):
+            try:
+                folder_id = ds.ensure_achievement_folder(
+                    student_id=achievement.student_id,
+                    achievement_id=achievement.id,
+                )
+            except Exception as e2:
+                logger.error("Both dedicated folder and fallback folder resolution failed: %s", e2)
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"Google Drive folder management failed: {e}",
+                )
+        else:
+            logger.error("Failed to ensure student Google Drive folder: %s", e)
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Google Drive folder management failed: {e}",
+            )
 
     # 4. Upload binary to Google Drive
     try:
@@ -325,7 +354,7 @@ def delete_achievement_file(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot delete evidence files from an approved achievement.",
             )
-    elif current_user.role != UserRole.HOD:
+    elif current_user.role not in (UserRole.HOD, UserRole.ADMIN):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access forbidden: You do not have permission to delete this file.",

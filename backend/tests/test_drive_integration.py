@@ -17,7 +17,7 @@ from app.models.audit import AuditLog
 from app.models.component import PGPAComponent
 from app.models.file import AchievementFile, FileCategory
 from app.models.user import MentorProfile, StudentProfile, User, UserRole
-from app.services.drive_service import GoogleDriveService, set_drive_service
+from app.services.drive_service import GoogleDriveService, get_drive_service, set_drive_service
 
 
 class MockGoogleDriveService(GoogleDriveService):
@@ -139,6 +139,7 @@ def mock_drive():
     set_drive_service(service)
     yield service
     set_drive_service(None)
+    get_drive_service(reload=True)
 
 
 @pytest.fixture

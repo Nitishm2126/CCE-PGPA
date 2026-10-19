@@ -1,10 +1,14 @@
-from fastapi import FastAPI
+from datetime import datetime, timezone
+from pathlib import Path
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.endpoints.health import get_health
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.schemas.health import HealthResponse
+
+LOG_FILE = Path(__file__).resolve().parent.parent / "oauth_callback.log"
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -18,6 +22,24 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
+
+@app.middleware("http")
+async def log_oauth_requests(request: Request, call_next):
+    is_target = "/google" in request.url.path or "/health" in request.url.path
+    if is_target:
+        try:
+            with open(LOG_FILE, "a", encoding="utf-8") as f:
+                f.write(f"[{datetime.now(timezone.utc).isoformat()}] INCOMING: {request.method} {request.url.path} (query: {request.url.query})\n")
+        except Exception:
+            pass
+    response = await call_next(request)
+    if is_target:
+        try:
+            with open(LOG_FILE, "a", encoding="utf-8") as f:
+                f.write(f"[{datetime.now(timezone.utc).isoformat()}] COMPLETED: {request.method} {request.url.path} -> {response.status_code}\n")
+        except Exception:
+            pass
+    return response
 
 # Configure Cross-Origin Resource Sharing (CORS)
 if settings.BACKEND_CORS_ORIGINS:

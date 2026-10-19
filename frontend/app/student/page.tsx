@@ -1,256 +1,563 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api-client";
 import { StudentDetailResponse } from "@/types/auth";
-import { RoleBadge } from "@/components/RoleBadge";
+import {
+  PGPAComponentResponse,
+  AchievementResponse,
+  AchievementCreate,
+} from "@/types/achievement";
+
+import { StudentHeader } from "@/components/student/StudentHeader";
+import { StudentDrawer } from "@/components/student/StudentDrawer";
+import { RecentActivitySection } from "@/components/student/RecentActivitySection";
+import { PGPAComponentsSection } from "@/components/student/PGPAComponentsSection";
+import { ProgressAnalyticsSection } from "@/components/student/ProgressAnalyticsSection";
+import { StudentProfileSection } from "@/components/student/StudentProfileSection";
+import { SubmitAchievementModal } from "@/components/student/SubmitAchievementModal";
+import { BottomNavigation } from "@/components/student/BottomNavigation";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
-  const { user, token, isLoading: authLoading } = useAuth();
+  const { user, token, logout, isLoading: authLoading } = useAuth();
 
+  // Navigation tab state
+  const [activeTab, setActiveTab] = useState<string>("dashboard");
+
+  // Data states
   const [studentData, setStudentData] = useState<StudentDetailResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [components, setComponents] = useState<PGPAComponentResponse[]>([]);
+  const [achievements, setAchievements] = useState<AchievementResponse[]>([]);
 
+  // Loading states
+  const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
+  const [isLoadingComponents, setIsLoadingComponents] = useState<boolean>(true);
+  const [isLoadingAchievements, setIsLoadingAchievements] = useState<boolean>(true);
+
+  // Error states
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [componentsError, setComponentsError] = useState<string | null>(null);
+  const [achievementsError, setAchievementsError] = useState<string | null>(null);
+
+  // Modals & Drawers
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState<boolean>(false);
+  const [preselectedComponentId, setPreselectedComponentId] = useState<string | null>(null);
+  const [submittingReviewId, setSubmittingReviewId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Authentication guards
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
       return;
     }
-
     if (!authLoading && user && user.role !== "student") {
       router.push(`/${user.role}`);
       return;
     }
+    if (!authLoading && user && user.must_change_password) {
+      router.push("/change-password");
+      return;
+    }
+  }, [user, authLoading, router]);
 
-    const loadStudentData = async () => {
-      if (!token) return;
+  // Load Profile from /api/v1/students/me
+  const loadProfile = useCallback(async () => {
+    if (!token) return;
+    try {
+      setIsLoadingProfile(true);
+      setProfileError(null);
+      const data = await api.getStudentDetail(token);
+      setStudentData(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load student profile.";
+      setProfileError(msg);
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  }, [token]);
+
+  // Load PGPA Components from /api/v1/students/components
+  const loadComponents = useCallback(async () => {
+    if (!token) return;
+    try {
+      setIsLoadingComponents(true);
+      setComponentsError(null);
+      const data = await api.getComponents(token);
+      setComponents(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load components catalogue.";
+      setComponentsError(msg);
+    } finally {
+      setIsLoadingComponents(false);
+    }
+  }, [token]);
+
+  // Load Achievements from /api/v1/students/me/achievements
+  const loadAchievements = useCallback(async () => {
+    if (!token) return;
+    try {
+      setIsLoadingAchievements(true);
+      setAchievementsError(null);
+      const data = await api.getMyAchievements(token);
+      setAchievements(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load activity history.";
+      setAchievementsError(msg);
+    } finally {
+      setIsLoadingAchievements(false);
+    }
+  }, [token]);
+
+  // Initial load via asynchronous fetch
+  useEffect(() => {
+    let ignore = false;
+    if (!token) return;
+
+    const fetchAllData = async () => {
       try {
-        setIsLoading(true);
-        const data = await api.getStudentDetail(token);
-        setStudentData(data);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Failed to load profile.";
-        setError(msg);
+        const [profileRes, compRes, achRes] = await Promise.allSettled([
+          api.getStudentDetail(token),
+          api.getComponents(token),
+          api.getMyAchievements(token),
+        ]);
+
+        if (ignore) return;
+
+        if (profileRes.status === "fulfilled") {
+          setStudentData(profileRes.value);
+          setProfileError(null);
+        } else {
+          setProfileError(
+            profileRes.reason instanceof Error
+              ? profileRes.reason.message
+              : "Failed to load student profile."
+          );
+        }
+
+        if (compRes.status === "fulfilled") {
+          setComponents(compRes.value);
+          setComponentsError(null);
+        } else {
+          setComponentsError(
+            compRes.reason instanceof Error
+              ? compRes.reason.message
+              : "Failed to load components catalogue."
+          );
+        }
+
+        if (achRes.status === "fulfilled") {
+          setAchievements(achRes.value);
+          setAchievementsError(null);
+        } else {
+          setAchievementsError(
+            achRes.reason instanceof Error
+              ? achRes.reason.message
+              : "Failed to load activity history."
+          );
+        }
       } finally {
-        setIsLoading(false);
+        if (!ignore) {
+          setIsLoadingProfile(false);
+          setIsLoadingComponents(false);
+          setIsLoadingAchievements(false);
+        }
       }
     };
 
-    if (user && token) {
-      loadStudentData();
-    }
-  }, [user, token, authLoading, router]);
+    fetchAllData();
 
-  if (authLoading || isLoading) {
+    return () => {
+      ignore = true;
+    };
+  }, [token]);
+
+  // Handle Toast Auto-dismiss
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
+  // Submit achievement handler
+  const handleCreateAchievement = async (
+    data: AchievementCreate,
+    evidenceFile: File,
+    submitImmediately: boolean
+  ) => {
+    if (!token) return;
+
+    // 1. Create draft achievement record
+    const created = await api.createAchievement(data, token);
+
+    try {
+      // 2. Upload required PDF evidence binary to Google Drive
+      await api.uploadEvidenceFile(created.id, evidenceFile, "certificate", token);
+
+      // 3. Transition status if immediate submission requested
+      if (submitImmediately) {
+        await api.submitAchievement(created.id, token);
+        setToastMessage("Achievement and PDF evidence submitted successfully!");
+      } else {
+        setToastMessage("Achievement and PDF evidence saved as draft.");
+      }
+    } catch (uploadErr: unknown) {
+      // Rollback: Clean up the draft achievement in PostgreSQL so no incomplete record without evidence remains
+      try {
+        await api.deleteAchievement(created.id, token);
+      } catch (delErr) {
+        console.error("Failed to delete draft after upload failure:", delErr);
+      }
+      throw uploadErr;
+    }
+
+    // Refresh activity list
+    await loadAchievements();
+  };
+
+  // 1-Click submit for drafts
+  const handleSubmitForReview = async (achievementId: string) => {
+    if (!token) return;
+    try {
+      setSubmittingReviewId(achievementId);
+      await api.submitAchievement(achievementId, token);
+      setToastMessage("Achievement submitted successfully!");
+      await loadAchievements();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to submit for review.";
+      setToastMessage(msg);
+    } finally {
+      setSubmittingReviewId(null);
+    }
+  };
+
+  const handleOpenSubmitModal = (componentId?: string | null) => {
+    setPreselectedComponentId(componentId || null);
+    setIsSubmitModalOpen(true);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
+
+  // Global Auth loading state
+  if (authLoading || (isLoadingProfile && !studentData && !profileError)) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
-          <p className="text-sm text-slate-500">Loading student profile from PostgreSQL...</p>
+      <div className="flex-1 flex items-center justify-center min-h-[60vh] p-6 bg-[#fafbfc]">
+        <div className="flex flex-col items-center gap-3 text-center bg-white p-8 rounded-2xl border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] max-w-sm w-full">
+          <div className="h-9 w-9 animate-spin rounded-full border-3 border-blue-600 border-t-transparent shadow-xs" />
+          <p className="text-xs font-semibold text-slate-800">
+            Connecting to PostgreSQL CCE Student Records...
+          </p>
+          <p className="text-[11px] text-slate-500">
+            Verifying cohort authentication and academic profile
+          </p>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  // Profile fatal error state
+  if (profileError && !studentData) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-          <p className="font-semibold">Unable to load student record</p>
-          <p className="text-xs text-rose-700 mt-1">{error}</p>
+      <div className="mx-auto max-w-lg p-6 my-12">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50/80 p-6 text-center">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-600 mb-3">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-sm font-bold text-rose-900">
+            Unable to load student record
+          </h2>
+          <p className="text-xs text-rose-700 mt-1">{profileError}</p>
+          <div className="mt-4 flex justify-center gap-2">
+            <button
+              type="button"
+              onClick={loadProfile}
+              className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-rose-700 active:scale-95 transition-all cursor-pointer"
+            >
+              Retry Connection
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-xl border border-rose-300 bg-white px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 active:scale-95 transition-all cursor-pointer"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   const profile = studentData?.profile;
-  const assignedMentor = studentData?.assigned_mentor;
+  const fullName = studentData?.full_name || user?.full_name || "Student";
+  const firstName = fullName.split(" ")[0] || "Student";
 
   return (
-    <div className="mx-auto max-w-7xl w-full px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-      {/* Top Banner / Welcome */}
-      <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-violet-800 p-6 sm:p-8 text-white shadow-lg shadow-indigo-500/15">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-200">
-                Student Portal
-              </span>
-              <span className="text-xs text-indigo-300">&bull;</span>
-              <span className="text-xs text-indigo-200">Academic Year 2024-2025</span>
-            </div>
-            <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Welcome, {studentData?.full_name || user?.full_name}
-            </h1>
-            <p className="mt-1 text-sm text-indigo-100/90">
-              Department of Computer and Communication Engineering (CCE)
-            </p>
+    <div className="min-h-screen bg-[#fafbfc] flex flex-col font-sans text-slate-900">
+      {/* Toast Notification Banner */}
+      {toastMessage && (
+        <div className="fixed top-4 right-4 z-50 max-w-sm rounded-xl bg-slate-900 text-white px-4 py-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span>{toastMessage}</span>
           </div>
-
-          <div className="flex sm:flex-col items-start sm:items-end gap-2">
-            <RoleBadge role="student" />
-            <span className="text-xs text-indigo-200">
-              Account Status: {user?.is_active ? "Active" : "Inactive"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Profile & Cohort Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Academic Profile Details */}
-        <div className="md:col-span-2 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <svg className="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              Student Academic Profile
-            </h2>
-            <span className="text-xs font-mono bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md text-slate-600 dark:text-slate-300">
-              {profile?.register_number || "Register No. Pending"}
-            </span>
-          </div>
-
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-6 text-sm">
-            <div>
-              <p className="text-xs text-slate-500 font-medium">Department</p>
-              <p className="mt-0.5 font-semibold text-slate-900 dark:text-white">
-                {profile?.department || "CCE"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 font-medium">Current Year</p>
-              <p className="mt-0.5 font-semibold text-slate-900 dark:text-white">
-                Year {profile?.year || 2}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 font-medium">Section</p>
-              <p className="mt-0.5 font-semibold text-slate-900 dark:text-white">
-                Section {profile?.section || "A"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 font-medium">Semester</p>
-              <p className="mt-0.5 font-semibold text-slate-900 dark:text-white">
-                {profile?.semester || "III SEM"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 font-medium">Academic Batch</p>
-              <p className="mt-0.5 font-semibold text-slate-900 dark:text-white">
-                {profile?.batch || "2023-2027"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 font-medium">Institutional Email</p>
-              <p className="mt-0.5 font-semibold text-slate-900 dark:text-white truncate" title={studentData?.email || user?.email}>
-                {studentData?.email || user?.email}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Assigned Faculty Mentor Card */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
-              <svg className="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-              Faculty Mentor
-            </h2>
-
-            <div className="mt-6 space-y-3">
-              {assignedMentor ? (
-                <div>
-                  <p className="text-xs text-slate-500 font-medium">Assigned Mentor</p>
-                  <p className="mt-0.5 text-base font-bold text-slate-900 dark:text-white">
-                    {assignedMentor.full_name}
-                  </p>
-                  <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5">
-                    {assignedMentor.email}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Department of {assignedMentor.department}
-                  </p>
-                </div>
-              ) : profile?.original_mentor_name ? (
-                <div>
-                  <p className="text-xs text-slate-500 font-medium">Allocated Mentor (Roster)</p>
-                  <p className="mt-0.5 text-base font-bold text-slate-900 dark:text-white">
-                    {profile.original_mentor_name}
-                  </p>
-                  <span className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900">
-                    Staff account onboarding pending
-                  </span>
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                    Unassigned Mentor
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Mentor allocation will be assigned by HOD.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <p className="text-[11px] text-slate-400 leading-tight">
-              All submitted PGPA activities are reviewed and verified by your assigned faculty mentor.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* PGPA Achievement Records Placeholder with Real Empty State */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-              PGPA Achievement Submissions
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Point-Grade-Performance-Audit evaluation submissions and evidence certificates
-            </p>
-          </div>
-
           <button
             type="button"
-            disabled
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500"
-            title="Activity submission workflow opens upon phase completion"
+            onClick={() => setToastMessage(null)}
+            className="text-slate-400 hover:text-white cursor-pointer"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Submit Achievement (Phase 7)
+            &times;
           </button>
         </div>
+      )}
 
-        {/* Real Empty State - Zero Fake Data */}
-        <div className="py-16 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
-            <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+      {/* 1. Institutional Student Header with Sairam Logos */}
+      <StudentHeader
+        studentData={studentData}
+        fallbackName={user?.full_name}
+        onOpenMenu={() => setIsDrawerOpen(true)}
+        onOpenProfile={() => setActiveTab("profile")}
+        onSubmitClick={() => handleOpenSubmitModal(null)}
+        onLogout={handleLogout}
+      />
+
+      {/* 2. Slide-Over Navigation Drawer */}
+      <StudentDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        studentData={studentData}
+        activeTab={activeTab}
+        onSelectTab={(tab) => setActiveTab(tab)}
+        onSubmitClick={() => handleOpenSubmitModal(null)}
+        onLogout={handleLogout}
+      />
+
+      {/* 3. Main Dashboard Body Container with Harmonious Spacing */}
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12 space-y-6">
+        {/* Desktop Segment Navigation (Visible >= md) */}
+        <BottomNavigation
+          activeTab={activeTab}
+          onSelectTab={(tab) => setActiveTab(tab)}
+          onSubmitClick={() => handleOpenSubmitModal(null)}
+        />
+
+        {/* Dynamic Student Greeting & Institutional Banner */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-7 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                Hi, {firstName}
+              </h1>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border border-sky-200 bg-sky-50 text-sky-700">
+                Student
+              </span>
+            </div>
+            <p className="text-sm font-semibold text-[#0284c7]">
+              Department of Computer and Communication Engineering
+            </p>
+            <p className="text-xs text-slate-500 font-normal">
+              Academic Year {profile?.year || 2} &bull; Section {profile?.section || "A"} &bull; {profile?.semester || "III SEM"} &bull; Batch {profile?.batch || "2025-2029"}
+            </p>
           </div>
-          <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
-            No achievement records submitted
-          </h3>
-          <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
-            Your cohort profile has been verified from the CCE department roster. Activity submission and Google Drive evidence upload will activate in Phase 7.
+
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => handleOpenSubmitModal(null)}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 shadow-xs transition-colors cursor-pointer"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Submit Activity</span>
+            </button>
+          </div>
+        </div>
+
+        {/* TAB 1: DASHBOARD (Default Overview) */}
+        {activeTab === "dashboard" && (
+          <div className="space-y-6">
+            {/* Academic Summary and Mentor Information Strip */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+                <div className="pt-2 sm:pt-0 sm:px-3">
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Register Number
+                  </span>
+                  <p className="mt-1 font-mono text-sm font-bold text-slate-900">
+                    {profile?.register_number || "SEC25CO031"}
+                  </p>
+                </div>
+
+                <div className="pt-2 sm:pt-0 sm:px-3">
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Class Cohort
+                  </span>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                    Year {profile?.year || 2} &bull; Sec {profile?.section || "A"} ({profile?.semester || "III SEM"})
+                  </p>
+                </div>
+
+                <div className="pt-2 sm:pt-0 sm:px-3">
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Academic Batch
+                  </span>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                    {profile?.batch || "2025-2029"}
+                  </p>
+                </div>
+
+                <div className="pt-2 sm:pt-0 sm:px-3">
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Assigned Mentor
+                  </span>
+                  <p className="mt-1 text-sm font-bold text-slate-900">
+                    {studentData?.assigned_mentor?.full_name || profile?.original_mentor_name || "LURDHUMARY J"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Activity Section */}
+            <RecentActivitySection
+              achievements={achievements}
+              isLoading={isLoadingAchievements}
+              error={achievementsError}
+              onRetry={loadAchievements}
+              onSubmitClick={() => handleOpenSubmitModal(null)}
+              onViewAll={() => setActiveTab("activity")}
+              onSubmitForReview={handleSubmitForReview}
+              isSubmittingId={submittingReviewId}
+              maxDisplay={3}
+            />
+
+            {/* PGPA Components Catalogue (Highest Priority) */}
+            <PGPAComponentsSection
+              components={components}
+              achievements={achievements}
+              isLoading={isLoadingComponents}
+              error={componentsError}
+              onRetry={loadComponents}
+              onSelectComponentForSubmit={(c) => handleOpenSubmitModal(c.id)}
+              studentSemester={profile?.semester}
+            />
+          </div>
+        )}
+
+        {/* TAB 2: COMPONENTS (Dedicated Component Catalogue) */}
+        {activeTab === "components" && (
+          <div className="space-y-6">
+            <PGPAComponentsSection
+              components={components}
+              achievements={achievements}
+              isLoading={isLoadingComponents}
+              error={componentsError}
+              onRetry={loadComponents}
+              onSelectComponentForSubmit={(c) => handleOpenSubmitModal(c.id)}
+              studentSemester={profile?.semester}
+            />
+          </div>
+        )}
+
+        {/* TAB 3: ACTIVITY (Full Submissions List & Review Status) */}
+        {activeTab === "activity" && (
+          <div className="space-y-6">
+            <RecentActivitySection
+              achievements={achievements}
+              isLoading={isLoadingAchievements}
+              error={achievementsError}
+              onRetry={loadAchievements}
+              onSubmitClick={() => handleOpenSubmitModal(null)}
+              onSubmitForReview={handleSubmitForReview}
+              isSubmittingId={submittingReviewId}
+              showAll={true}
+            />
+          </div>
+        )}
+
+        {/* TAB 4: PROGRESS (Real PGPA Progress Analytics) */}
+        {activeTab === "progress" && (
+          <div className="space-y-6">
+            <ProgressAnalyticsSection
+              components={components}
+              achievements={achievements}
+              onSubmitClick={() => handleOpenSubmitModal(null)}
+            />
+          </div>
+        )}
+
+        {/* TAB 5: PROFILE (Student & Mentor Academic Profile) */}
+        {activeTab === "profile" && (
+          <div className="space-y-6">
+            <StudentProfileSection
+              studentData={studentData}
+              onLogout={handleLogout}
+            />
+          </div>
+        )}
+      </main>
+
+      {/* 4. Official Sairam SDG Banner Strip */}
+      <section aria-label="Sustainable Development Goals" className="w-full mt-6 px-4">
+        <div className="mx-auto max-w-6xl">
+          <Image
+            src="/images/sairam-sdg.png"
+            alt="United Nations Sustainable Development Goals - Sri Sairam Engineering College"
+            width={1600}
+            height={125}
+            className="w-full h-auto object-contain mx-auto"
+          />
+        </div>
+      </section>
+
+      {/* 5. Official Sairam Leo Muthu Artwork Footer Banner */}
+      <footer className="w-full mt-4 sm:mt-6 px-4 pb-20 md:pb-6">
+        <div className="mx-auto max-w-6xl">
+          <Image
+            src="/images/sairam-footer.png"
+            alt="Sri Sairam Engineering College - Founder Chairman MJF. Ln. Leo Muthu"
+            width={1600}
+            height={251}
+            className="w-full h-auto object-contain mx-auto"
+          />
+        </div>
+
+        {/* Attribution & Legal Notice */}
+        <div className="text-center pt-4 pb-4 space-y-1">
+          <p className="text-xs font-semibold text-slate-700 tracking-wide">
+            Designed and Developed by Team FineWorks
+          </p>
+          <p className="text-xs text-slate-500">
+            Department of Computer and Communication Engineering &bull; Sri Sairam Engineering College
+          </p>
+          <p className="text-[11px] text-slate-400">
+            CCE-PGPA Management System &bull; Version 1.0.0 &bull; All Institutional Rights Reserved
           </p>
         </div>
-      </div>
+      </footer>
+
+      {/* 6. Submit Achievement Modal */}
+      <SubmitAchievementModal
+        isOpen={isSubmitModalOpen}
+        onClose={() => {
+          setIsSubmitModalOpen(false);
+          setPreselectedComponentId(null);
+        }}
+        components={components}
+        initialComponentId={preselectedComponentId}
+        onSubmit={handleCreateAchievement}
+      />
     </div>
   );
 }
