@@ -31,6 +31,11 @@ export interface MentorInfo {
   department: string;
 }
 
+export interface StudentProfileUpdateRequest {
+  full_name?: string;
+  phone_number?: string;
+}
+
 export interface StudentDetailResponse {
   id: string;
   full_name: string;
@@ -39,6 +44,7 @@ export interface StudentDetailResponse {
   is_active: boolean;
   profile?: StudentProfileResponse | null;
   assigned_mentor?: MentorInfo | null;
+  hod_supervisor?: MentorInfo | null;
 }
 
 export interface TokenResponse {
@@ -466,4 +472,37 @@ export interface DriveFolderProvisionResponse {
   failed: number;
   results: DriveFolderProvisionResultItem[];
   message: string;
+}
+
+export type MessageType = "Remark" | "Congratulations" | "Action Required" | "General Message";
+
+export interface MessageItem {
+  id: string;
+  sender_id: string;
+  sender_name: string;
+  sender_role: string;
+  recipient_id: string;
+  recipient_name: string;
+  recipient_role: string;
+  message_body: string;
+  message_type: MessageType;
+  achievement_id?: string | null;
+  achievement_title?: string | null;
+  parent_id?: string | null;
+  is_read: boolean;
+  read_at?: string | null;
+  created_at: string;
+}
+
+export interface MessageCreateRequest {
+  recipient_id: string;
+  message_body: string;
+  message_type?: MessageType;
+  achievement_id?: string | null;
+  parent_id?: string | null;
+}
+
+export interface UnreadCountResponse {
+  total_unread: number;
+  by_achievement: Record<string, number>;
 }

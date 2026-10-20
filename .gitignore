@@ -111,7 +111,7 @@ secrets/
 # Archives
 *.zip
 
-# Local AI agent skills
+# Local AI agent skills - never push
 .agents/skills/
 .claude/skills/
 skills-lock.json

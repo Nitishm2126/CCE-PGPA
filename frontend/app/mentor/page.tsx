@@ -4,9 +4,13 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { RoleBadge } from "@/components/RoleBadge";
+import { DesignationBadge } from "@/components/DesignationBadge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { api, getStoredToken } from "@/lib/api-client";
 import { MentorStudentItem } from "@/types/auth";
 import { AchievementResponse } from "@/types/achievement";
+import { MessageDrawerModal } from "@/components/messages/MessageDrawerModal";
+import { MessagesHubView } from "@/components/messages/MessagesHubView";
 
 export default function MentorDashboardPage() {
   const router = useRouter();
@@ -19,13 +23,20 @@ export default function MentorDashboardPage() {
   const [dataError, setDataError] = useState<string | null>(null);
 
   // Filters & State
-  const [activeTab, setActiveTab] = useState<"submissions" | "roster">("submissions");
+  const [activeTab, setActiveTab] = useState<"submissions" | "roster" | "messages">("submissions");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedMenteeId, setSelectedMenteeId] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedSubmission, setSelectedSubmission] = useState<AchievementResponse | null>(null);
   const [isOpeningFile, setIsOpeningFile] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+
+  // Messages & Remarks Drawer state
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
+  const [unreadCountsByAchievement, setUnreadCountsByAchievement] = useState<Record<string, number>>({});
+  const [drawerAchievement, setDrawerAchievement] = useState<AchievementResponse | null>(null);
+  const [drawerStudent, setDrawerStudent] = useState<{ id: string; name: string; register_number?: string } | null>(null);
+  const [isMessageDrawerOpen, setIsMessageDrawerOpen] = useState<boolean>(false);
 
   // Authentication Guard
   useEffect(() => {
@@ -43,18 +54,32 @@ export default function MentorDashboardPage() {
     }
   }, [user, authLoading, router]);
 
+  const loadUnreadCounts = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await api.getUnreadMessageCount(token);
+      setUnreadMessagesCount(res.total_unread);
+      setUnreadCountsByAchievement(res.by_achievement || {});
+    } catch (err) {
+      console.error("Failed to load unread messages count:", err);
+    }
+  }, [token]);
+
   // Reload data for retry button
   const loadData = useCallback(async () => {
     if (!token) return;
     try {
       setIsLoadingData(true);
       setDataError(null);
-      const [studentsRes, submissionsRes] = await Promise.all([
+      const [studentsRes, submissionsRes, unreadRes] = await Promise.all([
         api.getMentorStudents(token),
         api.getMentorSubmissions(undefined, token),
+        api.getUnreadMessageCount(token).catch(() => ({ total_unread: 0, by_achievement: {} })),
       ]);
       setStudents(studentsRes);
       setSubmissions(submissionsRes);
+      setUnreadMessagesCount(unreadRes.total_unread);
+      setUnreadCountsByAchievement(unreadRes.by_achievement || {});
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load mentor data from PostgreSQL.";
       setDataError(msg);
@@ -70,13 +95,16 @@ export default function MentorDashboardPage() {
 
     const fetchInitial = async () => {
       try {
-        const [studentsRes, submissionsRes] = await Promise.all([
+        const [studentsRes, submissionsRes, unreadRes] = await Promise.all([
           api.getMentorStudents(token),
           api.getMentorSubmissions(undefined, token),
+          api.getUnreadMessageCount(token).catch(() => ({ total_unread: 0, by_achievement: {} })),
         ]);
         if (ignore) return;
         setStudents(studentsRes);
         setSubmissions(submissionsRes);
+        setUnreadMessagesCount(unreadRes.total_unread);
+        setUnreadCountsByAchievement(unreadRes.by_achievement || {});
         setDataError(null);
       } catch (err: unknown) {
         if (ignore) return;
@@ -212,9 +240,9 @@ export default function MentorDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] text-slate-900 pb-16">
+    <div className="min-h-screen bg-[#fafbfc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 transition-colors">
       {/* Sairam Institutional Header */}
-      <header className="border-b border-slate-200/90 bg-white shadow-2xs">
+      <header className="border-b border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs transition-colors">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3.5">
@@ -223,38 +251,42 @@ export default function MentorDashboardPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
                     Sri Sairam Engineering College
                   </span>
-                  <span className="text-xs text-slate-300">&bull;</span>
-                  <span className="text-[11px] font-semibold text-slate-500">Autonomous</span>
+                  <span className="text-xs text-slate-300 dark:text-slate-600">&bull;</span>
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Autonomous</span>
                 </div>
-                <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
                   Department of Computer and Communication Engineering
                 </h1>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   CCE-PGPA &bull; Faculty Mentor Portal (View-Only Faculty Access)
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 self-end sm:self-auto">
+            <div className="flex items-center gap-3 self-end sm:self-auto flex-wrap">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold text-slate-900">{user?.full_name}</p>
-                <p className="text-[11px] text-slate-500">{user?.email}</p>
+                <div className="flex items-center gap-1.5 justify-end">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">{user?.full_name}</p>
+                  <DesignationBadge designation="Torch Bearer" size="sm" />
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">{user?.email}</p>
               </div>
               <RoleBadge role="mentor" />
+              <ThemeToggle size="sm" />
               <button
                 type="button"
                 onClick={() => router.push("/change-password")}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors cursor-pointer"
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
               >
                 Change Password
               </button>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
               >
                 Sign out
               </button>
@@ -307,7 +339,7 @@ export default function MentorDashboardPage() {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="mt-6 flex items-center gap-2 border-t border-slate-100 pt-4">
+          <div className="mt-6 flex items-center gap-2 border-t border-slate-100 pt-4 flex-wrap">
             <button
               type="button"
               onClick={() => setActiveTab("submissions")}
@@ -329,6 +361,25 @@ export default function MentorDashboardPage() {
               }`}
             >
               Assigned Mentee Cohort ({students.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("messages")}
+              className={`relative rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTab === "messages"
+                  ? "bg-blue-600 text-white shadow-2xs"
+                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+              }`}
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+              </svg>
+              <span>Messages & Remarks</span>
+              {unreadMessagesCount > 0 && (
+                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white animate-pulse">
+                  {unreadMessagesCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -433,12 +484,14 @@ export default function MentorDashboardPage() {
                       <th className="py-3 px-4">Submitted</th>
                       <th className="py-3 px-4">Status</th>
                       <th className="py-3 px-4">Evidence</th>
+                      <th className="py-3 px-4">Messages</th>
                       <th className="py-3 px-4 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredSubmissions.map((sub) => {
                       const hasFiles = sub.files && sub.files.length > 0;
+                      const unreadCount = unreadCountsByAchievement[sub.id] || 0;
                       return (
                         <tr
                           key={sub.id}
@@ -509,6 +562,34 @@ export default function MentorDashboardPage() {
                             ) : (
                               <span className="text-[11px] text-slate-400">None</span>
                             )}
+                          </td>
+
+                          {/* Messages */}
+                          <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDrawerAchievement(sub);
+                                setDrawerStudent({
+                                  id: sub.student_id,
+                                  name: sub.student_name || "Mentee",
+                                  register_number: sub.student_register_number || undefined,
+                                });
+                                setIsMessageDrawerOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors cursor-pointer"
+                              title="Send remarks, congratulations, or view message history"
+                            >
+                              <svg className="h-3.5 w-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                              </svg>
+                              <span>Remarks</span>
+                              {unreadCount > 0 && (
+                                <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-600 px-1 text-[8px] font-bold text-white animate-pulse">
+                                  {unreadCount}
+                                </span>
+                              )}
+                            </button>
                           </td>
 
                           {/* Action */}
@@ -618,6 +699,17 @@ export default function MentorDashboardPage() {
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Tab 3: Dedicated Messages & Remarks Hub */}
+        {activeTab === "messages" && (
+          <div className="space-y-4">
+            <MessagesHubView
+              portalRole="mentor"
+              initialStudentId={selectedMenteeId !== "all" ? selectedMenteeId : undefined}
+              onUnreadCountChanged={loadUnreadCounts}
+            />
           </div>
         )}
       </main>
@@ -780,7 +872,28 @@ export default function MentorDashboardPage() {
               </div>
 
               {/* Modal Footer */}
-              <div className="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sub = selectedSubmission;
+                    setSelectedSubmission(null);
+                    setDrawerAchievement(sub);
+                    setDrawerStudent({
+                      id: sub.student_id,
+                      name: sub.student_name || "Mentee",
+                      register_number: sub.student_register_number || undefined,
+                    });
+                    setIsMessageDrawerOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                  </svg>
+                  <span>Send Remarks / Message</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setSelectedSubmission(null)}
@@ -792,6 +905,21 @@ export default function MentorDashboardPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Messages Conversation Drawer */}
+      {isMessageDrawerOpen && drawerStudent && (
+        <MessageDrawerModal
+          isOpen={isMessageDrawerOpen}
+          onClose={() => {
+            setIsMessageDrawerOpen(false);
+            loadUnreadCounts();
+          }}
+          achievement={drawerAchievement}
+          targetStudent={drawerStudent}
+          currentUserRole="mentor"
+          onMessageSent={() => loadUnreadCounts()}
+        />
       )}
     </div>
   );

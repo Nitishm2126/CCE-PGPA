@@ -273,17 +273,15 @@ def test_mentor_review_workflow_and_mentee_isolation(client: TestClient, db: Ses
     assert submit_res.json()["status"] == "pending"
     assert submit_res.json()["submitted_at"] is not None
 
-    # Step 2: Student cannot edit or delete while pending
-    assert client.patch(
+    # Step 2: Student can edit pending submission (updates details, remains pending)
+    edit_pending_res = client.patch(
         f"/api/v1/students/me/achievements/{ach.id}",
-        json={"title": "Change"},
+        json={"title": "Updated Hackathon Participation"},
         headers={"Authorization": f"Bearer {t_student}"},
-    ).status_code == 400
-
-    assert client.delete(
-        f"/api/v1/students/me/achievements/{ach.id}",
-        headers={"Authorization": f"Bearer {t_student}"},
-    ).status_code == 400
+    )
+    assert edit_pending_res.status_code == 200
+    assert edit_pending_res.json()["title"] == "Updated Hackathon Participation"
+    assert edit_pending_res.json()["status"] == "pending"
 
     # Step 3: Mentor 1 sees pending submission
     m1_queue = client.get("/api/v1/mentor/submissions", headers={"Authorization": f"Bearer {t_mentor1}"})
@@ -503,3 +501,151 @@ def test_view_only_faculty_access_workflow(client: TestClient, db: Session):
     # 7. Non-HOD users blocked from /hod/submissions
     assert client.get("/api/v1/hod/submissions", headers={"Authorization": f"Bearer {t_student}"}).status_code == 403
     assert client.get("/api/v1/hod/submissions", headers={"Authorization": f"Bearer {t_m1}"}).status_code == 403
+
+
+def test_student_profile_update_and_hod_supervisor(client: TestClient, db: Session):
+    """
+    Test GET /api/v1/students/me includes hod_supervisor and PATCH /api/v1/students/me updates full_name and phone_number.
+    """
+    student = User(
+        id=uuid.uuid4(),
+        full_name="Original Student Name",
+        email=f"profile_test_{uuid.uuid4().hex[:6]}@sairam.edu.in",
+        password_hash="h",
+        role=UserRole.STUDENT,
+        is_active=True,
+    )
+    db.add(student)
+    db.flush()
+
+    prof = StudentProfile(
+        id=uuid.uuid4(),
+        user_id=student.id,
+        register_number=f"SEC25CO999_{uuid.uuid4().hex[:4]}",
+        department="CCE",
+        year=2,
+        section="A",
+        phone_number="9876543210",
+    )
+    db.add(prof)
+    db.commit()
+    db.track_user(student.id)
+
+    token = create_access_token(subject=student.id, role="student")
+
+    # 1. GET /me should return student profile and HOD supervisor
+    res = client.get("/api/v1/students/me", headers={"Authorization": f"Bearer {token}"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["full_name"] == "Original Student Name"
+    assert data["profile"]["phone_number"] == "9876543210"
+    assert data["hod_supervisor"] is not None
+    assert "Pachaiammal" in data["hod_supervisor"]["full_name"]
+
+    # 2. PATCH /me updates full_name and phone_number
+    patch_res = client.patch(
+        "/api/v1/students/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"full_name": "Updated Change Maker", "phone_number": "9998887776"},
+    )
+    assert patch_res.status_code == 200
+    updated_data = patch_res.json()
+    assert updated_data["full_name"] == "Updated Change Maker"
+    assert updated_data["profile"]["phone_number"] == "9998887776"
+    assert updated_data["profile"]["register_number"] == prof.register_number
+
+    # 3. Validation: short name should fail
+    short_res = client.patch(
+        "/api/v1/students/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"full_name": "A"},
+    )
+    assert short_res.status_code == 422 or short_res.status_code == 400
+
+
+def test_student_delete_achievement_workflow_rules(client: TestClient, db: Session):
+    """
+    Test student can delete draft or rejected achievements, but submitted/approved are locked.
+    """
+    comp = db.scalars(select(PGPAComponent)).first()
+    student = User(
+        id=uuid.uuid4(),
+        full_name="Achievement Deleter",
+        email=f"del_test_{uuid.uuid4().hex[:6]}@sairam.edu.in",
+        password_hash="h",
+        role=UserRole.STUDENT,
+        is_active=True,
+    )
+    db.add(student)
+    db.flush()
+    db.track_user(student.id)
+
+    token = create_access_token(subject=student.id, role="student")
+
+    # 1. Create a draft achievement
+    draft_ach = Achievement(
+        id=uuid.uuid4(),
+        student_id=student.id,
+        component_id=comp.id,
+        title="Draft Activity to Delete",
+        status=AchievementStatus.DRAFT,
+    )
+    db.add(draft_ach)
+    db.commit()
+    db.track_achievement(draft_ach.id)
+
+    # Deleting draft succeeds
+    del_res = client.delete(
+        f"/api/v1/students/me/achievements/{draft_ach.id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert del_res.status_code == 200
+
+    # 2. Create a pending achievement
+    pending_ach = Achievement(
+        id=uuid.uuid4(),
+        student_id=student.id,
+        component_id=comp.id,
+        title="Pending Activity Can Be Deleted",
+        status=AchievementStatus.PENDING,
+    )
+    db.add(pending_ach)
+    db.commit()
+    db.track_achievement(pending_ach.id)
+
+    # Deleting pending succeeds
+    del_pending_res = client.delete(
+        f"/api/v1/students/me/achievements/{pending_ach.id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert del_pending_res.status_code == 200
+
+    # 3. Create an approved achievement
+    approved_ach = Achievement(
+        id=uuid.uuid4(),
+        student_id=student.id,
+        component_id=comp.id,
+        title="Approved Activity Transcript Locked",
+        status=AchievementStatus.APPROVED,
+    )
+    db.add(approved_ach)
+    db.commit()
+    db.track_achievement(approved_ach.id)
+
+    # Deleting approved fails with 400
+    lock_res = client.delete(
+        f"/api/v1/students/me/achievements/{approved_ach.id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert lock_res.status_code == 400
+    assert "Cannot delete an approved achievement" in lock_res.json()["detail"]
+
+    # 4. Editing approved achievement initiates controlled revision
+    revise_res = client.patch(
+        f"/api/v1/students/me/achievements/{approved_ach.id}",
+        json={"description": "Corrected description for re-verification."},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert revise_res.status_code == 200
+    assert revise_res.json()["status"] == "pending"
+    assert len(revise_res.json()["verification_logs"]) >= 1

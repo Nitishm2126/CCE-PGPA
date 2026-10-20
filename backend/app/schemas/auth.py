@@ -78,6 +78,15 @@ class MentorInfo(BaseModel):
     department: str
 
 
+class StudentProfileUpdateRequest(BaseModel):
+    """
+    Permitted fields that a student can update in their own profile.
+    Protected fields (register_number, email, role, batch, etc.) cannot be modified.
+    """
+    full_name: Optional[str] = Field(default=None, min_length=2, max_length=255, description="Full legal name of the student")
+    phone_number: Optional[str] = Field(default=None, max_length=20, description="Contact phone number")
+
+
 class StudentDetailResponse(BaseModel):
     """
     Full student profile response for GET /api/v1/students/me.
@@ -91,6 +100,7 @@ class StudentDetailResponse(BaseModel):
     is_active: bool
     profile: Optional[StudentProfileResponse] = None
     assigned_mentor: Optional[MentorInfo] = None
+    hod_supervisor: Optional[MentorInfo] = None
 
 
 class MentorStudentItem(BaseModel):

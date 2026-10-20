@@ -118,6 +118,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } else {
         if (isMounted) {
+          const stored = getStoredToken();
+          if (stored) {
+            api
+              .getMe(stored)
+              .then((userData) => {
+                if (isMounted) {
+                  setUser(userData);
+                  setToken(stored);
+                  setIsProvisioned(true);
+                  setIsLoading(false);
+                }
+              })
+              .catch(() => {
+                if (isMounted) {
+                  setFirebaseUser(null);
+                  setUser(null);
+                  setToken(null);
+                  setIsProvisioned(false);
+                  clearStoredToken();
+                  setIsLoading(false);
+                }
+              });
+            return;
+          }
+
           setFirebaseUser(null);
           setUser(null);
           setToken(null);
@@ -168,15 +193,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return null;
         }
       } catch (fbError: unknown) {
-        setIsLoading(false);
-        const msg =
-          fbError instanceof ApiError
-            ? fbError.message
-            : fbError instanceof Error
-            ? fbError.message
-            : "Firebase authentication failed. Please verify your credentials.";
-        setError(msg);
-        throw new Error(msg);
+        // Fall back to direct FastAPI authentication if user is in PostgreSQL
+        try {
+          const tokenResponse = await api.login(email, password);
+          setStoredToken(tokenResponse.access_token);
+          setToken(tokenResponse.access_token);
+
+          const userData = await api.getMe(tokenResponse.access_token);
+          setUser(userData);
+          setIsProvisioned(true);
+          setIsLoading(false);
+          return userData;
+        } catch {
+          setIsLoading(false);
+          const msg =
+            fbError instanceof ApiError
+              ? fbError.message
+              : fbError instanceof Error
+              ? fbError.message
+              : "Authentication failed. Please verify your credentials.";
+          setError(msg);
+          throw new Error(msg);
+        }
       }
     }
 

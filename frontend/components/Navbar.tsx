@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { RoleBadge } from "@/components/RoleBadge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Navbar: React.FC = () => {
   const { user, role, firebaseUser, isEmailVerified, logout, isLoading } = useAuth();
@@ -50,6 +51,7 @@ export const Navbar: React.FC = () => {
 
         {/* Navigation & User Actions */}
         <nav className="flex items-center gap-3">
+          <ThemeToggle size="sm" />
           {isLoading ? (
             <div className="h-8 w-24 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
           ) : user ? (

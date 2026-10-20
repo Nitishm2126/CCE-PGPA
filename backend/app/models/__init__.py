@@ -8,6 +8,7 @@ from app.models.assignment import MentorAssignment
 from app.models.audit import AuditLog
 from app.models.component import PGPAComponent
 from app.models.file import AchievementFile, FileCategory
+from app.models.message import Message, MessageType
 from app.models.oauth import OAuthCredential
 from app.models.review import ReviewAction, VerificationLog
 from app.models.user import HodProfile, MentorProfile, StudentProfile, User, UserRole
@@ -29,4 +30,6 @@ __all__ = [
     "VerificationLog",
     "ReviewAction",
     "AuditLog",
+    "Message",
+    "MessageType",
 ]

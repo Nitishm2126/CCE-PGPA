@@ -20,6 +20,7 @@ import {
   AdminOperationResult,
 } from "@/types/auth";
 import { api } from "@/lib/api-client";
+import { DesignationBadge } from "@/components/DesignationBadge";
 import {
   ViewStudentModal,
   AddStudentModal,
@@ -737,10 +738,13 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                           {s.register_number || <span className="text-slate-400 italic">None</span>}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-semibold text-slate-900 dark:text-white">
-                            {s.full_name}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-slate-900 dark:text-white">
+                              {s.full_name}
+                            </span>
+                            <DesignationBadge designation="Change Maker" size="sm" />
                           </div>
-                          <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[200px]">
                             {s.email}
                           </div>
                         </td>
@@ -820,48 +824,136 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
           )
         ) : activeTab === "mentors" ? (
           /* ========================================== */
-          /* MENTORS TABLE */
+          /* MENTORS TABLE & 3-TIER HIERARCHY */
           /* ========================================== */
-          filteredMentors.length === 0 ? (
-            <div className="p-12 text-center space-y-2">
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                No faculty mentors found
-              </p>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                No mentors match your query. Try broadening your search or resetting filters.
-              </p>
+          <div className="p-4 sm:p-6 space-y-6">
+            {/* 3-Tier Academic Mentorship Structure Banner */}
+            <div className="bg-gradient-to-r from-blue-50 via-indigo-50/50 to-purple-50/40 dark:from-slate-800/80 dark:via-indigo-950/20 dark:to-purple-950/20 border border-blue-200/80 dark:border-blue-900/50 rounded-2xl p-5 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">Academic Governance Structure</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 font-semibold">Tier 1 • Tier 2 • Supervisory</span>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1">
+                    3-Tier Mentorship &amp; Supervisory Academic Hierarchy
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                    Students are directly assigned to Faculty Mentors 1 &amp; 2, with the Department HOD serving as the institutional 3rd Supervisory Mentor across all department mentees.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                {/* Mentor 1 */}
+                <div className="bg-white dark:bg-slate-800/90 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300">
+                        Mentor 1 (Primary)
+                      </span>
+                      <DesignationBadge designation="Torch Bearer" size="sm" />
+                    </div>
+                    <div className="font-bold text-sm text-slate-900 dark:text-white">
+                      {mentors[0]?.full_name || "P. LEKHA"}
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {mentors[0]?.department || "CCE"} • {mentors[0]?.email || "lekha.cce@sairam.edu.in"}
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                    <span>Direct Cohort</span>
+                    <span className="font-semibold text-blue-600 dark:text-blue-400">{mentors[0]?.assigned_student_count ?? 30} Mentees</span>
+                  </div>
+                </div>
+
+                {/* Mentor 2 */}
+                <div className="bg-white dark:bg-slate-800/90 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300">
+                        Mentor 2 (Co-Mentor)
+                      </span>
+                      <DesignationBadge designation="Torch Bearer" size="sm" />
+                    </div>
+                    <div className="font-bold text-sm text-slate-900 dark:text-white">
+                      {mentors[1]?.full_name || "LURDHUMARY J"}
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {mentors[1]?.department || "CCE"} • {mentors[1]?.email || "lurdhumary.cce@sairam.edu.in"}
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                    <span>Direct Cohort</span>
+                    <span className="font-semibold text-indigo-600 dark:text-indigo-400">{mentors[1]?.assigned_student_count ?? 31} Mentees</span>
+                  </div>
+                </div>
+
+                {/* Mentor 3 / HOD Supervisory */}
+                <div className="bg-white dark:bg-slate-800/90 rounded-xl p-3.5 border border-purple-200/80 dark:border-purple-800/50 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300">
+                        Mentor 3 (Supervisory HOD)
+                      </span>
+                      <DesignationBadge designation="Torch Bearer" size="sm" />
+                    </div>
+                    <div className="font-bold text-sm text-slate-900 dark:text-white">
+                      {hods[0]?.full_name || "Dr. Pachaiammal Alias Priya"}
+                    </div>
+                    <div className="text-[11px] text-purple-700 dark:text-purple-400 font-medium">
+                      Head of Department • Department Supervisory Authority
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                    <span>Department Scope</span>
+                    <span className="font-semibold text-purple-600 dark:text-purple-400">All 61 Department Students</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-medium">
-                  <tr>
-                    <th className="px-4 py-3">Staff ID</th>
-                    <th className="px-4 py-3">Mentor Name & Email</th>
-                    <th className="px-4 py-3">Department & Title</th>
-                    <th className="px-4 py-3">Assigned Mentees</th>
-                    <th className="px-4 py-3">Review Decisions</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredMentors.map((m) => (
-                    <tr
-                      key={m.id}
-                      className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition group"
-                    >
-                      <td className="px-4 py-3 font-mono font-medium text-slate-900 dark:text-slate-200 whitespace-nowrap">
-                        {m.staff_id || <span className="text-slate-400 italic">None</span>}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="font-semibold text-slate-900 dark:text-white">
-                          {m.full_name}
-                        </div>
-                        <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
-                          {m.email}
-                        </div>
-                      </td>
+
+            {filteredMentors.length === 0 ? (
+              <div className="p-12 text-center space-y-2">
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  No faculty mentors found
+                </p>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  No mentors match your query. Try broadening your search or resetting filters.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-medium">
+                    <tr>
+                      <th className="px-4 py-3">Staff ID</th>
+                      <th className="px-4 py-3">Mentor Name &amp; Designation</th>
+                      <th className="px-4 py-3">Department &amp; Title</th>
+                      <th className="px-4 py-3">Assigned Mentees</th>
+                      <th className="px-4 py-3">Review Decisions</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredMentors.map((m) => (
+                      <tr
+                        key={m.id}
+                        className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition group"
+                      >
+                        <td className="px-4 py-3 font-mono font-medium text-slate-900 dark:text-slate-200 whitespace-nowrap">
+                          {m.staff_id || <span className="text-slate-400 italic">None</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
+                            {m.full_name}
+                            <DesignationBadge designation="Torch Bearer" size="sm" />
+                          </div>
+                          <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                            {m.email}
+                          </div>
+                        </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className="font-semibold text-slate-800 dark:text-slate-300">
                           {m.department}
@@ -938,8 +1030,9 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                 </tbody>
               </table>
             </div>
-          )
-        ) : (
+          )}
+        </div>
+      ) : (
           /* ========================================== */
           /* HOD TABLE */
           /* ========================================== */
@@ -975,8 +1068,9 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                         {h.staff_id || <span className="text-slate-400 italic">None</span>}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-semibold text-slate-900 dark:text-white">
+                        <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
                           {h.full_name}
+                          <DesignationBadge designation="Torch Bearer" size="sm" />
                         </div>
                         <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
                           {h.email}

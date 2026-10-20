@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { RoleBadge } from "@/components/RoleBadge";
+import { DesignationBadge } from "@/components/DesignationBadge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { api, HealthResponse } from "@/lib/api-client";
 import {
   AdminOverviewResponse,
@@ -400,6 +402,8 @@ export default function AdminDashboardPage() {
                   {user?.email}
                 </span>
               </div>
+
+              <ThemeToggle size="sm" />
 
               <div className="hidden sm:block">
                 <RoleBadge role="admin" size="sm" />
@@ -1288,8 +1292,11 @@ export default function AdminDashboardPage() {
                             <td className="px-4 py-3 font-mono font-bold text-blue-600 dark:text-blue-400">
                               {a.register_number}
                             </td>
-                            <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
-                              {a.student_name}
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-semibold text-slate-900 dark:text-white">{a.student_name}</span>
+                                <DesignationBadge designation="Change Maker" size="sm" />
+                              </div>
                             </td>
                             <td className="px-4 py-3">
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-900/40">
@@ -1299,8 +1306,11 @@ export default function AdminDashboardPage() {
                             <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
                               Sec {a.section || "A"}
                             </td>
-                            <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
-                              {a.mentor_name}
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-semibold text-slate-900 dark:text-white">{a.mentor_name}</span>
+                                <DesignationBadge designation="Torch Bearer" size="sm" />
+                              </div>
                             </td>
                             <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
                               {a.mentor_email}

@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { StudentDetailResponse } from "@/types/auth";
+import { DesignationBadge } from "@/components/DesignationBadge";
 
 interface StudentDrawerProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface StudentDrawerProps {
   onSelectTab: (tab: string) => void;
   onSubmitClick: () => void;
   onLogout: () => void;
+  unreadMessagesCount?: number;
 }
 
 export const StudentDrawer: React.FC<StudentDrawerProps> = ({
@@ -22,6 +24,7 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
   onSelectTab,
   onSubmitClick,
   onLogout,
+  unreadMessagesCount = 0,
 }) => {
   const profile = studentData?.profile;
   const mentor = studentData?.assigned_mentor;
@@ -80,6 +83,20 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
       ),
     },
     {
+      id: "messages",
+      label: "Messages & Remarks",
+      badge: unreadMessagesCount > 0 ? unreadMessagesCount : undefined,
+      icon: (
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
+          />
+        </svg>
+      ),
+    },
+    {
       id: "progress",
       label: "PGPA Progress Analytics",
       icon: (
@@ -112,24 +129,24 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
       {/* Dimmed Backdrop */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
         aria-hidden="true"
       />
 
       <div className="fixed inset-y-0 left-0 max-w-full flex">
-        <div className="w-screen max-w-xs sm:max-w-sm bg-white shadow-xl flex flex-col justify-between overflow-y-auto border-r border-slate-200/90">
+        <div className="w-screen max-w-xs sm:max-w-sm bg-white dark:bg-slate-900 shadow-xl flex flex-col justify-between overflow-y-auto border-r border-slate-200/90 dark:border-slate-800 transition-colors">
           {/* Header */}
           <div>
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-850">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 text-white font-bold text-xs shadow-xs">
                   CCE
                 </div>
                 <div>
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
                     CCE-PGPA
                   </h2>
-                  <p className="text-[11px] text-[#0284c7] font-semibold">Student Portal</p>
+                  <p className="text-[11px] text-[#0284c7] dark:text-sky-400 font-semibold">Student Portal</p>
                 </div>
               </div>
 
@@ -137,7 +154,7 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
                 type="button"
                 onClick={onClose}
                 aria-label="Close navigation menu"
-                className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -146,46 +163,52 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
             </div>
 
             {/* Student ID Card snippet */}
-            <div className="p-4 bg-slate-50/70 border-b border-slate-100">
-              <div className="flex items-start justify-between">
+            <div className="p-4 bg-slate-50/70 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-sm font-bold text-slate-900 leading-tight">
-                    {studentData?.full_name || "Student"}
-                  </p>
-                  <p className="text-xs font-mono font-semibold text-blue-600 mt-0.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+                      {studentData?.full_name || "Student"}
+                    </p>
+                    <DesignationBadge designation="Change Maker" size="sm" />
+                  </div>
+                  <p className="text-xs font-mono font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
                     {profile?.register_number || "SEC25CO031"}
                   </p>
                 </div>
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 shrink-0">
                   {profile?.batch || "2025-2029"}
                 </span>
               </div>
 
-              <div className="mt-3 grid grid-cols-3 gap-1.5 text-[11px] text-slate-700">
-                <div className="bg-white p-2 rounded-lg border border-slate-200/80 text-center">
-                  <span className="block text-[9px] text-slate-500 font-medium uppercase">Year</span>
-                  <span className="font-bold text-slate-900">{profile?.year || 2}</span>
+              <div className="mt-3 grid grid-cols-3 gap-1.5 text-[11px] text-slate-700 dark:text-slate-300">
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200/80 dark:border-slate-800 text-center">
+                  <span className="block text-[9px] text-slate-500 dark:text-slate-400 font-medium uppercase">Year</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{profile?.year || 2}</span>
                 </div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200/80 text-center">
-                  <span className="block text-[9px] text-slate-500 font-medium uppercase">Sec</span>
-                  <span className="font-bold text-slate-900">{profile?.section || "A"}</span>
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200/80 dark:border-slate-800 text-center">
+                  <span className="block text-[9px] text-slate-500 dark:text-slate-400 font-medium uppercase">Sec</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{profile?.section || "A"}</span>
                 </div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200/80 text-center">
-                  <span className="block text-[9px] text-slate-500 font-medium uppercase">Sem</span>
-                  <span className="font-bold text-slate-900">{profile?.semester || "III"}</span>
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200/80 dark:border-slate-800 text-center">
+                  <span className="block text-[9px] text-slate-500 dark:text-slate-400 font-medium uppercase">Sem</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{profile?.semester || "III"}</span>
                 </div>
               </div>
             </div>
 
             {/* Assigned Mentor Card */}
-            <div className="p-3 mx-3 my-3 rounded-xl border border-slate-200/90 bg-white">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+            <div className="p-3 mx-3 my-3 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Assigned Faculty Mentor
               </p>
-              <p className="text-xs font-bold text-slate-900 mt-0.5">
-                {mentor?.full_name || profile?.original_mentor_name || "LURDHUMARY J"}
-              </p>
-              <p className="text-[11px] text-slate-500 mt-0.5">
+              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                <p className="text-xs font-bold text-slate-900 dark:text-white">
+                  {mentor?.full_name || profile?.original_mentor_name || "LURDHUMARY J"}
+                </p>
+                <DesignationBadge designation="Torch Bearer" size="sm" />
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                 Department of Computer and Communication Engineering
               </p>
             </div>
@@ -219,16 +242,23 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
                       onSelectTab(item.id);
                       onClose();
                     }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs"
-                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
+                        ? "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800 shadow-2xs"
+                        : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800"
                     }`}
                   >
-                    <div className={isActive ? "text-blue-600" : "text-slate-500"}>
-                      {item.icon}
+                    <div className="flex items-center gap-3">
+                      <div className={isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400"}>
+                        {item.icon}
+                      </div>
+                      <span>{item.label}</span>
                     </div>
-                    <span>{item.label}</span>
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white animate-pulse">
+                        {item.badge}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -236,10 +266,10 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
           </div>
 
           {/* Footer & Sign Out */}
-          <div className="p-4 border-t border-slate-100 bg-slate-50/50 space-y-2">
+          <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 space-y-2">
             <Link
               href="/change-password"
-              className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-colors"
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-700 dark:hover:text-blue-300 hover:border-blue-200 transition-colors"
             >
               <span>🔑</span>
               <span>Change Account Password</span>
@@ -247,7 +277,7 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
             <button
               type="button"
               onClick={onLogout}
-              className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-700 dark:hover:text-rose-400 hover:border-rose-200 transition-colors cursor-pointer"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

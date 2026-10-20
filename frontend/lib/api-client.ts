@@ -2,6 +2,7 @@ import {
   TokenResponse,
   UserResponse,
   StudentDetailResponse,
+  StudentProfileUpdateRequest,
   MentorStudentItem,
   HODStudentItem,
   DepartmentOverviewResponse,
@@ -30,6 +31,10 @@ import {
   AdminComponentItem,
   DriveFolderAuditReport,
   DriveFolderProvisionResponse,
+  MessageType,
+  MessageItem,
+  MessageCreateRequest,
+  UnreadCountResponse,
 } from "@/types/auth";
 import {
   PGPAComponentResponse,
@@ -133,6 +138,20 @@ export const api = {
     return request<StudentDetailResponse>("/students/me", { method: "GET" }, token);
   },
 
+  updateStudentProfile: async (
+    data: StudentProfileUpdateRequest,
+    token?: string | null
+  ): Promise<StudentDetailResponse> => {
+    return request<StudentDetailResponse>(
+      "/students/me",
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
   getComponents: async (token?: string | null): Promise<PGPAComponentResponse[]> => {
     return request<PGPAComponentResponse[]>("/students/components", { method: "GET" }, token);
   },
@@ -149,6 +168,21 @@ export const api = {
       "/students/me/achievements",
       {
         method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  updateAchievement: async (
+    achievementId: string,
+    data: Partial<AchievementCreate>,
+    token?: string | null
+  ): Promise<AchievementResponse> => {
+    return request<AchievementResponse>(
+      `/students/me/achievements/${achievementId}`,
+      {
+        method: "PATCH",
         body: JSON.stringify(data),
       },
       token
@@ -531,6 +565,72 @@ export const api = {
       { method: "POST" },
       token
     );
+  },
+
+  deleteEvidenceFile: async (fileId: string, token?: string | null): Promise<{ detail: string; file_id: string }> => {
+    return request<{ detail: string; file_id: string }>(`/files/${fileId}`, { method: "DELETE" }, token);
+  },
+
+  // ==========================================
+  // SHARED MESSAGES & REMARKS ENDPOINTS
+  // ==========================================
+  getMessages: async (
+    params?: {
+      achievement_id?: string;
+      student_id?: string;
+      message_type?: MessageType;
+      unread_only?: boolean;
+      limit?: number;
+      offset?: number;
+    },
+    token?: string | null
+  ): Promise<MessageItem[]> => {
+    const searchParams = new URLSearchParams();
+    if (params?.achievement_id) searchParams.set("achievement_id", params.achievement_id);
+    if (params?.student_id) searchParams.set("student_id", params.student_id);
+    if (params?.message_type) searchParams.set("message_type", params.message_type);
+    if (params?.unread_only) searchParams.set("unread_only", "true");
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.offset) searchParams.set("offset", params.offset.toString());
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : "";
+    return request<MessageItem[]>(`/messages${query}`, { method: "GET" }, token);
+  },
+
+  sendMessage: async (
+    data: MessageCreateRequest,
+    token?: string | null
+  ): Promise<MessageItem> => {
+    return request<MessageItem>("/messages", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }, token);
+  },
+
+  markMessageRead: async (
+    messageId: string,
+    token?: string | null
+  ): Promise<MessageItem> => {
+    return request<MessageItem>(`/messages/${messageId}/read`, {
+      method: "PATCH",
+    }, token);
+  },
+
+  markAllMessagesRead: async (
+    payload: { achievement_id?: string; message_ids?: string[] },
+    token?: string | null
+  ): Promise<{ detail: string; count: number }> => {
+    return request<{ detail: string; count: number }>("/messages/read-all", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }, token);
+  },
+
+  getUnreadMessageCount: async (
+    token?: string | null
+  ): Promise<UnreadCountResponse> => {
+    return request<UnreadCountResponse>("/messages/unread-count", {
+      method: "GET",
+    }, token);
   },
 };
 
