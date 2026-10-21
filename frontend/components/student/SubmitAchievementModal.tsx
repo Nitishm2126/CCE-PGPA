@@ -189,14 +189,14 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   ];
 
   return (
-    <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white p-5 sm:p-6 text-left shadow-2xl transition-all border border-slate-200/90 custom-scrollbar">
+    <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#171E28] p-5 sm:p-6 text-left shadow-2xl transition-all border border-slate-200 dark:border-[#2B3543] custom-scrollbar">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#2B3543]">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-slate-900">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#E8EDF4]">
             Submit PGPA Achievement
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-0.5">
             Record activity details and attach required PDF evidence for faculty view
           </p>
         </div>
@@ -205,7 +205,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           type="button"
           onClick={onClose}
           disabled={isSubmitting}
-          className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+          className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1C2531] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
           aria-label="Close modal"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -223,7 +223,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         className="mt-4 space-y-4"
       >
         {error && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs text-rose-700 flex items-start gap-2">
+          <div className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/40 p-3 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2">
             <svg className="h-4 w-4 shrink-0 text-rose-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -233,7 +233,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* Component Selector */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
             PGPA Component *
           </label>
           <select
@@ -241,10 +241,10 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             onChange={(e) => setComponentId(e.target.value)}
             disabled={isSubmitting}
             required
-            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 disabled:text-slate-400"
+            className="mt-1 w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 dark:disabled:bg-[#131922] disabled:text-slate-400 dark:disabled:text-[#7E8B9C] min-h-[36px]"
           >
             {components.map((c) => (
-              <option key={c.id} value={c.id}>
+              <option key={c.id} value={c.id} className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">
                 #{String(c.display_order).padStart(2, "0")} — {c.name}
               </option>
             ))}
@@ -253,7 +253,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* Achievement Title */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
             Achievement Title *
           </label>
           <input
@@ -263,24 +263,24 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             placeholder="e.g. Solved 150 Coding Problems on Skillrack"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 disabled:text-slate-400"
+            className="mt-1 w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 dark:disabled:bg-[#131922] disabled:text-slate-400 dark:disabled:text-[#7E8B9C] min-h-[36px]"
           />
         </div>
 
         {/* Activity Type & Date Grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
               Activity Type
             </label>
             <select
               value={activityType}
               onChange={(e) => setActivityType(e.target.value)}
               disabled={isSubmitting}
-              className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-2.5 py-2 text-xs text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 disabled:text-slate-400"
+              className="mt-1 w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-2.5 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 dark:disabled:bg-[#131922] disabled:text-slate-400 dark:disabled:text-[#7E8B9C] min-h-[36px]"
             >
               {activityTypeOptions.map((opt) => (
-                <option key={opt} value={opt}>
+                <option key={opt} value={opt} className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">
                   {opt}
                 </option>
               ))}
@@ -288,7 +288,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
               Event / Completion Date
             </label>
             <input
@@ -296,15 +296,15 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               value={eventDate}
               onChange={(e) => setEventDate(e.target.value)}
               disabled={isSubmitting}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-2.5 py-2 text-xs text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 disabled:text-slate-400"
+              className="mt-1 w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-2.5 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 dark:disabled:bg-[#131922] disabled:text-slate-400 dark:disabled:text-[#7E8B9C] min-h-[36px]"
             />
           </div>
         </div>
 
         {/* Organizer & Outcome Grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
               Organizer / Host
             </label>
             <input
@@ -313,12 +313,12 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               value={organizer}
               onChange={(e) => setOrganizer(e.target.value)}
               disabled={isSubmitting}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 disabled:text-slate-400"
+              className="mt-1 w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 dark:disabled:bg-[#131922] disabled:text-slate-400 dark:disabled:text-[#7E8B9C] min-h-[36px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
               Outcome / Score
             </label>
             <input
@@ -327,7 +327,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               value={outcome}
               onChange={(e) => setOutcome(e.target.value)}
               disabled={isSubmitting}
-              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 disabled:text-slate-400"
+              className="mt-1 w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 dark:disabled:bg-[#131922] disabled:text-slate-400 dark:disabled:text-[#7E8B9C] min-h-[36px]"
             />
           </div>
         </div>
@@ -335,14 +335,14 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         {/* Evidence PDF (Required) Upload Field */}
         <div>
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
               Evidence PDF (Required) *
             </label>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 border border-slate-200">
+            <span className="rounded-full bg-slate-100 dark:bg-[#1C2531] px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-[#A0ACBC] border border-slate-200 dark:border-[#2B3543]">
               Max 5 MB • PDF Only
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-0.5 mb-1.5">
+          <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-0.5 mb-1.5">
             Attach official certificate, event participation receipt, or score card.
           </p>
 
@@ -372,27 +372,27 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               }}
               className={`group flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${
                 isDragging
-                  ? "border-blue-500 bg-blue-50/60"
+                  ? "border-blue-500 bg-blue-50/60 dark:bg-blue-950/40"
                   : fileError
-                  ? "border-rose-300 bg-rose-50/30 hover:border-rose-400"
-                  : "border-slate-300 bg-slate-50/50 hover:border-blue-400 hover:bg-blue-50/30"
+                  ? "border-rose-300 dark:border-rose-800 bg-rose-50/30 dark:bg-rose-950/20"
+                  : "border-slate-300 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-950/30"
               }`}
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-2xs border border-slate-200 text-blue-600 group-hover:scale-105 transition-transform">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-[#171E28] shadow-2xs border border-slate-200 dark:border-[#2B3543] text-blue-600 dark:text-[#4C83E6] group-hover:scale-105 transition-transform">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
               </div>
-              <p className="mt-2 text-xs font-semibold text-slate-800">
-                <span className="text-blue-600 group-hover:underline">Click to browse</span> or drag & drop PDF
+              <p className="mt-2 text-xs font-semibold text-slate-800 dark:text-[#E8EDF4]">
+                <span className="text-blue-600 dark:text-[#4C83E6] group-hover:underline">Click to browse</span> or drag & drop PDF
               </p>
-              <p className="text-[11px] text-slate-500 mt-0.5">
+              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-0.5">
                 Official certificate or document (PDF only, up to 5 MB)
               </p>
             </div>
           ) : (
             /* Selected File Card State */
-            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 flex items-center justify-between gap-3 shadow-2xs">
+            <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] p-3 flex items-center justify-between gap-3 shadow-2xs">
               <div className="flex items-center gap-3 min-w-0">
                 {/* PDF Icon Badge */}
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-600 text-white font-bold text-[10px] shadow-xs tracking-wider">
@@ -400,17 +400,17 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 </div>
                 <div className="min-w-0">
                   <p
-                    className="text-xs font-semibold text-slate-900 truncate"
+                    className="text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] truncate"
                     title={evidenceFile.name}
                   >
                     {evidenceFile.name}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[11px] text-slate-500 font-medium">
+                    <span className="text-[11px] text-slate-500 dark:text-[#7E8B9C] font-medium">
                       {formatFileSize(evidenceFile.size)}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
-                      <svg className="h-3 w-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 dark:text-[#5EEAD4] font-semibold">
+                      <svg className="h-3 w-3 text-emerald-600 dark:text-[#5EEAD4]" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       Verified PDF
@@ -425,7 +425,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => fileInputRef.current?.click()}
-                  className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                  className="rounded-lg border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#171E28] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-100 dark:hover:bg-[#232E3E] transition-colors cursor-pointer min-h-[32px]"
                 >
                   Replace
                 </button>
@@ -433,7 +433,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleFileSelect(null)}
-                  className="rounded-lg p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                  className="rounded-lg p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center"
                   title="Remove file"
                   aria-label="Remove evidence file"
                 >
@@ -446,7 +446,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           )}
 
           {fileError && (
-            <p className="mt-1 text-[11px] text-rose-600 font-medium flex items-center gap-1">
+            <p className="mt-1 text-[11px] text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
               <svg className="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
@@ -457,7 +457,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* Description / Summary */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
             Summary / Evidence Details (Optional)
           </label>
           <textarea
@@ -466,25 +466,25 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             placeholder="Briefly describe your achievement, hours, or certificate details..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs resize-none disabled:bg-slate-50 disabled:text-slate-400"
+            className="mt-1 w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs resize-none disabled:bg-slate-50 dark:disabled:bg-[#131922] disabled:text-slate-400 dark:disabled:text-[#7E8B9C]"
           />
         </div>
 
         {/* Submission Progress Indicator */}
         {isSubmitting && submissionStep && (
-          <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-2.5 text-xs text-blue-800 flex items-center gap-2">
+          <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/80 dark:bg-blue-950/40 p-2.5 text-xs text-blue-800 dark:text-blue-300 flex items-center gap-2">
             <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent shrink-0" />
             <span className="font-medium">{submissionStep}</span>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="pt-3.5 border-t border-slate-100 flex flex-col-reverse sm:flex-row gap-2.5 justify-end">
+        <div className="pt-3.5 border-t border-slate-200 dark:border-[#2B3543] flex flex-col-reverse sm:flex-row gap-2.5 justify-end">
           <button
             type="button"
             disabled={isSubmitting}
             onClick={() => handleSubmit(false)}
-            className="w-full sm:w-auto rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232E3E] active:scale-95 transition-all disabled:opacity-50 cursor-pointer min-h-[44px]"
           >
             Save as Draft
           </button>
@@ -492,7 +492,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 px-4 py-2.5 text-xs font-semibold text-white shadow-2xs transition-all disabled:opacity-50 cursor-pointer min-h-[44px]"
           >
             {isSubmitting ? (
               <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />

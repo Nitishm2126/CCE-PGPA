@@ -99,7 +99,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       {/* Mobile Fixed Bottom Navigation Bar (< md) */}
       <nav
         aria-label="Student Mobile Navigation"
-        className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 shadow-sm pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1 transition-colors"
+        className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 dark:bg-[#171e28]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-[#2b3543] shadow-md pb-[max(0.6rem,env(safe-area-inset-bottom))] pt-1.5 transition-colors"
       >
         <div className="grid grid-cols-6 items-center justify-around px-1 max-w-md mx-auto">
           {tabs.map((tab) => {
@@ -110,12 +110,12 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                   type="button"
                   onClick={onSubmitClick}
                   aria-label="Submit new PGPA achievement"
-                  className="flex flex-col items-center justify-center -mt-3 group cursor-pointer"
+                  className="flex flex-col items-center justify-center -mt-3.5 group cursor-pointer"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-xs transition-colors">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-[#4c83e6] dark:hover:bg-[#3b72d4] text-white shadow-2xs transition-colors">
                     {tab.icon}
                   </div>
-                  <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 mt-1">
+                  <span className="text-[10px] font-semibold text-blue-600 dark:text-[#4c83e6] mt-0.5">
                     {tab.label}
                   </span>
                 </button>
@@ -131,11 +131,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 onClick={() => onSelectTab(tab.id)}
                 aria-label={tab.label}
                 aria-current={isActive ? "page" : undefined}
-                className="relative flex flex-col items-center justify-center py-1 transition-colors cursor-pointer"
+                className="relative flex flex-col items-center justify-center py-1 transition-colors cursor-pointer min-h-[44px]"
               >
                 <div
-                  className={`flex h-6 w-6 items-center justify-center transition-colors relative ${
-                    isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                  className={`flex h-5 w-5 items-center justify-center transition-colors relative ${
+                    isActive ? "text-blue-600 dark:text-[#4c83e6]" : "text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
                   }`}
                 >
                   {tab.icon}
@@ -148,14 +148,14 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 <span
                   className={`text-[9px] tracking-tight mt-0.5 truncate max-w-full ${
                     isActive
-                      ? "font-bold text-blue-600 dark:text-blue-400"
+                      ? "font-bold text-blue-600 dark:text-[#4c83e6]"
                       : "font-medium text-slate-500 dark:text-slate-400"
                   }`}
                 >
                   {tab.label}
                 </span>
                 {isActive && (
-                  <span className="h-1 w-1 rounded-full bg-blue-600 dark:bg-blue-400 mt-0.5" />
+                  <span className="h-1 w-1 rounded-full bg-blue-600 dark:bg-[#4c83e6] mt-0.5" />
                 )}
               </button>
             );
@@ -164,7 +164,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       </nav>
 
       {/* Desktop Navigation Segment Control (>= md) */}
-      <div className="hidden md:flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 px-3.5 py-1.5 rounded-xl shadow-xs mb-6 transition-colors">
+      <div className="hidden md:flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700 px-3 py-1.5 rounded-xl shadow-2xs mb-6 transition-colors">
         <div className="flex items-center gap-1">
           {tabs
             .filter((t) => !t.isAction)
@@ -177,14 +177,14 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                   onClick={() => onSelectTab(tab.id)}
                   className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                     isActive
-                      ? "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200/80 dark:border-blue-800 shadow-2xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 font-medium"
+                      ? "bg-blue-50/80 dark:bg-[#1c2531] text-blue-700 dark:text-[#4c83e6] font-semibold border border-blue-200/80 dark:border-[#2b3543] shadow-2xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium"
                   }`}
                 >
                   <div className="relative">
                     {tab.icon}
                     {tab.badge !== undefined && tab.badge > 0 && (
-                      <span className="absolute -top-1 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-600 px-1 text-[8px] font-bold text-white animate-pulse">
+                      <span className="absolute -top-1 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-600 px-1 text-[8px] font-bold text-white shadow-xs">
                         {tab.badge}
                       </span>
                     )}
@@ -198,7 +198,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
         <button
           type="button"
           onClick={onSubmitClick}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-[#4c83e6] dark:hover:bg-[#3b72d4] px-3.5 py-2 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer"
         >
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

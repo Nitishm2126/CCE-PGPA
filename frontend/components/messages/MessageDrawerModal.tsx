@@ -166,33 +166,33 @@ export const MessageDrawerModal: React.FC<MessageDrawerModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
       <div
-        className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+        className="w-full max-w-2xl bg-white dark:bg-[#171E28] border border-slate-200 dark:border-[#2B3543] rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transition-colors"
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 flex items-center justify-between gap-3">
+        <div className="px-5 py-4 border-b border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="p-1 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400">
+              <span className="p-1 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-[#4C83E6]">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </span>
-              <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate">
+              <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-[#E8EDF4] truncate">
                 {achievementTitle ? `Messages & Remarks: ${achievementTitle}` : "Messages & Remarks Thread"}
               </h3>
             </div>
             {(targetStudentName || propRecipientName) && (
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                Discussion with <span className="font-semibold text-slate-700 dark:text-slate-200">{targetStudentName || propRecipientName}</span>
+              <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-0.5 truncate">
+                Discussion with <span className="font-semibold text-slate-700 dark:text-[#E8EDF4]">{targetStudentName || propRecipientName}</span>
               </p>
             )}
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1C2531] transition cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
             title="Close"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -203,26 +203,26 @@ export const MessageDrawerModal: React.FC<MessageDrawerModalProps> = ({
 
         {/* Quick Templates Bar (For Mentor & HOD) */}
         {user?.role !== "student" && (
-          <div className="px-5 py-2.5 bg-blue-50/50 dark:bg-blue-950/20 border-b border-blue-100 dark:border-blue-900/30 flex items-center gap-2 overflow-x-auto text-xs">
-            <span className="font-bold text-[10px] uppercase text-slate-500 dark:text-slate-400 whitespace-nowrap">Quick Actions:</span>
+          <div className="px-5 py-2.5 bg-blue-50/50 dark:bg-[#131922] border-b border-blue-100 dark:border-[#2B3543] flex items-center gap-2 overflow-x-auto text-xs">
+            <span className="font-bold text-[10px] uppercase text-slate-500 dark:text-[#7E8B9C] whitespace-nowrap">Quick Actions:</span>
             <button
               type="button"
               onClick={() => applyTemplate("Congratulations", "Hearty congratulations on your achievement! Well done.")}
-              className="px-2.5 py-1 rounded-full font-semibold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-200 transition whitespace-nowrap flex items-center gap-1"
+              className="px-2.5 py-1 rounded-full font-semibold bg-emerald-100 dark:bg-[#122422] text-emerald-800 dark:text-[#5EEAD4] border border-emerald-200/80 dark:border-emerald-800/70 hover:bg-emerald-200 transition whitespace-nowrap flex items-center gap-1 cursor-pointer"
             >
               <span>🎉</span> Congratulations
             </button>
             <button
               type="button"
               onClick={() => applyTemplate("Remark", "Verified and noted. Excellent technical presentation.")}
-              className="px-2.5 py-1 rounded-full font-semibold bg-blue-100 dark:bg-blue-950/70 text-blue-800 dark:text-blue-300 hover:bg-blue-200 transition whitespace-nowrap flex items-center gap-1"
+              className="px-2.5 py-1 rounded-full font-semibold bg-blue-100 dark:bg-[#132338] text-blue-800 dark:text-[#93C5FD] border border-blue-200/80 dark:border-blue-800/70 hover:bg-blue-200 transition whitespace-nowrap flex items-center gap-1 cursor-pointer"
             >
               <span>💬</span> Positive Remark
             </button>
             <button
               type="button"
               onClick={() => applyTemplate("Action Required", "Please re-upload a clear copy of your official completion certificate.")}
-              className="px-2.5 py-1 rounded-full font-semibold bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 hover:bg-amber-200 transition whitespace-nowrap flex items-center gap-1"
+              className="px-2.5 py-1 rounded-full font-semibold bg-amber-100 dark:bg-[#2A2012] text-amber-800 dark:text-[#FCD34D] border border-amber-200/80 dark:border-amber-800/70 hover:bg-amber-200 transition whitespace-nowrap flex items-center gap-1 cursor-pointer"
             >
               <span>⚠️</span> Action Required
             </button>
@@ -230,25 +230,25 @@ export const MessageDrawerModal: React.FC<MessageDrawerModalProps> = ({
         )}
 
         {/* Message Thread Body */}
-        <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-3.5 bg-slate-50/40 dark:bg-slate-900/40 min-h-[220px]">
+        <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-3.5 bg-slate-50/40 dark:bg-[#0F141B] min-h-[220px]">
           {loading ? (
             <div className="py-12 text-center space-y-2">
               <div className="w-7 h-7 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-slate-500">Loading messages &amp; remarks...</p>
+              <p className="text-xs text-slate-500 dark:text-[#7E8B9C]">Loading messages &amp; remarks...</p>
             </div>
           ) : error ? (
-            <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 rounded-xl text-xs">
+            <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 rounded-xl text-xs">
               {error}
             </div>
           ) : messages.length === 0 ? (
             <div className="py-12 text-center space-y-2 max-w-sm mx-auto">
-              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#1C2531] border border-slate-200 dark:border-[#2B3543] flex items-center justify-center mx-auto text-slate-400 dark:text-[#7E8B9C]">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">No Messages Yet</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <h4 className="font-bold text-sm text-slate-800 dark:text-[#E8EDF4]">No Messages Yet</h4>
+              <p className="text-xs text-slate-500 dark:text-[#7E8B9C]">
                 {user?.role === "student"
                   ? "Your faculty mentor or HOD will post remarks, congratulations, and action items here."
                   : "Start the conversation by sharing a remark, congratulations, or required action."}
@@ -267,19 +267,19 @@ export const MessageDrawerModal: React.FC<MessageDrawerModalProps> = ({
                   className={`flex flex-col ${isMine ? "items-end" : "items-start"}`}
                 >
                   <div
-                    className={`max-w-[85%] sm:max-w-[78%] rounded-2xl p-3.5 shadow-xs border transition ${
+                    className={`max-w-[85%] sm:max-w-[78%] rounded-2xl p-3.5 shadow-2xs border transition ${
                       isMine
-                        ? "bg-blue-600 text-white border-blue-600 rounded-br-xs"
+                        ? "bg-blue-600 dark:bg-[#2563EB] text-white border-blue-600 dark:border-[#2563EB] rounded-br-xs"
                         : isCongrats
-                        ? "bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/60 dark:to-teal-950/40 border-emerald-300 dark:border-emerald-800 text-slate-900 dark:text-white rounded-bl-xs"
+                        ? "bg-emerald-50 dark:bg-[#122422] border-emerald-300 dark:border-emerald-800/80 text-slate-900 dark:text-[#E8EDF4] rounded-bl-xs"
                         : isAction
-                        ? "bg-amber-50 dark:bg-amber-950/50 border-amber-300 dark:border-amber-800 text-slate-900 dark:text-white rounded-bl-xs"
-                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-bl-xs"
+                        ? "bg-amber-50 dark:bg-[#2A2012] border-amber-300 dark:border-amber-800/80 text-slate-900 dark:text-[#E8EDF4] rounded-bl-xs"
+                        : "bg-white dark:bg-[#1C2531] border-slate-200 dark:border-[#2B3543] text-slate-900 dark:text-[#E8EDF4] rounded-bl-xs"
                     }`}
                   >
                     {/* Message Header */}
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                      <span className={`text-[11px] font-bold ${isMine ? "text-blue-100" : "text-slate-900 dark:text-white"}`}>
+                      <span className={`text-[11px] font-bold ${isMine ? "text-blue-100" : "text-slate-900 dark:text-[#E8EDF4]"}`}>
                         {m.sender_name}
                       </span>
                       {m.sender_role === "student" ? (
@@ -290,16 +290,16 @@ export const MessageDrawerModal: React.FC<MessageDrawerModalProps> = ({
 
                       {/* Type Badge */}
                       <span
-                        className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                        className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
                           isMine
-                            ? "bg-blue-700 text-blue-100"
+                            ? "bg-blue-700 text-blue-100 border-blue-800"
                             : isCongrats
-                            ? "bg-emerald-200 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200"
+                            ? "bg-emerald-200 dark:bg-[#1B3830] text-emerald-900 dark:text-[#5EEAD4] border-emerald-300/80 dark:border-emerald-700/60"
                             : isAction
-                            ? "bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200"
+                            ? "bg-amber-200 dark:bg-[#3D2E16] text-amber-900 dark:text-[#FCD34D] border-amber-300/80 dark:border-amber-700/60"
                             : isRemark
-                            ? "bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200"
-                            : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                            ? "bg-blue-100 dark:bg-[#1E3352] text-blue-800 dark:text-[#93C5FD] border-blue-200/80 dark:border-blue-800/60"
+                            : "bg-slate-200 dark:bg-[#253245] text-slate-700 dark:text-[#A0ACBC] border-slate-300 dark:border-[#384860]"
                         }`}
                       >
                         {m.message_type}
@@ -316,7 +316,7 @@ export const MessageDrawerModal: React.FC<MessageDrawerModalProps> = ({
                       className={`mt-2 pt-1.5 border-t flex items-center justify-between gap-2 text-[10px] ${
                         isMine
                           ? "border-blue-500/50 text-blue-100"
-                          : "border-slate-200/60 dark:border-slate-700/60 text-slate-400 dark:text-slate-400"
+                          : "border-slate-200/60 dark:border-[#2B3543] text-slate-400 dark:text-[#7E8B9C]"
                       }`}
                     >
                       <span>
@@ -338,15 +338,15 @@ export const MessageDrawerModal: React.FC<MessageDrawerModalProps> = ({
         </div>
 
         {/* Compose Form */}
-        <form onSubmit={handleSend} className="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <form onSubmit={handleSend} className="p-3 sm:p-4 border-t border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28]">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between gap-2">
-              <label htmlFor="message-type-select" className="text-xs font-semibold text-slate-600 dark:text-slate-300">Message Category:</label>
+              <label htmlFor="message-type-select" className="text-xs font-semibold text-slate-600 dark:text-[#A0ACBC]">Message Category:</label>
               <select
                 id="message-type-select"
                 value={messageType}
                 onChange={(e) => setMessageType(e.target.value as MessageType)}
-                className="text-xs px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-hidden font-medium"
+                className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] text-slate-800 dark:text-[#E8EDF4] focus:ring-2 focus:ring-blue-500 outline-hidden font-medium min-h-[36px]"
               >
                 <option value="Remark">Remark</option>
                 <option value="Congratulations">Congratulations</option>
@@ -365,12 +365,12 @@ export const MessageDrawerModal: React.FC<MessageDrawerModalProps> = ({
                     : "Share congratulations, feedback, or action items..."
                 }
                 rows={2}
-                className="flex-1 p-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-hidden resize-none"
+                className="flex-1 p-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:ring-2 focus:ring-blue-500 outline-hidden resize-none"
               />
               <button
                 type="submit"
                 disabled={sending || !messageBody.trim()}
-                className="self-end px-4 py-2.5 rounded-xl font-bold text-xs bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm cursor-pointer flex items-center gap-1.5"
+                className="self-end px-4 py-2.5 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition shadow-2xs cursor-pointer flex items-center gap-1.5 min-h-[44px]"
               >
                 {sending ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

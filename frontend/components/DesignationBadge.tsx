@@ -26,11 +26,11 @@ export const DesignationBadge: React.FC<DesignationBadgeProps> = ({
     return (
       <span
         title="Institutional Title: Change Maker"
-        className={`inline-flex items-center font-semibold rounded-full tracking-wide transition-all select-none border shadow-2xs ${sizeClasses} bg-teal-50 text-teal-800 border-teal-200/90 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-700/80 ${className}`}
+        className={`inline-flex items-center font-semibold rounded-full tracking-wide transition-all select-none border shadow-2xs ${sizeClasses} bg-teal-50 text-teal-800 border-teal-200/90 dark:bg-[#122422] dark:text-[#5eead4] dark:border-[#1b3d39] ${className}`}
       >
         {/* Subtle sparkle icon */}
         <svg
-          className="h-3 w-3 shrink-0 text-teal-600 dark:text-teal-400"
+          className="h-3 w-3 shrink-0 text-teal-600 dark:text-[#5eead4]"
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -45,11 +45,11 @@ export const DesignationBadge: React.FC<DesignationBadgeProps> = ({
   return (
     <span
       title="Academic Mentorship Designation: Torch Bearer"
-      className={`inline-flex items-center font-semibold rounded-full tracking-wide transition-all select-none border shadow-2xs ${sizeClasses} bg-amber-50 text-amber-800 border-amber-200/90 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700/80 ${className}`}
+      className={`inline-flex items-center font-semibold rounded-full tracking-wide transition-all select-none border shadow-2xs ${sizeClasses} bg-amber-50 text-amber-800 border-amber-200/90 dark:bg-[#2a2012] dark:text-[#fcd34d] dark:border-[#48341a] ${className}`}
     >
       {/* Subtle torch/flame icon */}
       <svg
-        className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400"
+        className="h-3 w-3 shrink-0 text-amber-600 dark:text-[#fcd34d]"
         fill="currentColor"
         viewBox="0 0 20 20"
       >

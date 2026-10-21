@@ -92,19 +92,19 @@ export const MessagesHubView: React.FC<MessagesHubViewProps> = ({
   return (
     <div className="space-y-5">
       {/* Top Banner / Stats */}
-      <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-2xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400">
+            <span className="p-1 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-[#4C83E6]">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
             </span>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#E8EDF4]">
               Institutional Messages, Remarks &amp; Feedback
             </h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-1">
             {portalRole === "student"
               ? "Official remarks, congratulations, and action items from your Faculty Mentors and Head of Department."
               : portalRole === "mentor"
@@ -123,7 +123,7 @@ export const MessagesHubView: React.FC<MessagesHubViewProps> = ({
           <button
             type="button"
             onClick={loadMessages}
-            className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+            className="p-2 rounded-xl border border-slate-200 dark:border-[#2B3543] text-slate-600 dark:text-[#A0ACBC] hover:bg-slate-50 dark:hover:bg-[#1C2531] transition min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
             title="Refresh messages"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -134,9 +134,9 @@ export const MessagesHubView: React.FC<MessagesHubViewProps> = ({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="rounded-2xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-4 shadow-2xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between transition-colors">
         <div className="relative flex-1">
-          <svg className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 absolute left-3.5 top-3 text-slate-400 dark:text-[#7E8B9C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -144,7 +144,7 @@ export const MessagesHubView: React.FC<MessagesHubViewProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search messages by content, sender, or activity title..."
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-hidden"
+            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:ring-2 focus:ring-blue-500 outline-hidden min-h-[36px]"
           />
         </div>
 
@@ -152,7 +152,7 @@ export const MessagesHubView: React.FC<MessagesHubViewProps> = ({
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-medium outline-hidden"
+            className="text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] text-slate-800 dark:text-[#E8EDF4] font-medium outline-hidden min-h-[36px]"
           >
             <option value="all">All Message Types</option>
             <option value="Congratulations">🎉 Congratulations</option>
@@ -164,10 +164,10 @@ export const MessagesHubView: React.FC<MessagesHubViewProps> = ({
           <button
             type="button"
             onClick={() => setUnreadOnly((prev) => !prev)}
-            className={`px-3 py-2 rounded-xl text-xs font-semibold transition border ${
+            className={`px-3 py-2 rounded-xl text-xs font-semibold transition border min-h-[36px] cursor-pointer ${
               unreadOnly
                 ? "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800"
-                : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100"
+                : "bg-slate-50 dark:bg-[#1C2531] text-slate-600 dark:text-[#A0ACBC] border-slate-200 dark:border-[#2B3543] hover:bg-slate-100 dark:hover:bg-[#232E3E]"
             }`}
           >
             {unreadOnly ? "Showing Unread Only" : "Show All"}
@@ -176,28 +176,28 @@ export const MessagesHubView: React.FC<MessagesHubViewProps> = ({
       </div>
 
       {/* Messages List */}
-      <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+      <div className="rounded-2xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] overflow-hidden shadow-2xs transition-colors">
         {loading ? (
           <div className="py-16 text-center space-y-2">
             <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs text-slate-500">Loading messages directory...</p>
+            <p className="text-xs text-slate-500 dark:text-[#7E8B9C]">Loading messages directory...</p>
           </div>
         ) : filteredMessages.length === 0 ? (
           <div className="py-16 text-center space-y-2 max-w-sm mx-auto p-4">
-            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#1C2531] flex items-center justify-center mx-auto text-slate-400 dark:text-[#7E8B9C] border border-slate-200 dark:border-[#2B3543]">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">No Messages Found</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <h4 className="font-bold text-sm text-slate-800 dark:text-[#E8EDF4]">No Messages Found</h4>
+            <p className="text-xs text-slate-500 dark:text-[#7E8B9C]">
               {searchQuery || typeFilter !== "all" || unreadOnly
                 ? "No communications match your current filter criteria."
                 : "There are currently no messages or remarks posted."}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="divide-y divide-slate-100 dark:divide-[#2B3543]/60">
             {filteredMessages.map((m) => {
               const isUnread = !m.is_read && m.recipient_id === user?.id;
               const isCongrats = m.message_type === "Congratulations";
@@ -208,16 +208,16 @@ export const MessagesHubView: React.FC<MessagesHubViewProps> = ({
                 <div
                   key={m.id}
                   onClick={() => handleOpenThread(m)}
-                  className={`p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition cursor-pointer group ${
-                    isUnread ? "bg-blue-50/40 dark:bg-blue-950/20" : ""
+                  className={`p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 dark:hover:bg-[#1C2531]/70 transition cursor-pointer group ${
+                    isUnread ? "bg-blue-50/40 dark:bg-[#1C2531]/90" : ""
                   }`}
                 >
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       {isUnread && (
-                        <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" title="Unread message" />
+                        <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-[#4C83E6]" title="Unread message" />
                       )}
-                      <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                      <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-[#E8EDF4]">
                         {m.sender_name}
                       </span>
                       {m.sender_role === "student" ? (
@@ -227,31 +227,31 @@ export const MessagesHubView: React.FC<MessagesHubViewProps> = ({
                       )}
 
                       <span
-                        className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                        className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                           isCongrats
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300"
+                            ? "bg-emerald-100 text-emerald-800 dark:bg-[#122422] dark:text-[#5EEAD4] border-emerald-200/80 dark:border-emerald-800/70"
                             : isAction
-                            ? "bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300"
+                            ? "bg-amber-100 text-amber-800 dark:bg-[#2A2012] dark:text-[#FCD34D] border-amber-200/80 dark:border-amber-800/70"
                             : isRemark
-                            ? "bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300"
-                            : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                            ? "bg-blue-100 text-blue-800 dark:bg-[#132338] dark:text-[#93C5FD] border-blue-200/80 dark:border-blue-800/70"
+                            : "bg-slate-100 text-slate-700 dark:bg-[#1C2531] dark:text-[#A0ACBC] border-slate-200 dark:border-[#2B3543]"
                         }`}
                       >
                         {m.message_type}
                       </span>
 
                       {m.achievement_title && (
-                        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded truncate max-w-[240px]">
+                        <span className="text-[11px] font-medium text-slate-500 dark:text-[#A0ACBC] bg-slate-100 dark:bg-[#1C2531] border border-slate-200 dark:border-[#2B3543] px-2 py-0.5 rounded truncate max-w-[240px]">
                           📌 {m.achievement_title}
                         </span>
                       )}
                     </div>
 
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-[#A0ACBC] line-clamp-2">
                       {m.message_body}
                     </p>
 
-                    <div className="text-[10px] text-slate-400 flex items-center gap-2">
+                    <div className="text-[10px] text-slate-400 dark:text-[#7E8B9C] flex items-center gap-2">
                       <span>To: {m.recipient_name} ({m.recipient_role})</span>
                       <span>•</span>
                       <span>{new Date(m.created_at).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })} at {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
@@ -259,7 +259,7 @@ export const MessagesHubView: React.FC<MessagesHubViewProps> = ({
                   </div>
 
                   <div className="self-end sm:self-center flex items-center gap-2">
-                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 group-hover:underline flex items-center gap-1">
+                    <span className="text-xs font-semibold text-blue-600 dark:text-[#4C83E6] group-hover:underline flex items-center gap-1">
                       <span>View &amp; Reply</span>
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

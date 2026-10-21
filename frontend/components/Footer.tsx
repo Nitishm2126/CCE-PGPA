@@ -18,7 +18,7 @@ export const Footer: React.FC = () => {
 
   return (
     <footer
-      className={`mt-auto border-t border-slate-200/80 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/50 ${
+      className={`mt-auto border-t border-slate-200/80 bg-slate-50/50 dark:border-[#2B3543] dark:bg-[#0F141B] ${
         pathname?.startsWith("/student") ? "hidden md:block" : ""
       }`}
     >

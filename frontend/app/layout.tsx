@@ -41,7 +41,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans transition-colors duration-150">
+      <body className="min-h-full flex flex-col font-sans transition-colors duration-150">
         <ThemeProvider>
           <AuthProvider>
             <Navbar />
