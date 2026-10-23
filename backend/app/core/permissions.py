@@ -144,5 +144,5 @@ def require_role(*allowed_roles: UserRole):
 # Role-specific shortcut dependencies
 require_admin = require_role(UserRole.ADMIN)
 require_student = require_role(UserRole.STUDENT)
-require_mentor = require_role(UserRole.MENTOR)
+require_mentor = require_role(UserRole.MENTOR, UserRole.HOD)
 require_hod = require_role(UserRole.HOD)

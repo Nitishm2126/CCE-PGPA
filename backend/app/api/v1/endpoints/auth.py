@@ -2,7 +2,7 @@ import html
 import logging
 import urllib.parse
 import uuid
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -23,7 +23,7 @@ from app.core.firebase import get_firebase_app
 from firebase_admin import auth as fb_auth
 from app.db.session import get_db
 from app.models.oauth import OAuthCredential
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.auth import (
     ChangePasswordRequest,
     LoginRequest,
@@ -81,6 +81,13 @@ def login(
     )
 
 
+def get_user_accessible_portals(user: User) -> List[str]:
+    """Derive list of portal keys the authenticated user is authorized to access."""
+    if user.role == UserRole.HOD:
+        return ["hod", "mentor"]
+    return [user.role.value]
+
+
 @router.get(
     "/me",
     response_model=UserResponse,
@@ -90,7 +97,9 @@ def login(
 def get_me(
     current_user: User = Depends(get_current_user),
 ) -> UserResponse:
-    return UserResponse.model_validate(current_user)
+    res = UserResponse.model_validate(current_user)
+    res.accessible_portals = get_user_accessible_portals(current_user)
+    return res
 
 
 @router.post(

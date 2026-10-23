@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.firebase import get_firebase_app
 from firebase_admin import auth as fb_auth
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, verify_password
 from app.models.achievement import Achievement
 from app.models.assignment import MentorAssignment
 from app.models.audit import AuditLog
@@ -17,6 +17,8 @@ from app.models.file import AchievementFile
 from app.models.review import VerificationLog
 from app.models.user import HodProfile, MentorProfile, StudentProfile, User, UserRole
 from app.schemas.admin import (
+    AdminEmailUpdateRequest,
+    AdminEmailUpdateResponse,
     AdminOperationResult,
     ProvisioningExecuteRequest,
     ProvisioningExecuteResponse,
@@ -988,4 +990,204 @@ def execute_bulk_provisioning(
         skipped_count=skipped_count,
         failed_count=failed_count,
         details=results,
+    )
+
+
+def update_user_email_by_admin(
+    db: Session,
+    admin_user: User,
+    target_user_id: uuid.UUID,
+    payload: AdminEmailUpdateRequest,
+) -> AdminEmailUpdateResponse:
+    """
+    Security-critical email update initiated by System Administrator.
+    - Requires fresh administrator reauthentication using admin_password.
+    - Validates matching confirmation.
+    - Checks uniqueness in PostgreSQL.
+    - Checks uniqueness in Firebase Auth.
+    - Updates Firebase Auth email and sets email_verified=False (requiring verification).
+    - Updates PostgreSQL user email.
+    - Writes immutable audit log with full details.
+    """
+    clean_new_email = str(payload.new_email).strip().lower()
+    clean_confirm_email = str(payload.confirm_new_email).strip().lower()
+
+    # 1. Validate email confirmation
+    if clean_new_email != clean_confirm_email:
+        record_audit_log(
+            db,
+            actor_id=admin_user.id,
+            action="admin_edit_user_email",
+            target_type="user",
+            target_id=str(target_user_id),
+            metadata={
+                "requested_new_email": clean_new_email,
+                "outcome": "failed",
+                "failure_reason": "Email confirmation mismatch",
+            },
+        )
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New email address and confirmation email address do not match.",
+        )
+
+    # 2. Fresh Administrator reauthentication
+    if not admin_user.password_hash or not verify_password(payload.admin_password, admin_user.password_hash):
+        record_audit_log(
+            db,
+            actor_id=admin_user.id,
+            action="admin_edit_user_email",
+            target_type="user",
+            target_id=str(target_user_id),
+            metadata={
+                "requested_new_email": clean_new_email,
+                "outcome": "failed",
+                "failure_reason": "Administrator reauthentication failed",
+            },
+        )
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Administrator reauthentication failed. Invalid administrator password.",
+        )
+
+    # 3. Locate target user
+    target_user = db.get(User, target_user_id)
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User account not found (id={target_user_id}).",
+        )
+
+    previous_email = target_user.email
+    if clean_new_email == previous_email.lower():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New email address is identical to the current registered email.",
+        )
+
+    # 4. PostgreSQL duplicate check
+    existing_pg = db.scalars(
+        select(User).where(func.lower(User.email) == clean_new_email, User.id != target_user_id)
+    ).first()
+    if existing_pg:
+        record_audit_log(
+            db,
+            actor_id=admin_user.id,
+            action="admin_edit_user_email",
+            target_type=target_user.role.value,
+            target_id=str(target_user.id),
+            metadata={
+                "previous_email": previous_email,
+                "requested_new_email": clean_new_email,
+                "outcome": "failed",
+                "failure_reason": "Duplicate email in PostgreSQL",
+            },
+        )
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Email '{clean_new_email}' is already registered to another account.",
+        )
+
+    # 5. Firebase duplicate check and update
+    firebase_synced = False
+    try:
+        fb_app = get_firebase_app()
+    except Exception:
+        fb_app = None
+
+    if fb_app:
+        try:
+            existing_fb = fb_auth.get_user_by_email(clean_new_email, app=fb_app)
+            if existing_fb and existing_fb.uid != target_user.firebase_uid:
+                record_audit_log(
+                    db,
+                    actor_id=admin_user.id,
+                    action="admin_edit_user_email",
+                    target_type=target_user.role.value,
+                    target_id=str(target_user.id),
+                    metadata={
+                        "previous_email": previous_email,
+                        "requested_new_email": clean_new_email,
+                        "outcome": "failed",
+                        "failure_reason": "Duplicate email in Firebase Auth",
+                    },
+                )
+                db.commit()
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Email '{clean_new_email}' is already associated with another Firebase account.",
+                )
+        except fb_auth.UserNotFoundError:
+            pass
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.warning("Could not check Firebase user by email: %s", e)
+
+        # Update Firebase Auth if user has firebase_uid
+        if target_user.firebase_uid:
+            try:
+                fb_auth.update_user(
+                    target_user.firebase_uid,
+                    email=clean_new_email,
+                    email_verified=False,
+                    app=fb_app,
+                )
+                firebase_synced = True
+            except Exception as fb_err:
+                logger.error("Failed to update Firebase email for user %s: %s", target_user.id, fb_err)
+                record_audit_log(
+                    db,
+                    actor_id=admin_user.id,
+                    action="admin_edit_user_email",
+                    target_type=target_user.role.value,
+                    target_id=str(target_user.id),
+                    metadata={
+                        "previous_email": previous_email,
+                        "requested_new_email": clean_new_email,
+                        "outcome": "failed",
+                        "failure_reason": f"Firebase update error: {type(fb_err).__name__}",
+                    },
+                )
+                db.commit()
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail="Failed to synchronize updated email with Firebase Authentication.",
+                )
+
+    # 6. Update PostgreSQL user record
+    target_user.email = clean_new_email
+    db.add(target_user)
+
+    # 7. Record successful audit event
+    record_audit_log(
+        db,
+        actor_id=admin_user.id,
+        action="admin_edit_user_email",
+        target_type=target_user.role.value,
+        target_id=str(target_user.id),
+        metadata={
+            "previous_email": previous_email,
+            "requested_new_email": clean_new_email,
+            "firebase_uid": target_user.firebase_uid,
+            "firebase_synced": firebase_synced,
+            "outcome": "completed",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+    db.commit()
+    db.refresh(target_user)
+
+    return AdminEmailUpdateResponse(
+        user_id=target_user.id,
+        full_name=target_user.full_name,
+        previous_email=previous_email,
+        new_email=clean_new_email,
+        role=target_user.role.value,
+        status="pending_verification" if firebase_synced else "completed",
+        firebase_synced=firebase_synced,
+        message=f"Email address successfully updated from '{previous_email}' to '{clean_new_email}'.",
     )

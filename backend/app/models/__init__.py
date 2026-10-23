@@ -11,6 +11,8 @@ from app.models.file import AchievementFile, FileCategory
 from app.models.message import Message, MessageType
 from app.models.oauth import OAuthCredential
 from app.models.review import ReviewAction, VerificationLog
+from app.models.semester import Semester
+from app.models.semester_folder import StudentSemesterFolder
 from app.models.user import HodProfile, MentorProfile, StudentProfile, User, UserRole
 
 __all__ = [
@@ -32,4 +34,6 @@ __all__ = [
     "AuditLog",
     "Message",
     "MessageType",
+    "Semester",
+    "StudentSemesterFolder",
 ]

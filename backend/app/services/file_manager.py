@@ -124,15 +124,26 @@ def upload_achievement_file(
             detail=str(ve),
         )
 
-    # 3. Resolve student's dedicated folder in Google Drive ({REGISTER_NUMBER}_{NORMALIZED_NAME})
+    # 3. Resolve student's dedicated folder in Google Drive (Semester folder or root student folder)
     folder_id = None
     try:
-        from app.services.drive_provisioning import ensure_student_folder
-        folder_id = ensure_student_folder(
-            session=session,
-            student_id=achievement.student_id,
-            drive_service=ds,
+        from app.services.drive_provisioning import (
+            ensure_student_folder,
+            ensure_student_semester_folder,
         )
+        if achievement.semester_id:
+            folder_id = ensure_student_semester_folder(
+                session=session,
+                student_id=achievement.student_id,
+                semester_id=achievement.semester_id,
+                drive_service=ds,
+            )
+        else:
+            folder_id = ensure_student_folder(
+                session=session,
+                student_id=achievement.student_id,
+                drive_service=ds,
+            )
     except Exception as e:
         logger.warning("Dedicated student folder resolution failed (%s), attempting fallback...", e)
         if hasattr(ds, "ensure_achievement_folder"):

@@ -177,10 +177,19 @@ export default function HODDashboardPage() {
       }
       // Semester filter
       if (selectedSemester !== "all") {
-        const comp = components.find((c) => c.id === sub.component_id);
-        const sem = comp?.semester_label || "";
-        if (!sem.toLowerCase().includes(selectedSemester.toLowerCase())) {
-          return false;
+        if (selectedSemester === "legacy") {
+          if (sub.semester_id || sub.semester) return false;
+        } else {
+          const subSemNum = sub.semester?.semester_number?.toString() || sub.semester_id?.toString();
+          if (subSemNum) {
+            if (subSemNum !== selectedSemester) return false;
+          } else {
+            const comp = components.find((c) => c.id === sub.component_id);
+            const sem = comp?.semester_label || "";
+            if (!sem.toLowerCase().includes(selectedSemester.toLowerCase())) {
+              return false;
+            }
+          }
         }
       }
       // Search query
@@ -320,6 +329,13 @@ export default function HODDashboardPage() {
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">{user?.email}</p>
               </div>
+              <button
+                type="button"
+                onClick={() => router.push("/mentor")}
+                className="rounded-lg border border-indigo-300 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/50 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
+              >
+                <span>Faculty Mentor Portal (11 Mentees) &rarr;</span>
+              </button>
               <RoleBadge role="hod" />
               <ThemeToggle size="sm" />
               <button
@@ -521,12 +537,19 @@ export default function HODDashboardPage() {
                 <select
                   value={selectedSemester}
                   onChange={(e) => setSelectedSemester(e.target.value)}
+                  aria-label="Filter submissions by semester"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-purple-500 shadow-2xs"
                 >
                   <option value="all">All Semesters</option>
-                  <option value="sem 3">Semester III</option>
-                  <option value="sem 4">Semester IV</option>
-                  <option value="all sem">All Semesters</option>
+                  <option value="1">Semester 1</option>
+                  <option value="2">Semester 2</option>
+                  <option value="3">Semester 3</option>
+                  <option value="4">Semester 4</option>
+                  <option value="5">Semester 5</option>
+                  <option value="6">Semester 6</option>
+                  <option value="7">Semester 7</option>
+                  <option value="8">Semester 8</option>
+                  <option value="legacy">Legacy / Unassigned</option>
                 </select>
               </div>
 
@@ -608,11 +631,22 @@ export default function HODDashboardPage() {
                             {mentorName}
                           </td>
 
-                          {/* Component */}
+                          {/* Component & Semester */}
                           <td className="py-3 px-4">
-                            <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-[11px] font-semibold text-purple-700 border border-purple-200">
-                              {sub.component_name || "PGPA Component"}
-                            </span>
+                            <div className="flex flex-col gap-1 items-start">
+                              <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-[11px] font-semibold text-purple-700 border border-purple-200">
+                                {sub.component_name || "PGPA Component"}
+                              </span>
+                              {sub.semester ? (
+                                <span className="inline-flex items-center rounded-md bg-cyan-50 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 border border-cyan-200">
+                                  {sub.semester.display_name}
+                                </span>
+                              ) : sub.semester_id ? (
+                                <span className="inline-flex items-center rounded-md bg-cyan-50 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 border border-cyan-200">
+                                  Semester {sub.semester_id}
+                                </span>
+                              ) : null}
+                            </div>
                           </td>
 
                           {/* Title */}
@@ -855,10 +889,19 @@ export default function HODDashboardPage() {
               {/* Modal Header */}
               <div className="flex items-start justify-between pb-4 border-b border-slate-100">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="rounded-md bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-700 border border-purple-200">
                       {selectedSubmission.component_name || "PGPA Component"}
                     </span>
+                    {selectedSubmission.semester ? (
+                      <span className="rounded-md bg-cyan-50 px-2 py-0.5 text-xs font-bold text-cyan-700 border border-cyan-200">
+                        {selectedSubmission.semester.display_name}
+                      </span>
+                    ) : selectedSubmission.semester_id ? (
+                      <span className="rounded-md bg-cyan-50 px-2 py-0.5 text-xs font-bold text-cyan-700 border border-cyan-200">
+                        Semester {selectedSubmission.semester_id}
+                      </span>
+                    ) : null}
                     {renderStatusBadge(selectedSubmission.status)}
                   </div>
                   <h3 className="mt-2 text-lg font-bold text-slate-900 leading-snug">

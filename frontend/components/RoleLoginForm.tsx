@@ -57,7 +57,11 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
       if (authenticatedUser) {
         // MANDATORY SECURITY RULE: Verify database role matches requested portal
-        if (authenticatedUser.role !== role) {
+        const isAuthorizedForRole =
+          authenticatedUser.role === role ||
+          (authenticatedUser.role === "hod" && role === "mentor");
+
+        if (!isAuthorizedForRole) {
           setRoleMismatch({
             actualRole: authenticatedUser.role,
             attemptedRole: role,
@@ -75,7 +79,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         }
 
         // Role matches: proceed to authorized dashboard
-        router.push(`/${authenticatedUser.role}`);
+        router.push(`/${role}`);
       } else {
         // Firebase authenticated, but pending PostgreSQL directory provisioning
         router.push("/verify-email");
@@ -443,15 +447,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
             </p>
           </div>
 
-          {/* Email Verification Assistance Link */}
-          <div className="mt-4 text-center">
-            <Link
-              href="/verify-email"
-              className="text-xs font-medium text-blue-600 hover:text-blue-700"
-            >
-              Checking Firebase email verification? Open Verification Portal &rarr;
-            </Link>
-          </div>
+
         </div>
       </main>
 
@@ -489,7 +485,14 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
             Department of Computer and Communication Engineering &bull; Sri Sairam Engineering College
           </p>
           <p className="text-[11px] text-slate-400">
-            CCE-PGPA Management System &bull; Version 1.0.0 &bull; All Institutional Rights Reserved
+            <Link
+              href={user?.role === "admin" ? "/admin" : "/login/admin"}
+              className="hover:underline hover:text-slate-600 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors"
+              title="System Administrator Portal"
+            >
+              CCE-PGPA Management System
+            </Link>{" "}
+            &bull; Version 1.0.0 &bull; All Institutional Rights Reserved
           </p>
         </div>
       </footer>

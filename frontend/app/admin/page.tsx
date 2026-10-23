@@ -25,6 +25,7 @@ import {
   ActiveTab as UserManagementTab,
 } from "@/components/admin/UserManagementConsole";
 import { ReassignStudentsModal } from "@/components/admin/MentorModals";
+import { SemesterManagementConsole } from "@/components/admin/SemesterManagementConsole";
 
 type AdminNavigationSection =
   | "overview"
@@ -33,6 +34,7 @@ type AdminNavigationSection =
   | "hods"
   | "users"
   | "allocation"
+  | "semesters"
   | "submissions"
   | "storage"
   | "system";
@@ -56,6 +58,7 @@ export default function AdminDashboardPage() {
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const [submissionStatusFilter, setSubmissionStatusFilter] = useState("all");
   const [submissionComponentFilter, setSubmissionComponentFilter] = useState("all");
+  const [submissionSemesterFilter, setSubmissionSemesterFilter] = useState("all");
   const [submissionSearch, setSubmissionSearch] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState<AdminSubmissionItem | null>(null);
   const [fileLoadingId, setFileLoadingId] = useState<string | null>(null);
@@ -294,10 +297,16 @@ export default function AdminDashboardPage() {
         submissionStatusFilter === "all" || s.status === submissionStatusFilter;
       const matchComponent =
         submissionComponentFilter === "all" || s.component_id === submissionComponentFilter;
+      const matchSemester =
+        submissionSemesterFilter === "all" ||
+        (submissionSemesterFilter === "legacy"
+          ? !s.semester_id && !s.semester_number
+          : (s.semester_number?.toString() === submissionSemesterFilter ||
+             s.semester_id?.toString() === submissionSemesterFilter));
 
-      return matchSearch && matchStatus && matchComponent;
+      return matchSearch && matchStatus && matchComponent && matchSemester;
     });
-  }, [submissions, submissionSearch, submissionStatusFilter, submissionComponentFilter]);
+  }, [submissions, submissionSearch, submissionStatusFilter, submissionComponentFilter, submissionSemesterFilter]);
 
   // Filtered Allocations
   const filteredAllocations = useMemo(() => {
@@ -624,6 +633,29 @@ export default function AdminDashboardPage() {
 
                   <button
                     type="button"
+                    onClick={() => setActiveSection("semesters")}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
+                      activeSection === "semesters"
+                        ? "bg-[#0a192f] text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    }`}
+                    title="Academic Semesters & Drive Folders"
+                  >
+                    <svg className="h-4 w-4 shrink-0 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {!sidebarCollapsed && (
+                      <div className="flex-1 flex items-center justify-between">
+                        <span>Semester System</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-100 text-cyan-800 dark:bg-cyan-900/60 dark:text-cyan-200">
+                          8 Sems
+                        </span>
+                      </div>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => setActiveSection("submissions")}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
                       activeSection === "submissions"
@@ -755,6 +787,7 @@ export default function AdminDashboardPage() {
                     { id: "hods", label: "Department HOD" },
                     { id: "users", label: "Login Accounts" },
                     { id: "allocation", label: "Mentor Allocation" },
+                    { id: "semesters", label: "Semester System" },
                     { id: "submissions", label: "PGPA Submissions" },
                     { id: "storage", label: "Evidence Storage" },
                     { id: "system", label: "Security & RBAC" },
@@ -805,6 +838,7 @@ export default function AdminDashboardPage() {
                     {activeSection === "hods" && "Department Head Oversight & Governance"}
                     {activeSection === "users" && "User Directory & Bulk Login Provisioning"}
                     {activeSection === "allocation" && "Faculty Mentor Allocation Registry"}
+                    {activeSection === "semesters" && "Academic Configuration & Eight-Semester System"}
                     {activeSection === "submissions" && "PGPA Student Achievements Audit"}
                     {activeSection === "storage" && "Google Drive OAuth & Binary Storage Health"}
                     {activeSection === "system" && "Institutional RBAC Permission Matrix"}
@@ -1059,6 +1093,24 @@ export default function AdminDashboardPage() {
                       <span>☁️</span>
                       <span>Google Drive Storage Sync</span>
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("semesters")}
+                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-cyan-200 dark:border-cyan-800 bg-cyan-50/50 dark:bg-cyan-950/40 hover:bg-cyan-100 text-cyan-700 dark:text-cyan-300 text-xs font-semibold transition cursor-pointer"
+                    >
+                      <span>📅</span>
+                      <span>Manage Semesters (1–8)</span>
+                    </button>
+
+                    <Link
+                      href="/verify-email"
+                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/40 hover:bg-blue-100 text-blue-700 dark:text-blue-300 text-xs font-semibold transition cursor-pointer"
+                      title="Open Email Verification Portal"
+                    >
+                      <span>✉️</span>
+                      <span>Open Email Verification Portal</span>
+                    </Link>
                   </div>
                 </div>
 
@@ -1342,6 +1394,9 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
+            {/* VIEW: ACADEMIC CONFIGURATION & EIGHT-SEMESTER SYSTEM */}
+            {activeSection === "semesters" && <SemesterManagementConsole />}
+
             {/* VIEW 7: PGPA COMPONENTS & SUBMISSIONS DIRECTORY */}
             {activeSection === "submissions" && (
               <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-xs space-y-5">
@@ -1361,8 +1416,8 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Filter Controls */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                  <div className="sm:col-span-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                  <div className="lg:col-span-2">
                     <input
                       type="text"
                       value={submissionSearch}
@@ -1378,7 +1433,7 @@ export default function AdminDashboardPage() {
                       onChange={(e) => setSubmissionStatusFilter(e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="all">All Verification Statuses</option>
+                      <option value="all">All Statuses</option>
                       <option value="pending">Pending Audit</option>
                       <option value="approved">Approved</option>
                       <option value="rejected">Rejected</option>
@@ -1398,6 +1453,26 @@ export default function AdminDashboardPage() {
                           {c.name}
                         </option>
                       ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <select
+                      value={submissionSemesterFilter}
+                      onChange={(e) => setSubmissionSemesterFilter(e.target.value)}
+                      aria-label="Filter submissions by academic semester"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Semesters</option>
+                      <option value="1">Semester 1</option>
+                      <option value="2">Semester 2</option>
+                      <option value="3">Semester 3</option>
+                      <option value="4">Semester 4</option>
+                      <option value="5">Semester 5</option>
+                      <option value="6">Semester 6</option>
+                      <option value="7">Semester 7</option>
+                      <option value="8">Semester 8</option>
+                      <option value="legacy">Legacy / Unassigned</option>
                     </select>
                   </div>
                 </div>
@@ -1433,9 +1508,16 @@ export default function AdminDashboardPage() {
                               {s.student_name}
                             </td>
                             <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px]">
-                                {s.component_name}
-                              </span>
+                              <div className="flex flex-col gap-1 items-start">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px]">
+                                  {s.component_name}
+                                </span>
+                                {(s.semester_name || s.semester_number) ? (
+                                  <span className="inline-flex items-center px-1.5 py-0.2 rounded bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 text-[10px] font-bold border border-cyan-200 dark:border-cyan-800">
+                                    {s.semester_name || `Semester ${s.semester_number}`}
+                                  </span>
+                                ) : null}
+                              </div>
                             </td>
                             <td className="px-4 py-3 text-slate-900 dark:text-white max-w-xs truncate">
                               {s.title}
@@ -1891,6 +1973,9 @@ export default function AdminDashboardPage() {
                 </h3>
                 <p className="text-xs text-slate-500 font-mono">
                   ID: {selectedSubmission.id} &bull; Component: {selectedSubmission.component_name}
+                  {(selectedSubmission.semester_name || selectedSubmission.semester_number) && (
+                    <span> &bull; {selectedSubmission.semester_name || `Semester ${selectedSubmission.semester_number}`}</span>
+                  )}
                 </p>
               </div>
               <button

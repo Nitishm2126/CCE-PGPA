@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { PGPAComponentResponse, AchievementCreate } from "@/types/achievement";
+import { PGPAComponentResponse, AchievementCreate, SemesterResponse } from "@/types/achievement";
+import { api } from "@/lib/api-client";
 
 interface SubmitAchievementModalProps {
   isOpen: boolean;
@@ -43,6 +44,9 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   const [componentId, setComponentId] = useState<string>(
     () => initialComponentId || components[0]?.id || ""
   );
+  const [semesters, setSemesters] = useState<SemesterResponse[]>([]);
+  const [semesterLoading, setSemesterLoading] = useState<boolean>(true);
+  const [semesterId, setSemesterId] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [activityType, setActivityType] = useState<string>("Certification");
   const [organizer, setOrganizer] = useState<string>("");
@@ -51,6 +55,27 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   );
   const [outcome, setOutcome] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+
+  useEffect(() => {
+    let isMounted = true;
+    api.studentGetSemesters()
+      .then((sems) => {
+        if (!isMounted) return;
+        setSemesters(sems);
+        if (sems.length > 0) {
+          setSemesterId(sems[0].id);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load available semesters:", err);
+      })
+      .finally(() => {
+        if (isMounted) setSemesterLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Evidence PDF file state
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
@@ -121,6 +146,10 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   };
 
   const handleSubmit = async (submitImmediately: boolean) => {
+    if (!semesterId) {
+      setError("Please select an academic semester.");
+      return;
+    }
     if (!componentId) {
       setError("Please select a PGPA component.");
       return;
@@ -154,6 +183,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       await onSubmit(
         {
           component_id: componentId,
+          semester_id: semesterId,
           title: title.trim(),
           activity_type: activityType.trim() || undefined,
           organizer: organizer.trim() || undefined,
@@ -230,6 +260,47 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             <div className="flex-1 font-medium leading-relaxed">{error}</div>
           </div>
         )}
+
+        {/* No Enabled Semesters Warning */}
+        {!semesterLoading && semesters.length === 0 && (
+          <div className="rounded-xl border border-amber-300 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-3.5 text-xs text-amber-800 dark:text-amber-300 space-y-1">
+            <div className="flex items-center gap-2 font-semibold">
+              <svg className="h-4 w-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>Submissions Temporarily Unavailable</span>
+            </div>
+            <p className="text-[11px] leading-relaxed">
+              Achievement submissions are temporarily unavailable because no academic semester is currently open. Please contact your department administrator.
+            </p>
+          </div>
+        )}
+
+        {/* Semester Selector */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+            Semester *
+          </label>
+          <select
+            value={semesterId}
+            onChange={(e) => setSemesterId(e.target.value)}
+            disabled={isSubmitting || semesterLoading || semesters.length === 0}
+            required
+            className="mt-1 w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 dark:disabled:bg-[#131922] disabled:text-slate-400 dark:disabled:text-[#7E8B9C] min-h-[36px]"
+          >
+            {semesterLoading ? (
+              <option value="">Loading active academic semesters...</option>
+            ) : semesters.length === 0 ? (
+              <option value="">No semesters currently open</option>
+            ) : (
+              semesters.map((s) => (
+                <option key={s.id} value={s.id} className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">
+                  {s.display_name} (Semester {s.semester_number})
+                </option>
+              ))
+            )}
+          </select>
+        </div>
 
         {/* Component Selector */}
         <div>
@@ -491,7 +562,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || (!semesterLoading && semesters.length === 0)}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 px-4 py-2.5 text-xs font-semibold text-white shadow-2xs transition-all disabled:opacity-50 cursor-pointer min-h-[44px]"
           >
             {isSubmitting ? (

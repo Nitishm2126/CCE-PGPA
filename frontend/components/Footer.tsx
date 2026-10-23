@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export const Footer: React.FC = () => {
@@ -29,7 +30,14 @@ export const Footer: React.FC = () => {
               Department of Computer and Communication Engineering (CCE)
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Sri Sairam Engineering College, Chennai &bull; CCE-PGPA Management System
+              Sri Sairam Engineering College, Chennai &bull;{" "}
+              <Link
+                href="/login/admin"
+                className="hover:underline hover:text-slate-700 dark:hover:text-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors"
+                title="System Administrator Portal"
+              >
+                CCE-PGPA Management System
+              </Link>
             </p>
           </div>
 

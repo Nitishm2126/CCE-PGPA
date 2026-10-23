@@ -9,6 +9,7 @@ export interface UserResponse {
   firebase_uid?: string | null;
   must_change_password?: boolean;
   created_at: string;
+  accessible_portals?: UserRole[];
 }
 
 export interface StudentProfileResponse {
@@ -396,6 +397,9 @@ export interface AdminSubmissionItem {
   outcome?: string | null;
   status: "pending" | "approved" | "rejected" | "draft";
   files_count: number;
+  semester_id?: number | null;
+  semester_number?: number | null;
+  semester_name?: string | null;
   submitted_at?: string | null;
   created_at: string;
 }
@@ -505,4 +509,21 @@ export interface MessageCreateRequest {
 export interface UnreadCountResponse {
   total_unread: number;
   by_achievement: Record<string, number>;
+}
+
+export interface AdminEmailUpdateRequest {
+  new_email: string;
+  confirm_new_email: string;
+  admin_password: string;
+}
+
+export interface AdminEmailUpdateResponse {
+  user_id: string;
+  full_name: string;
+  previous_email: string;
+  new_email: string;
+  role: string;
+  status: "pending_verification" | "completed";
+  firebase_synced: boolean;
+  message: string;
 }

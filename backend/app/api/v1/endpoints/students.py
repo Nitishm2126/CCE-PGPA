@@ -12,6 +12,7 @@ from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
 from app.models.component import PGPAComponent
 from app.models.review import ReviewAction, VerificationLog
+from app.models.semester import Semester
 from app.models.user import HodProfile, User, UserRole
 from app.schemas.achievement import (
     AchievementCreate,
@@ -20,6 +21,7 @@ from app.schemas.achievement import (
     PGPAComponentResponse,
     VerificationLogResponse,
 )
+from app.schemas.semester import SemesterResponse
 from app.schemas.auth import (
     MentorInfo,
     StudentDetailResponse,
@@ -27,6 +29,7 @@ from app.schemas.auth import (
     StudentProfileUpdateRequest,
 )
 from app.schemas.file import AchievementFileResponse
+from app.schemas.semester import SemesterResponse
 
 router = APIRouter()
 
@@ -73,6 +76,10 @@ def format_achievement_response(achievement: Achievement) -> AchievementResponse
         component_id=achievement.component_id,
         component_name=achievement.component.name if achievement.component else None,
         component_slug=achievement.component.slug if achievement.component else None,
+        semester_id=achievement.semester_id,
+        semester_number=achievement.semester.semester_number if achievement.semester else None,
+        semester_display_name=achievement.semester.display_name if achievement.semester else None,
+        semester=SemesterResponse.model_validate(achievement.semester) if achievement.semester else None,
         title=achievement.title,
         activity_type=achievement.activity_type,
         organizer=achievement.organizer,
@@ -211,12 +218,32 @@ def get_pgpa_components(
 
 
 @router.get(
+    "/semesters",
+    response_model=List[SemesterResponse],
+    summary="Get available academic semesters",
+    description="Returns enabled semesters available for new achievement submissions.",
+)
+def get_available_semesters(
+    current_user: User = Depends(require_student),
+    db: Session = Depends(get_db),
+) -> List[SemesterResponse]:
+    stmt = (
+        select(Semester)
+        .where(Semester.is_enabled.is_(True))
+        .order_by(Semester.semester_number.asc())
+    )
+    semesters = db.scalars(stmt).all()
+    return [SemesterResponse.model_validate(s) for s in semesters]
+
+
+@router.get(
     "/me/achievements",
     response_model=List[AchievementResponse],
     summary="List caller's own achievements",
     description="Enforces strict student isolation: returns only achievements submitted by the authenticated student.",
 )
 def get_my_achievements(
+    semester_id: Optional[uuid.UUID] = None,
     current_user: User = Depends(require_student),
     db: Session = Depends(get_db),
 ) -> List[AchievementResponse]:
@@ -225,6 +252,8 @@ def get_my_achievements(
         .where(Achievement.student_id == current_user.id)
         .order_by(Achievement.created_at.desc())
     )
+    if semester_id:
+        stmt = stmt.where(Achievement.semester_id == semester_id)
     achievements = db.scalars(stmt).all()
     return [format_achievement_response(a) for a in achievements]
 
@@ -249,10 +278,37 @@ def create_achievement(
             detail=f"PGPA Component with ID '{data.component_id}' not found or inactive.",
         )
 
+    # Verify semester exists and is enabled
+    resolved_semester_id = data.semester_id
+    if resolved_semester_id:
+        semester = db.get(Semester, resolved_semester_id)
+        if not semester:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Selected academic semester not found.",
+            )
+        if not semester.is_enabled:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"{semester.display_name} is currently closed for submissions.",
+            )
+    else:
+        # Check if an enabled semester is available or default to first enabled
+        enabled_semester = db.scalars(
+            select(Semester).where(Semester.is_enabled.is_(True)).order_by(Semester.semester_number.asc())
+        ).first()
+        if not enabled_semester:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Achievement submissions are temporarily unavailable because no semester is open.",
+            )
+        resolved_semester_id = enabled_semester.id
+
     achievement = Achievement(
         id=uuid.uuid4(),
         student_id=current_user.id,
         component_id=data.component_id,
+        semester_id=resolved_semester_id,
         title=data.title.strip(),
         activity_type=data.activity_type.strip() if data.activity_type else None,
         organizer=data.organizer.strip() if data.organizer else None,

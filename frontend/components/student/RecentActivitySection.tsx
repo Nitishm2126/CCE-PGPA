@@ -33,14 +33,24 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
   onDeleteAchievement,
   onOpenMessages,
   unreadCountsByAchievement,
-  onShowLockDetails,
+  onShowLockDetails: _onShowLockDetails,
   isSubmittingId,
   maxDisplay = 4,
   showAll = false,
 }) => {
+  const [selectedSemester, setSelectedSemester] = React.useState<string>("all");
+
+  const filteredAchievements = React.useMemo(() => {
+    if (selectedSemester === "all") return achievements;
+    if (selectedSemester === "legacy") return achievements.filter((a) => !a.semester_id && !a.semester);
+    return achievements.filter(
+      (a) => a.semester?.semester_number?.toString() === selectedSemester
+    );
+  }, [achievements, selectedSemester]);
+
   const displayedAchievements = showAll
-    ? achievements
-    : achievements.slice(0, maxDisplay);
+    ? filteredAchievements
+    : filteredAchievements.slice(0, maxDisplay);
 
   // Date formatting helper
   const formatDate = (dateStr?: string | null) => {
@@ -113,18 +123,40 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
           </p>
         </div>
 
-        {onViewAll && achievements.length > maxDisplay && !showAll && (
-          <button
-            type="button"
-            onClick={onViewAll}
-            className="text-xs font-semibold text-blue-600 dark:text-[#4C83E6] hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-colors cursor-pointer min-h-[36px]"
-          >
-            <span>View all</span>
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {achievements.length > 0 && (
+            <select
+              value={selectedSemester}
+              onChange={(e) => setSelectedSemester(e.target.value)}
+              aria-label="Filter activities by semester"
+              className="text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] text-slate-700 dark:text-[#E8EDF4] outline-hidden focus:ring-2 focus:ring-blue-500 font-medium"
+            >
+              <option value="all">All Semesters</option>
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
+              <option value="3">Semester 3</option>
+              <option value="4">Semester 4</option>
+              <option value="5">Semester 5</option>
+              <option value="6">Semester 6</option>
+              <option value="7">Semester 7</option>
+              <option value="8">Semester 8</option>
+              <option value="legacy">Legacy / Unassigned</option>
+            </select>
+          )}
+
+          {onViewAll && achievements.length > maxDisplay && !showAll && (
+            <button
+              type="button"
+              onClick={onViewAll}
+              className="text-xs font-semibold text-blue-600 dark:text-[#4C83E6] hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-colors cursor-pointer min-h-[36px]"
+            >
+              <span>View all</span>
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Content States */}
@@ -233,11 +265,20 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                   {/* Top Row: Meta info & Status Badge */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5">
                     <div className="min-w-0 flex-1">
-                      {/* Component Tag & Date */}
+                      {/* Component Tag, Semester & Date */}
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-[#171E28] px-2 py-0.5 text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] border border-slate-200 dark:border-[#2B3543]">
                           {item.component_name || "PGPA Component"}
                         </span>
+                        {item.semester ? (
+                          <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
+                            {item.semester.display_name}
+                          </span>
+                        ) : item.semester_id ? (
+                          <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
+                            Semester {item.semester_id}
+                          </span>
+                        ) : null}
                         <span className="text-xs text-slate-400 dark:text-[#7E8B9C] font-medium">
                           {formatDate(item.event_date || item.created_at)}
                         </span>

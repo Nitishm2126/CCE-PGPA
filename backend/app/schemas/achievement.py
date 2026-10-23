@@ -1,11 +1,12 @@
 import uuid
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.achievement import AchievementStatus
 from app.models.review import ReviewAction
 from app.schemas.file import AchievementFileResponse
+from app.schemas.semester import SemesterResponse
 
 
 class PGPAComponentResponse(BaseModel):
@@ -29,6 +30,7 @@ class AchievementCreate(BaseModel):
     Payload for creating a new draft achievement submission.
     """
     component_id: uuid.UUID = Field(..., description="Target PGPA component UUID")
+    semester_id: Optional[uuid.UUID] = Field(None, description="Academic semester UUID")
     title: str = Field(..., min_length=2, max_length=255, description="Activity title")
     activity_type: Optional[str] = Field(None, max_length=100, description="e.g. Workshop, Hackathon, Course")
     organizer: Optional[str] = Field(None, max_length=255, description="Host institution or organization")
@@ -42,6 +44,7 @@ class AchievementUpdate(BaseModel):
     Payload for modifying an existing draft or rejected achievement.
     """
     title: Optional[str] = Field(None, min_length=2, max_length=255)
+    semester_id: Optional[uuid.UUID] = Field(None, description="Academic semester UUID")
     activity_type: Optional[str] = Field(None, max_length=100)
     organizer: Optional[str] = Field(None, max_length=255)
     event_date: Optional[date] = None
@@ -77,6 +80,10 @@ class AchievementResponse(BaseModel):
     component_id: uuid.UUID
     component_name: Optional[str] = None
     component_slug: Optional[str] = None
+    semester_id: Optional[Union[uuid.UUID, int, str]] = None
+    semester_number: Optional[int] = None
+    semester_display_name: Optional[str] = None
+    semester: Optional[SemesterResponse] = None
     title: str
     activity_type: Optional[str] = None
     organizer: Optional[str] = None

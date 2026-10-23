@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models.user import UserRole
@@ -46,6 +46,7 @@ class UserResponse(BaseModel):
     firebase_uid: Optional[str] = None
     must_change_password: bool = False
     created_at: datetime
+    accessible_portals: List[str] = Field(default_factory=list)
 
 
 class StudentProfileResponse(BaseModel):

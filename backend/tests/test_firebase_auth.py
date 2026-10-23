@@ -385,10 +385,10 @@ def test_firebase_role_authorization_enforcement(client: TestClient, db: Session
         assert client.get("/api/v1/mentor/students", headers={"Authorization": f"Bearer {m_token}"}).status_code == 200
         assert client.get("/api/v1/hod/students", headers={"Authorization": f"Bearer {m_token}"}).status_code == 403
 
-        # Case C: HOD access
+        # Case C: HOD access (Phase 2: HOD is authorized to access both HOD and Mentor endpoints)
         mock_verify.return_value = {"uid": h_uid, "email": hod.email}
         assert client.get("/api/v1/students/me", headers={"Authorization": f"Bearer {h_token}"}).status_code == 403
-        assert client.get("/api/v1/mentor/students", headers={"Authorization": f"Bearer {h_token}"}).status_code == 403
+        assert client.get("/api/v1/mentor/students", headers={"Authorization": f"Bearer {h_token}"}).status_code == 200
         assert client.get("/api/v1/hod/students", headers={"Authorization": f"Bearer {h_token}"}).status_code == 200
 
 

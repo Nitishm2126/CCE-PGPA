@@ -27,6 +27,7 @@ export default function MentorDashboardPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedMenteeId, setSelectedMenteeId] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [semesterFilter, setSemesterFilter] = useState<string>("all");
   const [selectedSubmission, setSelectedSubmission] = useState<AchievementResponse | null>(null);
   const [isOpeningFile, setIsOpeningFile] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -44,7 +45,7 @@ export default function MentorDashboardPage() {
       router.push("/login");
       return;
     }
-    if (!authLoading && user && user.role !== "mentor") {
+    if (!authLoading && user && user.role !== "mentor" && user.role !== "hod") {
       router.push(`/${user.role}`);
       return;
     }
@@ -91,7 +92,7 @@ export default function MentorDashboardPage() {
   // Initial load via asynchronous fetch
   useEffect(() => {
     let ignore = false;
-    if (!token || !user || user.role !== "mentor") return;
+    if (!token || !user || (user.role !== "mentor" && user.role !== "hod")) return;
 
     const fetchInitial = async () => {
       try {
@@ -135,6 +136,15 @@ export default function MentorDashboardPage() {
       if (statusFilter !== "all" && sub.status !== statusFilter) {
         return false;
       }
+      // Semester filter
+      if (semesterFilter !== "all") {
+        if (semesterFilter === "legacy") {
+          if (sub.semester_id || sub.semester) return false;
+        } else {
+          const subSemNum = sub.semester?.semester_number?.toString() || sub.semester_id?.toString();
+          if (subSemNum !== semesterFilter) return false;
+        }
+      }
       // Search query (student name, reg number, title, organizer, component)
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
@@ -155,7 +165,7 @@ export default function MentorDashboardPage() {
       }
       return true;
     });
-  }, [submissions, selectedMenteeId, statusFilter, searchQuery]);
+  }, [submissions, selectedMenteeId, statusFilter, semesterFilter, searchQuery]);
 
   // Securely download / open evidence file via backend proxy
   const handleViewEvidence = async (fileId: string) => {
@@ -274,7 +284,16 @@ export default function MentorDashboardPage() {
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">{user?.email}</p>
               </div>
-              <RoleBadge role="mentor" />
+              {user?.role === "hod" && (
+                <button
+                  type="button"
+                  onClick={() => router.push("/hod")}
+                  className="rounded-lg border border-purple-300 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/50 px-3 py-1.5 text-xs font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
+                >
+                  <span>&larr; Switch to HOD Portal</span>
+                </button>
+              )}
+              <RoleBadge role={user?.role === "hod" ? "hod" : "mentor"} />
               <ThemeToggle size="sm" />
               <button
                 type="button"
@@ -448,6 +467,25 @@ export default function MentorDashboardPage() {
                   <option value="approved">Verified (Approved)</option>
                   <option value="rejected">Action Required</option>
                 </select>
+
+                {/* Semester Selector */}
+                <select
+                  value={semesterFilter}
+                  onChange={(e) => setSemesterFilter(e.target.value)}
+                  aria-label="Filter submissions by semester"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-blue-500 shadow-2xs"
+                >
+                  <option value="all">All Semesters</option>
+                  <option value="1">Semester 1</option>
+                  <option value="2">Semester 2</option>
+                  <option value="3">Semester 3</option>
+                  <option value="4">Semester 4</option>
+                  <option value="5">Semester 5</option>
+                  <option value="6">Semester 6</option>
+                  <option value="7">Semester 7</option>
+                  <option value="8">Semester 8</option>
+                  <option value="legacy">Legacy / Unassigned</option>
+                </select>
               </div>
             </div>
 
@@ -508,11 +546,22 @@ export default function MentorDashboardPage() {
                             </p>
                           </td>
 
-                          {/* Component */}
+                          {/* Component & Semester */}
                           <td className="py-3 px-4">
-                            <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
-                              {sub.component_name || "PGPA Component"}
-                            </span>
+                            <div className="flex flex-col gap-1 items-start">
+                              <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+                                {sub.component_name || "PGPA Component"}
+                              </span>
+                              {sub.semester ? (
+                                <span className="inline-flex items-center rounded-md bg-cyan-50 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 border border-cyan-200">
+                                  {sub.semester.display_name}
+                                </span>
+                              ) : sub.semester_id ? (
+                                <span className="inline-flex items-center rounded-md bg-cyan-50 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 border border-cyan-200">
+                                  Semester {sub.semester_id}
+                                </span>
+                              ) : null}
+                            </div>
                           </td>
 
                           {/* Title & Organizer */}
@@ -727,10 +776,19 @@ export default function MentorDashboardPage() {
               {/* Modal Header */}
               <div className="flex items-start justify-between pb-4 border-b border-slate-100">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200">
                       {selectedSubmission.component_name || "PGPA Component"}
                     </span>
+                    {selectedSubmission.semester ? (
+                      <span className="rounded-md bg-cyan-50 px-2 py-0.5 text-xs font-bold text-cyan-700 border border-cyan-200">
+                        {selectedSubmission.semester.display_name}
+                      </span>
+                    ) : selectedSubmission.semester_id ? (
+                      <span className="rounded-md bg-cyan-50 px-2 py-0.5 text-xs font-bold text-cyan-700 border border-cyan-200">
+                        Semester {selectedSubmission.semester_id}
+                      </span>
+                    ) : null}
                     {renderStatusBadge(selectedSubmission.status)}
                   </div>
                   <h3 className="mt-2 text-lg font-bold text-slate-900 leading-snug">

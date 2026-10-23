@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.models.component import PGPAComponent
     from app.models.file import AchievementFile
     from app.models.review import VerificationLog
+    from app.models.semester import Semester
     from app.models.user import User
 
 
@@ -49,6 +50,12 @@ class Achievement(Base):
         UUID(as_uuid=True),
         ForeignKey("pgpa_components.id", ondelete="RESTRICT"),
         nullable=False,
+        index=True,
+    )
+    semester_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("semesters.id", ondelete="SET NULL"),
+        nullable=True,
         index=True,
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -94,6 +101,10 @@ class Achievement(Base):
         "PGPAComponent",
         back_populates="achievements",
     )
+    semester: Mapped[Optional["Semester"]] = relationship(
+        "Semester",
+        back_populates="achievements",
+    )
     files: Mapped[List["AchievementFile"]] = relationship(
         "AchievementFile",
         back_populates="achievement",
@@ -108,4 +119,5 @@ class Achievement(Base):
     __table_args__ = (
         Index("ix_achievements_student_component", "student_id", "component_id"),
         Index("ix_achievements_student_status", "student_id", "status"),
+        Index("ix_achievements_student_semester", "student_id", "semester_id"),
     )

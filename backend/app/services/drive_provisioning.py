@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session
 
 from app.models.achievement import Achievement
 from app.models.file import AchievementFile
+from app.models.semester import Semester
+from app.models.semester_folder import StudentSemesterFolder
 from app.models.user import StudentProfile, User, UserRole
 from app.services.drive_service import GoogleDriveService, get_drive_service
 
@@ -376,3 +378,325 @@ def ensure_student_folder(
         profile.register_number,
     )
     return folder_id
+
+
+def audit_student_semester_folders(
+    session: Session,
+    drive_service: Optional[GoogleDriveService] = None,
+    target_semesters: Optional[List[int]] = None,
+) -> Dict[str, Any]:
+    """
+    Dry-run read-only audit of all students and their Semester 1-3 subfolders in Google Drive.
+    Inspects PostgreSQL mappings and Google Drive subfolders without modifying anything.
+    """
+    if target_semesters is None:
+        target_semesters = [1, 2, 3]
+
+    ds = drive_service or get_drive_service()
+    is_connected = bool(ds.verify_connectivity().get("connected")) if ds.is_configured else False
+    root_folder_id = ds.root_folder_id or ""
+
+    # Fetch target semester records
+    semesters = session.scalars(
+        select(Semester)
+        .where(Semester.semester_number.in_(target_semesters))
+        .order_by(Semester.semester_number.asc())
+    ).all()
+    semester_map = {s.semester_number: s for s in semesters}
+
+    # Fetch all students
+    stmt = (
+        select(User, StudentProfile)
+        .join(StudentProfile, StudentProfile.user_id == User.id)
+        .where(User.role == UserRole.STUDENT)
+        .order_by(StudentProfile.register_number.asc())
+    )
+    records = session.execute(stmt).all()
+
+    # Pre-fetch all mapped semester folders from DB
+    existing_mappings = session.scalars(select(StudentSemesterFolder)).all()
+    mapping_dict = {(m.student_id, m.semester_id): m for m in existing_mappings}
+
+    students_report: List[Dict[str, Any]] = []
+
+    for user, profile in records:
+        student_folder_id = profile.google_drive_folder_id
+        has_student_folder = bool(student_folder_id)
+
+        # Check existing subfolders in student Drive folder if connected
+        drive_subfolders_by_name: Dict[str, str] = {}
+        if is_connected and student_folder_id:
+            try:
+                subfolders = ds.list_folders_in_parent(student_folder_id)
+                drive_subfolders_by_name = {f["name"].strip(): f["id"] for f in subfolders}
+            except Exception as e:
+                logger.warning("Could not list subfolders for student %s in Drive: %s", profile.register_number, e)
+
+        sem_statuses: List[Dict[str, Any]] = []
+        for sem_num in target_semesters:
+            sem_obj = semester_map.get(sem_num)
+            if not sem_obj:
+                continue
+
+            folder_name = f"Semester {sem_num}"
+            mapped = mapping_dict.get((user.id, sem_obj.id))
+
+            if mapped:
+                status_str = "EXISTS_MAPPED"
+                resolved_id = mapped.drive_folder_id
+            elif folder_name in drive_subfolders_by_name:
+                status_str = "EXISTS_IN_DRIVE"
+                resolved_id = drive_subfolders_by_name[folder_name]
+            else:
+                status_str = "MISSING"
+                resolved_id = None
+
+            sem_statuses.append({
+                "semester_number": sem_num,
+                "semester_name": folder_name,
+                "folder_id": resolved_id,
+                "status": status_str,
+            })
+
+        students_report.append({
+            "student_id": user.id,
+            "register_number": profile.register_number,
+            "student_name": user.full_name,
+            "existing_student_folder_id": student_folder_id,
+            "has_student_folder": has_student_folder,
+            "semesters": sem_statuses,
+        })
+
+    return {
+        "root_folder_id": root_folder_id,
+        "total_students": len(students_report),
+        "target_semesters": target_semesters,
+        "students": students_report,
+    }
+
+
+def provision_student_semester_folders(
+    session: Session,
+    drive_service: Optional[GoogleDriveService] = None,
+    target_semesters: Optional[List[int]] = None,
+    dry_run: bool = True,
+) -> Dict[str, Any]:
+    """
+    Idempotently creates or reuses Semester 1-3 folders inside each student's existing folder.
+    - If dry_run=True, simulates without creating folders or committing DB records.
+    - If dry_run=False, creates missing Drive folders, maps them into student_semester_folders, and commits.
+    """
+    if target_semesters is None:
+        target_semesters = [1, 2, 3]
+
+    ds = drive_service or get_drive_service()
+    if not ds.is_configured:
+        raise RuntimeError("Google Drive service is not configured or authorized.")
+
+    audit = audit_student_semester_folders(session, ds, target_semesters)
+
+    created_folders = 0
+    reused_folders = 0
+    already_mapped = 0
+    failed = 0
+    details: List[Dict[str, Any]] = []
+
+    semesters = session.scalars(
+        select(Semester).where(Semester.semester_number.in_(target_semesters))
+    ).all()
+    semester_map = {s.semester_number: s for s in semesters}
+
+    for st in audit["students"]:
+        student_id = st["student_id"]
+        reg_no = st["register_number"]
+        student_folder_id = st["existing_student_folder_id"]
+
+        for sem_stat in st["semesters"]:
+            sem_num = sem_stat["semester_number"]
+            sem_obj = semester_map.get(sem_num)
+            if not sem_obj:
+                continue
+
+            folder_name = f"Semester {sem_num}"
+            current_status = sem_stat["status"]
+            existing_folder_id = sem_stat["folder_id"]
+
+            if current_status == "EXISTS_MAPPED":
+                already_mapped += 1
+                details.append({
+                    "student_id": student_id,
+                    "register_number": reg_no,
+                    "semester_number": sem_num,
+                    "folder_id": existing_folder_id,
+                    "action": "ALREADY_MAPPED",
+                    "error": None,
+                })
+                continue
+
+            if not student_folder_id:
+                failed += 1
+                details.append({
+                    "student_id": student_id,
+                    "register_number": reg_no,
+                    "semester_number": sem_num,
+                    "folder_id": None,
+                    "action": "FAILED",
+                    "error": "Student root Google Drive folder is missing.",
+                })
+                continue
+
+            if dry_run:
+                if current_status == "EXISTS_IN_DRIVE":
+                    reused_folders += 1
+                    details.append({
+                        "student_id": student_id,
+                        "register_number": reg_no,
+                        "semester_number": sem_num,
+                        "folder_id": existing_folder_id,
+                        "action": "REUSED_EXISTING",
+                        "error": None,
+                    })
+                else:
+                    created_folders += 1
+                    details.append({
+                        "student_id": student_id,
+                        "register_number": reg_no,
+                        "semester_number": sem_num,
+                        "folder_id": None,
+                        "action": "DRY_RUN_CREATED",
+                        "error": None,
+                    })
+                continue
+
+            # Live Execution
+            try:
+                target_folder_id = existing_folder_id
+                action_taken = "REUSED_EXISTING"
+
+                if not target_folder_id:
+                    target_folder_id = create_folder_with_retry(ds, folder_name, student_folder_id)
+                    action_taken = "CREATED"
+                    time.sleep(0.1)  # Safe rate pacing
+
+                # Insert mapping into student_semester_folders
+                mapping = StudentSemesterFolder(
+                    id=uuid.uuid4(),
+                    student_id=student_id,
+                    semester_id=sem_obj.id,
+                    drive_folder_id=target_folder_id,
+                    drive_folder_name=folder_name,
+                )
+                session.add(mapping)
+                session.commit()
+
+                if action_taken == "CREATED":
+                    created_folders += 1
+                else:
+                    reused_folders += 1
+
+                details.append({
+                    "student_id": student_id,
+                    "register_number": reg_no,
+                    "semester_number": sem_num,
+                    "folder_id": target_folder_id,
+                    "action": action_taken,
+                    "error": None,
+                })
+            except Exception as exc:
+                session.rollback()
+                failed += 1
+                logger.error("Failed provisioning %s for student %s: %s", folder_name, reg_no, exc)
+                details.append({
+                    "student_id": student_id,
+                    "register_number": reg_no,
+                    "semester_number": sem_num,
+                    "folder_id": None,
+                    "action": "FAILED",
+                    "error": str(exc),
+                })
+
+    mode_str = "DRY RUN" if dry_run else "LIVE EXECUTION"
+    msg = (
+        f"[{mode_str}] Evaluated {len(audit['students'])} students across Semesters {target_semesters}: "
+        f"{already_mapped} already mapped, {reused_folders} existing to link, "
+        f"{created_folders} to create, {failed} failed."
+    )
+
+    return {
+        "dry_run": dry_run,
+        "total_students": len(audit["students"]),
+        "target_semesters": target_semesters,
+        "created_folders": created_folders,
+        "reused_folders": reused_folders,
+        "already_mapped": already_mapped,
+        "failed": failed,
+        "details": details,
+        "message": msg,
+    }
+
+
+def ensure_student_semester_folder(
+    session: Session,
+    student_id: uuid.UUID,
+    semester_id: uuid.UUID,
+    drive_service: Optional[GoogleDriveService] = None,
+) -> str:
+    """
+    Resolves or safely auto-provisions the dedicated semester subfolder for a student.
+    Ensures the student's root folder exists, checks for existing mapping in PostgreSQL,
+    creates the missing 'Semester X' folder under the student's folder, persists mapping,
+    and returns the folder ID.
+    """
+    ds = drive_service or get_drive_service()
+    if not ds.is_configured:
+        raise RuntimeError("Google Drive service is not configured or authorized.")
+
+    # 1. Check existing DB mapping
+    mapping = session.scalar(
+        select(StudentSemesterFolder).where(
+            StudentSemesterFolder.student_id == student_id,
+            StudentSemesterFolder.semester_id == semester_id,
+        )
+    )
+    if mapping and mapping.drive_folder_id:
+        try:
+            if hasattr(ds, "folder_exists") and ds.folder_exists(mapping.drive_folder_id):
+                return mapping.drive_folder_id
+        except Exception:
+            return mapping.drive_folder_id
+
+    # 2. Ensure student's parent folder in Drive
+    student_parent_folder_id = ensure_student_folder(session, student_id, ds)
+
+    # 3. Find semester details
+    semester = session.get(Semester, semester_id)
+    if not semester:
+        raise ValueError(f"Semester with ID {semester_id} not found.")
+
+    folder_name = f"Semester {semester.semester_number}"
+
+    # 4. Create or retrieve folder inside student's folder
+    semester_folder_id = create_folder_with_retry(ds, folder_name, student_parent_folder_id)
+
+    # 5. Persist mapping in DB
+    if not mapping:
+        mapping = StudentSemesterFolder(
+            id=uuid.uuid4(),
+            student_id=student_id,
+            semester_id=semester.id,
+            drive_folder_id=semester_folder_id,
+            drive_folder_name=folder_name,
+        )
+        session.add(mapping)
+    else:
+        mapping.drive_folder_id = semester_folder_id
+        session.add(mapping)
+
+    session.flush()
+    logger.info(
+        "Successfully resolved Google Drive semester folder %s (%s) for student %s",
+        folder_name,
+        semester_folder_id,
+        student_id,
+    )
+    return semester_folder_id

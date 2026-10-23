@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import {
   AdminStudentItem,
@@ -41,6 +42,7 @@ import {
   DeleteHODModal,
 } from "./HODModals";
 import { BulkProvisioningModal } from "./BulkProvisioningModal";
+import { EditUserEmailModal, TargetUserInfo } from "./EditUserEmailModal";
 
 export type ActiveTab = "students" | "mentors" | "hods";
 
@@ -119,6 +121,9 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
 
   // Bulk Login Provisioning Modal
   const [showProvisioningModal, setShowProvisioningModal] = useState(false);
+
+  // Security - Edit User Email Modal
+  const [userToEditEmail, setUserToEditEmail] = useState<TargetUserInfo | null>(null);
 
   // Fetch all user lists
   const fetchAllData = useCallback(async () => {
@@ -617,6 +622,35 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
           </button>
         </div>
 
+        {/* Account Management → Email Verification */}
+        <div className="mt-4 p-3.5 rounded-xl border border-blue-200/80 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-950/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </span>
+            <div>
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                Account Management &bull; Firebase Email Verification
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Inspect verification status, send verification emails, or check account sync with Firebase Authentication
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/verify-email"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-xs transition shrink-0"
+            id="btn-open-email-verification"
+          >
+            <span>Open Email Verification Portal</span>
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </Link>
+        </div>
+
         {/* Filter & Search Bar */}
         <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 text-xs">
           <div className="col-span-1 sm:col-span-2">
@@ -806,6 +840,20 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                               className="px-2.5 py-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded font-medium transition"
                             >
                               Edit
+                            </button>
+                            <button
+                              onClick={() =>
+                                setUserToEditEmail({
+                                  id: s.id,
+                                  full_name: s.full_name,
+                                  email: s.email,
+                                  role: s.role,
+                                })
+                              }
+                              className="px-2.5 py-1 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded font-medium transition"
+                              title="Edit user registered email"
+                            >
+                              Edit Email
                             </button>
                             <button
                               onClick={() => setStudentToDelete(s)}
@@ -1018,6 +1066,20 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                             Edit
                           </button>
                           <button
+                            onClick={() =>
+                              setUserToEditEmail({
+                                id: m.id,
+                                full_name: m.full_name,
+                                email: m.email,
+                                role: m.role,
+                              })
+                            }
+                            className="px-2.5 py-1 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/60 rounded font-medium transition"
+                            title="Edit mentor registered email"
+                          >
+                            Edit Email
+                          </button>
+                          <button
                             onClick={() => setMentorToDelete(m)}
                             className="px-2.5 py-1 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded font-medium transition"
                           >
@@ -1120,6 +1182,20 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                             className="px-2.5 py-1 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded font-medium transition"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() =>
+                              setUserToEditEmail({
+                                id: h.id,
+                                full_name: h.full_name,
+                                email: h.email,
+                                role: h.role,
+                              })
+                            }
+                            className="px-2.5 py-1 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded font-medium transition"
+                            title="Edit HOD registered email"
+                          >
+                            Edit Email
                           </button>
                           <button
                             onClick={() => setHodToDelete(h)}
@@ -1240,6 +1316,17 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
           fetchAllData();
         }}
         onSuccess={() => fetchAllData()}
+      />
+
+      <EditUserEmailModal
+        user={userToEditEmail}
+        onClose={() => setUserToEditEmail(null)}
+        onSuccess={(res) => {
+          setSuccessMessage(
+            `Email for ${res.full_name} updated to ${res.new_email} (${res.status === "pending_verification" ? "pending verification" : "completed"}).`
+          );
+          fetchAllData();
+        }}
       />
     </div>
   );

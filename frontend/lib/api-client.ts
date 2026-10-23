@@ -35,12 +35,17 @@ import {
   MessageItem,
   MessageCreateRequest,
   UnreadCountResponse,
+  AdminEmailUpdateRequest,
+  AdminEmailUpdateResponse,
 } from "@/types/auth";
 import {
   PGPAComponentResponse,
   AchievementResponse,
   AchievementCreate,
   AchievementFileResponse,
+  SemesterResponse,
+  SemesterDriveAuditReport,
+  SemesterDriveProvisionResponse,
 } from "@/types/achievement";
 
 const API_BASE_URL =
@@ -631,6 +636,71 @@ export const api = {
     return request<UnreadCountResponse>("/messages/unread-count", {
       method: "GET",
     }, token);
+  },
+
+  // User Email Management
+  adminUpdateUserEmail: async (
+    userId: string,
+    data: AdminEmailUpdateRequest,
+    token?: string | null
+  ): Promise<AdminEmailUpdateResponse> => {
+    return request<AdminEmailUpdateResponse>(
+      `/admin/users/${userId}/email`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  // Semester Management
+  adminGetSemesters: async (
+    token?: string | null
+  ): Promise<SemesterResponse[]> => {
+    return request<SemesterResponse[]>("/admin/semesters", { method: "GET" }, token);
+  },
+
+  adminUpdateSemesterStatus: async (
+    semesterId: string,
+    isEnabled: boolean,
+    token?: string | null
+  ): Promise<SemesterResponse> => {
+    return request<SemesterResponse>(
+      `/admin/semesters/${semesterId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ is_enabled: isEnabled }),
+      },
+      token
+    );
+  },
+
+  adminGetSemesterDriveAudit: async (
+    token?: string | null
+  ): Promise<SemesterDriveAuditReport> => {
+    return request<SemesterDriveAuditReport>(
+      "/admin/semesters/drive-audit",
+      { method: "GET" },
+      token
+    );
+  },
+
+  adminProvisionSemesterDriveFolders: async (
+    dryRun: boolean = true,
+    token?: string | null
+  ): Promise<SemesterDriveProvisionResponse> => {
+    return request<SemesterDriveProvisionResponse>(
+      `/admin/semesters/provision-folders?dry_run=${dryRun}`,
+      { method: "POST" },
+      token
+    );
+  },
+
+  studentGetSemesters: async (
+    token?: string | null
+  ): Promise<SemesterResponse[]> => {
+    return request<SemesterResponse[]>("/students/semesters", { method: "GET" }, token);
   },
 };
 

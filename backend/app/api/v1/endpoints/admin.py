@@ -15,9 +15,13 @@ from app.models.assignment import MentorAssignment
 from app.models.component import PGPAComponent
 from app.models.file import AchievementFile
 from app.models.review import VerificationLog
+from app.models.semester import Semester
+from app.models.semester_folder import StudentSemesterFolder
 from app.models.user import HodProfile, MentorProfile, StudentProfile, User, UserRole
 from app.schemas.admin import (
     AdminComponentItem,
+    AdminEmailUpdateRequest,
+    AdminEmailUpdateResponse,
     AdminHODCreate,
     AdminHODDeleteRequest,
     AdminHODItem,
@@ -49,9 +53,17 @@ from app.schemas.admin import (
     ProvisioningExecuteResponse,
     ProvisioningPreviewResponse,
 )
+from app.schemas.semester import (
+    SemesterDriveAuditReport,
+    SemesterDriveProvisionResponse,
+    SemesterResponse,
+    SemesterUpdate,
+)
 from app.services.drive_provisioning import (
     audit_student_drive_folders,
+    audit_student_semester_folders,
     provision_student_drive_folders,
+    provision_student_semester_folders,
 )
 from app.schemas.auth import MentorInfo
 from app.services.admin_service import (
@@ -64,6 +76,7 @@ from app.services.admin_service import (
     permanently_delete_student,
     reassign_mentor_students,
     record_audit_log,
+    update_user_email_by_admin,
 )
 from app.services.drive_service import get_drive_service
 from app.services.firebase_service import (
@@ -188,6 +201,7 @@ def list_admin_submissions(
     status: Optional[str] = Query(default=None, description="Filter by status (pending, approved, rejected, draft)"),
     search: Optional[str] = Query(default=None, description="Search across title, student name, or register number"),
     component_id: Optional[uuid.UUID] = Query(default=None, description="Filter by component ID"),
+    semester_id: Optional[int] = Query(default=None, description="Filter by semester ID (1-8)"),
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> List[AdminSubmissionItem]:
@@ -200,6 +214,8 @@ def list_admin_submissions(
         stmt = stmt.where(Achievement.status == status)
     if component_id:
         stmt = stmt.where(Achievement.component_id == component_id)
+    if semester_id:
+        stmt = stmt.where(Achievement.semester_id == semester_id)
 
     achievements = db.scalars(stmt).all()
 
@@ -226,6 +242,10 @@ def list_admin_submissions(
             if q not in a.title.lower() and q not in s_name.lower() and q not in s_reg.lower():
                 continue
 
+        semester_obj = a.semester
+        semester_num = semester_obj.semester_number if semester_obj else None
+        semester_display = semester_obj.display_name if semester_obj else None
+
         results.append(
             AdminSubmissionItem(
                 id=a.id,
@@ -243,6 +263,9 @@ def list_admin_submissions(
                 outcome=a.outcome,
                 status=a.status.value,
                 files_count=file_counts.get(a.id, 0),
+                semester_id=a.semester_id,
+                semester_number=semester_num,
+                semester_name=semester_display,
                 submitted_at=a.submitted_at,
                 created_at=a.created_at,
             )
@@ -404,6 +427,31 @@ def get_admin_users(
     stmt = select(User).order_by(User.role, User.email)
     users = db.scalars(stmt).all()
     return [AdminUserItem.model_validate(u) for u in users]
+
+
+@router.patch(
+    "/users/{user_id}/email",
+    response_model=AdminEmailUpdateResponse,
+    summary="Update registered email address for any user with reauthentication",
+    description=(
+        "Allows authorized administrators to update a user's registered email address. "
+        "Requires fresh administrator password reauthentication, checks for duplicate emails, "
+        "updates Firebase Auth with pending email verification, synchronizes PostgreSQL, "
+        "and creates an audit log."
+    ),
+)
+def update_user_email(
+    user_id: uuid.UUID,
+    payload: AdminEmailUpdateRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminEmailUpdateResponse:
+    return update_user_email_by_admin(
+        db=db,
+        admin_user=current_user,
+        target_user_id=user_id,
+        payload=payload,
+    )
 
 
 # ==============================================================================
@@ -2016,4 +2064,139 @@ def provision_student_folders(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Drive folder provisioning error: {exc}",
+        )
+
+
+# ==============================================================================
+# Semester Governance & Drive Subfolder Provisioning
+# ==============================================================================
+
+@router.get(
+    "/semesters",
+    response_model=List[SemesterResponse],
+    summary="List all academic semesters and availability",
+    description="Administrative catalogue of all 8 semesters with active submission availability.",
+)
+def list_admin_semesters(
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> List[SemesterResponse]:
+    semesters = db.scalars(
+        select(Semester).order_by(Semester.semester_number.asc())
+    ).all()
+    return [SemesterResponse.model_validate(s) for s in semesters]
+
+
+@router.patch(
+    "/semesters/{semester_id}",
+    response_model=SemesterResponse,
+    summary="Update semester availability for student achievement submissions",
+    description=(
+        "Enables or disables an academic semester for new submissions. "
+        "Disabling a semester does not delete achievements, evidence metadata, files, or historical records."
+    ),
+)
+def update_semester_availability(
+    semester_id: uuid.UUID,
+    payload: SemesterUpdate,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> SemesterResponse:
+    semester = db.get(Semester, semester_id)
+    if not semester:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Academic semester with ID '{semester_id}' not found.",
+        )
+
+    previous_status = semester.is_enabled
+    semester.is_enabled = payload.is_enabled
+    if payload.display_name:
+        semester.display_name = payload.display_name.strip()
+
+    db.add(semester)
+
+    # Count existing submissions in this semester
+    sub_count = db.scalars(
+        select(func.count(Achievement.id)).where(Achievement.semester_id == semester.id)
+    ).one()
+
+    record_audit_log(
+        db,
+        actor_id=current_user.id,
+        action="update_semester_availability",
+        target_type="semester",
+        target_id=str(semester.id),
+        metadata={
+            "semester_number": semester.semester_number,
+            "previous_status": previous_status,
+            "new_status": semester.is_enabled,
+            "existing_submissions_count": sub_count,
+        },
+    )
+    db.commit()
+    db.refresh(semester)
+    return SemesterResponse.model_validate(semester)
+
+
+@router.get(
+    "/semesters/drive-audit",
+    response_model=SemesterDriveAuditReport,
+    summary="Dry-run audit of student semester subfolders in Google Drive",
+    description=(
+        "Read-only inspection of Semesters 1-3 subfolders under each student's folder. "
+        "Does not create or alter any folders or database records."
+    ),
+)
+def get_semester_drive_audit(
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> SemesterDriveAuditReport:
+    drive_service = get_drive_service()
+    report = audit_student_semester_folders(db, drive_service, target_semesters=[1, 2, 3])
+    return SemesterDriveAuditReport.model_validate(report)
+
+
+@router.post(
+    "/semesters/provision-folders",
+    response_model=SemesterDriveProvisionResponse,
+    summary="Idempotently provision Semester 1-3 folders under student folders",
+    description=(
+        "Prepares separate folders for Semesters 1, 2, and 3 inside each student's folder. "
+        "When dry_run=True (default), simulates without modifying Drive or the database."
+    ),
+)
+def provision_semester_folders(
+    dry_run: bool = Query(True, description="Simulate without modifying Drive or database"),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> SemesterDriveProvisionResponse:
+    drive_service = get_drive_service()
+    try:
+        result = provision_student_semester_folders(
+            db,
+            drive_service,
+            target_semesters=[1, 2, 3],
+            dry_run=dry_run,
+        )
+        if not dry_run:
+            record_audit_log(
+                db,
+                actor_id=current_user.id,
+                action="provision_student_semester_drive_folders",
+                target_type="google_drive_semester_folders",
+                target_id=drive_service.root_folder_id or "root",
+                metadata={
+                    "created_folders": result["created_folders"],
+                    "reused_folders": result["reused_folders"],
+                    "already_mapped": result["already_mapped"],
+                    "failed": result["failed"],
+                },
+            )
+            db.commit()
+        return SemesterDriveProvisionResponse.model_validate(result)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Semester Drive folder provisioning error: {exc}",
         )

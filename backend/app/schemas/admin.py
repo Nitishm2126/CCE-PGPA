@@ -64,6 +64,9 @@ class AdminSubmissionItem(BaseModel):
     outcome: Optional[str] = None
     status: str
     files_count: int = 0
+    semester_id: Optional[int] = None
+    semester_number: Optional[int] = None
+    semester_name: Optional[str] = None
     submitted_at: Optional[datetime] = None
     created_at: datetime
 
@@ -444,4 +447,32 @@ class DriveFolderProvisionResponse(BaseModel):
     already_provisioned: int
     failed: int
     results: List[DriveFolderProvisionResultItem]
+    message: str
+
+
+# ==============================================================================
+# Email Editing Schemas
+# ==============================================================================
+
+class AdminEmailUpdateRequest(BaseModel):
+    """
+    Security-critical email update request payload.
+    Requires administrator reauthentication password and matching confirmation.
+    """
+    new_email: EmailStr = Field(..., description="Target user's new college email address")
+    confirm_new_email: EmailStr = Field(..., description="Confirmation of new email address")
+    admin_password: str = Field(..., min_length=1, description="Acting administrator's password for reauthentication")
+
+
+class AdminEmailUpdateResponse(BaseModel):
+    """
+    Result of an administrative email update.
+    """
+    user_id: uuid.UUID
+    full_name: str
+    previous_email: str
+    new_email: str
+    role: str
+    status: Literal["completed", "pending_verification"]
+    firebase_synced: bool
     message: str

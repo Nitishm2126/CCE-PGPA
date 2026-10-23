@@ -4,10 +4,34 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { UserRole } from "@/types/auth";
 import { ROLE_CONFIGS, ALL_ROLES } from "@/lib/role-config";
 
 export function PortalSelection() {
   const { user, logout, isLoading } = useAuth();
+
+  // Determine authorized roles for current session
+  // If not authenticated, display all 4 portals to allow signing in
+  // If authenticated, display only the portals the user is authorized to access
+  const authorizedRoles: UserRole[] = React.useMemo(() => {
+    if (!user || isLoading) {
+      return ALL_ROLES;
+    }
+    if (user.role === "hod") {
+      // HOD possesses dual capabilities: Department Head and Faculty Mentor
+      return ["hod", "mentor"];
+    }
+    if (user.role === "mentor") {
+      return ["mentor"];
+    }
+    if (user.role === "student") {
+      return ["student"];
+    }
+    if (user.role === "admin") {
+      return ["admin"];
+    }
+    return [user.role];
+  }, [user, isLoading]);
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-white text-slate-900">
@@ -47,16 +71,35 @@ export function PortalSelection() {
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>
-                Active Session: <strong>{user.full_name}</strong> ({ROLE_CONFIGS[user.role].shortTitle})
+                Active Session: <strong>{user.full_name}</strong> (
+                {user.role === "hod" ? "Department HOD & Mentor" : ROLE_CONFIGS[user.role]?.shortTitle})
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <Link
-                href={`/${user.role}`}
-                className="font-semibold text-sky-700 hover:text-sky-900 hover:underline inline-flex items-center gap-1"
-              >
-                Go to {ROLE_CONFIGS[user.role].shortTitle} Dashboard &rarr;
-              </Link>
+              {user.role === "hod" ? (
+                <>
+                  <Link
+                    href="/hod"
+                    className="font-semibold text-purple-700 hover:text-purple-900 hover:underline inline-flex items-center gap-1"
+                  >
+                    Open HOD Dashboard &rarr;
+                  </Link>
+                  <span className="text-sky-300">&bull;</span>
+                  <Link
+                    href="/mentor"
+                    className="font-semibold text-indigo-700 hover:text-indigo-900 hover:underline inline-flex items-center gap-1"
+                  >
+                    Open Mentor Dashboard (11 Mentees) &rarr;
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  href={`/${user.role}`}
+                  className="font-semibold text-sky-700 hover:text-sky-900 hover:underline inline-flex items-center gap-1"
+                >
+                  Go to {ROLE_CONFIGS[user.role]?.shortTitle} Dashboard &rarr;
+                </Link>
+              )}
               <span className="text-sky-300">&bull;</span>
               <button
                 type="button"
@@ -70,22 +113,38 @@ export function PortalSelection() {
         </section>
       )}
 
-      {/* 4. Four Portal Selection Cards */}
+      {/* 4. Portal Selection Cards */}
       <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 pb-8 flex-1 flex flex-col justify-center">
         <div className="text-center mb-6">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Select an Institutional Portal to Sign In
+            {user && !isLoading
+              ? "Select an Authorized Portal to Enter"
+              : "Select an Institutional Portal to Sign In"}
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {ALL_ROLES.map((roleKey) => {
+        <div
+          className={`grid gap-4 sm:gap-6 ${
+            authorizedRoles.length === 1
+              ? "grid-cols-1 max-w-md mx-auto w-full"
+              : authorizedRoles.length === 2
+              ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto w-full"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+          }`}
+        >
+          {authorizedRoles.map((roleKey) => {
             const cfg = ROLE_CONFIGS[roleKey];
+            const isTargetSessionRole = user && (user.role === roleKey || (user.role === "hod" && roleKey === "mentor"));
+            // When already authenticated, clicking the card navigates directly to the dashboard
+            const cardHref = user ? cfg.dashboardPath : cfg.path;
+            const ctaLabel = user
+              ? `Open ${cfg.shortTitle} Dashboard`
+              : cfg.ctaText;
 
             return (
               <Link
                 key={roleKey}
-                href={cfg.path}
+                href={cardHref}
                 id={`portal-card-${roleKey}`}
                 className={`group relative flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs hover:shadow-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${cfg.hoverBorder}`}
               >
@@ -164,7 +223,9 @@ export function PortalSelection() {
                     <span
                       className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${cfg.accentBorder} ${cfg.accentBg} ${cfg.accentText}`}
                     >
-                      {cfg.badgeText}
+                      {user && user.role === "hod" && roleKey === "mentor"
+                        ? "11 Assigned Mentees"
+                        : cfg.badgeText}
                     </span>
                   </div>
 
@@ -173,13 +234,15 @@ export function PortalSelection() {
                     {cfg.portalName}
                   </h3>
                   <p className="mt-2 text-xs text-slate-500 leading-relaxed line-clamp-3">
-                    {cfg.description}
+                    {user && user.role === "hod" && roleKey === "mentor"
+                      ? "Review achievements, verify certificate evidence, and record verification audit remarks for your 11 assigned mentees."
+                      : cfg.description}
                   </p>
                 </div>
 
                 {/* Bottom Action CTA */}
                 <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-600 group-hover:text-blue-700">
-                  <span>{cfg.ctaText}</span>
+                  <span>{ctaLabel}</span>
                   <span className="transform group-hover:translate-x-1 transition-transform">
                     &rarr;
                   </span>
@@ -194,16 +257,6 @@ export function PortalSelection() {
           <p className="text-xs text-slate-500">
             <strong className="text-slate-700">Authorized Cohort Access Only:</strong> Student and faculty accounts are provisioned via verified departmental rosters. Public self-registration is disabled.
           </p>
-        </div>
-
-        {/* Email Verification Link */}
-        <div className="mt-3 text-center">
-          <Link
-            href="/verify-email"
-            className="text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline"
-          >
-            Checking Firebase email verification? Open Verification Portal &rarr;
-          </Link>
         </div>
       </main>
 
@@ -241,7 +294,14 @@ export function PortalSelection() {
             Department of Computer and Communication Engineering &bull; Sri Sairam Engineering College
           </p>
           <p className="text-[11px] text-slate-400">
-            CCE-PGPA Management System &bull; Version 1.0.0 &bull; All Institutional Rights Reserved
+            <Link
+              href={user?.role === "admin" ? "/admin" : "/login/admin"}
+              className="hover:underline hover:text-slate-600 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors"
+              title="System Administrator Portal"
+            >
+              CCE-PGPA Management System
+            </Link>{" "}
+            &bull; Version 1.0.0 &bull; All Institutional Rights Reserved
           </p>
         </div>
       </footer>
