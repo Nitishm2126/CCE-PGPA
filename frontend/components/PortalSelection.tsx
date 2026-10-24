@@ -7,6 +7,91 @@ import { useAuth } from "@/lib/auth-context";
 import { UserRole } from "@/types/auth";
 import { ROLE_CONFIGS, ALL_ROLES } from "@/lib/role-config";
 
+// Dedicated styling tokens for the three institutional portal cards
+const PORTAL_CARD_THEMES: Record<
+  string,
+  {
+    bg: string;
+    border: string;
+    hoverBorder: string;
+    focusRing: string;
+    iconBg: string;
+    iconText: string;
+    badgeBg: string;
+    badgeBorder: string;
+    badgeText: string;
+    titleHover: string;
+    ctaBorder: string;
+    ctaText: string;
+    ctaHover: string;
+  }
+> = {
+  student: {
+    // Student Portal: subtle light-blue background and blue accent
+    bg: "bg-blue-50/50 hover:bg-blue-50/80",
+    border: "border-blue-200/80",
+    hoverBorder: "hover:border-blue-400/80",
+    focusRing: "focus-visible:ring-blue-500",
+    iconBg: "bg-blue-100",
+    iconText: "text-blue-700",
+    badgeBg: "bg-blue-100/70",
+    badgeBorder: "border-blue-200",
+    badgeText: "text-blue-800",
+    titleHover: "group-hover:text-blue-700",
+    ctaBorder: "border-blue-200/60",
+    ctaText: "text-blue-700",
+    ctaHover: "group-hover:text-blue-900",
+  },
+  mentor: {
+    // Faculty Mentor Portal: subtle light-purple background and purple accent
+    bg: "bg-purple-50/50 hover:bg-purple-50/80",
+    border: "border-purple-200/80",
+    hoverBorder: "hover:border-purple-400/80",
+    focusRing: "focus-visible:ring-purple-500",
+    iconBg: "bg-purple-100",
+    iconText: "text-purple-700",
+    badgeBg: "bg-purple-100/70",
+    badgeBorder: "border-purple-200",
+    badgeText: "text-purple-800",
+    titleHover: "group-hover:text-purple-700",
+    ctaBorder: "border-purple-200/60",
+    ctaText: "text-purple-700",
+    ctaHover: "group-hover:text-purple-900",
+  },
+  hod: {
+    // Department Head (HOD) Portal: subtle light-orange background and orange accent
+    bg: "bg-orange-50/50 hover:bg-orange-50/80",
+    border: "border-orange-200/80",
+    hoverBorder: "hover:border-orange-400/80",
+    focusRing: "focus-visible:ring-orange-500",
+    iconBg: "bg-orange-100",
+    iconText: "text-orange-700",
+    badgeBg: "bg-orange-100/70",
+    badgeBorder: "border-orange-200",
+    badgeText: "text-orange-800",
+    titleHover: "group-hover:text-orange-700",
+    ctaBorder: "border-orange-200/60",
+    ctaText: "text-orange-700",
+    ctaHover: "group-hover:text-orange-900",
+  },
+  admin: {
+    // System Administrator fallback
+    bg: "bg-amber-50/50 hover:bg-amber-50/80",
+    border: "border-amber-200/80",
+    hoverBorder: "hover:border-amber-400/80",
+    focusRing: "focus-visible:ring-amber-500",
+    iconBg: "bg-amber-100",
+    iconText: "text-amber-700",
+    badgeBg: "bg-amber-100/70",
+    badgeBorder: "border-amber-200",
+    badgeText: "text-amber-800",
+    titleHover: "group-hover:text-amber-700",
+    ctaBorder: "border-amber-200/60",
+    ctaText: "text-amber-700",
+    ctaHover: "group-hover:text-amber-900",
+  },
+};
+
 export function PortalSelection() {
   const { user, logout, isLoading } = useAuth();
 
@@ -125,16 +210,17 @@ export function PortalSelection() {
         </div>
 
         <div
-          className={`grid gap-4 sm:gap-6 ${
+          className={`grid gap-5 sm:gap-6 ${
             authorizedRoles.length === 1
               ? "grid-cols-1 max-w-md mx-auto w-full"
               : authorizedRoles.length === 2
               ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto w-full"
-              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto w-full"
+              : "grid-cols-1 md:grid-cols-3 max-w-5xl mx-auto w-full"
           }`}
         >
           {authorizedRoles.map((roleKey) => {
             const cfg = ROLE_CONFIGS[roleKey];
+            const theme = PORTAL_CARD_THEMES[roleKey] || PORTAL_CARD_THEMES.student;
             const isTargetSessionRole = user && (user.role === roleKey || (user.role === "hod" && roleKey === "mentor"));
             // When already authenticated, clicking the card navigates directly to the dashboard
             const cardHref = user ? cfg.dashboardPath : cfg.path;
@@ -147,17 +233,17 @@ export function PortalSelection() {
                 key={roleKey}
                 href={cardHref}
                 id={`portal-card-${roleKey}`}
-                className={`group relative flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs hover:shadow-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${cfg.hoverBorder}`}
+                className={`group relative flex flex-col justify-between rounded-xl border ${theme.border} ${theme.bg} p-5 sm:p-6 shadow-xs hover:shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${theme.focusRing} ${theme.hoverBorder}`}
               >
                 <div>
                   {/* Top Row: Icon & Tag */}
                   <div className="flex items-center justify-between gap-2 mb-4">
                     <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-xl ${cfg.activeIconBg} ${cfg.activeIconText} group-hover:scale-105 transition-transform duration-200`}
+                      className={`flex h-11 w-11 items-center justify-center rounded-lg ${theme.iconBg} ${theme.iconText} transition-colors`}
                     >
                       {roleKey === "student" && (
                         <svg
-                          className="h-6 w-6"
+                          className="h-5 w-5"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -173,7 +259,7 @@ export function PortalSelection() {
                       )}
                       {roleKey === "mentor" && (
                         <svg
-                          className="h-6 w-6"
+                          className="h-5 w-5"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -189,7 +275,7 @@ export function PortalSelection() {
                       )}
                       {roleKey === "hod" && (
                         <svg
-                          className="h-6 w-6"
+                          className="h-5 w-5"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -205,7 +291,7 @@ export function PortalSelection() {
                       )}
                       {roleKey === "admin" && (
                         <svg
-                          className="h-6 w-6"
+                          className="h-5 w-5"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -222,7 +308,7 @@ export function PortalSelection() {
                     </div>
 
                     <span
-                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${cfg.accentBorder} ${cfg.accentBg} ${cfg.accentText}`}
+                      className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${theme.badgeBorder} ${theme.badgeBg} ${theme.badgeText}`}
                     >
                       {user && user.role === "hod" && roleKey === "mentor"
                         ? "11 Assigned Mentees"
@@ -231,10 +317,12 @@ export function PortalSelection() {
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                  <h3
+                    className={`text-base sm:text-lg font-bold text-slate-900 ${theme.titleHover} transition-colors`}
+                  >
                     {cfg.portalName}
                   </h3>
-                  <p className="mt-2 text-xs text-slate-500 leading-relaxed line-clamp-3">
+                  <p className="mt-2 text-xs sm:text-[13px] text-slate-600 leading-relaxed line-clamp-3">
                     {user && user.role === "hod" && roleKey === "mentor"
                       ? "Review achievements, verify certificate evidence, and record verification audit remarks for your 11 assigned mentees."
                       : cfg.description}
@@ -242,9 +330,14 @@ export function PortalSelection() {
                 </div>
 
                 {/* Bottom Action CTA */}
-                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-600 group-hover:text-blue-700">
+                <div
+                  className={`mt-6 pt-4 border-t ${theme.ctaBorder} flex items-center justify-between text-xs font-semibold ${theme.ctaText} ${theme.ctaHover} min-h-[44px]`}
+                >
                   <span>{ctaLabel}</span>
-                  <span className="transform group-hover:translate-x-1 transition-transform">
+                  <span
+                    className="transform group-hover:translate-x-1 transition-transform"
+                    aria-hidden="true"
+                  >
                     &rarr;
                   </span>
                 </div>
