@@ -5,11 +5,20 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.core.config import settings
 
 # Create SQLAlchemy 2.x Engine
-# pool_pre_ping=True ensures stale connections are tested and recycled
+# Sized to smoothly support 64 concurrent cohort members and faculty:
+# - pool_size=30: maintains active persistent connections
+# - max_overflow=40: accommodates concurrent traffic peaks (up to 70 total connections)
+# - pool_timeout=30: protects against thread pool exhaustion under heavy bursts
+# - pool_recycle=1800: prevents stale connection timeouts on PostgreSQL 18
+# - pool_pre_ping=True: tests connection health before checkout
 engine = create_engine(
     settings.DATABASE_URL,
+    pool_size=30,
+    max_overflow=40,
+    pool_timeout=30,
+    pool_recycle=1800,
     pool_pre_ping=True,
-    echo=settings.DEBUG and settings.APP_ENV == "development",
+    echo=False,
 )
 
 # Session factory for generating local database sessions

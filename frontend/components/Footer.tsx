@@ -34,7 +34,8 @@ export const Footer: React.FC = () => {
               <Link
                 href="/login/admin"
                 className="hover:underline hover:text-slate-700 dark:hover:text-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors"
-                title="System Administrator Portal"
+                title="System Administrator Portal Login"
+                aria-label="System Administrator Portal Login"
               >
                 CCE-PGPA Management System
               </Link>

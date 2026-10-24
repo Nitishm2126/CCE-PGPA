@@ -425,7 +425,12 @@ def audit_student_semester_folders(
 
         # Check existing subfolders in student Drive folder if connected
         drive_subfolders_by_name: Dict[str, str] = {}
-        if is_connected and student_folder_id:
+        needs_drive_inspection = any(
+            (user.id, sem_obj.id) not in mapping_dict
+            for s_num in target_semesters
+            if (sem_obj := semester_map.get(s_num)) is not None
+        )
+        if is_connected and student_folder_id and needs_drive_inspection:
             try:
                 subfolders = ds.list_folders_in_parent(student_folder_id)
                 drive_subfolders_by_name = {f["name"].strip(): f["id"] for f in subfolders}
@@ -578,15 +583,25 @@ def provision_student_semester_folders(
                     action_taken = "CREATED"
                     time.sleep(0.1)  # Safe rate pacing
 
-                # Insert mapping into student_semester_folders
-                mapping = StudentSemesterFolder(
-                    id=uuid.uuid4(),
-                    student_id=student_id,
-                    semester_id=sem_obj.id,
-                    drive_folder_id=target_folder_id,
-                    drive_folder_name=folder_name,
+                # Upsert mapping into student_semester_folders
+                mapping = session.scalar(
+                    select(StudentSemesterFolder).where(
+                        StudentSemesterFolder.student_id == student_id,
+                        StudentSemesterFolder.semester_id == sem_obj.id,
+                    )
                 )
-                session.add(mapping)
+                if not mapping:
+                    mapping = StudentSemesterFolder(
+                        id=uuid.uuid4(),
+                        student_id=student_id,
+                        semester_id=sem_obj.id,
+                        drive_folder_id=target_folder_id,
+                        drive_folder_name=folder_name,
+                    )
+                    session.add(mapping)
+                else:
+                    mapping.drive_folder_id = target_folder_id
+                    mapping.drive_folder_name = folder_name
                 session.commit()
 
                 if action_taken == "CREATED":

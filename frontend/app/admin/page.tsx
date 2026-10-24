@@ -56,6 +56,7 @@ export default function AdminDashboardPage() {
   // Submissions Tab State
   const [submissions, setSubmissions] = useState<AdminSubmissionItem[]>([]);
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const [submissionsError, setSubmissionsError] = useState<string | null>(null);
   const [submissionStatusFilter, setSubmissionStatusFilter] = useState("all");
   const [submissionComponentFilter, setSubmissionComponentFilter] = useState("all");
   const [submissionSemesterFilter, setSubmissionSemesterFilter] = useState("all");
@@ -158,6 +159,7 @@ export default function AdminDashboardPage() {
     if (!token) return;
     try {
       setSubmissionsLoading(true);
+      setSubmissionsError(null);
       const [subsRes, compsRes] = await Promise.all([
         api.adminGetSubmissions(undefined, token),
         api.adminGetComponents(token).catch(() => []),
@@ -166,6 +168,8 @@ export default function AdminDashboardPage() {
       setComponentsList(compsRes);
     } catch (err: unknown) {
       console.error("Failed to load submissions:", err);
+      const msg = err instanceof Error ? err.message : "Failed to load submissions from PostgreSQL.";
+      setSubmissionsError(msg);
     } finally {
       setSubmissionsLoading(false);
     }
@@ -1482,6 +1486,17 @@ export default function AdminDashboardPage() {
                   <div className="text-center py-12">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent mx-auto" />
                     <p className="mt-2 text-xs text-slate-500">Loading PGPA submission records...</p>
+                  </div>
+                ) : submissionsError ? (
+                  <div className="text-center py-10 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 p-6 space-y-3">
+                    <p className="text-xs font-semibold text-rose-700 dark:text-rose-300">{submissionsError}</p>
+                    <button
+                      type="button"
+                      onClick={fetchSubmissions}
+                      className="rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                    >
+                      Retry Submissions
+                    </button>
                   </div>
                 ) : filteredSubmissions.length > 0 ? (
                   <div className="overflow-x-auto">

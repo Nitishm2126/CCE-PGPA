@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.permissions import get_current_user
 from app.db.session import get_db
@@ -90,7 +90,11 @@ def list_messages(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> List[MessageResponse]:
-    stmt = select(Message)
+    stmt = select(Message).options(
+        joinedload(Message.sender),
+        joinedload(Message.recipient),
+        joinedload(Message.achievement),
+    )
 
     # 1. Role-based scoping
     if current_user.role == UserRole.STUDENT:

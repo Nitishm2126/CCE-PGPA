@@ -243,3 +243,90 @@ def test_admin_email_editing_success(client: TestClient, admin_db: Session):
     assert audit is not None
     assert audit.action_metadata["previous_email"] == f"old_student_{prefix}@test.edu"
     assert audit.action_metadata["requested_new_email"] == new_email
+
+
+def test_admin_get_verification_status(client: TestClient, admin_db: Session):
+    prefix = uuid.uuid4().hex[:6]
+    admin = User(
+        id=uuid.uuid4(),
+        full_name="Status Admin",
+        email=f"admin_{prefix}@test.edu",
+        password_hash=get_password_hash("pass"),
+        role=UserRole.ADMIN,
+        is_active=True,
+    )
+    target = User(
+        id=uuid.uuid4(),
+        full_name="Status User",
+        email=f"user_{prefix}@test.edu",
+        password_hash=get_password_hash("pass"),
+        role=UserRole.STUDENT,
+        firebase_uid=f"fb_uid_{prefix}",
+        is_active=True,
+    )
+    admin_db.add_all([admin, target])
+    admin_db.commit()
+    admin_db.track_user(admin.id)  # type: ignore
+    admin_db.track_user(target.id)  # type: ignore
+
+    admin_token = create_access_token(subject=admin.id, role="admin")
+
+    with patch("app.services.admin_service.get_firebase_app") as mock_get_fb, \
+         patch("app.services.admin_service.fb_auth.get_user") as mock_get_user:
+        mock_fb_user = MagicMock()
+        mock_fb_user.email_verified = True
+        mock_get_user.return_value = mock_fb_user
+
+        resp = client.get(
+            f"/api/v1/admin/users/{target.id}/verification-status",
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["user_id"] == str(target.id)
+        assert data["email"] == target.email
+        assert data["email_verified"] is True
+        assert data["firebase_linked"] is True
+
+
+def test_admin_send_verification_email(client: TestClient, admin_db: Session):
+    prefix = uuid.uuid4().hex[:6]
+    admin = User(
+        id=uuid.uuid4(),
+        full_name="Sender Admin",
+        email=f"admin_{prefix}@test.edu",
+        password_hash=get_password_hash("pass"),
+        role=UserRole.ADMIN,
+        is_active=True,
+    )
+    target = User(
+        id=uuid.uuid4(),
+        full_name="Sender Target",
+        email=f"target_{prefix}@test.edu",
+        password_hash=get_password_hash("pass"),
+        role=UserRole.STUDENT,
+        firebase_uid=f"fb_uid_{prefix}",
+        is_active=True,
+    )
+    admin_db.add_all([admin, target])
+    admin_db.commit()
+    admin_db.track_user(admin.id)  # type: ignore
+    admin_db.track_user(target.id)  # type: ignore
+
+    admin_token = create_access_token(subject=admin.id, role="admin")
+
+    with patch("app.services.admin_service.get_firebase_app") as mock_get_fb, \
+         patch("app.services.admin_service.fb_auth.generate_email_verification_link") as mock_gen_link:
+        mock_gen_link.return_value = "https://cce-pgpa.firebaseapp.com/__/auth/action?mode=verifyEmail"
+
+        resp = client.post(
+            f"/api/v1/admin/users/{target.id}/send-verification-email",
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["user_id"] == str(target.id)
+        assert data["email"] == target.email
+        assert data["success"] is True
+        assert "mode=verifyEmail" in data["verification_link"]
+

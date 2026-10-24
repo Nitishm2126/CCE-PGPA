@@ -397,7 +397,7 @@ export interface AdminSubmissionItem {
   outcome?: string | null;
   status: "pending" | "approved" | "rejected" | "draft";
   files_count: number;
-  semester_id?: number | null;
+  semester_id?: number | string | null;
   semester_number?: number | null;
   semester_name?: string | null;
   submitted_at?: string | null;
@@ -526,4 +526,21 @@ export interface AdminEmailUpdateResponse {
   status: "pending_verification" | "completed";
   firebase_synced: boolean;
   message: string;
+}
+
+export interface AdminVerificationStatusResponse {
+  user_id: string;
+  email: string;
+  email_verified: boolean;
+  firebase_linked: boolean;
+  firebase_uid?: string | null;
+  message: string;
+}
+
+export interface AdminSendVerificationEmailResponse {
+  user_id: string;
+  email: string;
+  success: boolean;
+  message: string;
+  verification_link?: string | null;
 }

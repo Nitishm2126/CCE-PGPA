@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models.user import UserRole
@@ -64,7 +64,7 @@ class AdminSubmissionItem(BaseModel):
     outcome: Optional[str] = None
     status: str
     files_count: int = 0
-    semester_id: Optional[int] = None
+    semester_id: Optional[Union[uuid.UUID, int, str]] = None
     semester_number: Optional[int] = None
     semester_name: Optional[str] = None
     submitted_at: Optional[datetime] = None
@@ -476,3 +476,20 @@ class AdminEmailUpdateResponse(BaseModel):
     status: Literal["completed", "pending_verification"]
     firebase_synced: bool
     message: str
+
+
+class AdminVerificationStatusResponse(BaseModel):
+    user_id: uuid.UUID
+    email: EmailStr
+    email_verified: bool
+    firebase_linked: bool
+    firebase_uid: Optional[str] = None
+    message: str
+
+
+class AdminSendVerificationEmailResponse(BaseModel):
+    user_id: uuid.UUID
+    email: EmailStr
+    success: bool
+    message: str
+    verification_link: Optional[str] = None

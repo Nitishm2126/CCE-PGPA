@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { api, ApiError } from "@/lib/api-client";
 import { AdminEmailUpdateResponse } from "@/types/auth";
 
@@ -29,6 +29,69 @@ export const EditUserEmailModal: React.FC<EditUserEmailModalProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successResult, setSuccessResult] = useState<AdminEmailUpdateResponse | null>(null);
+
+  // Live verification state
+  const [currentVerification, setCurrentVerification] = useState<{
+    verified: boolean;
+    loading: boolean;
+  }>({ verified: false, loading: true });
+
+  const [sendingVerification, setSendingVerification] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<{
+    link?: string | null;
+    message?: string;
+    copied?: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+    if (!user) return;
+    setCurrentVerification({ verified: false, loading: true });
+    api
+      .adminGetVerificationStatus(user.id)
+      .then((res) => {
+        if (!ignore) {
+          setCurrentVerification({ verified: res.email_verified, loading: false });
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setCurrentVerification({ verified: false, loading: false });
+        }
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [user]);
+
+  const handleSendVerification = async () => {
+    if (!user) return;
+    setSendingVerification(true);
+    try {
+      const res = await api.adminSendVerificationEmail(user.id);
+      setVerificationResult({
+        link: res.verification_link,
+        message: res.message,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to generate verification link.";
+      setVerificationResult({
+        message: msg,
+      });
+    } finally {
+      setSendingVerification(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (verificationResult?.link) {
+      await navigator.clipboard.writeText(verificationResult.link);
+      setVerificationResult((prev) => (prev ? { ...prev, copied: true } : prev));
+      setTimeout(() => {
+        setVerificationResult((prev) => (prev ? { ...prev, copied: false } : prev));
+      }, 3000);
+    }
+  };
 
   if (!user) return null;
 
@@ -156,12 +219,67 @@ export const EditUserEmailModal: React.FC<EditUserEmailModalProps> = ({
                   )}
                 </p>
               </div>
+
+              {/* Email Verification Link Dispatch */}
+              <div className="mt-3 p-3 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-xl space-y-2">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div>
+                    <span className="font-bold text-blue-900 dark:text-blue-200 text-xs flex items-center gap-1.5">
+                      <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Firebase Email Verification Dispatch
+                    </span>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Send or generate a live verification link for {successResult.new_email}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSendVerification}
+                    disabled={sendingVerification}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
+                  >
+                    {sendingVerification ? (
+                      <>
+                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <span>Generate Verification Link</span>
+                    )}
+                  </button>
+                </div>
+
+                {verificationResult && (
+                  <div className="text-[11px] space-y-1.5 pt-2 border-t border-blue-100 dark:border-blue-900/40">
+                    <p className="text-blue-800 dark:text-blue-300 font-semibold">{verificationResult.message}</p>
+                    {verificationResult.link && (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={verificationResult.link}
+                          className="flex-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800 text-[10px] font-mono text-slate-800 dark:text-slate-200 select-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCopyLink}
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-[10px] shrink-0 cursor-pointer shadow-2xs"
+                        >
+                          {verificationResult.copied ? "Copied!" : "Copy Link"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex justify-end pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-xl text-xs font-semibold shadow-sm transition"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-xl text-xs font-semibold shadow-sm transition cursor-pointer"
               >
                 Close
               </button>
@@ -178,9 +296,26 @@ export const EditUserEmailModal: React.FC<EditUserEmailModalProps> = ({
                   {user.role}
                 </span>
               </div>
-              <div className="text-slate-500 dark:text-slate-400">
-                Current Registered Email:{" "}
-                <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{user.email}</span>
+              <div className="flex items-center justify-between flex-wrap gap-2 text-slate-500 dark:text-slate-400">
+                <div>
+                  Current Registered Email:{" "}
+                  <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{user.email}</span>
+                </div>
+                <div>
+                  {currentVerification.loading ? (
+                    <span className="text-[10px] text-slate-400">Checking Firebase Auth...</span>
+                  ) : currentVerification.verified ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      Email Verified
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                      Pending Verification
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 

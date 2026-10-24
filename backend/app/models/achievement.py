@@ -120,4 +120,6 @@ class Achievement(Base):
         Index("ix_achievements_student_component", "student_id", "component_id"),
         Index("ix_achievements_student_status", "student_id", "status"),
         Index("ix_achievements_student_semester", "student_id", "semester_id"),
+        Index("ix_achievements_status_submitted", "status", "submitted_at"),
+        Index("ix_achievements_submitted_at", "submitted_at"),
     )

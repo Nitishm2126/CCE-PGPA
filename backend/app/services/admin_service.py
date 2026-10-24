@@ -20,6 +20,8 @@ from app.schemas.admin import (
     AdminEmailUpdateRequest,
     AdminEmailUpdateResponse,
     AdminOperationResult,
+    AdminSendVerificationEmailResponse,
+    AdminVerificationStatusResponse,
     ProvisioningExecuteRequest,
     ProvisioningExecuteResponse,
     ProvisioningPreviewItem,
@@ -1190,4 +1192,104 @@ def update_user_email_by_admin(
         status="pending_verification" if firebase_synced else "completed",
         firebase_synced=firebase_synced,
         message=f"Email address successfully updated from '{previous_email}' to '{clean_new_email}'.",
+    )
+
+
+def get_user_verification_status_by_admin(
+    db: Session,
+    admin_user: User,
+    target_user_id: uuid.UUID,
+) -> AdminVerificationStatusResponse:
+    """
+    Retrieves the live email verification status for any user directly from Firebase Auth.
+    """
+    target_user = db.get(User, target_user_id)
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User account not found (id={target_user_id}).",
+        )
+
+    is_verified = False
+    fb_linked = bool(target_user.firebase_uid)
+
+    try:
+        fb_app = get_firebase_app()
+    except Exception:
+        fb_app = None
+
+    if fb_app:
+        if target_user.firebase_uid:
+            try:
+                fb_user = fb_auth.get_user(target_user.firebase_uid, app=fb_app)
+                is_verified = bool(fb_user.email_verified)
+            except Exception as e:
+                logger.warning("Could not fetch Firebase user verification for %s: %s", target_user.id, e)
+        elif target_user.email:
+            try:
+                fb_user = fb_auth.get_user_by_email(target_user.email.strip().lower(), app=fb_app)
+                is_verified = bool(fb_user.email_verified)
+                fb_linked = True
+            except Exception:
+                pass
+
+    return AdminVerificationStatusResponse(
+        user_id=target_user.id,
+        email=target_user.email,
+        email_verified=is_verified,
+        firebase_linked=fb_linked,
+        firebase_uid=target_user.firebase_uid,
+        message="Verified" if is_verified else "Pending email verification",
+    )
+
+
+def send_user_verification_email_by_admin(
+    db: Session,
+    admin_user: User,
+    target_user_id: uuid.UUID,
+) -> AdminSendVerificationEmailResponse:
+    """
+    Generates a secure email verification link for any user via Firebase Admin SDK
+    and records an immutable audit log.
+    """
+    target_user = db.get(User, target_user_id)
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User account not found (id={target_user_id}).",
+        )
+
+    clean_email = target_user.email.strip().lower()
+    verification_link = None
+
+    try:
+        fb_app = get_firebase_app()
+        verification_link = fb_auth.generate_email_verification_link(clean_email, app=fb_app)
+    except Exception as e:
+        logger.error("Failed to generate Firebase verification link for %s: %s", clean_email, e)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Failed to generate Firebase email verification link: {e}",
+        )
+
+    record_audit_log(
+        db,
+        actor_id=admin_user.id,
+        action="admin_send_verification_email",
+        target_type=target_user.role.value,
+        target_id=str(target_user.id),
+        metadata={
+            "email": clean_email,
+            "outcome": "completed",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+    db.commit()
+
+    return AdminSendVerificationEmailResponse(
+        user_id=target_user.id,
+        email=clean_email,
+        success=True,
+        message=f"Verification email link successfully generated for '{clean_email}'.",
+        verification_link=verification_link,
     )

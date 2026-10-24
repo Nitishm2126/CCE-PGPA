@@ -1,11 +1,11 @@
 import secrets
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.permissions import require_admin
 from app.core.security import get_password_hash
@@ -22,6 +22,8 @@ from app.schemas.admin import (
     AdminComponentItem,
     AdminEmailUpdateRequest,
     AdminEmailUpdateResponse,
+    AdminSendVerificationEmailResponse,
+    AdminVerificationStatusResponse,
     AdminHODCreate,
     AdminHODDeleteRequest,
     AdminHODItem,
@@ -73,9 +75,11 @@ from app.services.admin_service import (
     delete_student_login_access,
     execute_bulk_provisioning,
     get_provisioning_preview,
+    get_user_verification_status_by_admin,
     permanently_delete_student,
     reassign_mentor_students,
     record_audit_log,
+    send_user_verification_email_by_admin,
     update_user_email_by_admin,
 )
 from app.services.drive_service import get_drive_service
@@ -201,12 +205,17 @@ def list_admin_submissions(
     status: Optional[str] = Query(default=None, description="Filter by status (pending, approved, rejected, draft)"),
     search: Optional[str] = Query(default=None, description="Search across title, student name, or register number"),
     component_id: Optional[uuid.UUID] = Query(default=None, description="Filter by component ID"),
-    semester_id: Optional[int] = Query(default=None, description="Filter by semester ID (1-8)"),
+    semester_id: Optional[Union[uuid.UUID, int, str]] = Query(default=None, description="Filter by semester ID (UUID) or number (1-8)"),
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> List[AdminSubmissionItem]:
     stmt = (
         select(Achievement)
+        .options(
+            joinedload(Achievement.student).joinedload(User.student_profile),
+            joinedload(Achievement.component),
+            joinedload(Achievement.semester),
+        )
         .order_by(Achievement.created_at.desc())
     )
 
@@ -214,8 +223,16 @@ def list_admin_submissions(
         stmt = stmt.where(Achievement.status == status)
     if component_id:
         stmt = stmt.where(Achievement.component_id == component_id)
-    if semester_id:
-        stmt = stmt.where(Achievement.semester_id == semester_id)
+    if semester_id is not None:
+        try:
+            val_uuid = uuid.UUID(str(semester_id))
+            stmt = stmt.where(Achievement.semester_id == val_uuid)
+        except (ValueError, AttributeError):
+            try:
+                sem_num = int(str(semester_id))
+                stmt = stmt.join(Semester, Achievement.semester_id == Semester.id).where(Semester.semester_number == sem_num)
+            except ValueError:
+                pass
 
     achievements = db.scalars(stmt).all()
 
@@ -229,9 +246,9 @@ def list_admin_submissions(
 
     results = []
     for a in achievements:
-        student_user = db.scalar(select(User).where(User.id == a.student_id))
-        student_prof = db.scalar(select(StudentProfile).where(StudentProfile.user_id == a.student_id))
-        comp = db.scalar(select(PGPAComponent).where(PGPAComponent.id == a.component_id))
+        student_user = a.student
+        student_prof = student_user.student_profile if student_user else None
+        comp = a.component
 
         s_name = student_user.full_name if student_user else "Student"
         s_email = student_user.email if student_user else ""
@@ -451,6 +468,42 @@ def update_user_email(
         admin_user=current_user,
         target_user_id=user_id,
         payload=payload,
+    )
+
+
+@router.get(
+    "/users/{user_id}/verification-status",
+    response_model=AdminVerificationStatusResponse,
+    summary="Get live email verification status from Firebase Authentication",
+    description="Allows administrators to inspect whether a user's registered email has been verified.",
+)
+def get_user_verification_status(
+    user_id: uuid.UUID,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminVerificationStatusResponse:
+    return get_user_verification_status_by_admin(
+        db=db,
+        admin_user=current_user,
+        target_user_id=user_id,
+    )
+
+
+@router.post(
+    "/users/{user_id}/send-verification-email",
+    response_model=AdminSendVerificationEmailResponse,
+    summary="Generate or resend email verification link for a user",
+    description="Generates an email verification link via Firebase Admin SDK for the user's registered email.",
+)
+def send_user_verification_email(
+    user_id: uuid.UUID,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminSendVerificationEmailResponse:
+    return send_user_verification_email_by_admin(
+        db=db,
+        admin_user=current_user,
+        target_user_id=user_id,
     )
 
 

@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.permissions import require_mentor
 from app.db.session import get_db
@@ -39,6 +39,15 @@ def ensure_mentor_assignments(db: Session, mentor: User) -> int:
     active_assigned_subquery = select(MentorAssignment.student_id).where(
         MentorAssignment.is_active.is_(True)
     )
+
+    unassigned_count = db.scalar(
+        select(func.count(StudentProfile.id)).where(
+            StudentProfile.user_id.not_in(active_assigned_subquery),
+            StudentProfile.original_mentor_name.is_not(None),
+        )
+    )
+    if not unassigned_count:
+        return 0
 
     unassigned_profiles = db.scalars(
         select(StudentProfile).where(
@@ -98,6 +107,9 @@ def get_assigned_students(
 
     stmt = (
         select(MentorAssignment)
+        .options(
+            joinedload(MentorAssignment.student).joinedload(User.student_profile)
+        )
         .where(
             MentorAssignment.mentor_id == current_user.id,
             MentorAssignment.is_active.is_(True),
@@ -177,8 +189,18 @@ def get_mentee_submissions(
         return []
 
     # 2. Query achievements for those mentees
-    stmt = select(Achievement).where(
-        Achievement.student_id.in_(mentee_ids)
+    stmt = (
+        select(Achievement)
+        .options(
+            joinedload(Achievement.component),
+            joinedload(Achievement.semester),
+            joinedload(Achievement.student).joinedload(User.student_profile),
+            selectinload(Achievement.files),
+            selectinload(Achievement.verification_logs).joinedload(VerificationLog.reviewer),
+        )
+        .where(
+            Achievement.student_id.in_(mentee_ids)
+        )
     )
     if status_filter:
         stmt = stmt.where(Achievement.status == status_filter)
@@ -205,7 +227,18 @@ def get_mentee_achievement(
 ) -> AchievementResponse:
     ensure_mentor_assignments(db, current_user)
 
-    achievement = db.get(Achievement, achievement_id)
+    achievement_stmt = (
+        select(Achievement)
+        .options(
+            joinedload(Achievement.component),
+            joinedload(Achievement.semester),
+            joinedload(Achievement.student).joinedload(User.student_profile),
+            selectinload(Achievement.files),
+            selectinload(Achievement.verification_logs).joinedload(VerificationLog.reviewer),
+        )
+        .where(Achievement.id == achievement_id)
+    )
+    achievement = db.scalars(achievement_stmt).first()
     if not achievement:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

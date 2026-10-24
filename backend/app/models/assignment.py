@@ -76,4 +76,5 @@ class MentorAssignment(Base):
     __table_args__ = (
         Index("ix_mentor_assignments_mentor_student", "mentor_id", "student_id"),
         Index("ix_mentor_assignments_student_active", "student_id", "is_active"),
+        Index("ix_mentor_assignments_mentor_active", "mentor_id", "is_active"),
     )

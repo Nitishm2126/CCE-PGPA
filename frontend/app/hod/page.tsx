@@ -14,24 +14,42 @@ import { MessagesHubView } from "@/components/messages/MessagesHubView";
 
 export default function HODDashboardPage() {
   const router = useRouter();
-  const { user, isLoading: authLoading, logout } = useAuth();
-  const token = getStoredToken();
+  const { user, token: authToken, isLoading: authLoading, logout } = useAuth();
+  const token = authToken || (typeof window !== "undefined" ? getStoredToken() : null);
 
-  // Data states
+  // Independent Data States
   const [overview, setOverview] = useState<DepartmentOverviewResponse | null>(null);
+  const [loadingOverview, setLoadingOverview] = useState<boolean>(true);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
+
   const [students, setStudents] = useState<HODStudentItem[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState<boolean>(true);
+  const [studentsError, setStudentsError] = useState<string | null>(null);
+
   const [components, setComponents] = useState<PGPAComponentResponse[]>([]);
+  const [loadingComponents, setLoadingComponents] = useState<boolean>(false);
+  const [componentsError, setComponentsError] = useState<string | null>(null);
+
   const [submissions, setSubmissions] = useState<AchievementResponse[]>([]);
-  const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
-  const [dataError, setDataError] = useState<string | null>(null);
+  const [loadingSubmissions, setLoadingSubmissions] = useState<boolean>(true);
+  const [submissionsError, setSubmissionsError] = useState<string | null>(null);
 
   // Tabs & Filters
   const [activeTab, setActiveTab] = useState<"submissions" | "students" | "overview" | "messages">("submissions");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
   const [selectedComponentId, setSelectedComponentId] = useState<string>("all");
   const [selectedMentorName, setSelectedMentorName] = useState<string>("all");
   const [selectedSemester, setSelectedSemester] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+
+  // Debounce search input for snappy typing and efficient filtering
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Inspection modal & File viewing
   const [selectedSubmission, setSelectedSubmission] = useState<AchievementResponse | null>(null);
@@ -61,10 +79,85 @@ export default function HODDashboardPage() {
     }
   }, [user, authLoading, router]);
 
-  const loadUnreadCounts = useCallback(async () => {
-    if (!token) return;
+  // Decoupled independent data loaders
+  const loadOverview = useCallback(async (activeToken?: string | null) => {
+    const t = activeToken || token;
+    if (!t) {
+      setLoadingOverview(false);
+      return;
+    }
     try {
-      const res = await api.getUnreadMessageCount(token);
+      setLoadingOverview(true);
+      setOverviewError(null);
+      const res = await api.getHodOverview(t);
+      setOverview(res);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load department metrics.";
+      setOverviewError(msg);
+    } finally {
+      setLoadingOverview(false);
+    }
+  }, [token]);
+
+  const loadStudents = useCallback(async (activeToken?: string | null) => {
+    const t = activeToken || token;
+    if (!t) {
+      setLoadingStudents(false);
+      return;
+    }
+    try {
+      setLoadingStudents(true);
+      setStudentsError(null);
+      const res = await api.getHodStudents(t);
+      setStudents(res);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load cohort student directory.";
+      setStudentsError(msg);
+    } finally {
+      setLoadingStudents(false);
+    }
+  }, [token]);
+
+  const loadComponents = useCallback(async (activeToken?: string | null) => {
+    const t = activeToken || token;
+    if (!t) return;
+    try {
+      setLoadingComponents(true);
+      setComponentsError(null);
+      const res = await api.getComponents(t);
+      setComponents(res);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load PGPA components catalogue.";
+      setComponentsError(msg);
+    } finally {
+      setLoadingComponents(false);
+    }
+  }, [token]);
+
+  const loadSubmissions = useCallback(async (activeToken?: string | null) => {
+    const t = activeToken || token;
+    if (!t) {
+      setLoadingSubmissions(false);
+      return;
+    }
+    try {
+      setLoadingSubmissions(true);
+      setSubmissionsError(null);
+      const res = await api.getHodSubmissions(undefined, t);
+      setSubmissions(res);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load department submissions.";
+      setSubmissionsError(msg);
+    } finally {
+      setLoadingSubmissions(false);
+    }
+  }, [token]);
+
+  const loadUnreadCounts = useCallback(async (activeToken?: string | null) => {
+    const t = activeToken || token;
+    if (!t) return;
+    try {
+      const res = await api.getUnreadMessageCount(t);
       setUnreadMessagesCount(res.total_unread);
       setUnreadCountsByAchievement(res.by_achievement || {});
     } catch (err) {
@@ -72,72 +165,40 @@ export default function HODDashboardPage() {
     }
   }, [token]);
 
-  // Reload department data for retry button
-  const loadDepartmentData = useCallback(async () => {
-    if (!token) return;
-    try {
-      setIsLoadingData(true);
-      setDataError(null);
-      const [overviewRes, studentsRes, componentsRes, submissionsRes, unreadRes] = await Promise.all([
-        api.getHodOverview(token),
-        api.getHodStudents(token),
-        api.getComponents(token).catch(() => []),
-        api.getHodSubmissions(undefined, token),
-        api.getUnreadMessageCount(token).catch(() => ({ total_unread: 0, by_achievement: {} })),
-      ]);
-      setOverview(overviewRes);
-      setStudents(studentsRes);
-      setComponents(componentsRes);
-      setSubmissions(submissionsRes);
-      setUnreadMessagesCount(unreadRes.total_unread);
-      setUnreadCountsByAchievement(unreadRes.by_achievement || {});
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to load department overview.";
-      setDataError(msg);
-    } finally {
-      setIsLoadingData(false);
-    }
-  }, [token]);
+  // Load all sections in parallel with settled promise resolution
+  const loadDepartmentData = useCallback(async (activeToken?: string | null) => {
+    const t = activeToken || token;
+    if (!t) return;
+    await Promise.allSettled([
+      loadOverview(t),
+      loadStudents(t),
+      loadComponents(t),
+      loadSubmissions(t),
+      loadUnreadCounts(t),
+    ]);
+  }, [token, loadOverview, loadStudents, loadComponents, loadSubmissions, loadUnreadCounts]);
 
   // Initial load via asynchronous fetch
   useEffect(() => {
     let ignore = false;
-    if (!token || !user || user.role !== "hod") return;
+    if (authLoading) return;
+    if (!user || user.role !== "hod") return;
 
-    const fetchInitial = async () => {
-      try {
-        const [overviewRes, studentsRes, componentsRes, submissionsRes, unreadRes] = await Promise.all([
-          api.getHodOverview(token),
-          api.getHodStudents(token),
-          api.getComponents(token).catch(() => []),
-          api.getHodSubmissions(undefined, token),
-          api.getUnreadMessageCount(token).catch(() => ({ total_unread: 0, by_achievement: {} })),
-        ]);
-        if (ignore) return;
-        setOverview(overviewRes);
-        setStudents(studentsRes);
-        setComponents(componentsRes);
-        setSubmissions(submissionsRes);
-        setUnreadMessagesCount(unreadRes.total_unread);
-        setUnreadCountsByAchievement(unreadRes.by_achievement || {});
-        setDataError(null);
-      } catch (err: unknown) {
-        if (ignore) return;
-        const msg = err instanceof Error ? err.message : "Failed to load department overview.";
-        setDataError(msg);
-      } finally {
-        if (!ignore) {
-          setIsLoadingData(false);
-        }
-      }
-    };
+    if (!token) {
+      setLoadingOverview(false);
+      setLoadingStudents(false);
+      setLoadingSubmissions(false);
+      return;
+    }
 
-    fetchInitial();
+    if (!ignore) {
+      loadDepartmentData(token);
+    }
 
     return () => {
       ignore = true;
     };
-  }, [user, token]);
+  }, [user, token, authLoading, loadDepartmentData]);
 
   // Build student ID to mentor mapping
   const studentMentorMap = useMemo(() => {
@@ -192,9 +253,9 @@ export default function HODDashboardPage() {
           }
         }
       }
-      // Search query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
+      // Search query (debounced)
+      if (debouncedSearchQuery.trim()) {
+        const q = debouncedSearchQuery.toLowerCase().trim();
         const studentName = sub.student_name?.toLowerCase() || "";
         const reg = sub.student_register_number?.toLowerCase() || "";
         const title = sub.title?.toLowerCase() || "";
@@ -212,7 +273,7 @@ export default function HODDashboardPage() {
       }
       return true;
     });
-  }, [submissions, selectedComponentId, selectedStatus, selectedMentorName, selectedSemester, searchQuery, studentMentorMap, components]);
+  }, [submissions, selectedComponentId, selectedStatus, selectedMentorName, selectedSemester, debouncedSearchQuery, studentMentorMap, components]);
 
   // Securely download / open evidence file
   const handleViewEvidence = async (fileId: string) => {
@@ -461,14 +522,19 @@ export default function HODDashboardPage() {
           </div>
         </div>
 
-        {/* Global Error Banner */}
-        {dataError && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-700 flex items-center justify-between">
-            <span>{dataError}</span>
+        {/* Partial or Global Error Banner */}
+        {(submissionsError || studentsError || overviewError || componentsError) && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>{[submissionsError, studentsError, overviewError, componentsError].filter(Boolean).join(" ")}</span>
+            </div>
             <button
               type="button"
-              onClick={loadDepartmentData}
-              className="font-bold underline hover:no-underline cursor-pointer"
+              onClick={() => loadDepartmentData(token)}
+              className="font-bold text-amber-900 underline hover:no-underline cursor-pointer ml-3 shrink-0"
             >
               Retry
             </button>
@@ -569,11 +635,22 @@ export default function HODDashboardPage() {
             </div>
 
             {/* Submissions Table */}
-            {isLoadingData ? (
+            {loadingSubmissions ? (
               <div className="space-y-3 py-6">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="h-20 bg-slate-100 rounded-xl animate-pulse" />
                 ))}
+              </div>
+            ) : submissionsError ? (
+              <div className="py-12 text-center rounded-xl border border-rose-200 bg-rose-50/50 p-6 space-y-3">
+                <p className="text-xs font-semibold text-rose-700">{submissionsError}</p>
+                <button
+                  type="button"
+                  onClick={() => loadSubmissions(token)}
+                  className="rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                >
+                  Retry Submissions
+                </button>
               </div>
             ) : filteredSubmissions.length === 0 ? (
               <div className="py-14 text-center">
@@ -750,7 +827,7 @@ export default function HODDashboardPage() {
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div>
                 <h3 className="text-base font-bold text-slate-900">
-                  CCE II Year Student Directory ({students.length} Records)
+                  CCE II Year Student Directory ({loadingStudents ? "…" : `${students.length} Records`})
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Complete official cohort roster with verified mentor allocations
@@ -761,48 +838,74 @@ export default function HODDashboardPage() {
               </span>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-200/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/50">
-                    <th className="py-3 px-4">#</th>
-                    <th className="py-3 px-4">Student Name</th>
-                    <th className="py-3 px-4">Register Number</th>
-                    <th className="py-3 px-4">Email Address</th>
-                    <th className="py-3 px-4">Section</th>
-                    <th className="py-3 px-4">Assigned Faculty Mentor</th>
-                    <th className="py-3 px-4 text-right">Submissions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {students.map((st, idx) => {
-                    const studentSubmissions = submissions.filter((s) => s.student_id === st.student_id);
-                    return (
-                      <tr key={st.student_id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-2.5 px-4 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
-                        <td className="py-2.5 px-4 font-bold text-slate-900">{st.full_name}</td>
-                        <td className="py-2.5 px-4 font-mono text-purple-700 font-semibold">{st.register_number || "—"}</td>
-                        <td className="py-2.5 px-4 text-slate-500">{st.email}</td>
-                        <td className="py-2.5 px-4 text-slate-600 font-medium">{st.section || "A"}</td>
-                        <td className="py-2.5 px-4 text-slate-800 font-medium">{st.mentor_name || "Unassigned"}</td>
-                        <td className="py-2.5 px-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSearchQuery(st.register_number || st.full_name);
-                              setActiveTab("submissions");
-                            }}
-                            className="inline-flex items-center rounded-md bg-purple-50 px-2.5 py-1 text-[11px] font-bold text-purple-700 hover:bg-purple-100 transition-colors cursor-pointer"
-                          >
-                            {studentSubmissions.length} &rarr;
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            {loadingStudents ? (
+              <div className="space-y-3 py-6">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-12 bg-slate-100 rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : studentsError ? (
+              <div className="py-12 text-center rounded-xl border border-rose-200 bg-rose-50/50 p-6 space-y-3">
+                <p className="text-xs font-semibold text-rose-700">{studentsError}</p>
+                <button
+                  type="button"
+                  onClick={() => loadStudents(token)}
+                  className="rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                >
+                  Retry Student Directory
+                </button>
+              </div>
+            ) : students.length === 0 ? (
+              <div className="py-14 text-center">
+                <h3 className="text-sm font-bold text-slate-900">No students found</h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  No cohort students have been loaded into the CCE department directory.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/50">
+                      <th className="py-3 px-4">#</th>
+                      <th className="py-3 px-4">Student Name</th>
+                      <th className="py-3 px-4">Register Number</th>
+                      <th className="py-3 px-4">Email Address</th>
+                      <th className="py-3 px-4">Section</th>
+                      <th className="py-3 px-4">Assigned Faculty Mentor</th>
+                      <th className="py-3 px-4 text-right">Submissions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {students.map((st, idx) => {
+                      const studentSubmissions = submissions.filter((s) => s.student_id === st.student_id);
+                      return (
+                        <tr key={st.student_id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-2.5 px-4 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
+                          <td className="py-2.5 px-4 font-bold text-slate-900">{st.full_name}</td>
+                          <td className="py-2.5 px-4 font-mono text-purple-700 font-semibold">{st.register_number || "—"}</td>
+                          <td className="py-2.5 px-4 text-slate-500">{st.email}</td>
+                          <td className="py-2.5 px-4 text-slate-600 font-medium">{st.section || "A"}</td>
+                          <td className="py-2.5 px-4 text-slate-800 font-medium">{st.mentor_name || "Unassigned"}</td>
+                          <td className="py-2.5 px-4 text-right">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSearchQuery(st.register_number || st.full_name);
+                                setActiveTab("submissions");
+                              }}
+                              className="inline-flex items-center rounded-md bg-purple-50 px-2.5 py-1 text-[11px] font-bold text-purple-700 hover:bg-purple-100 transition-colors cursor-pointer"
+                            >
+                              {studentSubmissions.length} &rarr;
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
@@ -814,11 +917,22 @@ export default function HODDashboardPage() {
                 CCE Department Faculty Mentorship Allocation Matrix
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Official distribution of 61 cohort students among department mentors
+                Official distribution of cohort students among department mentors
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {loadingStudents ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-44 bg-slate-100 rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : uniqueMentors.length === 0 ? (
+              <div className="py-14 text-center">
+                <p className="text-xs text-slate-500">No faculty mentors found with active mentee allocations.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {uniqueMentors.map((mentorName) => {
                 const mentees = students.filter((s) => s.mentor_name === mentorName);
                 const menteeIds = new Set(mentees.map((m) => m.student_id));
@@ -862,6 +976,7 @@ export default function HODDashboardPage() {
                 );
               })}
             </div>
+            )}
           </div>
         )}
 

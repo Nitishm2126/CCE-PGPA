@@ -4,9 +4,9 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 
-from app.core.permissions import require_student
+from app.core.permissions import get_current_user, require_student
 from app.db.session import get_db
 from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
@@ -205,7 +205,7 @@ def update_student_me(
     description="Returns all active PGPA components defined in PostgreSQL.",
 )
 def get_pgpa_components(
-    current_user: User = Depends(require_student),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> List[PGPAComponentResponse]:
     stmt = (
@@ -224,7 +224,7 @@ def get_pgpa_components(
     description="Returns enabled semesters available for new achievement submissions.",
 )
 def get_available_semesters(
-    current_user: User = Depends(require_student),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> List[SemesterResponse]:
     stmt = (
@@ -249,6 +249,13 @@ def get_my_achievements(
 ) -> List[AchievementResponse]:
     stmt = (
         select(Achievement)
+        .options(
+            joinedload(Achievement.component),
+            joinedload(Achievement.semester),
+            joinedload(Achievement.student).joinedload(User.student_profile),
+            selectinload(Achievement.files),
+            selectinload(Achievement.verification_logs).joinedload(VerificationLog.reviewer),
+        )
         .where(Achievement.student_id == current_user.id)
         .order_by(Achievement.created_at.desc())
     )
@@ -335,7 +342,18 @@ def get_achievement_detail(
     current_user: User = Depends(require_student),
     db: Session = Depends(get_db),
 ) -> AchievementResponse:
-    achievement = db.get(Achievement, achievement_id)
+    stmt = (
+        select(Achievement)
+        .options(
+            joinedload(Achievement.component),
+            joinedload(Achievement.semester),
+            joinedload(Achievement.student).joinedload(User.student_profile),
+            selectinload(Achievement.files),
+            selectinload(Achievement.verification_logs).joinedload(VerificationLog.reviewer),
+        )
+        .where(Achievement.id == achievement_id)
+    )
+    achievement = db.scalars(stmt).first()
     if not achievement:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -45,6 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearError = useCallback(() => setError(null), []);
 
+  const isLoggingInRef = React.useRef(false);
+
   // Initialize session and sync with Firebase Auth state
   useEffect(() => {
     let isMounted = true;
@@ -89,9 +91,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setFirebaseUser(fbUser);
 
+      // If active login() method is currently in-flight, let login() handle tokens and profile loading
+      if (isLoggingInRef.current) {
+        return;
+      }
+
       if (fbUser) {
         try {
           const idToken = await fbUser.getIdToken();
+          if (!isMounted) return;
           setToken(idToken);
           setStoredToken(idToken);
 
@@ -165,80 +173,117 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<UserResponse | null> => {
     setIsLoading(true);
     setError(null);
+    isLoggingInRef.current = true;
 
-    // 1. Authenticate via Firebase Web SDK
-    if (isFirebaseConfigured() && firebaseAuth) {
-      try {
-        const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-        const fbUser = userCredential.user;
-        setFirebaseUser(fbUser);
-
-        const idToken = await fbUser.getIdToken();
-        setStoredToken(idToken);
-        setToken(idToken);
-
-        // Validate server-side PostgreSQL directory user
-        try {
-          const userData = await api.getMe(idToken);
-          setUser(userData);
-          setIsProvisioned(true);
-          setIsLoading(false);
-          return userData;
-        } catch {
-          // Firebase authenticated successfully, but user is not yet provisioned in PostgreSQL.
-          // We preserve the Firebase session so the user can verify their email.
-          setUser(null);
-          setIsProvisioned(false);
-          setIsLoading(false);
-          return null;
-        }
-      } catch (fbError: unknown) {
-        // Fall back to direct FastAPI authentication if user is in PostgreSQL
-        try {
-          const tokenResponse = await api.login(email, password);
-          setStoredToken(tokenResponse.access_token);
-          setToken(tokenResponse.access_token);
-
-          const userData = await api.getMe(tokenResponse.access_token);
-          setUser(userData);
-          setIsProvisioned(true);
-          setIsLoading(false);
-          return userData;
-        } catch {
-          setIsLoading(false);
-          const msg =
-            fbError instanceof ApiError
-              ? fbError.message
-              : fbError instanceof Error
-              ? fbError.message
-              : "Authentication failed. Please verify your credentials.";
-          setError(msg);
-          throw new Error(msg);
-        }
-      }
-    }
-
-    // 2. Direct FastAPI Authentication fallback (when Firebase Web SDK is not configured)
     try {
-      const tokenResponse = await api.login(email, password);
-      setStoredToken(tokenResponse.access_token);
-      setToken(tokenResponse.access_token);
+      // 1. Authenticate via Firebase Web SDK
+      if (isFirebaseConfigured() && firebaseAuth) {
+        try {
+          const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+          const fbUser = userCredential.user;
+          setFirebaseUser(fbUser);
 
-      const userData = await api.getMe(tokenResponse.access_token);
-      setUser(userData);
-      setIsProvisioned(true);
-      setIsLoading(false);
-      return userData;
-    } catch (err: unknown) {
-      setIsLoading(false);
-      let message = "Invalid email or password. Please verify your credentials.";
-      if (err instanceof ApiError) {
-        message = err.message;
-      } else if (err instanceof Error) {
-        message = err.message;
+          const idToken = await fbUser.getIdToken();
+          setStoredToken(idToken);
+          setToken(idToken);
+
+          // Validate server-side PostgreSQL directory user
+          try {
+            const userData = await api.getMe(idToken);
+            setUser(userData);
+            setIsProvisioned(true);
+            return userData;
+          } catch (meErr: unknown) {
+            if (meErr instanceof ApiError && meErr.status === 401) {
+              // Firebase authenticated successfully, but user is not yet provisioned in PostgreSQL
+              setUser(null);
+              setIsProvisioned(false);
+              return null;
+            }
+            // Backend network error, timeout, or server error
+            const msg =
+              meErr instanceof ApiError
+                ? meErr.message
+                : "Unable to verify user profile with backend. Please check connection.";
+            setError(msg);
+            throw new Error(msg);
+          }
+        } catch (fbError: unknown) {
+          // If error is an already-handled ApiError from getMe, rethrow
+          if (fbError instanceof ApiError) {
+            throw fbError;
+          }
+
+          // Fall back to direct FastAPI authentication if user is in PostgreSQL
+          try {
+            const tokenResponse = await api.login(email, password);
+            setStoredToken(tokenResponse.access_token);
+            setToken(tokenResponse.access_token);
+
+            const userData = await api.getMe(tokenResponse.access_token);
+            setUser(userData);
+            setIsProvisioned(true);
+            return userData;
+          } catch (apiErr: unknown) {
+            let msg = "Invalid email or password. Please verify your credentials.";
+
+            // Format clean, actionable error messages
+            const fbCode = (fbError as { code?: string })?.code;
+            if (apiErr instanceof ApiError) {
+              if (apiErr.status === 408) {
+                msg = "Login request timed out. Please verify your connection and try again.";
+              } else if (apiErr.status === 0) {
+                msg = "Backend service unavailable. Please check your network connection.";
+              } else if (apiErr.status === 403) {
+                msg = apiErr.message || "Account is deactivated. Please contact an administrator.";
+              } else if (apiErr.status === 401) {
+                msg = "Invalid email or password. Please verify your credentials.";
+              } else {
+                msg = apiErr.message;
+              }
+            } else if (fbCode === "auth/too-many-requests") {
+              msg = "Too many failed login attempts. Please wait a few minutes before trying again.";
+            } else if (fbCode === "auth/network-request-failed") {
+              msg = "Network error: Unable to reach authentication service. Please check your connection.";
+            } else if (fbCode === "auth/user-disabled") {
+              msg = "This account has been disabled. Please contact the administrator.";
+            }
+
+            setError(msg);
+            throw new Error(msg);
+          }
+        }
       }
-      setError(message);
-      throw new Error(message);
+
+      // 2. Direct FastAPI Authentication fallback (when Firebase Web SDK is not configured)
+      try {
+        const tokenResponse = await api.login(email, password);
+        setStoredToken(tokenResponse.access_token);
+        setToken(tokenResponse.access_token);
+
+        const userData = await api.getMe(tokenResponse.access_token);
+        setUser(userData);
+        setIsProvisioned(true);
+        return userData;
+      } catch (err: unknown) {
+        let message = "Invalid email or password. Please verify your credentials.";
+        if (err instanceof ApiError) {
+          if (err.status === 408) {
+            message = "Login request timed out. Please retry.";
+          } else if (err.status === 0) {
+            message = "Backend service unavailable. Please check your connection.";
+          } else {
+            message = err.message;
+          }
+        } else if (err instanceof Error) {
+          message = err.message;
+        }
+        setError(message);
+        throw new Error(message);
+      }
+    } finally {
+      isLoggingInRef.current = false;
+      setIsLoading(false);
     }
   };
 

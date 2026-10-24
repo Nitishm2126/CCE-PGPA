@@ -25,12 +25,26 @@ export default function MentorDashboardPage() {
   // Filters & State
   const [activeTab, setActiveTab] = useState<"submissions" | "roster" | "messages">("submissions");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
   const [selectedMenteeId, setSelectedMenteeId] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [semesterFilter, setSemesterFilter] = useState<string>("all");
   const [selectedSubmission, setSelectedSubmission] = useState<AchievementResponse | null>(null);
   const [isOpeningFile, setIsOpeningFile] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+
+  // Review submission state
+  const [reviewRemarks, setReviewRemarks] = useState<string>("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState<boolean>(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewSuccessMsg, setReviewSuccessMsg] = useState<string | null>(null);
 
   // Messages & Remarks Drawer state
   const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
@@ -146,8 +160,8 @@ export default function MentorDashboardPage() {
         }
       }
       // Search query (student name, reg number, title, organizer, component)
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase().trim();
+      if (debouncedSearchQuery.trim()) {
+        const query = debouncedSearchQuery.toLowerCase().trim();
         const studentName = sub.student_name?.toLowerCase() || "";
         const regNum = sub.student_register_number?.toLowerCase() || "";
         const title = sub.title?.toLowerCase() || "";
@@ -165,7 +179,7 @@ export default function MentorDashboardPage() {
       }
       return true;
     });
-  }, [submissions, selectedMenteeId, statusFilter, semesterFilter, searchQuery]);
+  }, [submissions, selectedMenteeId, statusFilter, semesterFilter, debouncedSearchQuery]);
 
   // Securely download / open evidence file via backend proxy
   const handleViewEvidence = async (fileId: string) => {
@@ -185,6 +199,53 @@ export default function MentorDashboardPage() {
   const handleLogout = async () => {
     await logout();
     router.push("/login");
+  };
+
+  const handleOpenSubmission = (sub: AchievementResponse) => {
+    setSelectedSubmission(sub);
+    setReviewRemarks("");
+    setReviewError(null);
+    setReviewSuccessMsg(null);
+  };
+
+  const handleReviewSubmission = async (action: "approved" | "rejected" | "requested_changes") => {
+    if (!selectedSubmission || !token) return;
+    setIsSubmittingReview(true);
+    setReviewError(null);
+    setReviewSuccessMsg(null);
+
+    try {
+      const updated = await api.reviewMenteeAchievement(
+        selectedSubmission.id,
+        {
+          action,
+          remarks: reviewRemarks.trim() || undefined,
+        },
+        token
+      );
+
+      // Update submissions list
+      setSubmissions((prev) =>
+        prev.map((s) => (s.id === updated.id ? updated : s))
+      );
+      setSelectedSubmission(updated);
+      setReviewRemarks("");
+      setReviewSuccessMsg(
+        `Submission marked as ${
+          action === "approved"
+            ? "Verified & Approved"
+            : action === "rejected"
+            ? "Rejected"
+            : "Changes Requested (Returned to Draft)"
+        }.`
+      );
+      loadData();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to record review decision.";
+      setReviewError(msg);
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   // Date formatting helper
@@ -271,7 +332,7 @@ export default function MentorDashboardPage() {
                   Department of Computer and Communication Engineering
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  CCE-PGPA &bull; Faculty Mentor Portal (View-Only Faculty Access)
+                  CCE-PGPA &bull; Faculty Mentor Portal
                 </p>
               </div>
             </div>
@@ -288,9 +349,14 @@ export default function MentorDashboardPage() {
                 <button
                   type="button"
                   onClick={() => router.push("/hod")}
-                  className="rounded-lg border border-purple-300 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/50 px-3 py-1.5 text-xs font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
+                  id="btn-goto-hod-dashboard"
+                  className="rounded-lg border border-purple-500 bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                  title="Navigate directly to department-wide Head of Department dashboard"
                 >
-                  <span>&larr; Switch to HOD Portal</span>
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  <span>Go to HOD Dashboard</span>
                 </button>
               )}
               <RoleBadge role={user?.role === "hod" ? "hod" : "mentor"} />
@@ -320,17 +386,37 @@ export default function MentorDashboardPage() {
         <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-200 mb-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
-                View-Only Faculty Access Enabled
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+              {user?.role === "hod" ? (
+                <div className="inline-flex items-center gap-2 rounded-full bg-purple-50 dark:bg-purple-950/60 px-3 py-1 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 mb-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-purple-600" />
+                  HOD Assigned Mentee Portal &bull; {students.length} Assigned Students
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/60 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 mb-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                  Faculty Mentorship Portal &bull; Active Evaluation
+                </div>
+              )}
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Welcome, {user?.full_name}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-                You have view-only access to activities and supporting evidence submitted by your assigned mentees.
-                No approval or rejection action is required; student submissions are automatically recorded in PostgreSQL.
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
+                {user?.role === "hod"
+                  ? "You are managing your personal assigned mentees. Inspect submissions, evaluate certificates, and record verification decisions. Use the Go to HOD Dashboard button to return to department-wide oversight."
+                  : "Review, evaluate, and verify supporting evidence submitted by your assigned cohort mentees. Provide remarks and track performance grade points."}
               </p>
+              {user?.role === "hod" && (
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/hod")}
+                    id="btn-goto-hod-dashboard-banner"
+                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-sm transition cursor-pointer"
+                  >
+                    <span>Go to HOD Dashboard &rarr;</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Quick Metrics */}
@@ -534,7 +620,7 @@ export default function MentorDashboardPage() {
                         <tr
                           key={sub.id}
                           className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
-                          onClick={() => setSelectedSubmission(sub)}
+                          onClick={() => handleOpenSubmission(sub)}
                         >
                           {/* Student Details */}
                           <td className="py-3 px-4">
@@ -647,7 +733,7 @@ export default function MentorDashboardPage() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedSubmission(sub);
+                                handleOpenSubmission(sub);
                               }}
                               className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                             >
@@ -920,12 +1006,98 @@ export default function MentorDashboardPage() {
                   )}
                 </div>
 
-                {/* Audit & Workflow Notice */}
-                <div className="rounded-xl border border-blue-200/70 bg-blue-50/50 p-3.5 text-slate-600 leading-relaxed text-[11px]">
-                  <p className="font-bold text-blue-900 mb-0.5">Faculty View-Only Interface</p>
-                  <p>
-                    In accordance with institutional guidelines, student submissions are recorded directly upon submission and made viewable to assigned faculty mentors and HOD. No approval action is required.
-                  </p>
+                {/* Mentor Review & Verification Decision Box */}
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-blue-600" />
+                        Faculty Evaluation &amp; Verification Action
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        Inspect evidence and record formal decision with optional verification feedback.
+                      </p>
+                    </div>
+                    {renderStatusBadge(selectedSubmission.status)}
+                  </div>
+
+                  {reviewSuccessMsg && (
+                    <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
+                      {reviewSuccessMsg}
+                    </div>
+                  )}
+
+                  {reviewError && (
+                    <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-semibold">
+                      {reviewError}
+                    </div>
+                  )}
+
+                  {selectedSubmission.status === "pending" ? (
+                    <div className="space-y-3 pt-1">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          Review Remarks / Feedback (Optional for approval, recommended for changes/rejection)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={reviewRemarks}
+                          onChange={(e) => setReviewRemarks(e.target.value)}
+                          placeholder="e.g., Certificate verified against event criteria. Grade points approved."
+                          disabled={isSubmittingReview}
+                          className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => handleReviewSubmission("approved")}
+                          disabled={isSubmittingReview}
+                          id="btn-mentor-approve"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50"
+                        >
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>Approve &amp; Verify</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleReviewSubmission("requested_changes")}
+                          disabled={isSubmittingReview}
+                          id="btn-mentor-request-changes"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50"
+                        >
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          <span>Request Changes (Draft)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleReviewSubmission("rejected")}
+                          disabled={isSubmittingReview}
+                          id="btn-mentor-reject"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50"
+                        >
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          <span>Reject Submission</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between">
+                      <span>This activity has already been evaluated and is currently marked as <strong className="capitalize text-slate-800 dark:text-slate-200">{selectedSubmission.status}</strong>.</span>
+                      {selectedSubmission.updated_at && (
+                        <span className="text-slate-400 font-mono text-[10px]">Updated: {formatDate(selectedSubmission.updated_at)}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

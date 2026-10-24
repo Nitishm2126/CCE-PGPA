@@ -15,7 +15,8 @@ export function PortalSelection() {
   // If authenticated, display only the portals the user is authorized to access
   const authorizedRoles: UserRole[] = React.useMemo(() => {
     if (!user || isLoading) {
-      return ALL_ROLES;
+      // Unauthenticated visitors: strictly non-administrator academic portals
+      return ["student", "mentor", "hod"];
     }
     if (user.role === "hod") {
       // HOD possesses dual capabilities: Department Head and Faculty Mentor
@@ -129,7 +130,7 @@ export function PortalSelection() {
               ? "grid-cols-1 max-w-md mx-auto w-full"
               : authorizedRoles.length === 2
               ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto w-full"
-              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto w-full"
           }`}
         >
           {authorizedRoles.map((roleKey) => {
@@ -295,9 +296,10 @@ export function PortalSelection() {
           </p>
           <p className="text-[11px] text-slate-400">
             <Link
-              href={user?.role === "admin" ? "/admin" : "/login/admin"}
+              href="/login/admin"
               className="hover:underline hover:text-slate-600 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors"
-              title="System Administrator Portal"
+              title="System Administrator Portal Login"
+              aria-label="System Administrator Portal Login"
             >
               CCE-PGPA Management System
             </Link>{" "}

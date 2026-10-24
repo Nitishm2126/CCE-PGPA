@@ -37,6 +37,8 @@ import {
   UnreadCountResponse,
   AdminEmailUpdateRequest,
   AdminEmailUpdateResponse,
+  AdminSendVerificationEmailResponse,
+  AdminVerificationStatusResponse,
 } from "@/types/auth";
 import {
   PGPAComponentResponse,
@@ -79,7 +81,7 @@ export class ApiError extends Error {
 
 async function request<T>(
   path: string,
-  options: RequestInit = {},
+  options: RequestInit & { timeoutMs?: number } = {},
   token?: string | null
 ): Promise<T> {
   const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
@@ -95,17 +97,31 @@ async function request<T>(
     headers["Authorization"] = `Bearer ${authToken}`;
   }
 
+  const { timeoutMs = 12000, ...fetchOptions } = options;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   let response: Response;
   try {
     response = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       headers,
+      signal: fetchOptions.signal || controller.signal,
     });
-  } catch {
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new ApiError(
+        `Request timed out after ${timeoutMs}ms (${url}). The backend service took too long to respond. Please verify the backend is running and retry.`,
+        408
+      );
+    }
+    const errDetail = err instanceof Error ? ` (${err.message})` : "";
     throw new ApiError(
-      "Unable to connect to CCE-PGPA backend service. Please check your network connection.",
+      `Unable to connect to CCE-PGPA backend service at ${url}${errDetail}. Please check your network connection or verify that the backend is active on http://127.0.0.1:8000.`,
       0
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!response.ok) {
@@ -124,8 +140,18 @@ async function request<T>(
     throw new ApiError(errorMessage, response.status);
   }
 
-  return response.json() as Promise<T>;
+  try {
+    return (await response.json()) as T;
+  } catch {
+    throw new ApiError(
+      `Invalid response from CCE-PGPA backend for ${path}: Expected JSON payload but received non-JSON (status ${response.status}).`,
+      502
+    );
+  }
 }
+
+let cachedComponents: PGPAComponentResponse[] | null = null;
+let cachedSemesters: SemesterResponse[] | null = null;
 
 export const api = {
   login: async (email: string, password: string): Promise<TokenResponse> => {
@@ -157,8 +183,14 @@ export const api = {
     );
   },
 
-  getComponents: async (token?: string | null): Promise<PGPAComponentResponse[]> => {
-    return request<PGPAComponentResponse[]>("/students/components", { method: "GET" }, token);
+
+  getComponents: async (token?: string | null, forceRefresh: boolean = false): Promise<PGPAComponentResponse[]> => {
+    if (cachedComponents && !forceRefresh) {
+      return cachedComponents;
+    }
+    const res = await request<PGPAComponentResponse[]>("/students/components", { method: "GET" }, token);
+    cachedComponents = res;
+    return res;
   },
 
   getMyAchievements: async (token?: string | null): Promise<AchievementResponse[]> => {
@@ -281,6 +313,21 @@ export const api = {
 
   getMenteeAchievement: async (achievementId: string, token?: string | null): Promise<AchievementResponse> => {
     return request<AchievementResponse>(`/mentor/achievements/${achievementId}`, { method: "GET" }, token);
+  },
+
+  reviewMenteeAchievement: async (
+    achievementId: string,
+    data: { action: "approved" | "rejected" | "requested_changes"; remarks?: string },
+    token?: string | null
+  ): Promise<AchievementResponse> => {
+    return request<AchievementResponse>(
+      `/mentor/achievements/${achievementId}/review`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    );
   },
 
   // HOD Endpoints (View-Only Department Oversight)
@@ -654,6 +701,28 @@ export const api = {
     );
   },
 
+  adminGetVerificationStatus: async (
+    userId: string,
+    token?: string | null
+  ): Promise<AdminVerificationStatusResponse> => {
+    return request<AdminVerificationStatusResponse>(
+      `/admin/users/${userId}/verification-status`,
+      { method: "GET" },
+      token
+    );
+  },
+
+  adminSendVerificationEmail: async (
+    userId: string,
+    token?: string | null
+  ): Promise<AdminSendVerificationEmailResponse> => {
+    return request<AdminSendVerificationEmailResponse>(
+      `/admin/users/${userId}/send-verification-email`,
+      { method: "POST" },
+      token
+    );
+  },
+
   // Semester Management
   adminGetSemesters: async (
     token?: string | null
@@ -698,9 +767,15 @@ export const api = {
   },
 
   studentGetSemesters: async (
-    token?: string | null
+    token?: string | null,
+    forceRefresh: boolean = false
   ): Promise<SemesterResponse[]> => {
-    return request<SemesterResponse[]>("/students/semesters", { method: "GET" }, token);
+    if (cachedSemesters && !forceRefresh) {
+      return cachedSemesters;
+    }
+    const res = await request<SemesterResponse[]>("/students/semesters", { method: "GET" }, token);
+    cachedSemesters = res;
+    return res;
   },
 };
 

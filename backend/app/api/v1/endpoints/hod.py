@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.permissions import require_hod
 from app.db.session import get_db
@@ -31,6 +31,7 @@ def get_department_students(
 ) -> List[HODStudentItem]:
     stmt = (
         select(User)
+        .options(joinedload(User.student_profile))
         .where(User.role == UserRole.STUDENT)
         .order_by(User.full_name.asc())
     )
@@ -38,6 +39,7 @@ def get_department_students(
 
     active_assignments_stmt = (
         select(MentorAssignment)
+        .options(joinedload(MentorAssignment.mentor))
         .where(MentorAssignment.is_active.is_(True))
     )
     active_assignments = db.scalars(active_assignments_stmt).all()
@@ -145,11 +147,29 @@ def get_department_submissions(
         default=None,
         description="Search text across student name, register number, or activity title",
     ),
+    limit: int = Query(
+        default=200,
+        ge=1,
+        le=1000,
+        description="Maximum number of submissions to return per page",
+    ),
+    offset: int = Query(
+        default=0,
+        ge=0,
+        description="Pagination offset",
+    ),
     current_user: User = Depends(require_hod),
     db: Session = Depends(get_db),
 ) -> List[AchievementResponse]:
     stmt = (
         select(Achievement)
+        .options(
+            joinedload(Achievement.component),
+            joinedload(Achievement.semester),
+            joinedload(Achievement.student).joinedload(User.student_profile),
+            selectinload(Achievement.files),
+            selectinload(Achievement.verification_logs).joinedload(VerificationLog.reviewer),
+        )
         .join(User, Achievement.student_id == User.id)
         .outerjoin(StudentProfile, User.id == StudentProfile.user_id)
         .where(User.role == UserRole.STUDENT)
@@ -187,6 +207,7 @@ def get_department_submissions(
         )
 
     stmt = stmt.order_by(Achievement.submitted_at.desc(), Achievement.created_at.desc())
+    stmt = stmt.offset(offset).limit(limit)
     achievements = db.scalars(stmt).all()
     return [format_achievement_response(a) for a in achievements]
 
@@ -211,6 +232,13 @@ def get_student_achievements_for_hod(
 
     stmt = (
         select(Achievement)
+        .options(
+            joinedload(Achievement.component),
+            joinedload(Achievement.semester),
+            joinedload(Achievement.student).joinedload(User.student_profile),
+            selectinload(Achievement.files),
+            selectinload(Achievement.verification_logs).joinedload(VerificationLog.reviewer),
+        )
         .where(Achievement.student_id == student_id)
         .order_by(Achievement.created_at.desc())
     )

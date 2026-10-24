@@ -37,6 +37,8 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     clearError();
     setLocalError(null);
     setRoleMismatch(null);
@@ -138,10 +140,13 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
             <span>Back to Portal Selection</span>
           </Link>
 
-          {/* Quick role switcher dropdown/links */}
+          {/* Quick role switcher dropdown/links - Administrator portal is strictly restricted to footer credit entry */}
           <div className="hidden sm:flex items-center gap-2 text-slate-400">
             <span>Switch:</span>
-            {ALL_ROLES.filter((r) => r !== role).map((r) => (
+            {(role === "admin"
+              ? (["student", "mentor", "hod"] as UserRole[])
+              : (["student", "mentor", "hod"] as UserRole[]).filter((r) => r !== role)
+            ).map((r) => (
               <Link
                 key={r}
                 href={ROLE_CONFIGS[r].path}
@@ -158,7 +163,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           <div
             role="status"
             className={`w-full mb-5 rounded-xl border p-3.5 text-xs shadow-xs flex flex-wrap items-center justify-between gap-3 ${
-              user.role === role
+              user.role === role || (user.role === "hod" && role === "mentor")
                 ? "border-emerald-200 bg-emerald-50/80 text-emerald-950"
                 : "border-sky-200 bg-sky-50/80 text-sky-950"
             }`}
@@ -166,16 +171,23 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
             <div className="flex items-center gap-2">
               <span
                 className={`h-2 w-2 rounded-full ${
-                  user.role === role ? "bg-emerald-600" : "bg-sky-600"
+                  user.role === role || (user.role === "hod" && role === "mentor")
+                    ? "bg-emerald-600"
+                    : "bg-sky-600"
                 }`}
               />
               <span>
                 Active Session: <strong>{user.full_name}</strong> (
                 {ROLE_CONFIGS[user.role].shortTitle})
+                {user.role === "hod" && role === "mentor" && (
+                  <span className="ml-1.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                    Dual Mentor Access
+                  </span>
+                )}
               </span>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
               {user.role === role ? (
                 <Link
                   href={`/${user.role}`}
@@ -183,6 +195,21 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 >
                   Open Dashboard &rarr;
                 </Link>
+              ) : user.role === "hod" && role === "mentor" ? (
+                <>
+                  <Link
+                    href="/mentor"
+                    className="rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-3 py-1 text-xs"
+                  >
+                    Open Mentor Dashboard &rarr;
+                  </Link>
+                  <Link
+                    href="/hod"
+                    className="font-semibold text-purple-700 hover:underline text-xs"
+                  >
+                    Go to HOD Dashboard &rarr;
+                  </Link>
+                </>
               ) : (
                 <Link
                   href={`/${user.role}`}
@@ -486,9 +513,10 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           </p>
           <p className="text-[11px] text-slate-400">
             <Link
-              href={user?.role === "admin" ? "/admin" : "/login/admin"}
+              href="/login/admin"
               className="hover:underline hover:text-slate-600 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors"
-              title="System Administrator Portal"
+              title="System Administrator Portal Login"
+              aria-label="System Administrator Portal Login"
             >
               CCE-PGPA Management System
             </Link>{" "}
