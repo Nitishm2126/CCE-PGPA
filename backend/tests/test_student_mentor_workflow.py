@@ -92,7 +92,7 @@ def test_get_pgpa_components(client: TestClient, db: Session):
     res = client.get("/api/v1/students/components", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 200
     data = res.json()
-    assert len(data) == 13
+    assert len(data) == 14
     slugs = [c["slug"] for c in data]
     assert "skillrack" in slugs
     assert "academics-gpa" in slugs
@@ -375,7 +375,7 @@ def test_hod_overview_and_oversight(client: TestClient, db: Session):
     data = res_overview.json()
     assert data["department"] == "Computer and Communication Engineering (CCE)"
     assert data["total_students"] >= 61
-    assert data["active_components"] == 13
+    assert data["active_components"] == 14
 
     # Student portfolio inspection
     res_portfolio = client.get(f"/api/v1/hod/students/{student.id}/achievements", headers={"Authorization": f"Bearer {t_hod}"})

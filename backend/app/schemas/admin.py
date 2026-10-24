@@ -95,6 +95,11 @@ class AdminComponentItem(BaseModel):
     description: Optional[str] = None
     display_order: int
     is_active: bool
+    credit_value: int = 3
+    submission_mode: str = "both"
+    grading_strategy: str = "categorical"
+    requires_verification: bool = True
+    rule_version: int = 1
     total_submissions: int = 0
     pending_submissions: int = 0
 

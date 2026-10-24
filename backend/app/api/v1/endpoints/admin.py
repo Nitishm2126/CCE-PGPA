@@ -12,12 +12,18 @@ from app.core.security import get_password_hash
 from app.db.session import get_db
 from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
-from app.models.component import PGPAComponent
+from app.models.component import ComponentSemesterConfig, PGPAComponent
 from app.models.file import AchievementFile
 from app.models.review import VerificationLog
 from app.models.semester import Semester
 from app.models.semester_folder import StudentSemesterFolder
 from app.models.user import HodProfile, MentorProfile, StudentProfile, User, UserRole
+from app.schemas.component_config import (
+    ComponentDetailItem,
+    ComponentSemesterConfigItem,
+    ComponentSemesterConfigUpdate,
+    ComponentUpdatePayload,
+)
 from app.schemas.admin import (
     AdminComponentItem,
     AdminEmailUpdateRequest,
@@ -354,7 +360,7 @@ def list_mentor_allocations(
     "/components",
     response_model=List[AdminComponentItem],
     summary="List PGPA components catalogue with submission metrics",
-    description="Returns all 13 official PGPA components with counts of submissions.",
+    description="Returns all 14 official PGPA components with counts of submissions and configuration details.",
 )
 def list_admin_components(
     current_user: User = Depends(require_admin),
@@ -389,12 +395,261 @@ def list_admin_components(
                 description=c.description,
                 display_order=c.display_order,
                 is_active=c.is_active,
+                credit_value=c.credit_value,
+                submission_mode=c.submission_mode,
+                grading_strategy=c.grading_strategy,
+                requires_verification=c.requires_verification,
+                rule_version=c.rule_version,
                 total_submissions=total_counts.get(c.id, 0),
                 pending_submissions=pending_counts.get(c.id, 0),
             )
         )
 
     return results
+
+
+@router.patch(
+    "/components/{component_id}",
+    response_model=AdminComponentItem,
+    summary="Update PGPA component configuration",
+    description="Allows System Admin to update component credits, submission mode, grading rules, active status, etc.",
+)
+def update_admin_component(
+    component_id: uuid.UUID,
+    payload: ComponentUpdatePayload,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminComponentItem:
+    component = db.get(PGPAComponent, component_id)
+    if not component:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"PGPA Component with ID '{component_id}' not found.",
+        )
+
+    prev_state = {
+        "name": component.name,
+        "is_active": component.is_active,
+        "credit_value": component.credit_value,
+        "submission_mode": component.submission_mode,
+        "grading_strategy": component.grading_strategy,
+    }
+
+    if payload.name is not None:
+        component.name = payload.name.strip()
+    if payload.description is not None:
+        component.description = payload.description.strip() or None
+    if payload.credit_value is not None:
+        component.credit_value = payload.credit_value
+    if payload.submission_mode is not None:
+        component.submission_mode = payload.submission_mode
+    if payload.grading_strategy is not None:
+        component.grading_strategy = payload.grading_strategy
+    if payload.requires_verification is not None:
+        component.requires_verification = payload.requires_verification
+    if payload.is_active is not None:
+        component.is_active = payload.is_active
+    if payload.display_order is not None:
+        component.display_order = payload.display_order
+
+    component.rule_version += 1
+    component.updated_at = datetime.now(timezone.utc)
+    db.add(component)
+
+    record_audit_log(
+        db,
+        actor_id=current_user.id,
+        action="update_pgpa_component_config",
+        target_type="pgpa_component",
+        target_id=str(component.id),
+        metadata={
+            "previous_state": prev_state,
+            "new_state": {
+                "name": component.name,
+                "is_active": component.is_active,
+                "credit_value": component.credit_value,
+                "submission_mode": component.submission_mode,
+                "grading_strategy": component.grading_strategy,
+                "rule_version": component.rule_version,
+            },
+        },
+    )
+    db.commit()
+    db.refresh(component)
+
+    total_subs = db.scalar(select(func.count(Achievement.id)).where(Achievement.component_id == component.id)) or 0
+    pending_subs = db.scalar(
+        select(func.count(Achievement.id)).where(
+            Achievement.component_id == component.id,
+            Achievement.status == AchievementStatus.PENDING,
+        )
+    ) or 0
+
+    return AdminComponentItem(
+        id=component.id,
+        name=component.name,
+        slug=component.slug,
+        description=component.description,
+        display_order=component.display_order,
+        is_active=component.is_active,
+        credit_value=component.credit_value,
+        submission_mode=component.submission_mode,
+        grading_strategy=component.grading_strategy,
+        requires_verification=component.requires_verification,
+        rule_version=component.rule_version,
+        total_submissions=total_subs,
+        pending_submissions=pending_subs,
+    )
+
+
+@router.get(
+    "/components/{component_id}/semesters",
+    response_model=List[ComponentSemesterConfigItem],
+    summary="Get component semester availability matrix",
+    description="Returns enabled status and deadlines for a component across all semesters.",
+)
+def get_component_semester_configs(
+    component_id: uuid.UUID,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> List[ComponentSemesterConfigItem]:
+    component = db.get(PGPAComponent, component_id)
+    if not component:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"PGPA Component with ID '{component_id}' not found.",
+        )
+
+    stmt = (
+        select(ComponentSemesterConfig)
+        .options(joinedload(ComponentSemesterConfig.semester))
+        .where(ComponentSemesterConfig.component_id == component_id)
+        .join(Semester)
+        .order_by(Semester.semester_number.asc())
+    )
+    configs = db.scalars(stmt).all()
+
+    return [
+        ComponentSemesterConfigItem(
+            id=cfg.id,
+            component_id=cfg.component_id,
+            component_name=component.name,
+            semester_id=cfg.semester_id,
+            semester_number=cfg.semester.semester_number if cfg.semester else None,
+            semester_display_name=cfg.semester.display_name if cfg.semester else None,
+            is_enabled=cfg.is_enabled,
+            submission_deadline=cfg.submission_deadline,
+        )
+        for cfg in configs
+    ]
+
+
+@router.patch(
+    "/components/{component_id}/semesters/{semester_id}",
+    response_model=ComponentSemesterConfigItem,
+    summary="Update component availability for a specific semester",
+    description="Enables or disables a component for achievement submissions in a specific semester.",
+)
+def update_component_semester_config(
+    component_id: uuid.UUID,
+    semester_id: uuid.UUID,
+    payload: ComponentSemesterConfigUpdate,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> ComponentSemesterConfigItem:
+    stmt = (
+        select(ComponentSemesterConfig)
+        .options(
+            joinedload(ComponentSemesterConfig.component),
+            joinedload(ComponentSemesterConfig.semester),
+        )
+        .where(
+            ComponentSemesterConfig.component_id == component_id,
+            ComponentSemesterConfig.semester_id == semester_id,
+        )
+    )
+    config = db.scalars(stmt).first()
+    if not config:
+        # Create config if it doesn't exist
+        config = ComponentSemesterConfig(
+            id=uuid.uuid4(),
+            component_id=component_id,
+            semester_id=semester_id,
+            is_enabled=payload.is_enabled,
+            submission_deadline=payload.submission_deadline,
+        )
+        db.add(config)
+    else:
+        config.is_enabled = payload.is_enabled
+        if payload.submission_deadline is not None:
+            config.submission_deadline = payload.submission_deadline
+        db.add(config)
+
+    record_audit_log(
+        db,
+        actor_id=current_user.id,
+        action="update_component_semester_config",
+        target_type="component_semester_config",
+        target_id=str(config.id),
+        metadata={
+            "component_id": str(component_id),
+            "semester_id": str(semester_id),
+            "is_enabled": config.is_enabled,
+            "submission_deadline": config.submission_deadline.isoformat() if config.submission_deadline else None,
+        },
+    )
+    db.commit()
+    db.refresh(config)
+
+    return ComponentSemesterConfigItem(
+        id=config.id,
+        component_id=config.component_id,
+        component_name=config.component.name if config.component else None,
+        semester_id=config.semester_id,
+        semester_number=config.semester.semester_number if config.semester else None,
+        semester_display_name=config.semester.display_name if config.semester else None,
+        is_enabled=config.is_enabled,
+        submission_deadline=config.submission_deadline,
+    )
+
+
+@router.get(
+    "/components/semester-matrix",
+    summary="Get full component availability matrix across all semesters",
+    description="Returns all 14 components and their enabled status for Semesters 1 through 8.",
+)
+def get_components_semester_matrix(
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    components = db.scalars(select(PGPAComponent).order_by(PGPAComponent.display_order.asc())).all()
+    semesters = db.scalars(select(Semester).order_by(Semester.semester_number.asc())).all()
+    configs = db.scalars(select(ComponentSemesterConfig)).all()
+
+    # Build lookup map: (comp_id, sem_id) -> is_enabled
+    config_map = {(c.component_id, c.semester_id): c.is_enabled for c in configs}
+
+    matrix = []
+    for comp in components:
+        sem_status = {}
+        for sem in semesters:
+            sem_status[sem.semester_number] = config_map.get((comp.id, sem.id), True)
+        matrix.append({
+            "component_id": str(comp.id),
+            "name": comp.name,
+            "slug": comp.slug,
+            "credit_value": comp.credit_value,
+            "submission_mode": comp.submission_mode,
+            "grading_strategy": comp.grading_strategy,
+            "requires_verification": comp.requires_verification,
+            "is_active": comp.is_active,
+            "semesters": sem_status,
+        })
+
+    return {
+        "semesters": [{"id": str(s.id), "number": s.semester_number, "name": s.display_name, "is_enabled": s.is_enabled} for s in semesters],
+        "components": matrix,
+    }
 
 
 @router.get(

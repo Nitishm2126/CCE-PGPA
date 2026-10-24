@@ -44,6 +44,8 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   const [componentId, setComponentId] = useState<string>(
     () => initialComponentId || components[0]?.id || ""
   );
+  const [activeComponents, setActiveComponents] = useState<PGPAComponentResponse[]>(components);
+  const [dynamicValues, setDynamicValues] = useState<Record<string, any>>({});
   const [semesters, setSemesters] = useState<SemesterResponse[]>([]);
   const [semesterLoading, setSemesterLoading] = useState<boolean>(true);
   const [semesterId, setSemesterId] = useState<string>("");
@@ -76,6 +78,34 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       isMounted = false;
     };
   }, []);
+
+  // When semesterId changes, load permitted components for that semester
+  useEffect(() => {
+    if (!semesterId) return;
+    let isMounted = true;
+    api.getComponents(semesterId)
+      .then((comps) => {
+        if (!isMounted) return;
+        const studentPermitted = comps.filter((c) => c.submission_mode !== "hod_excel_import");
+        setActiveComponents(studentPermitted);
+        if (studentPermitted.length > 0 && !studentPermitted.some((c) => c.id === componentId)) {
+          setComponentId(studentPermitted[0].id);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load components for semester:", err);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [semesterId]);
+
+  const currentComponent = activeComponents.find((c) => c.id === componentId) || activeComponents[0];
+
+  // Reset dynamic values when componentId changes
+  useEffect(() => {
+    setDynamicValues({});
+  }, [componentId]);
 
   // Evidence PDF file state
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
@@ -180,6 +210,11 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           : "Uploading evidence to Google Drive and saving draft..."
       );
 
+      let finalOutcome = outcome.trim();
+      if (Object.keys(dynamicValues).length > 0) {
+        finalOutcome = JSON.stringify(dynamicValues);
+      }
+
       await onSubmit(
         {
           component_id: componentId,
@@ -188,7 +223,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           activity_type: activityType.trim() || undefined,
           organizer: organizer.trim() || undefined,
           event_date: eventDate || undefined,
-          outcome: outcome.trim() || undefined,
+          outcome: finalOutcome || undefined,
           description: description.trim() || undefined,
         },
         evidenceFile,
@@ -314,13 +349,87 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             required
             className="mt-1 w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs disabled:bg-slate-50 dark:disabled:bg-[#131922] disabled:text-slate-400 dark:disabled:text-[#7E8B9C] min-h-[36px]"
           >
-            {components.map((c) => (
+            {activeComponents.map((c) => (
               <option key={c.id} value={c.id} className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">
-                #{String(c.display_order).padStart(2, "0")} — {c.name}
+                #{String(c.display_order).padStart(2, "0")} — {c.name} ({c.credit_value ?? 3} cr)
               </option>
             ))}
           </select>
         </div>
+
+        {/* Dynamic Fields for Component Evaluation */}
+        {currentComponent?.input_fields && currentComponent.input_fields.length > 0 && (
+          <div className="rounded-xl border border-blue-200/80 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/20 p-3.5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">
+                {currentComponent.name} Evaluation Criteria
+              </span>
+              <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-400">
+                {currentComponent.credit_value ?? 3} Credits &bull; Table B
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {currentComponent.input_fields.map((f) => (
+                <div key={f.name} className={f.type === "textarea" ? "sm:col-span-2" : ""}>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    {f.label} {f.required && "*"}
+                  </label>
+                  {f.type === "select" ? (
+                    <select
+                      value={dynamicValues[f.name] || ""}
+                      onChange={(e) =>
+                        setDynamicValues((prev) => ({ ...prev, [f.name]: e.target.value }))
+                      }
+                      required={f.required}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[36px]"
+                    >
+                      <option value="">Select {f.label}...</option>
+                      {f.options?.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  ) : f.type === "number" ? (
+                    <input
+                      type="number"
+                      step="any"
+                      min={f.min}
+                      max={f.max}
+                      placeholder={f.placeholder}
+                      value={dynamicValues[f.name] || ""}
+                      onChange={(e) =>
+                        setDynamicValues((prev) => ({ ...prev, [f.name]: e.target.value }))
+                      }
+                      required={f.required}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[36px]"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      placeholder={f.placeholder}
+                      value={dynamicValues[f.name] || ""}
+                      onChange={(e) =>
+                        setDynamicValues((prev) => ({ ...prev, [f.name]: e.target.value }))
+                      }
+                      required={f.required}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[36px]"
+                    />
+                  )}
+                  {f.help_text && (
+                    <span className="text-[10px] text-slate-500 dark:text-[#7E8B9C] mt-0.5 block leading-tight">
+                      {f.help_text}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Achievement Title */}
         <div>

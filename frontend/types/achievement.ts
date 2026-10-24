@@ -1,6 +1,18 @@
 export type AchievementStatus = "draft" | "pending" | "approved" | "rejected";
 export type ReviewAction = "approved" | "rejected" | "requested_changes";
 
+export interface DynamicFieldDefinition {
+  name: string;
+  label: string;
+  type: "text" | "number" | "select" | "date" | "textarea";
+  required: boolean;
+  options?: string[];
+  placeholder?: string;
+  help_text?: string;
+  min?: number;
+  max?: number;
+}
+
 export interface PGPAComponentResponse {
   id: string;
   name: string;
@@ -10,6 +22,11 @@ export interface PGPAComponentResponse {
   academic_period?: string | null;
   display_order: number;
   is_active: boolean;
+  credit_value?: number;
+  submission_mode?: "student_submission" | "hod_excel_import" | "both";
+  grading_strategy?: string;
+  requires_verification?: boolean;
+  input_fields?: DynamicFieldDefinition[];
 }
 
 export interface SemesterResponse {
@@ -119,4 +136,129 @@ export interface SemesterDriveProvisionResponse {
     error?: string | null;
   }[];
   message: string;
+}
+
+export interface ComponentSemesterStatusMap {
+  [semesterNumber: string]: boolean;
+}
+
+export interface AdminMatrixComponentItem {
+  component_id: string;
+  name: string;
+  slug: string;
+  credit_value: number;
+  submission_mode: string;
+  grading_strategy: string;
+  requires_verification: boolean;
+  is_active: boolean;
+  semesters: ComponentSemesterStatusMap;
+}
+
+export interface AdminSemesterMatrixResponse {
+  semesters: { id: string; number: number; name: string; is_enabled: boolean }[];
+  components: AdminMatrixComponentItem[];
+}
+
+export interface ComponentSemesterConfigResponse {
+  id: string;
+  component_id: string;
+  component_name?: string;
+  semester_id: string;
+  semester_number?: number;
+  semester_display_name?: string;
+  is_enabled: boolean;
+  submission_deadline?: string;
+}
+
+export interface HODImportPreviewRow {
+  row_number: number;
+  register_number: string;
+  student_name?: string | null;
+  student_id?: string | null;
+  result_value: string;
+  raw_score?: number | null;
+  category?: string | null;
+  calculated_grade?: string | null;
+  grade_points?: number | null;
+  is_valid: boolean;
+  error_message?: string | null;
+}
+
+export interface HODImportPreviewResponse {
+  preview_token: string;
+  component_id: string;
+  component_name: string;
+  component_slug: string;
+  semester_id: string;
+  semester_name: string;
+  semester_number: number;
+  total_rows: number;
+  valid_rows: number;
+  error_rows: number;
+  rows: HODImportPreviewRow[];
+  summary_message: string;
+}
+
+export interface HODImportConfirmResult {
+  batch_id: string;
+  component_name: string;
+  semester_name: string;
+  imported_count: number;
+  message: string;
+}
+
+export interface HODImportBatchItem {
+  id: string;
+  uploaded_by: string;
+  uploaded_by_name?: string | null;
+  component_id: string;
+  component_name?: string | null;
+  semester_id: string;
+  semester_name?: string | null;
+  academic_cohort: string;
+  source_filename: string;
+  total_rows: number;
+  valid_rows: number;
+  error_rows: number;
+  status: string;
+  created_at: string;
+}
+
+export interface StudentComponentResultItem {
+  id: string;
+  student_id: string;
+  student_name?: string | null;
+  student_register_number?: string | null;
+  component_id: string;
+  component_name?: string | null;
+  component_slug?: string | null;
+  semester_id: string;
+  semester_number?: number | null;
+  semester_name?: string | null;
+  raw_score?: number | null;
+  category?: string | null;
+  grade?: string | null;
+  grade_points?: number | null;
+  credit_value: number;
+  is_verified: boolean;
+  source: string;
+  notes?: string | null;
+  calculated_at: string;
+}
+
+export interface StudentPGPAResponse {
+  student_id: string;
+  student_name: string;
+  register_number: string;
+  semester_id: string;
+  semester_number: number;
+  semester_name: string;
+  a1_score: number;
+  semester_gpa?: number | null;
+  pgpa?: number | null;
+  total_credits_attempted: number;
+  total_credits_earned: number;
+  calculated_at: string;
+  results: StudentComponentResultItem[];
+  formula_explanation: string;
 }

@@ -238,6 +238,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 msg = apiErr.message || "Account is deactivated. Please contact an administrator.";
               } else if (apiErr.status === 401) {
                 msg = "Invalid email or password. Please verify your credentials.";
+              } else if (apiErr.status >= 500) {
+                msg = `Backend server error (${apiErr.status}): ${apiErr.message}`;
               } else {
                 msg = apiErr.message;
               }
@@ -272,6 +274,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             message = "Login request timed out. Please retry.";
           } else if (err.status === 0) {
             message = "Backend service unavailable. Please check your connection.";
+          } else if (err.status === 401) {
+            message = "Invalid email or password. Please verify your credentials.";
+          } else if (err.status === 403) {
+            message = err.message || "Account is deactivated. Please contact an administrator.";
+          } else if (err.status >= 500) {
+            message = `Backend server error (${err.status}): ${err.message}`;
           } else {
             message = err.message;
           }

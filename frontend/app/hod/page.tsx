@@ -11,6 +11,7 @@ import { HODStudentItem, DepartmentOverviewResponse } from "@/types/auth";
 import { AchievementResponse, PGPAComponentResponse } from "@/types/achievement";
 import { MessageDrawerModal } from "@/components/messages/MessageDrawerModal";
 import { MessagesHubView } from "@/components/messages/MessagesHubView";
+import { HODExcelImportConsole } from "@/components/hod/HODExcelImportConsole";
 
 export default function HODDashboardPage() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function HODDashboardPage() {
   const [submissionsError, setSubmissionsError] = useState<string | null>(null);
 
   // Tabs & Filters
-  const [activeTab, setActiveTab] = useState<"submissions" | "students" | "overview" | "messages">("submissions");
+  const [activeTab, setActiveTab] = useState<"submissions" | "students" | "overview" | "messages" | "excel-import">("submissions");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
   const [selectedComponentId, setSelectedComponentId] = useState<string>("all");
@@ -519,6 +520,20 @@ export default function HODDashboardPage() {
                 </span>
               )}
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("excel-import")}
+              className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTab === "excel-import"
+                  ? "bg-purple-700 text-white shadow-2xs"
+                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+              }`}
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Excel Import & Grading</span>
+            </button>
           </div>
         </div>
 
@@ -988,6 +1003,11 @@ export default function HODDashboardPage() {
               onUnreadCountChanged={loadUnreadCounts}
             />
           </div>
+        )}
+
+        {/* Tab 5: Excel Import & Department Grading */}
+        {activeTab === "excel-import" && (
+          <HODExcelImportConsole token={token} />
         )}
       </main>
 

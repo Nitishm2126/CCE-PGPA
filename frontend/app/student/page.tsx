@@ -26,6 +26,7 @@ import { MessageDrawerModal } from "@/components/messages/MessageDrawerModal";
 import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { DesignationBadge } from "@/components/DesignationBadge";
 import { RoleBadge } from "@/components/RoleBadge";
+import { StudentPGPASummaryCard } from "@/components/student/StudentPGPASummaryCard";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
@@ -503,15 +504,21 @@ export default function StudentDashboardPage() {
               </div>
             </div>
 
+            {/* Official PGPA Formula Calculation & Breakdown Card */}
+            <StudentPGPASummaryCard
+              token={token}
+              onNavigateComponents={() => setActiveTab("components")}
+            />
+
             {/* Balanced PGPA Progress Summary Metrics Card */}
             <div className="bg-white dark:bg-[#171E28] rounded-2xl border border-slate-200 dark:border-[#2B3543] p-5 sm:p-6 shadow-2xs transition-colors">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#2B3543]">
                 <div>
                   <h2 className="text-lg font-bold text-slate-900 dark:text-[#E8EDF4]">
-                    PGPA Performance Summary
+                    Activity Submission Status
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-0.5">
-                    Real-time status of your academic Point-Grade-Performance-Audit records
+                    Real-time status of your student activity submissions and mentor audits
                   </p>
                 </div>
 
@@ -521,7 +528,7 @@ export default function StudentDashboardPage() {
                   onClick={() => setActiveTab("components")}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/80 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold text-xs shadow-2xs transition-colors cursor-pointer min-h-[36px]"
                 >
-                  <span>Browse All 13 Components</span>
+                  <span>Browse All 14 Components</span>
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                   </svg>
@@ -574,7 +581,7 @@ export default function StudentDashboardPage() {
                     {achievementMetrics.total}
                   </p>
                   <span className="text-[10px] text-slate-600 dark:text-[#94A3B8] mt-0.5 block">
-                    Across 13 Categories
+                    Across 14 Categories
                   </span>
                 </div>
               </div>

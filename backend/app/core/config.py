@@ -29,12 +29,24 @@ class Settings(BaseSettings):
     # Expected format: postgresql+psycopg://<app_user>:<password>@<host>:<port>/cce_achieve
     DATABASE_URL: str = "postgresql+psycopg://cce_app_user:CHANGE_ME_PASSWORD@localhost:5432/cce_achieve"
 
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def assemble_database_url(cls, v: str) -> str:
+        if isinstance(v, str):
+            # Render / Heroku / Supabase compatibility: convert postgres:// or postgresql:// to postgresql+psycopg://
+            if v.startswith("postgres://"):
+                return v.replace("postgres://", "postgresql+psycopg://", 1)
+            elif v.startswith("postgresql://") and not v.startswith("postgresql+psycopg://"):
+                return v.replace("postgresql://", "postgresql+psycopg://", 1)
+        return v
+
     # CORS Configuration
     BACKEND_CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:3001",
         "http://127.0.0.1:3001",
+        "https://cce-pgpa.vercel.app",
     ]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")

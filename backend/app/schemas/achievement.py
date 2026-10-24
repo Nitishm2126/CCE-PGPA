@@ -1,6 +1,6 @@
 import uuid
 from datetime import date, datetime
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.achievement import AchievementStatus
@@ -23,6 +23,12 @@ class PGPAComponentResponse(BaseModel):
     academic_period: Optional[str] = None
     display_order: int
     is_active: bool
+    credit_value: int = 3
+    submission_mode: str = "both"
+    grading_strategy: str = "categorical"
+    requires_verification: bool = True
+    input_fields: List[Dict[str, Any]] = []
+    is_enabled_for_semester: bool = True
 
 
 class AchievementCreate(BaseModel):

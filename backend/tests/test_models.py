@@ -40,11 +40,11 @@ def test_seeded_components_count_and_ordering(db_session: Session):
     stmt = select(PGPAComponent).order_by(PGPAComponent.display_order)
     components = db_session.scalars(stmt).all()
 
-    assert len(components) == 13
+    assert len(components) == 14
     assert components[0].slug == "skillrack"
     assert components[0].display_order == 1
-    assert components[12].slug == "scouts-for-sdgs"
-    assert components[12].display_order == 13
+    assert components[13].slug == "scouts-for-sdgs"
+    assert components[13].display_order == 13
 
     # Verify all slugs are unique
     slugs = [c.slug for c in components]

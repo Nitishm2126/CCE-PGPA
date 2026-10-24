@@ -26,6 +26,7 @@ import {
 } from "@/components/admin/UserManagementConsole";
 import { ReassignStudentsModal } from "@/components/admin/MentorModals";
 import { SemesterManagementConsole } from "@/components/admin/SemesterManagementConsole";
+import { ComponentManagementConsole } from "@/components/admin/ComponentManagementConsole";
 
 type AdminNavigationSection =
   | "overview"
@@ -35,6 +36,7 @@ type AdminNavigationSection =
   | "users"
   | "allocation"
   | "semesters"
+  | "components"
   | "submissions"
   | "storage"
   | "system";
@@ -660,6 +662,29 @@ export default function AdminDashboardPage() {
 
                   <button
                     type="button"
+                    onClick={() => setActiveSection("components")}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
+                      activeSection === "components"
+                        ? "bg-[#0a192f] text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    }`}
+                    title="14 PGPA Components & Availability Matrix"
+                  >
+                    <svg className="h-4 w-4 shrink-0 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    {!sidebarCollapsed && (
+                      <div className="flex-1 flex items-center justify-between">
+                        <span>PGPA Components</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200">
+                          14 Comps
+                        </span>
+                      </div>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => setActiveSection("submissions")}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
                       activeSection === "submissions"
@@ -792,6 +817,7 @@ export default function AdminDashboardPage() {
                     { id: "users", label: "Login Accounts" },
                     { id: "allocation", label: "Mentor Allocation" },
                     { id: "semesters", label: "Semester System" },
+                    { id: "components", label: "PGPA Components & Matrix" },
                     { id: "submissions", label: "PGPA Submissions" },
                     { id: "storage", label: "Evidence Storage" },
                     { id: "system", label: "Security & RBAC" },
@@ -1400,6 +1426,9 @@ export default function AdminDashboardPage() {
 
             {/* VIEW: ACADEMIC CONFIGURATION & EIGHT-SEMESTER SYSTEM */}
             {activeSection === "semesters" && <SemesterManagementConsole />}
+
+            {/* VIEW: PGPA COMPONENTS & SEMESTER MATRIX */}
+            {activeSection === "components" && <ComponentManagementConsole token={token} />}
 
             {/* VIEW 7: PGPA COMPONENTS & SUBMISSIONS DIRECTORY */}
             {activeSection === "submissions" && (

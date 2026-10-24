@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
@@ -10,7 +10,8 @@ from app.core.permissions import get_current_user, require_student
 from app.db.session import get_db
 from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
-from app.models.component import PGPAComponent
+from app.models.component import ComponentSemesterConfig, PGPAComponent
+from app.models.grading import StudentComponentResult, StudentSemesterPGPA
 from app.models.review import ReviewAction, VerificationLog
 from app.models.semester import Semester
 from app.models.user import HodProfile, User, UserRole
@@ -21,15 +22,17 @@ from app.schemas.achievement import (
     PGPAComponentResponse,
     VerificationLogResponse,
 )
-from app.schemas.semester import SemesterResponse
 from app.schemas.auth import (
     MentorInfo,
     StudentDetailResponse,
     StudentProfileResponse,
     StudentProfileUpdateRequest,
 )
+from app.schemas.component_config import StudentComponentResultItem, StudentPGPAResponse
 from app.schemas.file import AchievementFileResponse
 from app.schemas.semester import SemesterResponse
+from app.services.component_service import get_dynamic_fields_for_component, _recalculate_student_semester_pgpa
+from app.services.grading_engine import calculate_overall_pgpa
 
 router = APIRouter()
 
@@ -202,9 +205,10 @@ def update_student_me(
     "/components",
     response_model=List[PGPAComponentResponse],
     summary="Get official PGPA components catalogue",
-    description="Returns all active PGPA components defined in PostgreSQL.",
+    description="Returns all active PGPA components with dynamic field definitions and semester availability.",
 )
 def get_pgpa_components(
+    semester_id: Optional[uuid.UUID] = Query(None, description="Optional semester UUID to filter enabled components"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> List[PGPAComponentResponse]:
@@ -214,7 +218,37 @@ def get_pgpa_components(
         .order_by(PGPAComponent.display_order.asc())
     )
     components = db.scalars(stmt).all()
-    return [PGPAComponentResponse.model_validate(c) for c in components]
+
+    configs_map = {}
+    if semester_id:
+        configs = db.scalars(
+            select(ComponentSemesterConfig).where(ComponentSemesterConfig.semester_id == semester_id)
+        ).all()
+        configs_map = {c.component_id: c.is_enabled for c in configs}
+
+    results = []
+    for c in components:
+        is_enabled = configs_map.get(c.id, True) if semester_id else True
+        fields = [f.model_dump() for f in get_dynamic_fields_for_component(c.slug)]
+        results.append(
+            PGPAComponentResponse(
+                id=c.id,
+                name=c.name,
+                slug=c.slug,
+                description=c.description,
+                semester_label=c.semester_label,
+                academic_period=c.academic_period,
+                display_order=c.display_order,
+                is_active=c.is_active,
+                credit_value=c.credit_value,
+                submission_mode=c.submission_mode,
+                grading_strategy=c.grading_strategy,
+                requires_verification=c.requires_verification,
+                input_fields=fields,
+                is_enabled_for_semester=is_enabled,
+            )
+        )
+    return results
 
 
 @router.get(
@@ -310,6 +344,20 @@ def create_achievement(
                 detail="Achievement submissions are temporarily unavailable because no semester is open.",
             )
         resolved_semester_id = enabled_semester.id
+        semester = enabled_semester
+
+    # Verify component is enabled for the selected semester
+    comp_sem_cfg = db.scalars(
+        select(ComponentSemesterConfig).where(
+            ComponentSemesterConfig.component_id == component.id,
+            ComponentSemesterConfig.semester_id == resolved_semester_id,
+        )
+    ).first()
+    if comp_sem_cfg and not comp_sem_cfg.is_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{component.name} is currently disabled for submissions in {semester.display_name}.",
+        )
 
     achievement = Achievement(
         id=uuid.uuid4(),
@@ -514,3 +562,147 @@ def delete_achievement(
     db.commit()
 
     return {"detail": "Achievement deleted successfully.", "id": str(achievement_id)}
+
+
+@router.get(
+    "/me/component-results",
+    response_model=List[StudentComponentResultItem],
+    summary="Get caller's verified and imported component results",
+)
+def get_my_component_results(
+    semester_id: Optional[uuid.UUID] = Query(None),
+    current_user: User = Depends(require_student),
+    db: Session = Depends(get_db),
+) -> List[StudentComponentResultItem]:
+    stmt = (
+        select(StudentComponentResult)
+        .options(
+            joinedload(StudentComponentResult.component),
+            joinedload(StudentComponentResult.semester),
+        )
+        .where(StudentComponentResult.student_id == current_user.id)
+        .order_by(StudentComponentResult.calculated_at.desc())
+    )
+    if semester_id:
+        stmt = stmt.where(StudentComponentResult.semester_id == semester_id)
+    results = db.scalars(stmt).all()
+    return [
+        StudentComponentResultItem(
+            id=r.id,
+            student_id=r.student_id,
+            student_name=current_user.full_name,
+            student_register_number=current_user.student_profile.register_number if current_user.student_profile else None,
+            component_id=r.component_id,
+            component_name=r.component.name if r.component else None,
+            component_slug=r.component.slug if r.component else None,
+            semester_id=r.semester_id,
+            semester_number=r.semester.semester_number if r.semester else None,
+            semester_name=r.semester.display_name if r.semester else None,
+            raw_score=r.raw_score,
+            category=r.category,
+            grade=r.grade,
+            grade_points=r.grade_points,
+            credit_value=r.credit_value,
+            is_verified=r.is_verified,
+            source=r.source,
+            notes=r.notes,
+            calculated_at=r.calculated_at,
+        )
+        for r in results
+    ]
+
+
+@router.get(
+    "/me/pgpa",
+    response_model=StudentPGPAResponse,
+    summary="Get caller's overall PGPA score and calculation breakdown for a semester",
+)
+def get_my_pgpa(
+    semester_id: Optional[uuid.UUID] = Query(None),
+    current_user: User = Depends(require_student),
+    db: Session = Depends(get_db),
+) -> StudentPGPAResponse:
+    if not semester_id:
+        # Default to first active semester or Semester 1
+        sem = db.scalars(
+            select(Semester).order_by(Semester.semester_number.asc())
+        ).first()
+        if not sem:
+            raise HTTPException(status_code=404, detail="No semesters found.")
+        target_sem_id = sem.id
+    else:
+        sem = db.get(Semester, semester_id)
+        if not sem:
+            raise HTTPException(status_code=404, detail="Semester not found.")
+        target_sem_id = sem.id
+
+    # Recalculate to ensure freshest verified data
+    record = _recalculate_student_semester_pgpa(db, current_user.id, target_sem_id)
+    db.commit()
+
+    results_stmt = (
+        select(StudentComponentResult)
+        .options(
+            joinedload(StudentComponentResult.component),
+            joinedload(StudentComponentResult.semester),
+        )
+        .where(
+            StudentComponentResult.student_id == current_user.id,
+            StudentComponentResult.semester_id == target_sem_id,
+        )
+    )
+    results = db.scalars(results_stmt).all()
+
+    formatted_results = [
+        StudentComponentResultItem(
+            id=r.id,
+            student_id=r.student_id,
+            student_name=current_user.full_name,
+            student_register_number=current_user.student_profile.register_number if current_user.student_profile else None,
+            component_id=r.component_id,
+            component_name=r.component.name if r.component else None,
+            component_slug=r.component.slug if r.component else None,
+            semester_id=r.semester_id,
+            semester_number=sem.semester_number,
+            semester_name=sem.display_name,
+            raw_score=r.raw_score,
+            category=r.category,
+            grade=r.grade,
+            grade_points=r.grade_points,
+            credit_value=r.credit_value,
+            is_verified=r.is_verified,
+            source=r.source,
+            notes=r.notes,
+            calculated_at=r.calculated_at,
+        )
+        for r in results
+    ]
+
+    a1 = record.a1_score if record else 0.0
+    gpa = record.gpa if record else None
+    pgpa = record.pgpa if record else None
+    credits_att = record.total_credits_attempted if record else 0
+    credits_earn = record.total_credits_earned if record else 0
+
+    formula_text = (
+        f"A1 = Σ(Grade obtained × Credit) / Σ(Credits Attempted) = {a1:.2f}. "
+        f"PGPA = (A1 × 0.6) + (GPA × 0.4)"
+        + (f" = ({a1:.2f} × 0.6) + ({gpa:.2f} × 0.4) = {pgpa:.2f}" if (pgpa is not None and gpa is not None) else " (Awaiting Semester GPA)")
+    )
+
+    return StudentPGPAResponse(
+        student_id=current_user.id,
+        student_name=current_user.full_name,
+        register_number=current_user.student_profile.register_number if current_user.student_profile else "N/A",
+        semester_id=sem.id,
+        semester_number=sem.semester_number,
+        semester_name=sem.display_name,
+        a1_score=a1,
+        semester_gpa=gpa,
+        pgpa=pgpa,
+        total_credits_attempted=credits_att,
+        total_credits_earned=credits_earn,
+        calculated_at=record.calculated_at if record else datetime.now(timezone.utc),
+        results=formatted_results,
+        formula_explanation=formula_text,
+    )

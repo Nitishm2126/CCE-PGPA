@@ -48,6 +48,13 @@ import {
   SemesterResponse,
   SemesterDriveAuditReport,
   SemesterDriveProvisionResponse,
+  AdminSemesterMatrixResponse,
+  ComponentSemesterConfigResponse,
+  HODImportPreviewResponse,
+  HODImportConfirmResult,
+  HODImportBatchItem,
+  StudentComponentResultItem,
+  StudentPGPAResponse,
 } from "@/types/achievement";
 
 const API_BASE_URL =
@@ -88,10 +95,13 @@ async function request<T>(
   const authToken = token !== undefined ? token : getStoredToken();
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     Accept: "application/json",
     ...(options.headers as Record<string, string>),
   };
+
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   if (authToken) {
     headers["Authorization"] = `Bearer ${authToken}`;
@@ -117,7 +127,7 @@ async function request<T>(
     }
     const errDetail = err instanceof Error ? ` (${err.message})` : "";
     throw new ApiError(
-      `Unable to connect to CCE-PGPA backend service at ${url}${errDetail}. Please check your network connection or verify that the backend is active on http://127.0.0.1:8000.`,
+      `Unable to connect to CCE-PGPA backend service at ${url}${errDetail}. Please check your network connection or verify that the backend is active.`,
       0
     );
   } finally {
@@ -148,6 +158,26 @@ async function request<T>(
       502
     );
   }
+}
+
+async function requestBlob(
+  path: string,
+  options: RequestInit = {},
+  token?: string | null
+): Promise<Blob> {
+  const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const authToken = token !== undefined ? token : getStoredToken();
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+  };
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+  const response = await fetch(url, { ...options, headers });
+  if (!response.ok) {
+    throw new ApiError(`Download failed with status ${response.status}`, response.status);
+  }
+  return response.blob();
 }
 
 let cachedComponents: PGPAComponentResponse[] | null = null;
@@ -184,13 +214,36 @@ export const api = {
   },
 
 
-  getComponents: async (token?: string | null, forceRefresh: boolean = false): Promise<PGPAComponentResponse[]> => {
-    if (cachedComponents && !forceRefresh) {
+  getComponents: async (
+    semesterId?: string,
+    token?: string | null,
+    forceRefresh: boolean = false
+  ): Promise<PGPAComponentResponse[]> => {
+    if (cachedComponents && !forceRefresh && !semesterId) {
       return cachedComponents;
     }
-    const res = await request<PGPAComponentResponse[]>("/students/components", { method: "GET" }, token);
-    cachedComponents = res;
+    const query = semesterId ? `?semester_id=${encodeURIComponent(semesterId)}` : "";
+    const res = await request<PGPAComponentResponse[]>(`/students/components${query}`, { method: "GET" }, token);
+    if (!semesterId) {
+      cachedComponents = res;
+    }
     return res;
+  },
+
+  getMyComponentResults: async (
+    semesterId?: string,
+    token?: string | null
+  ): Promise<StudentComponentResultItem[]> => {
+    const query = semesterId ? `?semester_id=${encodeURIComponent(semesterId)}` : "";
+    return request<StudentComponentResultItem[]>(`/students/me/component-results${query}`, { method: "GET" }, token);
+  },
+
+  getMyPGPA: async (
+    semesterId?: string,
+    token?: string | null
+  ): Promise<StudentPGPAResponse> => {
+    const query = semesterId ? `?semester_id=${encodeURIComponent(semesterId)}` : "";
+    return request<StudentPGPAResponse>(`/students/me/pgpa${query}`, { method: "GET" }, token);
   },
 
   getMyAchievements: async (token?: string | null): Promise<AchievementResponse[]> => {
@@ -776,6 +829,159 @@ export const api = {
     const res = await request<SemesterResponse[]>("/students/semesters", { method: "GET" }, token);
     cachedSemesters = res;
     return res;
+  },
+
+  // ============================================================================
+  // PGPA Component Configuration & Semester Matrix (Admin)
+  // ============================================================================
+
+  adminUpdateComponent: async (
+    componentId: string,
+    data: {
+      credit_value?: number;
+      submission_mode?: string;
+      grading_strategy?: string;
+      requires_verification?: boolean;
+      is_active?: boolean;
+    },
+    token?: string | null
+  ): Promise<PGPAComponentResponse> => {
+    return request<PGPAComponentResponse>(
+      `/admin/components/${componentId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  adminGetComponentSemesters: async (
+    componentId: string,
+    token?: string | null
+  ): Promise<ComponentSemesterConfigResponse[]> => {
+    return request<ComponentSemesterConfigResponse[]>(
+      `/admin/components/${componentId}/semesters`,
+      { method: "GET" },
+      token
+    );
+  },
+
+  adminUpdateComponentSemester: async (
+    componentId: string,
+    semesterId: string,
+    data: { is_enabled?: boolean; submission_deadline?: string | null },
+    token?: string | null
+  ): Promise<ComponentSemesterConfigResponse> => {
+    return request<ComponentSemesterConfigResponse>(
+      `/admin/components/${componentId}/semesters/${semesterId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  adminGetComponentSemesterMatrix: async (
+    token?: string | null
+  ): Promise<AdminSemesterMatrixResponse> => {
+    return request<AdminSemesterMatrixResponse>(
+      "/admin/components/semester-matrix",
+      { method: "GET" },
+      token
+    );
+  },
+
+  // ============================================================================
+  // HOD Excel Import & Component Results
+  // ============================================================================
+
+  hodGetEligibleComponents: async (
+    semesterId?: string,
+    token?: string | null
+  ): Promise<PGPAComponentResponse[]> => {
+    const query = semesterId ? `?semester_id=${encodeURIComponent(semesterId)}` : "";
+    return request<PGPAComponentResponse[]>(`/hod/components${query}`, { method: "GET" }, token);
+  },
+
+  hodDownloadImportTemplate: async (
+    componentId: string,
+    semesterId: string,
+    token?: string | null
+  ): Promise<Blob> => {
+    return requestBlob(
+      `/hod/import/template?component_id=${encodeURIComponent(componentId)}&semester_id=${encodeURIComponent(semesterId)}`,
+      { method: "GET" },
+      token
+    );
+  },
+
+  hodPreviewImport: async (
+    formData: FormData,
+    token?: string | null
+  ): Promise<HODImportPreviewResponse> => {
+    return request<HODImportPreviewResponse>(
+      "/hod/import/preview",
+      {
+        method: "POST",
+        body: formData,
+      },
+      token
+    );
+  },
+
+  hodConfirmImport: async (
+    previewToken: string,
+    token?: string | null
+  ): Promise<HODImportConfirmResult> => {
+    return request<HODImportConfirmResult>(
+      "/hod/import/confirm",
+      {
+        method: "POST",
+        body: JSON.stringify({ preview_token: previewToken }),
+      },
+      token
+    );
+  },
+
+  hodGetImportHistory: async (
+    token?: string | null
+  ): Promise<HODImportBatchItem[]> => {
+    return request<HODImportBatchItem[]>("/hod/import/history", { method: "GET" }, token);
+  },
+
+  hodGetComponentResults: async (
+    filters?: { student_id?: string; component_id?: string; semester_id?: string },
+    token?: string | null
+  ): Promise<StudentComponentResultItem[]> => {
+    const params = new URLSearchParams();
+    if (filters?.student_id) params.set("student_id", filters.student_id);
+    if (filters?.component_id) params.set("component_id", filters.component_id);
+    if (filters?.semester_id) params.set("semester_id", filters.semester_id);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    return request<StudentComponentResultItem[]>(`/hod/results${query}`, { method: "GET" }, token);
+  },
+
+  hodCorrectComponentResult: async (
+    resultId: string,
+    data: {
+      raw_score?: number;
+      category?: string;
+      grade?: string;
+      notes?: string;
+      reason: string;
+    },
+    token?: string | null
+  ): Promise<StudentComponentResultItem> => {
+    return request<StudentComponentResultItem>(
+      `/hod/results/${resultId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      },
+      token
+    );
   },
 };
 

@@ -10,10 +10,13 @@ from app.core.permissions import require_mentor
 from app.db.session import get_db
 from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
+from app.models.grading import StudentComponentResult
 from app.models.review import ReviewAction, VerificationLog
 from app.models.user import StudentProfile, User
 from app.schemas.achievement import AchievementResponse, ReviewSubmissionRequest
 from app.schemas.auth import MentorStudentItem
+from app.services.component_service import _recalculate_student_semester_pgpa
+from app.services.grading_engine import calculate_component_grade
 from app.api.v1.endpoints.students import format_achievement_response
 
 router = APIRouter()
@@ -306,6 +309,65 @@ def review_mentee_achievement(
     # Update achievement status
     if review_data.action == ReviewAction.APPROVED:
         achievement.status = AchievementStatus.APPROVED
+        # Calculate grade and record verified component result
+        if achievement.component and achievement.semester:
+            try:
+                inputs = {
+                    "raw_score": achievement.outcome,
+                    "category": achievement.activity_type or achievement.title,
+                    "notes": achievement.description,
+                }
+                if achievement.outcome:
+                    try:
+                        import json
+                        parsed = json.loads(achievement.outcome)
+                        if isinstance(parsed, dict):
+                            inputs.update(parsed)
+                    except Exception:
+                        pass
+                grading_res = calculate_component_grade(
+                    component_slug=achievement.component.slug,
+                    semester_number=achievement.semester.semester_number,
+                    inputs=inputs,
+                    credit_value=achievement.component.credit_value,
+                )
+                now_utc = datetime.now(timezone.utc)
+                stmt = select(StudentComponentResult).where(
+                    StudentComponentResult.student_id == achievement.student_id,
+                    StudentComponentResult.component_id == achievement.component_id,
+                    StudentComponentResult.semester_id == achievement.semester_id,
+                )
+                res_rec = db.scalars(stmt).first()
+                if res_rec:
+                    res_rec.grade = grading_res["grade"]
+                    res_rec.grade_points = grading_res["grade_points"]
+                    res_rec.credit_value = achievement.component.credit_value
+                    res_rec.is_verified = True
+                    res_rec.source = "student_submission"
+                    res_rec.achievement_id = achievement.id
+                    res_rec.calculated_at = now_utc
+                    db.add(res_rec)
+                else:
+                    new_res = StudentComponentResult(
+                        id=uuid.uuid4(),
+                        student_id=achievement.student_id,
+                        component_id=achievement.component_id,
+                        semester_id=achievement.semester_id,
+                        raw_score=grading_res.get("raw_score"),
+                        category=grading_res.get("category"),
+                        grade=grading_res["grade"],
+                        grade_points=grading_res["grade_points"],
+                        credit_value=achievement.component.credit_value,
+                        is_verified=True,
+                        source="student_submission",
+                        achievement_id=achievement.id,
+                        calculated_at=now_utc,
+                    )
+                    db.add(new_res)
+                if achievement.semester_id:
+                    _recalculate_student_semester_pgpa(db, achievement.student_id, achievement.semester_id)
+            except Exception as e:
+                print(f"Warning: Auto-grading error on mentor approval: {e}")
     elif review_data.action == ReviewAction.REJECTED:
         achievement.status = AchievementStatus.REJECTED
     elif review_data.action == ReviewAction.REQUESTED_CHANGES:
