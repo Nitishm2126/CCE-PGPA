@@ -53,7 +53,14 @@ def login(
     login_data: LoginRequest,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
-    user = authenticate_user(db, email=login_data.email, password=login_data.password)
+    try:
+        user = authenticate_user(db, email=login_data.email, password=login_data.password)
+    except Exception as exc:
+        logger.error("Auth diagnostic: FailureCategory=DATABASE_ERROR detail=%s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database service error during authentication. Please try again later.",
+        )
 
     if user is None:
         raise HTTPException(

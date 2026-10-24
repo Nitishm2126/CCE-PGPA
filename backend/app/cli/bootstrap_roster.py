@@ -169,6 +169,7 @@ def validate_students_roster(
     default_department: str = "CCE",
     default_year: int = 2,
     default_batch: str = "2025-2029",
+    expected_count: Optional[int] = EXPECTED_STUDENT_COUNT,
 ) -> List[Dict[str, Any]]:
     """
     Validates student roster records:
@@ -260,9 +261,9 @@ def validate_students_roster(
             "mentor_staff_id": matched_mentor["staff_id"] if matched_mentor else None,
         })
 
-    if len(raw_rows) != EXPECTED_STUDENT_COUNT:
+    if expected_count is not None and len(raw_rows) != expected_count:
         errors.append(
-            f"Student roster count error: Found {len(raw_rows)} records in file. Exactly {EXPECTED_STUDENT_COUNT} students are required."
+            f"Student roster count error: Found {len(raw_rows)} records in file. Exactly {expected_count} students are required."
         )
 
     if errors:
@@ -346,6 +347,7 @@ def execute_roster_import(
     batch: str = "2025-2029",
     semester: str = "III SEM",
     allow_unassigned_mentors: bool = False,
+    initial_password: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Executes transactional database insertion of HOD (if provided), mentors (if provided),
@@ -374,7 +376,7 @@ def execute_roster_import(
         if existing_hod:
             hod_user = existing_hod
         else:
-            hod_temp_pw = secrets.token_urlsafe(12)
+            hod_temp_pw = initial_password if initial_password else secrets.token_urlsafe(12)
             hod_user = User(
                 id=uuid.uuid4(),
                 full_name=hod_data["full_name"],
@@ -382,6 +384,7 @@ def execute_roster_import(
                 password_hash=get_password_hash(hod_temp_pw),
                 role=UserRole.HOD,
                 is_active=True,
+                must_change_password=True,
             )
             session.add(hod_user)
             session.flush()
@@ -403,7 +406,7 @@ def execute_roster_import(
         if existing_m_user:
             mentor_user_map[m["email"]] = existing_m_user
         else:
-            m_temp_pw = secrets.token_urlsafe(12)
+            m_temp_pw = initial_password if initial_password else secrets.token_urlsafe(12)
             m_user = User(
                 id=uuid.uuid4(),
                 full_name=m["full_name"],
@@ -411,6 +414,7 @@ def execute_roster_import(
                 password_hash=get_password_hash(m_temp_pw),
                 role=UserRole.MENTOR,
                 is_active=True,
+                must_change_password=True,
             )
             session.add(m_user)
             session.flush()
@@ -443,7 +447,7 @@ def execute_roster_import(
     assignments_created = 0
 
     for s in students_to_insert:
-        s_temp_pw = secrets.token_urlsafe(12)
+        s_temp_pw = initial_password if initial_password else secrets.token_urlsafe(12)
         s_user = User(
             id=uuid.uuid4(),
             full_name=s["full_name"],
@@ -451,6 +455,7 @@ def execute_roster_import(
             password_hash=get_password_hash(s_temp_pw),
             role=UserRole.STUDENT,
             is_active=True,
+            must_change_password=True,
         )
         session.add(s_user)
         session.flush()
@@ -587,6 +592,17 @@ def main():
         default="2025-2029",
         help="Cohort batch identifier (default: 2025-2029).",
     )
+    parser.add_argument(
+        "--initial-password",
+        type=str,
+        default="cce@123",
+        help="Initial institutional temporary password for provisioned accounts (default: 'cce@123').",
+    )
+    parser.add_argument(
+        "--use-random-passwords",
+        action="store_true",
+        help="Generate cryptographically random 16-character temporary passwords instead of the institutional default.",
+    )
 
     args = parser.parse_args()
 
@@ -697,6 +713,7 @@ def main():
                     batch=args.batch,
                     semester=args.semester,
                     allow_unassigned_mentors=args.allow_unassigned_mentors,
+                    initial_password=None if args.use_random_passwords else args.initial_password,
                 )
 
         print("\n==================================================================")

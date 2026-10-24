@@ -10,7 +10,7 @@ class LoginRequest(BaseModel):
     """
     Credentials for user authentication.
     """
-    email: EmailStr = Field(..., description="College email address")
+    email: str = Field(..., min_length=3, max_length=255, description="College email address or register number")
     password: str = Field(..., min_length=1, description="Account password")
 
 

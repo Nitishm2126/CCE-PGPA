@@ -12,6 +12,7 @@ from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
 from app.models.component import PGPAComponent
 from app.models.review import ReviewAction, VerificationLog
+from app.models.semester import Semester
 from app.models.user import MentorProfile, StudentProfile, User, UserRole
 
 
@@ -97,6 +98,73 @@ def test_get_pgpa_components(client: TestClient, db: Session):
     assert "skillrack" in slugs
     assert "academics-gpa" in slugs
     assert "online-certifications" in slugs
+
+
+def test_get_pgpa_components_with_valid_semester_uuid(client: TestClient, db: Session):
+    """
+    Test GET /api/v1/students/components with a valid semester UUID parameter.
+    Verifies that the endpoint successfully filters enabled status and returns 200.
+    """
+    sem = db.scalars(select(Semester).where(Semester.is_enabled.is_(True))).first()
+    assert sem is not None, "At least one active semester must exist"
+
+    student = User(
+        id=uuid.uuid4(),
+        full_name="Semester Component Tester",
+        email=f"sem_reader_{uuid.uuid4().hex[:6]}@sairam.edu.in",
+        password_hash="h",
+        role=UserRole.STUDENT,
+        is_active=True,
+    )
+    db.add(student)
+    db.commit()
+    db.track_user(student.id)  # type: ignore
+
+    token = create_access_token(subject=student.id, role="student")
+    res = client.get(
+        f"/api/v1/students/components?semester_id={sem.id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data) == 14
+    for item in data:
+        assert "id" in item
+        assert "name" in item
+        assert "is_enabled_for_semester" in item
+
+
+def test_get_pgpa_components_rejects_invalid_uuid_or_token(client: TestClient, db: Session):
+    """
+    Test GET /api/v1/students/components when an invalid string or 900+ char token
+    is passed into the semester_id query parameter.
+    Verifies that FastAPI properly returns 422 Unprocessable Entity with uuid_parsing error.
+    """
+    student = User(
+        id=uuid.uuid4(),
+        full_name="Invalid UUID Tester",
+        email=f"invalid_uuid_{uuid.uuid4().hex[:6]}@sairam.edu.in",
+        password_hash="h",
+        role=UserRole.STUDENT,
+        is_active=True,
+    )
+    db.add(student)
+    db.commit()
+    db.track_user(student.id)  # type: ignore
+
+    token = create_access_token(subject=student.id, role="student")
+
+    # Pass an arbitrary 925-char token-like string as semester_id
+    invalid_token_param = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9." + ("x" * 800) + ".signature"
+    res = client.get(
+        f"/api/v1/students/components?semester_id={invalid_token_param}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert res.status_code == 422
+    err_body = res.json()
+    assert "detail" in err_body
+    error_types = [e.get("type") for e in err_body["detail"]]
+    assert "uuid_parsing" in error_types
 
 
 def test_student_achievement_crud_and_validation(client: TestClient, db: Session):

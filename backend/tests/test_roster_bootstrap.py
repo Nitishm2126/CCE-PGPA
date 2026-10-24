@@ -19,6 +19,7 @@ from app.cli.bootstrap_roster import (
     validate_staff_roster,
     validate_students_roster,
 )
+from app.core.security import verify_password
 from app.db.session import SessionLocal, engine
 from app.models.assignment import MentorAssignment
 from app.models.user import MentorProfile, StudentProfile, User, UserRole
@@ -961,3 +962,76 @@ def test_regression_transaction_already_begun_on_session_prevention():
     with SessionLocal() as import_session:
         with import_session.begin():
             assert import_session.in_transaction()
+
+
+def test_bootstrap_roster_with_institutional_password_and_must_change_flag():
+    """
+    Verify that execute_roster_import with institutional initial_password='cce@123':
+    1. Sets must_change_password=True on all created accounts.
+    2. Hashes password with Argon2id matching verify_password('cce@123', hash).
+    3. Writes the specified initial password to the credentials distribution report.
+    """
+    prefix = uuid.uuid4().hex[:6]
+    staff_rows = generate_mock_staff_rows(num_mentors=3, num_hod=1, prefix=prefix)
+    hod, mentors = validate_staff_roster(staff_rows)
+    staff_emails = {hod["email"]} | {m["email"] for m in mentors}
+    mentor_emails = [m["email"] for m in mentors]
+    student_rows = generate_mock_student_rows(count=61, mentor_refs=mentor_emails, prefix=prefix)
+    validated_students = validate_students_roster(student_rows, mentors, staff_emails)
+
+    with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tmp:
+        cred_file = Path(tmp.name)
+
+    session = SessionLocal()
+    created_user_ids = []
+
+    try:
+        with session.begin():
+            summary = execute_roster_import(
+                session=session,
+                hod_data=hod,
+                mentors_data=mentors,
+                students_data=validated_students,
+                output_credentials_path=cred_file,
+                initial_password="cce@123",
+            )
+
+        assert summary["students_created"] == 61
+        all_emails = [hod["email"]] + [m["email"] for m in mentors] + [s["email"] for s in validated_students]
+        db_users = session.scalars(select(User).where(User.email.in_(all_emails))).all()
+        assert len(db_users) == 65
+        created_user_ids = [u.id for u in db_users]
+
+        for u in db_users:
+            assert u.must_change_password is True
+            assert verify_password("cce@123", u.password_hash) is True
+            assert verify_password("wrong_password", u.password_hash) is False
+
+        with open(cred_file, mode="r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            cred_rows = list(reader)
+        assert len(cred_rows) == 65
+        for r in cred_rows:
+            assert r["temporary_password"] == "cce@123"
+    finally:
+        session.rollback()
+        if created_user_ids:
+            with session.begin():
+                session.execute(
+                    text("DELETE FROM mentor_assignments WHERE student_id = ANY(:uids) OR mentor_id = ANY(:uids)"),
+                    {"uids": created_user_ids},
+                )
+                session.execute(
+                    text("DELETE FROM student_profiles WHERE user_id = ANY(:uids)"),
+                    {"uids": created_user_ids},
+                )
+                session.execute(
+                    text("DELETE FROM mentor_profiles WHERE user_id = ANY(:uids)"),
+                    {"uids": created_user_ids},
+                )
+                session.execute(
+                    text("DELETE FROM users WHERE id = ANY(:uids)"),
+                    {"uids": created_user_ids},
+                )
+        session.close()
+        cred_file.unlink(missing_ok=True)

@@ -400,3 +400,168 @@ def test_logout_endpoint(client: TestClient, db: Session):
     )
     assert res.status_code == 200
     assert "discard" in res.json()["message"]
+
+
+# ==============================================================================
+# Comprehensive Authentication Regression Tests
+# ==============================================================================
+
+def test_login_by_register_number_success(client: TestClient, db: Session):
+    """
+    Verify a student can authenticate using their college register number
+    instead of full email address.
+    """
+    reg_no = f"SEC25CO{uuid.uuid4().hex[:4].upper()}"
+    password = "StudentSecret123!"
+    student = User(
+        id=uuid.uuid4(),
+        full_name="Reg Number Student",
+        email=f"{reg_no.lower()}@sairamtap.edu.in",
+        password_hash=get_password_hash(password),
+        role=UserRole.STUDENT,
+        is_active=True,
+    )
+    profile = StudentProfile(
+        id=uuid.uuid4(),
+        user_id=student.id,
+        register_number=reg_no,
+        department="CCE",
+        year=2,
+    )
+    db.add_all([student, profile])
+    db.commit()
+    db.track_user(student.id)  # type: ignore
+
+    # Login using uppercase register number
+    resp_upper = client.post(
+        "/api/v1/auth/login",
+        json={"email": reg_no, "password": password},
+    )
+    assert resp_upper.status_code == 200
+    data_upper = resp_upper.json()
+    assert "access_token" in data_upper
+    assert data_upper["role"] == "student"
+
+    # Login using lowercase register number
+    resp_lower = client.post(
+        "/api/v1/auth/login",
+        json={"email": reg_no.lower(), "password": password},
+    )
+    assert resp_lower.status_code == 200
+    assert "access_token" in resp_lower.json()
+
+
+def test_login_empty_password_hash_rejected(client: TestClient, db: Session):
+    """
+    Verify accounts with missing or empty password hash are safely rejected (401).
+    """
+    user = User(
+        id=uuid.uuid4(),
+        full_name="No Hash User",
+        email=f"nohash_{uuid.uuid4().hex[:6]}@sairam.edu.in",
+        password_hash="",
+        role=UserRole.STUDENT,
+        is_active=True,
+    )
+    db.add(user)
+    db.commit()
+    db.track_user(user.id)  # type: ignore
+
+    res = client.post(
+        "/api/v1/auth/login",
+        json={"email": user.email, "password": "AnyPassword123!"},
+    )
+    assert res.status_code == 401
+    assert res.json()["detail"] == "Incorrect email or password."
+
+
+def test_login_firebase_managed_placeholder_rejected(client: TestClient, db: Session):
+    """
+    Verify accounts provisioned solely with FIREBASE_MANAGED_ACCOUNT cannot authenticate
+    via database password login (prevents bypass).
+    """
+    admin = User(
+        id=uuid.uuid4(),
+        full_name="Firebase Only Admin",
+        email=f"fb_admin_{uuid.uuid4().hex[:6]}@gmail.com",
+        password_hash="FIREBASE_MANAGED_ACCOUNT",
+        role=UserRole.ADMIN,
+        is_active=True,
+    )
+    db.add(admin)
+    db.commit()
+    db.track_user(admin.id)  # type: ignore
+
+    res = client.post(
+        "/api/v1/auth/login",
+        json={"email": admin.email, "password": "FIREBASE_MANAGED_ACCOUNT"},
+    )
+    assert res.status_code == 401
+    assert res.json()["detail"] == "Incorrect email or password."
+
+
+def test_login_database_error_returns_500(client: TestClient):
+    """
+    Verify that unexpected database query/connection errors return a clean 500 Internal Server Error
+    without leaking internal connection details or credentials.
+    """
+    from unittest.mock import patch
+    from sqlalchemy.exc import OperationalError
+
+    with patch("app.api.v1.endpoints.auth.authenticate_user") as mock_auth:
+        mock_auth.side_effect = OperationalError("SELECT 1", {}, Exception("Database connection failed"))
+
+        res = client.post(
+            "/api/v1/auth/login",
+            json={"email": "student@sairamtap.edu.in", "password": "SomePassword123!"},
+        )
+        assert res.status_code == 500
+        assert "Database service error during authentication" in res.json()["detail"]
+
+
+def test_login_safe_diagnostic_logging(client: TestClient, db: Session, caplog: pytest.LogCaptureFixture):
+    """
+    Verify that diagnostic logging captures failure categories without exposing passwords.
+    """
+    import logging
+    caplog.set_level(logging.INFO)
+
+    secret_password = "SuperSecretPlainTextPassword_DoNotLog!"
+
+    # 1. Non-existent user
+    client.post(
+        "/api/v1/auth/login",
+        json={"email": "nonexistent@sairamtap.edu.in", "password": secret_password},
+    )
+    assert "FailureCategory=USER_NOT_FOUND" in caplog.text
+    assert secret_password not in caplog.text
+
+    # 2. Existing user with wrong password
+    student = User(
+        id=uuid.uuid4(),
+        full_name="Logged Student",
+        email=f"logged_student_{uuid.uuid4().hex[:6]}@sairam.edu.in",
+        password_hash=get_password_hash("CorrectPassword_123!"),
+        role=UserRole.STUDENT,
+        is_active=True,
+    )
+    db.add(student)
+    db.commit()
+    db.track_user(student.id)  # type: ignore
+
+    caplog.clear()
+    client.post(
+        "/api/v1/auth/login",
+        json={"email": student.email, "password": secret_password},
+    )
+    assert "FailureCategory=PASSWORD_MISMATCH" in caplog.text
+    assert secret_password not in caplog.text
+
+    # 3. Successful login
+    caplog.clear()
+    client.post(
+        "/api/v1/auth/login",
+        json={"email": student.email, "password": "CorrectPassword_123!"},
+    )
+    assert "FailureCategory=SUCCESS" in caplog.text
+    assert "CorrectPassword_123!" not in caplog.text

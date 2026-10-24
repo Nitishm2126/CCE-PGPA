@@ -27,6 +27,7 @@ from app.schemas.admin import (
     ProvisioningPreviewItem,
     ProvisioningPreviewResponse,
     ProvisioningResultItem,
+    RosterImportResponse,
 )
 from app.services.drive_service import get_drive_service
 from app.services.firebase_service import (
@@ -1292,4 +1293,165 @@ def send_user_verification_email_by_admin(
         success=True,
         message=f"Verification email link successfully generated for '{clean_email}'.",
         verification_link=verification_link,
+    )
+
+
+# ==============================================================================
+# Protected Student Roster Import Service
+# ==============================================================================
+
+def parse_csv_content(csv_text: str) -> List[Dict[str, str]]:
+    """Parse raw CSV text into a list of cleaned row dictionaries."""
+    import csv
+    lines = [line for line in csv_text.splitlines() if not line.strip().startswith("#") and line.strip()]
+    if not lines:
+        raise ValueError("Provided CSV content is empty or contains only comments.")
+    reader = csv.DictReader(lines)
+    if reader.fieldnames is None:
+        raise ValueError("CSV is missing headers.")
+    rows: List[Dict[str, str]] = []
+    for raw_row in reader:
+        cleaned_row = {k.strip(): v.strip() for k, v in raw_row.items() if k is not None and v is not None}
+        if any(cleaned_row.values()):
+            rows.append(cleaned_row)
+    return rows
+
+
+def import_roster_data(
+    db: Session,
+    csv_content: Optional[str] = None,
+    initial_password: str = "cce@123",
+    provision_admin: bool = True,
+    actor_id: Optional[uuid.UUID] = None,
+    expected_count: Optional[int] = None,
+) -> RosterImportResponse:
+    """
+    Safely and idempotently imports the student cohort into PostgreSQL.
+    Accepts raw CSV content string, or falls back to data/import/students_roster.csv.
+    Enforces must_change_password=True, never exposes passwords or secrets,
+    and preserves existing user accounts without modifying passwords or roles.
+    """
+    from pathlib import Path
+    from app.cli.bootstrap_roster import (
+        clean_csv_lines,
+        execute_roster_import,
+        validate_students_roster,
+    )
+    from app.schemas.admin import RosterImportResponse
+
+    # 1. Resolve student records
+    raw_rows: List[Dict[str, str]] = []
+    if csv_content and csv_content.strip():
+        try:
+            raw_rows = parse_csv_content(csv_content)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"CSV parsing error: {e}",
+            )
+    else:
+        # Fall back to server-side file
+        backend_dir = Path(__file__).resolve().parent.parent.parent
+        roster_file = backend_dir / "data" / "import" / "students_roster.csv"
+        if not roster_file.is_file():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"Roster file not found on server at '{roster_file}'. "
+                    "Please provide CSV content in the request body (csv_content) or upload via the upload-csv endpoint."
+                ),
+            )
+        try:
+            raw_rows = clean_csv_lines(roster_file)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Failed to read server roster file: {e}",
+            )
+
+    # 2. Validate roster format
+    try:
+        validated_students = validate_students_roster(
+            raw_rows=raw_rows,
+            allow_unassigned_mentors=True,
+            expected_count=expected_count,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Student roster validation failed: {e}",
+        )
+
+    # 3. Transactional import execution
+    admin_created = False
+    try:
+        summary = execute_roster_import(
+            session=db,
+            hod_data=None,
+            mentors_data=[],
+            students_data=validated_students,
+            output_credentials_path=None,
+            allow_unassigned_mentors=True,
+            initial_password=initial_password,
+        )
+
+        # 4. Optional admin account provisioning
+        if provision_admin:
+            target_admin_email = "cce.pgpa@gmail.com"
+            existing_admin = db.scalars(
+                select(User).where(func.lower(User.email) == target_admin_email)
+            ).first()
+            if not existing_admin:
+                admin_user = User(
+                    id=uuid.uuid4(),
+                    full_name="CCE System Administrator",
+                    email=target_admin_email,
+                    password_hash=get_password_hash(initial_password),
+                    firebase_uid="fjWQn2rGgsR3iVd97YgaZCvBsgB3",
+                    role=UserRole.ADMIN,
+                    is_active=True,
+                    must_change_password=False,
+                )
+                db.add(admin_user)
+                db.flush()
+                admin_created = True
+
+        # Audit log
+        record_audit_log(
+            db,
+            actor_id=actor_id,
+            action="admin_roster_bootstrap",
+            target_type="student_roster",
+            target_id=None,
+            metadata={
+                "students_created": summary["students_created"],
+                "students_existing": summary["students_existing"],
+                "admin_created": admin_created,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+        db.commit()
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        logger.error("Failed to execute roster import: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Database import halted: {exc}",
+        )
+
+    has_admin = bool(db.scalars(select(User).where(User.role == UserRole.ADMIN)).first())
+
+    return RosterImportResponse(
+        success=True,
+        message=(
+            f"Roster import completed: {summary['students_created']} students created, "
+            f"{summary['students_existing']} already existing."
+        ),
+        students_total_in_roster=len(validated_students),
+        students_created=summary["students_created"],
+        students_existing=summary["students_existing"],
+        admin_provisioned=admin_created or has_admin,
     )

@@ -86,6 +86,72 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Validates whether a value is a standard RFC 4122 UUID string.
+ * Used to prevent access tokens, semester labels, or arbitrary text from being passed into UUID query params.
+ */
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export const isValidUUID = (value: unknown): value is string => {
+  return typeof value === "string" && UUID_REGEX.test(value.trim());
+};
+
+/**
+ * Resolves academic semester numbers from user-facing labels (e.g. "III SEM", "Semester 3", "SEM 3").
+ */
+export const resolveSemesterNumberFromLabel = (label?: string | null): number | null => {
+  if (!label) return null;
+  const cleaned = label.trim().toUpperCase();
+  const romanMap: Record<string, number> = {
+    VIII: 8,
+    VII: 7,
+    VI: 6,
+    IV: 4,
+    V: 5,
+    III: 3,
+    II: 2,
+    I: 1,
+  };
+  for (const [roman, num] of Object.entries(romanMap)) {
+    if (new RegExp(`(^|\\b|SEM\\s*)${roman}(\\b|\\s*SEM|$)`).test(cleaned) || cleaned.startsWith(roman)) {
+      return num;
+    }
+  }
+  const digitMatch = cleaned.match(/\b([1-8])\b/);
+  if (digitMatch) {
+    return parseInt(digitMatch[1], 10);
+  }
+  return null;
+};
+
+/**
+ * Resolves a semester label, number, or UUID string against the database-backed SemesterResponse catalogue.
+ * Returns the confirmed database UUID, or null if no matching semester exists. Never fabricates a UUID.
+ */
+export const resolveSemesterUUID = (
+  semesters: SemesterResponse[],
+  labelOrNumber?: string | number | null
+): string | null => {
+  if (!labelOrNumber || !Array.isArray(semesters) || semesters.length === 0) return null;
+  if (typeof labelOrNumber === "string" && isValidUUID(labelOrNumber)) {
+    return labelOrNumber.trim();
+  }
+  const targetNum =
+    typeof labelOrNumber === "number"
+      ? labelOrNumber
+      : resolveSemesterNumberFromLabel(labelOrNumber);
+  if (!targetNum) return null;
+  const match = semesters.find((s) => s.semester_number === targetNum);
+  return match?.id || null;
+};
+
+export interface GetComponentsOptions {
+  semesterId?: string | null;
+  token?: string | null;
+  forceRefresh?: boolean;
+}
+
 async function request<T>(
   path: string,
   options: RequestInit & { timeoutMs?: number } = {},
@@ -215,35 +281,98 @@ export const api = {
 
 
   getComponents: async (
-    semesterId?: string,
-    token?: string | null,
-    forceRefresh: boolean = false
+    param?: string | GetComponentsOptions | null,
+    tokenParam?: string | null,
+    forceRefreshParam: boolean = false
   ): Promise<PGPAComponentResponse[]> => {
-    if (cachedComponents && !forceRefresh && !semesterId) {
+    let targetSemesterId: string | undefined = undefined;
+    let authToken: string | null | undefined = undefined;
+    let forceRefresh: boolean = false;
+
+    if (param && typeof param === "object") {
+      targetSemesterId = isValidUUID(param.semesterId) ? param.semesterId.trim() : undefined;
+      authToken = param.token;
+      forceRefresh = !!param.forceRefresh;
+    } else if (typeof param === "string") {
+      if (isValidUUID(param)) {
+        // Valid UUID passed as first arg -> genuine semesterId filter
+        targetSemesterId = param.trim();
+        authToken = tokenParam;
+        forceRefresh = forceRefreshParam;
+      } else {
+        // Non-UUID string passed as first arg -> caller passed auth token (legacy/shorthand)
+        // NEVER pass a non-UUID or token as semester_id to prevent 422 uuid_parsing error.
+        authToken = param;
+        targetSemesterId = undefined;
+        forceRefresh = forceRefreshParam;
+      }
+    } else {
+      authToken = tokenParam;
+      forceRefresh = forceRefreshParam;
+    }
+
+    if (cachedComponents && !forceRefresh && !targetSemesterId) {
       return cachedComponents;
     }
-    const query = semesterId ? `?semester_id=${encodeURIComponent(semesterId)}` : "";
-    const res = await request<PGPAComponentResponse[]>(`/students/components${query}`, { method: "GET" }, token);
-    if (!semesterId) {
+
+    const query = targetSemesterId ? `?semester_id=${encodeURIComponent(targetSemesterId)}` : "";
+    const res = await request<PGPAComponentResponse[]>(`/students/components${query}`, { method: "GET" }, authToken);
+    if (!targetSemesterId) {
       cachedComponents = res;
     }
     return res;
   },
 
   getMyComponentResults: async (
-    semesterId?: string,
-    token?: string | null
+    param?: string | { semesterId?: string | null; token?: string | null } | null,
+    tokenParam?: string | null
   ): Promise<StudentComponentResultItem[]> => {
-    const query = semesterId ? `?semester_id=${encodeURIComponent(semesterId)}` : "";
-    return request<StudentComponentResultItem[]>(`/students/me/component-results${query}`, { method: "GET" }, token);
+    let targetSemesterId: string | undefined = undefined;
+    let authToken: string | null | undefined = undefined;
+
+    if (param && typeof param === "object") {
+      targetSemesterId = isValidUUID(param.semesterId) ? param.semesterId.trim() : undefined;
+      authToken = param.token;
+    } else if (typeof param === "string") {
+      if (isValidUUID(param)) {
+        targetSemesterId = param.trim();
+        authToken = tokenParam;
+      } else {
+        authToken = param;
+        targetSemesterId = undefined;
+      }
+    } else {
+      authToken = tokenParam;
+    }
+
+    const query = targetSemesterId ? `?semester_id=${encodeURIComponent(targetSemesterId)}` : "";
+    return request<StudentComponentResultItem[]>(`/students/me/component-results${query}`, { method: "GET" }, authToken);
   },
 
   getMyPGPA: async (
-    semesterId?: string,
-    token?: string | null
+    param?: string | { semesterId?: string | null; token?: string | null } | null,
+    tokenParam?: string | null
   ): Promise<StudentPGPAResponse> => {
-    const query = semesterId ? `?semester_id=${encodeURIComponent(semesterId)}` : "";
-    return request<StudentPGPAResponse>(`/students/me/pgpa${query}`, { method: "GET" }, token);
+    let targetSemesterId: string | undefined = undefined;
+    let authToken: string | null | undefined = undefined;
+
+    if (param && typeof param === "object") {
+      targetSemesterId = isValidUUID(param.semesterId) ? param.semesterId.trim() : undefined;
+      authToken = param.token;
+    } else if (typeof param === "string") {
+      if (isValidUUID(param)) {
+        targetSemesterId = param.trim();
+        authToken = tokenParam;
+      } else {
+        authToken = param;
+        targetSemesterId = undefined;
+      }
+    } else {
+      authToken = tokenParam;
+    }
+
+    const query = targetSemesterId ? `?semester_id=${encodeURIComponent(targetSemesterId)}` : "";
+    return request<StudentPGPAResponse>(`/students/me/pgpa${query}`, { method: "GET" }, authToken);
   },
 
   getMyAchievements: async (token?: string | null): Promise<AchievementResponse[]> => {
@@ -898,11 +1027,29 @@ export const api = {
   // ============================================================================
 
   hodGetEligibleComponents: async (
-    semesterId?: string,
-    token?: string | null
+    param?: string | { semesterId?: string | null; token?: string | null } | null,
+    tokenParam?: string | null
   ): Promise<PGPAComponentResponse[]> => {
-    const query = semesterId ? `?semester_id=${encodeURIComponent(semesterId)}` : "";
-    return request<PGPAComponentResponse[]>(`/hod/components${query}`, { method: "GET" }, token);
+    let targetSemesterId: string | undefined = undefined;
+    let authToken: string | null | undefined = undefined;
+
+    if (param && typeof param === "object") {
+      targetSemesterId = isValidUUID(param.semesterId) ? param.semesterId.trim() : undefined;
+      authToken = param.token;
+    } else if (typeof param === "string") {
+      if (isValidUUID(param)) {
+        targetSemesterId = param.trim();
+        authToken = tokenParam;
+      } else {
+        authToken = param;
+        targetSemesterId = undefined;
+      }
+    } else {
+      authToken = tokenParam;
+    }
+
+    const query = targetSemesterId ? `?semester_id=${encodeURIComponent(targetSemesterId)}` : "";
+    return request<PGPAComponentResponse[]>(`/hod/components${query}`, { method: "GET" }, authToken);
   },
 
   hodDownloadImportTemplate: async (

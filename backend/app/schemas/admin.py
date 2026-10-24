@@ -498,3 +498,23 @@ class AdminSendVerificationEmailResponse(BaseModel):
     success: bool
     message: str
     verification_link: Optional[str] = None
+
+
+# ==============================================================================
+# Protected Student Roster Import Schemas
+# ==============================================================================
+
+class RosterImportRequest(BaseModel):
+    initial_password: str = Field(default="cce@123", min_length=6, description="Initial institutional temporary password")
+    provision_admin: bool = Field(default=True, description="Ensure System Administrator account is provisioned in PostgreSQL")
+    csv_content: Optional[str] = Field(default=None, description="Optional raw CSV text content. If omitted, server attempts to read data/import/students_roster.csv")
+
+
+class RosterImportResponse(BaseModel):
+    success: bool
+    message: str
+    students_total_in_roster: int
+    students_created: int
+    students_existing: int
+    admin_provisioned: bool
+    warnings: List[str] = Field(default_factory=list)

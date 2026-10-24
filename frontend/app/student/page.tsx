@@ -104,7 +104,7 @@ export default function StudentDashboardPage() {
     try {
       setIsLoadingComponents(true);
       setComponentsError(null);
-      const data = await api.getComponents(token);
+      const data = await api.getComponents({ token });
       setComponents(data);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load PGPA components.";
@@ -149,7 +149,7 @@ export default function StudentDashboardPage() {
       try {
         const [profileRes, compRes, achRes, unreadRes] = await Promise.allSettled([
           api.getStudentDetail(token),
-          api.getComponents(token),
+          api.getComponents({ token }),
           api.getMyAchievements(token),
           api.getUnreadMessageCount(token),
         ]);

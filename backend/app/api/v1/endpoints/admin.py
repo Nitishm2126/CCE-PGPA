@@ -3,11 +3,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional, Union
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, joinedload
 
-from app.core.permissions import require_admin
+from app.core.config import settings
+from app.core.permissions import get_current_user, http_bearer, require_admin
 from app.core.security import get_password_hash
 from app.db.session import get_db
 from app.models.achievement import Achievement, AchievementStatus
@@ -56,10 +58,11 @@ from app.schemas.admin import (
     DriveFolderAuditItem,
     DriveFolderAuditReport,
     DriveFolderProvisionResponse,
-    DriveFolderProvisionResultItem,
     ProvisioningExecuteRequest,
     ProvisioningExecuteResponse,
     ProvisioningPreviewResponse,
+    RosterImportRequest,
+    RosterImportResponse,
 )
 from app.schemas.semester import (
     SemesterDriveAuditReport,
@@ -82,6 +85,7 @@ from app.services.admin_service import (
     execute_bulk_provisioning,
     get_provisioning_preview,
     get_user_verification_status_by_admin,
+    import_roster_data,
     permanently_delete_student,
     reassign_mentor_students,
     record_audit_log,
@@ -684,6 +688,110 @@ def run_bulk_provisioning(
     db: Session = Depends(get_db),
 ) -> ProvisioningExecuteResponse:
     return execute_bulk_provisioning(db=db, admin_user=current_user, req=payload)
+
+
+def require_admin_or_setup_token(
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer),
+    db: Session = Depends(get_db),
+) -> Optional[User]:
+    """
+    Dual-protection dependency allowing authorization via:
+    1. Pre-shared X-Setup-Token / X-Admin-Setup-Key header matching settings.JWT_SECRET_KEY, OR
+    2. Active Admin User session Bearer token (require_admin).
+    Strictly forbids unauthenticated or public access.
+    """
+    setup_token = request.headers.get("X-Setup-Token") or request.headers.get("X-Admin-Setup-Key")
+    if setup_token and setup_token.strip():
+        if not settings.JWT_SECRET_KEY:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Server configuration error: JWT_SECRET_KEY is not configured.",
+            )
+        if secrets.compare_digest(setup_token.strip(), settings.JWT_SECRET_KEY.strip()):
+            admin = db.scalars(
+                select(User).where(User.role == UserRole.ADMIN).limit(1)
+            ).first()
+            return admin
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid setup token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not credentials or not credentials.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required. Provide an Admin Bearer token or X-Setup-Token header.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return require_admin(current_user=get_current_user(credentials=credentials, db=db))
+
+
+@router.post(
+    "/roster/bootstrap",
+    response_model=RosterImportResponse,
+    summary="One-time protected student cohort import (JSON/Text)",
+    description=(
+        "Safely imports student roster into PostgreSQL. Idempotent and preserves existing passwords. "
+        "Protected by Admin Bearer token or pre-shared X-Setup-Token header."
+    ),
+)
+def bootstrap_student_roster(
+    payload: RosterImportRequest,
+    current_admin: Optional[User] = Depends(require_admin_or_setup_token),
+    db: Session = Depends(get_db),
+) -> RosterImportResponse:
+    actor_id = current_admin.id if current_admin else None
+    return import_roster_data(
+        db=db,
+        csv_content=payload.csv_content,
+        initial_password=payload.initial_password,
+        provision_admin=payload.provision_admin,
+        actor_id=actor_id,
+    )
+
+
+@router.post(
+    "/roster/upload-csv",
+    response_model=RosterImportResponse,
+    summary="Upload and import student roster CSV file",
+    description=(
+        "Uploads a CSV file of students to provision into PostgreSQL. "
+        "Protected by Admin Bearer token or pre-shared X-Setup-Token header."
+    ),
+)
+async def upload_student_roster_csv(
+    file: UploadFile = File(...),
+    initial_password: str = Form("cce@123"),
+    provision_admin: bool = Form(True),
+    current_admin: Optional[User] = Depends(require_admin_or_setup_token),
+    db: Session = Depends(get_db),
+) -> RosterImportResponse:
+    if not file.filename or not file.filename.lower().endswith(".csv"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded file must be a .csv file.",
+        )
+    content_bytes = await file.read()
+    try:
+        csv_text = content_bytes.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        try:
+            csv_text = content_bytes.decode("latin-1")
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unable to decode CSV file content: {e}",
+            )
+    actor_id = current_admin.id if current_admin else None
+    return import_roster_data(
+        db=db,
+        csv_content=csv_text,
+        initial_password=initial_password,
+        provision_admin=provision_admin,
+        actor_id=actor_id,
+    )
 
 
 @router.get(

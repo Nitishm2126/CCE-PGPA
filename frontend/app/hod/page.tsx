@@ -125,7 +125,7 @@ export default function HODDashboardPage() {
     try {
       setLoadingComponents(true);
       setComponentsError(null);
-      const res = await api.getComponents(t);
+      const res = await api.getComponents({ token: t });
       setComponents(res);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load PGPA components catalogue.";
