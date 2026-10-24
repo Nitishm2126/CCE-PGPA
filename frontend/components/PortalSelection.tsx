@@ -201,7 +201,7 @@ export function PortalSelection() {
 
       {/* 4. Portal Selection Cards */}
       <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 pb-8 flex-1 flex flex-col justify-center">
-        <div className="text-center mb-6">
+        <div className="text-center mb-4 sm:mb-6">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             {user && !isLoading
               ? "Select an Authorized Portal to Enter"
@@ -210,7 +210,7 @@ export function PortalSelection() {
         </div>
 
         <div
-          className={`grid gap-5 sm:gap-6 ${
+          className={`grid gap-3.5 sm:gap-4 md:gap-6 ${
             authorizedRoles.length === 1
               ? "grid-cols-1 max-w-md mx-auto w-full"
               : authorizedRoles.length === 2
@@ -233,13 +233,13 @@ export function PortalSelection() {
                 key={roleKey}
                 href={cardHref}
                 id={`portal-card-${roleKey}`}
-                className={`group relative flex flex-col justify-between rounded-xl border ${theme.border} ${theme.bg} p-5 sm:p-6 shadow-xs hover:shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${theme.focusRing} ${theme.hoverBorder}`}
+                className={`group relative flex flex-col justify-between rounded-xl border ${theme.border} ${theme.bg} p-4 sm:p-5 md:p-6 shadow-xs hover:shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${theme.focusRing} ${theme.hoverBorder} w-full`}
               >
                 <div>
                   {/* Top Row: Icon & Tag */}
-                  <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center justify-between gap-2.5 mb-3 sm:mb-4">
                     <div
-                      className={`flex h-11 w-11 items-center justify-center rounded-lg ${theme.iconBg} ${theme.iconText} transition-colors`}
+                      className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-lg ${theme.iconBg} ${theme.iconText} transition-colors`}
                     >
                       {roleKey === "student" && (
                         <svg
@@ -308,7 +308,7 @@ export function PortalSelection() {
                     </div>
 
                     <span
-                      className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${theme.badgeBorder} ${theme.badgeBg} ${theme.badgeText}`}
+                      className={`text-[10.5px] sm:text-[11px] font-semibold px-2 sm:px-2.5 py-0.5 rounded-full border whitespace-nowrap shrink-0 text-center ${theme.badgeBorder} ${theme.badgeBg} ${theme.badgeText}`}
                     >
                       {user && user.role === "hod" && roleKey === "mentor"
                         ? "11 Assigned Mentees"
@@ -318,11 +318,11 @@ export function PortalSelection() {
 
                   {/* Title & Description */}
                   <h3
-                    className={`text-base sm:text-lg font-bold text-slate-900 ${theme.titleHover} transition-colors`}
+                    className={`text-base sm:text-lg font-bold text-slate-900 ${theme.titleHover} transition-colors leading-snug`}
                   >
                     {cfg.portalName}
                   </h3>
-                  <p className="mt-2 text-xs sm:text-[13px] text-slate-600 leading-relaxed line-clamp-3">
+                  <p className="mt-1.5 sm:mt-2 text-xs sm:text-[13px] text-slate-600 leading-normal sm:leading-relaxed">
                     {user && user.role === "hod" && roleKey === "mentor"
                       ? "Review achievements, verify certificate evidence, and record verification audit remarks for your 11 assigned mentees."
                       : cfg.description}
@@ -331,11 +331,11 @@ export function PortalSelection() {
 
                 {/* Bottom Action CTA */}
                 <div
-                  className={`mt-6 pt-4 border-t ${theme.ctaBorder} flex items-center justify-between text-xs font-semibold ${theme.ctaText} ${theme.ctaHover} min-h-[44px]`}
+                  className={`mt-4 sm:mt-5 pt-3 sm:pt-3.5 border-t ${theme.ctaBorder} flex items-center justify-between text-xs font-semibold ${theme.ctaText} ${theme.ctaHover} min-h-[40px] sm:min-h-[44px]`}
                 >
-                  <span>{ctaLabel}</span>
+                  <span className="truncate mr-1">{ctaLabel}</span>
                   <span
-                    className="transform group-hover:translate-x-1 transition-transform"
+                    className="transform group-hover:translate-x-1 transition-transform shrink-0"
                     aria-hidden="true"
                   >
                     &rarr;

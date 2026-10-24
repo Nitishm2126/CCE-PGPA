@@ -6,8 +6,9 @@ from app.db.base import Base
 from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
 from app.models.audit import AuditLog
-from app.models.component import PGPAComponent
+from app.models.component import ComponentSemesterConfig, PGPAComponent
 from app.models.file import AchievementFile, FileCategory
+from app.models.grading import HODImportBatch, StudentComponentResult, StudentSemesterPGPA
 from app.models.message import Message, MessageType
 from app.models.oauth import OAuthCredential
 from app.models.review import ReviewAction, VerificationLog
@@ -24,6 +25,7 @@ __all__ = [
     "HodProfile",
     "MentorAssignment",
     "PGPAComponent",
+    "ComponentSemesterConfig",
     "Achievement",
     "AchievementStatus",
     "AchievementFile",
@@ -36,4 +38,7 @@ __all__ = [
     "MessageType",
     "Semester",
     "StudentSemesterFolder",
+    "HODImportBatch",
+    "StudentComponentResult",
+    "StudentSemesterPGPA",
 ]

@@ -30,7 +30,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     shortTitle: "Student",
     portalName: "Student Portal",
     portalTitle: "Student Portal Login",
-    badgeText: "2025-2029 Cohort",
+    badgeText: "2025-2029 Students",
     placeholder: "e.g. sec25co001@sairamtap.edu.in",
     description:
       "Submit academic activities across PGPA components, upload certificate evidence, and track verification status.",
@@ -74,7 +74,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     shortTitle: "Department HOD",
     portalName: "Department Head (HOD)",
     portalTitle: "Department Head Login",
-    badgeText: "CCE Oversight",
+    badgeText: "Department Administration",
     placeholder: "e.g. hod.cce@sairam.edu.in",
     description:
       "Department-wide cohort directory, mentor-student allocation management, QR badge verification, and academic audit.",
