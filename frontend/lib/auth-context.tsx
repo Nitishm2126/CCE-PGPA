@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { UserResponse, UserRole } from "@/types/auth";
 import { api, getStoredToken, setStoredToken, clearStoredToken, ApiError } from "@/lib/api-client";
-import { auth as firebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
+import { auth as firebaseAuth, isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
@@ -28,7 +28,7 @@ export interface AuthContextType {
   sendVerificationEmail: () => Promise<void>;
   reloadFirebaseUser: () => Promise<boolean>;
 
-  login: (email: string, password: string) => Promise<UserResponse | null>;
+  login: (email: string, password: string, portalRole?: UserRole) => Promise<UserResponse | null>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -51,7 +51,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let isMounted = true;
 
-    if (!isFirebaseConfigured() || !firebaseAuth) {
+    const activeAuth = getFirebaseAuth() || firebaseAuth;
+
+    if (!isFirebaseConfigured() || !activeAuth) {
       // Direct / Legacy session initialization when Firebase is not configured
       const stored = getStoredToken();
       if (!stored) {
@@ -86,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Subscribe to Firebase Auth state changes
-    const unsubscribe = onAuthStateChanged(firebaseAuth, async (fbUser) => {
+    const unsubscribe = onAuthStateChanged(activeAuth, async (fbUser) => {
       if (!isMounted) return;
 
       setFirebaseUser(fbUser);
@@ -170,128 +172,123 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const login = async (email: string, password: string): Promise<UserResponse | null> => {
+  const login = async (
+    email: string,
+    password: string,
+    portalRole?: UserRole
+  ): Promise<UserResponse | null> => {
     setIsLoading(true);
     setError(null);
     isLoggingInRef.current = true;
 
-    try {
-      // 1. Authenticate via Firebase Web SDK
-      if (isFirebaseConfigured() && firebaseAuth) {
-        try {
-          const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-          const fbUser = userCredential.user;
-          setFirebaseUser(fbUser);
+    const normalizedEmail = email.trim().toLowerCase();
+    const isAdminAccount =
+      portalRole === "admin" || normalizedEmail === "cce.pgpa@gmail.com";
 
-          const idToken = await fbUser.getIdToken();
-          setStoredToken(idToken);
-          setToken(idToken);
-
-          // Validate server-side PostgreSQL directory user
-          try {
-            const userData = await api.getMe(idToken);
-            setUser(userData);
-            setIsProvisioned(true);
-            return userData;
-          } catch (meErr: unknown) {
-            if (meErr instanceof ApiError && meErr.status === 401) {
-              // Firebase authenticated successfully, but user is not yet provisioned in PostgreSQL
-              setUser(null);
-              setIsProvisioned(false);
-              return null;
-            }
-            // Backend network error, timeout, or server error
-            const msg =
-              meErr instanceof ApiError
-                ? meErr.message
-                : "Unable to verify user profile with backend. Please check connection.";
-            setError(msg);
-            throw new Error(msg);
-          }
-        } catch (fbError: unknown) {
-          // If error is an already-handled ApiError from getMe, rethrow
-          if (fbError instanceof ApiError) {
-            throw fbError;
-          }
-
-          // Fall back to direct FastAPI authentication if user is in PostgreSQL
-          try {
-            const tokenResponse = await api.login(email, password);
-            setStoredToken(tokenResponse.access_token);
-            setToken(tokenResponse.access_token);
-
-            const userData = await api.getMe(tokenResponse.access_token);
-            setUser(userData);
-            setIsProvisioned(true);
-            return userData;
-          } catch (apiErr: unknown) {
-            let msg = "Invalid email or password. Please verify your credentials.";
-
-            // Format clean, actionable error messages
-            const fbCode = (fbError as { code?: string })?.code;
-            if (apiErr instanceof ApiError) {
-              if (apiErr.status === 408) {
-                msg = "Login request timed out. Please verify your connection and try again.";
-              } else if (apiErr.status === 0) {
-                msg = "Backend service unavailable. Please check your network connection.";
-              } else if (apiErr.status === 403) {
-                msg = apiErr.message || "Account is deactivated. Please contact an administrator.";
-              } else if (apiErr.status === 401) {
-                msg = "Invalid email or password. Please verify your credentials.";
-              } else if (apiErr.status >= 500) {
-                msg = `Backend server error (${apiErr.status}): ${apiErr.message}`;
-              } else {
-                msg = apiErr.message;
-              }
-            } else if (fbCode === "auth/too-many-requests") {
-              msg = "Too many failed login attempts. Please wait a few minutes before trying again.";
-            } else if (fbCode === "auth/network-request-failed") {
-              msg = "Network error: Unable to reach authentication service. Please check your connection.";
-            } else if (fbCode === "auth/user-disabled") {
-              msg = "This account has been disabled. Please contact the administrator.";
-            }
-
-            setError(msg);
-            throw new Error(msg);
-          }
-        }
+    // 1. System Administrator authentication: STRICTLY via Firebase Web SDK
+    if (isAdminAccount) {
+      const activeAuth = getFirebaseAuth() || firebaseAuth;
+      if (!isFirebaseConfigured() || !activeAuth) {
+        const msg = "Firebase Authentication is not available. Please verify client configuration.";
+        setError(msg);
+        setIsLoading(false);
+        isLoggingInRef.current = false;
+        throw new Error(msg);
       }
 
-      // 2. Direct FastAPI Authentication fallback (when Firebase Web SDK is not configured)
       try {
-        const tokenResponse = await api.login(email, password);
-        setStoredToken(tokenResponse.access_token);
-        setToken(tokenResponse.access_token);
+        const userCredential = await signInWithEmailAndPassword(activeAuth, normalizedEmail, password);
+        const fbUser = userCredential.user;
+        setFirebaseUser(fbUser);
 
-        const userData = await api.getMe(tokenResponse.access_token);
-        setUser(userData);
-        setIsProvisioned(true);
-        return userData;
-      } catch (err: unknown) {
-        let message = "Invalid email or password. Please verify your credentials.";
-        if (err instanceof ApiError) {
-          if (err.status === 408) {
-            message = "Login request timed out. Please retry.";
-          } else if (err.status === 0) {
-            message = "Backend service unavailable. Please check your connection.";
-          } else if (err.status === 401) {
-            message = "Invalid email or password. Please verify your credentials.";
-          } else if (err.status === 403) {
-            message = err.message || "Account is deactivated. Please contact an administrator.";
-          } else if (err.status >= 500) {
-            message = `Backend server error (${err.status}): ${err.message}`;
-          } else {
-            message = err.message;
+        const idToken = await fbUser.getIdToken();
+        setStoredToken(idToken);
+        setToken(idToken);
+
+        // Fetch verified user profile from backend via GET /api/v1/auth/me
+        try {
+          const userData = await api.getMe(idToken);
+          setUser(userData);
+          setIsProvisioned(true);
+          return userData;
+        } catch (meErr: unknown) {
+          if (meErr instanceof ApiError && meErr.status === 401) {
+            setUser(null);
+            setIsProvisioned(false);
+            return null;
           }
-        } else if (err instanceof Error) {
+          const msg =
+            meErr instanceof ApiError
+              ? meErr.message
+              : "Unable to verify administrator profile with backend.";
+          setError(msg);
+          throw new Error(msg);
+        }
+      } catch (fbErr: unknown) {
+        // MANDATORY: Never fall back to direct password login for FIREBASE_MANAGED_ACCOUNT!
+        // Directly inspect and surface actionable error details from Firebase.
+        const errObj = fbErr as { code?: string; message?: string };
+        let msg = "Invalid email or password. Please verify your credentials.";
+
+        if (errObj.code === "auth/invalid-credential" || errObj.code === "auth/wrong-password") {
+          msg = "Invalid email or password. Please verify your credentials.";
+        } else if (errObj.code === "auth/user-not-found") {
+          msg = "Administrator account not found in Firebase Authentication.";
+        } else if (errObj.code === "auth/too-many-requests") {
+          msg = "Too many failed login attempts. Please wait a few minutes before trying again.";
+        } else if (errObj.code === "auth/user-disabled") {
+          msg = "This administrator account has been disabled.";
+        } else if (errObj.code === "auth/network-request-failed") {
+          msg = "Network error: Unable to reach Firebase Authentication service. Please check connection.";
+        } else if (errObj.code === "auth/unauthorized-domain") {
+          msg = "Domain unauthorized: Please add cce-pgpa.vercel.app to Firebase Console > Authentication > Settings > Authorized Domains.";
+        } else if (errObj.code) {
+          msg = `Firebase Authentication error (${errObj.code}): ${errObj.message || ""}`;
+        }
+
+        console.error("Firebase admin sign-in error:", fbErr);
+        setError(msg);
+        throw new Error(msg);
+      } finally {
+        setIsLoading(false);
+        isLoggingInRef.current = false;
+      }
+    }
+
+    // 2. Non-admin roles (Students, Mentors, HOD): Authenticate directly via FastAPI / PostgreSQL
+    try {
+      const tokenResponse = await api.login(email, password);
+      setStoredToken(tokenResponse.access_token);
+      setToken(tokenResponse.access_token);
+
+      const userData = await api.getMe(tokenResponse.access_token);
+      setUser(userData);
+      setIsProvisioned(true);
+      return userData;
+    } catch (err: unknown) {
+      let message = "Invalid email or password. Please verify your credentials.";
+      if (err instanceof ApiError) {
+        if (err.status === 408) {
+          message = "Login request timed out. Please retry.";
+        } else if (err.status === 0) {
+          message = "Backend service unavailable. Please check your connection.";
+        } else if (err.status === 401) {
+          message = "Invalid email or password. Please verify your credentials.";
+        } else if (err.status === 403) {
+          message = err.message || "Account is deactivated. Please contact an administrator.";
+        } else if (err.status >= 500) {
+          message = `Backend server error (${err.status}): ${err.message}`;
+        } else {
           message = err.message;
         }
-        setError(message);
-        throw new Error(message);
+      } else if (err instanceof Error) {
+        message = err.message;
       }
+      setError(message);
+      throw new Error(message);
     } finally {
-      isLoggingInRef.current = false;
       setIsLoading(false);
+      isLoggingInRef.current = false;
     }
   };
 

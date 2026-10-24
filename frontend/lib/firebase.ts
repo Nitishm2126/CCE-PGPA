@@ -26,6 +26,23 @@ export const isFirebaseConfigured = (): boolean => {
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 
+export const getFirebaseAuth = (): Auth | null => {
+  if (typeof window === "undefined") return null;
+  if (!isFirebaseConfigured()) return null;
+  try {
+    if (!app) {
+      app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    }
+    if (!auth) {
+      auth = getAuth(app);
+    }
+    return auth;
+  } catch (error) {
+    console.error("Failed to initialize Firebase Auth instance:", error);
+    return null;
+  }
+};
+
 if (typeof window !== "undefined") {
   if (isFirebaseConfigured()) {
     try {

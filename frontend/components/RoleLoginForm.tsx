@@ -59,7 +59,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
     try {
       setIsSubmitting(true);
-      const authenticatedUser = await login(trimmedEmail, password);
+      const authenticatedUser = await login(trimmedEmail, password, role);
 
       if (authenticatedUser) {
         // MANDATORY SECURITY RULE: Verify database role matches requested portal

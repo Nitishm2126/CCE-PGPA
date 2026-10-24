@@ -8,17 +8,69 @@ from fastapi import HTTPException, status
 import firebase_admin
 from firebase_admin import auth as firebase_auth, credentials
 
-from app.core.config import settings
+from app.core.config import settings, BACKEND_DIR
 
 logger = logging.getLogger(__name__)
 
 _firebase_app: Optional[firebase_admin.App] = None
 
 
+def _parse_service_account_dict(raw: str) -> Optional[Dict[str, Any]]:
+    """Parse a service account from raw JSON or Base64 encoded JSON without logging secrets."""
+    if not raw or not raw.strip():
+        return None
+    cleaned = raw.strip()
+    if cleaned.startswith("{") and cleaned.endswith("}"):
+        try:
+            return json.loads(cleaned)
+        except Exception as e:
+            logger.error("Failed to parse inline service account JSON: %s", type(e).__name__)
+            return None
+    # Try base64 decoding
+    try:
+        import base64
+        decoded = base64.b64decode(cleaned).decode("utf-8")
+        if decoded.strip().startswith("{"):
+            return json.loads(decoded)
+    except Exception:
+        pass
+    return None
+
+
+def _find_service_account_file(configured_path: str) -> Optional[Path]:
+    """Look for service account file across configured path, backend dir, and Render secret mounts."""
+    if not configured_path or not configured_path.strip():
+        return None
+    raw = configured_path.strip()
+    if raw.startswith("{"):
+        return None
+
+    candidate_paths = [
+        Path(raw),
+        BACKEND_DIR / raw,
+        Path("/etc/secrets") / Path(raw).name,
+        Path("/etc/secrets/cce-pgpa-firebase-adminsdk-fbsvc-f18c12c357.json"),
+        Path("/etc/secrets/firebase-service-account.json"),
+        Path("/etc/secrets/cce-pgpa-firebase-adminsdk.json"),
+    ]
+    for p in candidate_paths:
+        try:
+            if p.is_file():
+                return p
+        except Exception:
+            continue
+    return None
+
+
 def get_firebase_app() -> firebase_admin.App:
     """
     Initializes and returns the singleton Firebase Admin App instance.
-    Supports Service Account JSON file path, inline JSON string, or Application Default Credentials (ADC).
+    Supports:
+    1. Render environment variable FIREBASE_SERVICE_ACCOUNT_JSON (raw or base64)
+    2. FIREBASE_SERVICE_ACCOUNT_BASE64 environment variable
+    3. Service account JSON file path (configured, relative to backend, or /etc/secrets/)
+    4. Render secret file default mounts in /etc/secrets/
+    5. Application Default Credentials (ADC) or GOOGLE_APPLICATION_CREDENTIALS
     Never exposes, logs, or prints private keys or sensitive credentials.
     """
     global _firebase_app
@@ -39,26 +91,62 @@ def get_firebase_app() -> firebase_admin.App:
     if settings.FIREBASE_PROJECT_ID:
         app_options["projectId"] = settings.FIREBASE_PROJECT_ID
 
-    # 1. Service Account JSON file path
-    if settings.FIREBASE_SERVICE_ACCOUNT_FILE:
-        file_path = Path(settings.FIREBASE_SERVICE_ACCOUNT_FILE)
-        if file_path.is_file():
-            cred = credentials.Certificate(str(file_path))
+    # 1. Inline Service Account JSON string or Base64 via FIREBASE_SERVICE_ACCOUNT_JSON
+    if settings.FIREBASE_SERVICE_ACCOUNT_JSON:
+        sa_dict = _parse_service_account_dict(settings.FIREBASE_SERVICE_ACCOUNT_JSON)
+        if sa_dict:
+            try:
+                cred = credentials.Certificate(sa_dict)
+            except Exception as e:
+                logger.error("Failed to load credentials from FIREBASE_SERVICE_ACCOUNT_JSON: %s", type(e).__name__)
+
+    # 2. Check FIREBASE_SERVICE_ACCOUNT_BASE64 env var
+    if cred is None and os.environ.get("FIREBASE_SERVICE_ACCOUNT_BASE64"):
+        sa_dict = _parse_service_account_dict(os.environ["FIREBASE_SERVICE_ACCOUNT_BASE64"])
+        if sa_dict:
+            try:
+                cred = credentials.Certificate(sa_dict)
+            except Exception as e:
+                logger.error("Failed to load credentials from FIREBASE_SERVICE_ACCOUNT_BASE64: %s", type(e).__name__)
+
+    # 3. Service Account file path (configured path or Render /etc/secrets/)
+    if cred is None and settings.FIREBASE_SERVICE_ACCOUNT_FILE:
+        raw_val = settings.FIREBASE_SERVICE_ACCOUNT_FILE.strip()
+        sa_dict = _parse_service_account_dict(raw_val)
+        if sa_dict:
+            try:
+                cred = credentials.Certificate(sa_dict)
+            except Exception as e:
+                logger.error("Failed to load credentials from JSON in FIREBASE_SERVICE_ACCOUNT_FILE: %s", type(e).__name__)
         else:
-            logger.warning(
-                "FIREBASE_SERVICE_ACCOUNT_FILE was configured but file does not exist at specified path."
-            )
+            file_path = _find_service_account_file(raw_val)
+            if file_path:
+                try:
+                    cred = credentials.Certificate(str(file_path))
+                except Exception as e:
+                    logger.error("Failed to load credentials from file %s: %s", file_path.name, type(e).__name__)
+            else:
+                logger.warning(
+                    "FIREBASE_SERVICE_ACCOUNT_FILE was configured but file does not exist at specified path."
+                )
 
-    # 2. Inline Service Account JSON string
-    elif settings.FIREBASE_SERVICE_ACCOUNT_JSON:
-        try:
-            cred_dict = json.loads(settings.FIREBASE_SERVICE_ACCOUNT_JSON)
-            cred = credentials.Certificate(cred_dict)
-        except Exception:
-            logger.error("Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON. Invalid JSON structure.")
+    # 4. Check Render Secret File defaults in /etc/secrets/
+    if cred is None:
+        default_render_files = [
+            Path("/etc/secrets/cce-pgpa-firebase-adminsdk-fbsvc-f18c12c357.json"),
+            Path("/etc/secrets/firebase-service-account.json"),
+            Path("/etc/secrets/cce-pgpa-firebase-adminsdk.json"),
+        ]
+        for p in default_render_files:
+            try:
+                if p.is_file():
+                    cred = credentials.Certificate(str(p))
+                    break
+            except Exception:
+                continue
 
-    # 3. Application Default Credentials (ADC) or GOOGLE_APPLICATION_CREDENTIALS env var
-    elif os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+    # 5. Application Default Credentials (ADC) or GOOGLE_APPLICATION_CREDENTIALS env var
+    if cred is None and os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
         try:
             cred = credentials.ApplicationDefault()
         except Exception as e:
