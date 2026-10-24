@@ -45,7 +45,11 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail) {
-      setLocalError("Please enter your official college email address.");
+      setLocalError(
+        role === "student"
+          ? "Please enter your register number or college email."
+          : "Please enter your official college email address."
+      );
       return;
     }
     if (!password) {
@@ -328,24 +332,28 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5" noValidate>
-            {/* Email Field */}
+            {/* Email / Identifier Field */}
             <div>
               <label
                 htmlFor="login-email-input"
                 className="block text-xs font-semibold uppercase tracking-wider text-slate-700"
               >
-                Official College Email
+                {role === "student" ? "Register Number or College Email" : "Official College Email"}
               </label>
               <div className="mt-1.5">
                 <input
                   id="login-email-input"
                   name="email"
-                  type="email"
-                  autoComplete="email"
+                  type={role === "student" ? "text" : "email"}
+                  autoComplete={role === "student" ? "username" : "email"}
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={currentConfig.placeholder}
+                  placeholder={
+                    role === "student"
+                      ? "e.g. SEC25CO001 or sec25co001@sairamtap.edu.in"
+                      : currentConfig.placeholder
+                  }
                   disabled={isSubmitting}
                   className="block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20 disabled:opacity-60 transition"
                 />

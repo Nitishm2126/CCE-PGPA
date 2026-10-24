@@ -22,7 +22,7 @@ if str(backend_dir) not in sys.path:
 from app.core.security import get_password_hash
 from app.db.session import SessionLocal, engine
 from app.models.assignment import MentorAssignment
-from app.models.user import MentorProfile, StudentProfile, User, UserRole
+from app.models.user import HodProfile, MentorProfile, StudentProfile, User, UserRole
 
 EXPECTED_STUDENT_COUNT = 61
 EXPECTED_MENTOR_COUNT = 3
@@ -375,6 +375,16 @@ def execute_roster_import(
         existing_hod = session.scalars(select(User).where(User.email == hod_data["email"].lower())).first()
         if existing_hod:
             hod_user = existing_hod
+            if not existing_hod.hod_profile:
+                hod_profile = HodProfile(
+                    id=uuid.uuid4(),
+                    user_id=existing_hod.id,
+                    staff_id=hod_data.get("staff_id"),
+                    department=hod_data.get("department", department),
+                    designation=hod_data.get("designation", "Head of Department"),
+                )
+                session.add(hod_profile)
+                session.flush()
         else:
             hod_temp_pw = initial_password if initial_password else secrets.token_urlsafe(12)
             hod_user = User(
@@ -387,6 +397,16 @@ def execute_roster_import(
                 must_change_password=True,
             )
             session.add(hod_user)
+            session.flush()
+
+            hod_profile = HodProfile(
+                id=uuid.uuid4(),
+                user_id=hod_user.id,
+                staff_id=hod_data.get("staff_id"),
+                department=hod_data.get("department", department),
+                designation=hod_data.get("designation", "Head of Department"),
+            )
+            session.add(hod_profile)
             session.flush()
 
             credentials_list.append({
@@ -405,6 +425,16 @@ def execute_roster_import(
         existing_m_user = session.scalars(select(User).where(User.email == m_email)).first()
         if existing_m_user:
             mentor_user_map[m["email"]] = existing_m_user
+            if not existing_m_user.mentor_profile:
+                m_profile = MentorProfile(
+                    id=uuid.uuid4(),
+                    user_id=existing_m_user.id,
+                    staff_id=m.get("staff_id"),
+                    department=m.get("department", department),
+                    designation=m.get("designation", "Assistant Professor"),
+                )
+                session.add(m_profile)
+                session.flush()
         else:
             m_temp_pw = initial_password if initial_password else secrets.token_urlsafe(12)
             m_user = User(
@@ -476,8 +506,17 @@ def execute_roster_import(
 
         # Mentor assignment (if mentor account is present)
         mentor_email = s.get("mentor_email")
+        assigned_mentor_user = None
         if mentor_email and mentor_email in mentor_user_map:
             assigned_mentor_user = mentor_user_map[mentor_email]
+        elif s.get("original_mentor_name"):
+            m_name_clean = s["original_mentor_name"].strip().lower()
+            for m_item in mentors_data:
+                if m_item["full_name"].strip().lower() == m_name_clean:
+                    assigned_mentor_user = mentor_user_map.get(m_item["email"])
+                    break
+
+        if assigned_mentor_user:
             assignment = MentorAssignment(
                 id=uuid.uuid4(),
                 mentor_id=assigned_mentor_user.id,
@@ -489,7 +528,8 @@ def execute_roster_import(
             session.add(assignment)
             session.flush()
             assignments_created += 1
-            mentor_counts[mentor_email] += 1
+            if assigned_mentor_user.email in mentor_counts:
+                mentor_counts[assigned_mentor_user.email] += 1
         elif allow_unassigned_mentors:
             # Mentor assignment deferred: mentor mapping will occur when verified staff accounts are provisioned
             pass

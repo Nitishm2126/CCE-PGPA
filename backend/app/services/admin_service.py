@@ -1320,26 +1320,52 @@ def parse_csv_content(csv_text: str) -> List[Dict[str, str]]:
 def import_roster_data(
     db: Session,
     csv_content: Optional[str] = None,
-    initial_password: str = "cce@123",
+    initial_password: Optional[str] = None,
     provision_admin: bool = True,
     actor_id: Optional[uuid.UUID] = None,
     expected_count: Optional[int] = None,
+    staff_csv_content: Optional[str] = None,
 ) -> RosterImportResponse:
     """
-    Safely and idempotently imports the student cohort into PostgreSQL.
-    Accepts raw CSV content string, or falls back to data/import/students_roster.csv.
+    Safely and idempotently imports the student cohort and staff into PostgreSQL.
+    Accepts raw CSV content strings, or falls back to server data/import files.
     Enforces must_change_password=True, never exposes passwords or secrets,
     and preserves existing user accounts without modifying passwords or roles.
     """
+    import secrets
     from pathlib import Path
     from app.cli.bootstrap_roster import (
         clean_csv_lines,
         execute_roster_import,
+        validate_staff_roster,
         validate_students_roster,
     )
     from app.schemas.admin import RosterImportResponse
 
-    # 1. Resolve student records
+    # 1. Resolve staff records if provided or if server staff file exists
+    hod_data = None
+    mentors_data: List[Dict[str, Any]] = []
+    backend_dir = Path(__file__).resolve().parent.parent.parent
+
+    if staff_csv_content and staff_csv_content.strip():
+        try:
+            staff_rows = parse_csv_content(staff_csv_content)
+            hod_data, mentors_data = validate_staff_roster(staff_rows, allow_missing_hod=True)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Staff roster validation failed: {e}",
+            )
+    else:
+        staff_file = backend_dir / "data" / "import" / "staff_roster.csv"
+        if staff_file.is_file():
+            try:
+                staff_rows = clean_csv_lines(staff_file)
+                hod_data, mentors_data = validate_staff_roster(staff_rows, allow_missing_hod=True)
+            except Exception as e:
+                logger.warning("Optional server staff roster file had validation error: %s", e)
+
+    # 2. Resolve student records
     raw_rows: List[Dict[str, str]] = []
     if csv_content and csv_content.strip():
         try:
@@ -1350,8 +1376,6 @@ def import_roster_data(
                 detail=f"CSV parsing error: {e}",
             )
     else:
-        # Fall back to server-side file
-        backend_dir = Path(__file__).resolve().parent.parent.parent
         roster_file = backend_dir / "data" / "import" / "students_roster.csv"
         if not roster_file.is_file():
             raise HTTPException(
@@ -1369,10 +1393,11 @@ def import_roster_data(
                 detail=f"Failed to read server roster file: {e}",
             )
 
-    # 2. Validate roster format
+    # 3. Validate roster format
     try:
         validated_students = validate_students_roster(
             raw_rows=raw_rows,
+            mentor_records=mentors_data if mentors_data else None,
             allow_unassigned_mentors=True,
             expected_count=expected_count,
         )
@@ -1382,31 +1407,32 @@ def import_roster_data(
             detail=f"Student roster validation failed: {e}",
         )
 
-    # 3. Transactional import execution
+    # 4. Transactional import execution
     admin_created = False
     try:
         summary = execute_roster_import(
             session=db,
-            hod_data=None,
-            mentors_data=[],
+            hod_data=hod_data,
+            mentors_data=mentors_data,
             students_data=validated_students,
             output_credentials_path=None,
             allow_unassigned_mentors=True,
             initial_password=initial_password,
         )
 
-        # 4. Optional admin account provisioning
+        # 5. Optional admin account provisioning
         if provision_admin:
             target_admin_email = "cce.pgpa@gmail.com"
             existing_admin = db.scalars(
                 select(User).where(func.lower(User.email) == target_admin_email)
             ).first()
             if not existing_admin:
+                admin_temp_pw = initial_password if initial_password else secrets.token_urlsafe(12)
                 admin_user = User(
                     id=uuid.uuid4(),
                     full_name="CCE System Administrator",
                     email=target_admin_email,
-                    password_hash=get_password_hash(initial_password),
+                    password_hash=get_password_hash(admin_temp_pw),
                     firebase_uid="fjWQn2rGgsR3iVd97YgaZCvBsgB3",
                     role=UserRole.ADMIN,
                     is_active=True,
@@ -1426,6 +1452,9 @@ def import_roster_data(
             metadata={
                 "students_created": summary["students_created"],
                 "students_existing": summary["students_existing"],
+                "mentors_created": summary.get("mentors_created", 0),
+                "hod_created": bool(summary.get("hod_created")),
+                "assignments_created": summary.get("assignments_created", 0),
                 "admin_created": admin_created,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             },
@@ -1444,14 +1473,23 @@ def import_roster_data(
 
     has_admin = bool(db.scalars(select(User).where(User.role == UserRole.ADMIN)).first())
 
+    mentors_created = summary.get("mentors_created", 0)
+    mentors_existing = len(mentors_data) - mentors_created if mentors_data else 0
+
     return RosterImportResponse(
         success=True,
         message=(
             f"Roster import completed: {summary['students_created']} students created, "
-            f"{summary['students_existing']} already existing."
+            f"{summary['students_existing']} already existing. "
+            f"{mentors_created} mentors created, "
+            f"{summary.get('assignments_created', 0)} mentor assignments created."
         ),
         students_total_in_roster=len(validated_students),
         students_created=summary["students_created"],
         students_existing=summary["students_existing"],
+        mentors_created=mentors_created,
+        mentors_existing=mentors_existing,
+        hod_created=bool(summary.get("hod_created")),
         admin_provisioned=admin_created or has_admin,
+        assignments_created=summary.get("assignments_created", 0),
     )

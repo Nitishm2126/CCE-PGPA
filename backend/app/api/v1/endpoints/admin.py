@@ -749,6 +749,7 @@ def bootstrap_student_roster(
         initial_password=payload.initial_password,
         provision_admin=payload.provision_admin,
         actor_id=actor_id,
+        staff_csv_content=payload.staff_csv_content,
     )
 
 
@@ -763,8 +764,9 @@ def bootstrap_student_roster(
 )
 async def upload_student_roster_csv(
     file: UploadFile = File(...),
-    initial_password: str = Form("cce@123"),
+    initial_password: Optional[str] = Form(None),
     provision_admin: bool = Form(True),
+    staff_file: Optional[UploadFile] = File(None),
     current_admin: Optional[User] = Depends(require_admin_or_setup_token),
     db: Session = Depends(get_db),
 ) -> RosterImportResponse:
@@ -784,6 +786,21 @@ async def upload_student_roster_csv(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Unable to decode CSV file content: {e}",
             )
+
+    staff_csv_text = None
+    if staff_file and staff_file.filename:
+        s_bytes = await staff_file.read()
+        try:
+            staff_csv_text = s_bytes.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            try:
+                staff_csv_text = s_bytes.decode("latin-1")
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unable to decode staff CSV file content: {e}",
+                )
+
     actor_id = current_admin.id if current_admin else None
     return import_roster_data(
         db=db,
@@ -791,6 +808,7 @@ async def upload_student_roster_csv(
         initial_password=initial_password,
         provision_admin=provision_admin,
         actor_id=actor_id,
+        staff_csv_content=staff_csv_text,
     )
 
 
