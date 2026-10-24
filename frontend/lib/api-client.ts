@@ -58,7 +58,10 @@ import {
 } from "@/types/achievement";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/api/v1";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  (typeof window !== "undefined" && window.location.hostname.includes("vercel.app")
+    ? "https://cce-pgpa.onrender.com/api/v1"
+    : "http://127.0.0.1:8000/api/v1");
 
 const TOKEN_STORAGE_KEY = "cce_achieve_token";
 
