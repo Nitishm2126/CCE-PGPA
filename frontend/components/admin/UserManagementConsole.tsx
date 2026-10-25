@@ -43,6 +43,7 @@ import {
 } from "./HODModals";
 import { BulkProvisioningModal } from "./BulkProvisioningModal";
 import { EditUserEmailModal, TargetUserInfo } from "./EditUserEmailModal";
+import { ResetPasswordModal, TargetPasswordResetUser } from "./ResetPasswordModal";
 
 export type ActiveTab = "students" | "mentors" | "hods";
 
@@ -99,6 +100,7 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
   const [yearFilter, setYearFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [mentorFilter, setMentorFilter] = useState("all");
+  const [showTestAccounts, setShowTestAccounts] = useState(false);
 
   // Modals state - Students
   const [selectedStudentDetail, setSelectedStudentDetail] = useState<AdminStudentDetailResponse | null>(null);
@@ -125,6 +127,9 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
   // Security - Edit User Email Modal
   const [userToEditEmail, setUserToEditEmail] = useState<TargetUserInfo | null>(null);
 
+  // Security - Reset Password Modal
+  const [userToResetPassword, setUserToResetPassword] = useState<TargetPasswordResetUser | null>(null);
+
   // Fetch all user lists
   const fetchAllData = useCallback(async () => {
     if (!token) return;
@@ -133,7 +138,7 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
       setGlobalError(null);
 
       const [studentsRes, mentorsRes, hodsRes] = await Promise.all([
-        api.adminGetStudents(undefined, token),
+        api.adminGetStudents({ include_test_accounts: showTestAccounts }, token),
         api.adminGetMentors(undefined, token),
         api.adminGetHods(undefined, token),
       ]);
@@ -152,7 +157,7 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
       setLoading(false);
       setRefreshing(false);
     }
-  }, [token]);
+  }, [token, showTestAccounts]);
 
   useEffect(() => {
     fetchAllData();
@@ -724,6 +729,27 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
             </div>
           )}
         </div>
+
+        {activeTab === "students" && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-400 select-none">
+              <input
+                type="checkbox"
+                checked={showTestAccounts}
+                onChange={(e) => setShowTestAccounts(e.target.checked)}
+                className="w-4 h-4 rounded text-blue-600 border-slate-300 dark:border-slate-700 focus:ring-blue-500"
+              />
+              <span className="font-medium text-slate-700 dark:text-slate-300">
+                Include Test / Fixture Accounts
+              </span>
+            </label>
+            <span className="text-[11px] text-slate-400">
+              {showTestAccounts
+                ? "Displaying all accounts including synthetic test fixtures"
+                : "Displaying official CCE student roster entries only"}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Table Content */}
@@ -776,7 +802,13 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                             <span className="font-semibold text-slate-900 dark:text-white">
                               {s.full_name}
                             </span>
-                            <DesignationBadge designation="Change Maker" size="sm" />
+                            {!s.register_number || s.email.includes("@test.edu") ? (
+                              <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 rounded border border-amber-300 dark:border-amber-800">
+                                TEST FIXTURE
+                              </span>
+                            ) : (
+                              <DesignationBadge designation="Change Maker" size="sm" />
+                            )}
                           </div>
                           <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[200px]">
                             {s.email}
@@ -840,6 +872,22 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                               className="px-2.5 py-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded font-medium transition"
                             >
                               Edit
+                            </button>
+                            <button
+                              onClick={() =>
+                                setUserToResetPassword({
+                                  id: s.id,
+                                  full_name: s.full_name,
+                                  email: s.email,
+                                  role: s.role,
+                                  staff_id: s.register_number,
+                                  department: s.department,
+                                })
+                              }
+                              className="px-2.5 py-1 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded font-medium transition cursor-pointer"
+                              title="Reset student login password"
+                            >
+                              Reset Password
                             </button>
                             <button
                               onClick={() =>
@@ -1067,6 +1115,22 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                           </button>
                           <button
                             onClick={() =>
+                              setUserToResetPassword({
+                                id: m.id,
+                                full_name: m.full_name,
+                                email: m.email,
+                                role: m.role,
+                                staff_id: m.staff_id,
+                                department: m.department,
+                              })
+                            }
+                            className="px-2.5 py-1 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded font-medium transition cursor-pointer"
+                            title="Reset faculty mentor login password"
+                          >
+                            Reset Password
+                          </button>
+                          <button
+                            onClick={() =>
                               setUserToEditEmail({
                                 id: m.id,
                                 full_name: m.full_name,
@@ -1182,6 +1246,22 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                             className="px-2.5 py-1 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded font-medium transition"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() =>
+                              setUserToResetPassword({
+                                id: h.id,
+                                full_name: h.full_name,
+                                email: h.email,
+                                role: h.role,
+                                staff_id: h.staff_id,
+                                department: h.department,
+                              })
+                            }
+                            className="px-2.5 py-1 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded font-medium transition cursor-pointer"
+                            title="Reset department HOD login password"
+                          >
+                            Reset Password
                           </button>
                           <button
                             onClick={() =>
@@ -1325,6 +1405,17 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
         onSuccess={(res) => {
           setSuccessMessage(
             `Email for ${res.full_name} updated to ${res.new_email} (${res.status === "pending_verification" ? "pending verification" : "completed"}).`
+          );
+          fetchAllData();
+        }}
+      />
+
+      <ResetPasswordModal
+        user={userToResetPassword}
+        onClose={() => setUserToResetPassword(null)}
+        onSuccess={(res) => {
+          setSuccessMessage(
+            `Password for ${res.full_name} (${res.email}) has been successfully reset.`
           );
           fetchAllData();
         }}

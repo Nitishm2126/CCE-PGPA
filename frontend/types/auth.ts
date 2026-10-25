@@ -552,3 +552,22 @@ export interface AdminSendVerificationEmailResponse {
   message: string;
   verification_link?: string | null;
 }
+
+export interface AdminResetUserPasswordRequest {
+  new_password: string;
+  must_change_password?: boolean;
+}
+
+export interface AdminResetUserPasswordResponse {
+  success: boolean;
+  user_id: string;
+  full_name: string;
+  email: string;
+  role: UserRole;
+  staff_id?: string | null;
+  department?: string | null;
+  must_change_password: boolean;
+  message: string;
+  firebase_updated: boolean;
+  password_reset_link?: string | null;
+}

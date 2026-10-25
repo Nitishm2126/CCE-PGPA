@@ -1,7 +1,10 @@
+import logging
 import secrets
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional, Union
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 from fastapi.security import HTTPAuthorizationCredentials
@@ -49,6 +52,8 @@ from app.schemas.admin import (
     AdminRecentSubmissionItem,
     AdminResetStudentPasswordRequest,
     AdminResetStudentPasswordResponse,
+    AdminResetUserPasswordRequest,
+    AdminResetUserPasswordResponse,
     AdminStatusUpdateRequest,
     AdminStudentCreate,
     AdminStudentDeleteRequest,
@@ -96,6 +101,7 @@ from app.services.admin_service import (
 )
 from app.services.drive_service import get_drive_service
 from app.services.firebase_service import (
+    generate_firebase_password_reset_link,
     sync_create_firebase_user,
     sync_set_firebase_disabled,
     sync_update_firebase_user,
@@ -140,6 +146,8 @@ def get_admin_overview(
     total_mentors = db.scalars(select(func.count(MentorProfile.id))).one()
     total_hods = db.scalars(select(func.count(HodProfile.id))).one()
     total_assignments = db.scalars(select(func.count(MentorAssignment.id))).one()
+    # Align student role count with official roster count
+    role_counts["student"] = total_students
 
     # Data-driven submissions and activities metrics
     pending_submissions = db.scalars(
@@ -926,6 +934,7 @@ def list_students(
     section: Optional[str] = Query(default=None, description="Filter by section"),
     is_active: Optional[bool] = Query(default=None, description="Filter by account status"),
     mentor_id: Optional[uuid.UUID] = Query(default=None, description="Filter by assigned mentor ID"),
+    include_test_accounts: bool = Query(default=False, description="Whether to include test/fixture accounts"),
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> List[AdminStudentItem]:
@@ -934,6 +943,11 @@ def list_students(
         .outerjoin(StudentProfile, User.id == StudentProfile.user_id)
         .where(User.role == UserRole.STUDENT)
     )
+
+    if not include_test_accounts:
+        stmt = stmt.where(StudentProfile.id.is_not(None))
+        if not search:
+            stmt = stmt.where(~User.email.ilike("%@test.edu"))
 
     if is_active is not None:
         stmt = stmt.where(User.is_active == is_active)
@@ -1498,6 +1512,123 @@ def update_student_status(
     )
 
 
+def _execute_user_password_reset(
+    target_user_id: uuid.UUID,
+    expected_role: UserRole,
+    payload: AdminResetUserPasswordRequest,
+    current_user: User,
+    db: Session,
+) -> AdminResetUserPasswordResponse:
+    """
+    Unified, secure password reset engine for administrators.
+    - Validates target account exists and strictly enforces expected role.
+    - Strictly rejects administrators attempting to reset their own password via faculty endpoints.
+    - Safely synchronizes new password with Firebase Authentication (if linked).
+    - Optionally generates a direct Firebase password-reset link.
+    - Updates Argon2id password hash and mandatory password-change flag in PostgreSQL.
+    - Writes immutable, safe audit log without recording plaintext passwords.
+    """
+    target_user = db.get(User, target_user_id)
+    role_label = {
+        UserRole.STUDENT: "student",
+        UserRole.MENTOR: "faculty mentor",
+        UserRole.HOD: "department HOD",
+        UserRole.ADMIN: "administrator",
+    }.get(expected_role, expected_role.value)
+
+    if not target_user or target_user.role != expected_role:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"{role_label.capitalize()} account not found or target user is not a {role_label}.",
+        )
+
+    # Reject administrator self-reset attempts through faculty management endpoints
+    if target_user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Administrators cannot reset their own password via faculty management endpoints. Please use personal security settings.",
+        )
+
+    clean_password = payload.new_password.strip()
+    if len(clean_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 6 characters long.",
+        )
+
+    # 1. Update in Firebase Authentication if account is linked
+    firebase_updated = False
+    if target_user.firebase_uid:
+        try:
+            firebase_updated = sync_update_firebase_user(target_user.firebase_uid, password=clean_password)
+        except Exception as fb_exc:
+            logger.warning("Firebase update failed for %s: %s", target_user.email, fb_exc)
+            firebase_updated = False
+
+    # Also attempt generating a direct password reset link if supported
+    password_reset_link = generate_firebase_password_reset_link(target_user.email)
+
+    # 2. Update Argon2id password hash and must_change_password in PostgreSQL
+    target_user.password_hash = get_password_hash(clean_password)
+    target_user.must_change_password = payload.must_change_password
+    db.add(target_user)
+
+    # 3. Record safe audit log (never recording the password)
+    action_name = f"reset_{expected_role.value}_password"
+    record_audit_log(
+        db,
+        actor_id=current_user.id,
+        action=action_name,
+        target_type=expected_role.value,
+        target_id=str(target_user.id),
+        metadata={
+            "user_id": str(target_user.id),
+            "user_email": target_user.email,
+            "role": target_user.role.value,
+            "must_change_password": payload.must_change_password,
+            "has_firebase_uid": bool(target_user.firebase_uid),
+            "firebase_updated": firebase_updated,
+            "outcome": "completed",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
+    db.commit()
+    db.refresh(target_user)
+
+    staff_id = None
+    department = None
+    if expected_role == UserRole.MENTOR and target_user.mentor_profile:
+        staff_id = target_user.mentor_profile.staff_id
+        department = target_user.mentor_profile.department
+    elif expected_role == UserRole.HOD and target_user.hod_profile:
+        staff_id = target_user.hod_profile.staff_id
+        department = target_user.hod_profile.department
+    elif expected_role == UserRole.STUDENT and target_user.student_profile:
+        staff_id = target_user.student_profile.register_number
+        department = target_user.student_profile.department
+
+    role_title = {
+        UserRole.STUDENT: "Student",
+        UserRole.MENTOR: "Faculty Mentor",
+        UserRole.HOD: "Department HOD",
+    }.get(expected_role, expected_role.value.capitalize())
+
+    return AdminResetUserPasswordResponse(
+        success=True,
+        user_id=target_user.id,
+        full_name=target_user.full_name,
+        email=target_user.email,
+        role=target_user.role,
+        staff_id=staff_id,
+        department=department,
+        must_change_password=target_user.must_change_password,
+        firebase_updated=firebase_updated,
+        password_reset_link=password_reset_link,
+        message=f"Password for {role_title} '{target_user.full_name}' ({target_user.email}) has been successfully reset.",
+    )
+
+
 @router.post(
     "/students/{student_id}/reset-password",
     response_model=AdminResetStudentPasswordResponse,
@@ -1514,60 +1645,21 @@ def reset_student_password(
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> AdminResetStudentPasswordResponse:
-    student = db.get(User, student_id)
-    if not student or student.role != UserRole.STUDENT:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Student not found or target user is not a student.",
-        )
-
-    clean_password = payload.new_password.strip()
-    if len(clean_password) < 6:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must be at least 6 characters long.",
-        )
-
-    # 1. Update in Firebase Authentication if account is linked
-    if student.firebase_uid:
-        try:
-            sync_update_firebase_user(student.firebase_uid, password=clean_password)
-        except Exception as fb_exc:
-            # Tolerant if Firebase is in emulator or offline, but logged safely without password
-            pass
-
-    # 2. Update Argon2id password hash in PostgreSQL
-    student.password_hash = get_password_hash(clean_password)
-    student.must_change_password = payload.must_change_password
-    db.add(student)
-
-    # 3. Record safe audit log (never recording the password)
-    record_audit_log(
-        db,
-        actor_id=current_user.id,
-        action="reset_student_password",
-        target_type="student",
-        target_id=str(student.id),
-        metadata={
-            "student_id": str(student.id),
-            "student_email": student.email,
-            "must_change_password": payload.must_change_password,
-            "has_firebase_uid": bool(student.firebase_uid),
-        },
+    res = _execute_user_password_reset(
+        target_user_id=student_id,
+        expected_role=UserRole.STUDENT,
+        payload=payload,
+        current_user=current_user,
+        db=db,
     )
-
-    db.commit()
-    db.refresh(student)
-
-    reg_number = student.student_profile.register_number if student.student_profile else None
     return AdminResetStudentPasswordResponse(
-        success=True,
-        student_id=student.id,
-        student_name=student.full_name,
-        student_email=student.email,
-        register_number=reg_number,
-        must_change_password=student.must_change_password,
-        message=f"Password for student '{student.full_name}' ({student.email}) has been successfully reset.",
+        success=res.success,
+        student_id=res.user_id,
+        student_name=res.full_name,
+        student_email=res.email,
+        register_number=res.staff_id,
+        must_change_password=res.must_change_password,
+        message=res.message,
     )
 
 
@@ -2069,6 +2161,31 @@ def delete_mentor(
     )
 
 
+@router.post(
+    "/mentors/{mentor_id}/reset-password",
+    response_model=AdminResetUserPasswordResponse,
+    summary="Securely reset a faculty mentor's login password",
+    description=(
+        "Enforces Administrator-only authorization. Securely updates the mentor's password in "
+        "PostgreSQL (Argon2id) and Firebase Authentication (if linked), enforces mandatory password change "
+        "if requested, and records a safe audit entry without ever storing or logging plaintext passwords."
+    ),
+)
+def reset_mentor_password(
+    mentor_id: uuid.UUID,
+    payload: AdminResetUserPasswordRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminResetUserPasswordResponse:
+    return _execute_user_password_reset(
+        target_user_id=mentor_id,
+        expected_role=UserRole.MENTOR,
+        payload=payload,
+        current_user=current_user,
+        db=db,
+    )
+
+
 # ==============================================================================
 # HOD Management Endpoints
 # ==============================================================================
@@ -2486,6 +2603,66 @@ def delete_hod(
         hod_id=hod_id,
         replacement_hod_id=payload.replacement_hod_id,
         admin_user=current_user,
+    )
+
+
+@router.post(
+    "/hods/{hod_id}/reset-password",
+    response_model=AdminResetUserPasswordResponse,
+    summary="Securely reset a department HOD's login password",
+    description=(
+        "Enforces Administrator-only authorization. Securely updates the HOD's password in "
+        "PostgreSQL (Argon2id) and Firebase Authentication (if linked), enforces mandatory password change "
+        "if requested, and records a safe audit entry without ever storing or logging plaintext passwords."
+    ),
+)
+def reset_hod_password(
+    hod_id: uuid.UUID,
+    payload: AdminResetUserPasswordRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminResetUserPasswordResponse:
+    return _execute_user_password_reset(
+        target_user_id=hod_id,
+        expected_role=UserRole.HOD,
+        payload=payload,
+        current_user=current_user,
+        db=db,
+    )
+
+
+@router.post(
+    "/users/{user_id}/reset-password",
+    response_model=AdminResetUserPasswordResponse,
+    summary="Securely reset a managed user's login password (Mentor, HOD, or Student)",
+    description=(
+        "Role-aware password reset endpoint. Enforces Administrator-only authorization. "
+        "Validates target role is one of MENTOR, HOD, or STUDENT. Rejects admin self-reset."
+    ),
+)
+def reset_user_password(
+    user_id: uuid.UUID,
+    payload: AdminResetUserPasswordRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminResetUserPasswordResponse:
+    target_user = db.get(User, user_id)
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User account not found.",
+        )
+    if target_user.role not in [UserRole.MENTOR, UserRole.HOD, UserRole.STUDENT]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot reset password for role '{target_user.role.value}'. Supported roles: mentor, hod, student.",
+        )
+    return _execute_user_password_reset(
+        target_user_id=user_id,
+        expected_role=target_user.role,
+        payload=payload,
+        current_user=current_user,
+        db=db,
     )
 
 

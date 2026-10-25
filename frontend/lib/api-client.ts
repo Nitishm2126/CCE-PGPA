@@ -39,6 +39,8 @@ import {
   AdminEmailUpdateResponse,
   AdminSendVerificationEmailResponse,
   AdminVerificationStatusResponse,
+  AdminResetUserPasswordRequest,
+  AdminResetUserPasswordResponse,
 } from "@/types/auth";
 import {
   PGPAComponentResponse,
@@ -585,7 +587,7 @@ export const api = {
 
   // Students
   adminGetStudents: async (
-    params?: { search?: string; department?: string; year?: number; section?: string; is_active?: boolean; mentor_id?: string },
+    params?: { search?: string; department?: string; year?: number; section?: string; is_active?: boolean; mentor_id?: string; include_test_accounts?: boolean },
     token?: string | null
   ): Promise<AdminStudentItem[]> => {
     const searchParams = new URLSearchParams();
@@ -595,6 +597,7 @@ export const api = {
     if (params?.section) searchParams.set("section", params.section);
     if (params?.is_active !== undefined) searchParams.set("is_active", params.is_active.toString());
     if (params?.mentor_id) searchParams.set("mentor_id", params.mentor_id);
+    if (params?.include_test_accounts) searchParams.set("include_test_accounts", "true");
     const query = searchParams.toString() ? `?${searchParams.toString()}` : "";
     return request<AdminStudentItem[]>(`/admin/students${query}`, { method: "GET" }, token);
   },
@@ -703,6 +706,21 @@ export const api = {
     }, token);
   },
 
+  adminResetMentorPassword: async (
+    mentorId: string,
+    data: AdminResetUserPasswordRequest,
+    token?: string | null
+  ): Promise<AdminResetUserPasswordResponse> => {
+    return request<AdminResetUserPasswordResponse>(
+      `/admin/mentors/${mentorId}/reset-password`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
   // HOD
   adminGetHods: async (
     params?: { search?: string; department?: string; is_active?: boolean },
@@ -746,6 +764,36 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }, token);
+  },
+
+  adminResetHODPassword: async (
+    hodId: string,
+    data: AdminResetUserPasswordRequest,
+    token?: string | null
+  ): Promise<AdminResetUserPasswordResponse> => {
+    return request<AdminResetUserPasswordResponse>(
+      `/admin/hods/${hodId}/reset-password`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  adminResetUserPassword: async (
+    userId: string,
+    data: AdminResetUserPasswordRequest,
+    token?: string | null
+  ): Promise<AdminResetUserPasswordResponse> => {
+    return request<AdminResetUserPasswordResponse>(
+      `/admin/users/${userId}/reset-password`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    );
   },
 
   // Drive Cleanup Retry

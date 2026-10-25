@@ -45,6 +45,7 @@ router = APIRouter()
     description="Authorized HOD endpoint to inspect all department students and their active mentor assignments.",
 )
 def get_department_students(
+    include_test_accounts: bool = Query(default=False, description="Whether to include test/fixture accounts"),
     current_user: User = Depends(require_hod),
     db: Session = Depends(get_db),
 ) -> List[HODStudentItem]:
@@ -52,8 +53,12 @@ def get_department_students(
         select(User)
         .options(joinedload(User.student_profile))
         .where(User.role == UserRole.STUDENT)
-        .order_by(User.full_name.asc())
     )
+    if not include_test_accounts:
+        stmt = stmt.join(StudentProfile, User.id == StudentProfile.user_id).where(
+            ~User.email.ilike("%@test.edu")
+        )
+    stmt = stmt.order_by(User.full_name.asc())
     students = db.scalars(stmt).all()
 
     active_assignments_stmt = (

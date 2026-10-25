@@ -529,23 +529,45 @@ class RosterImportResponse(BaseModel):
 
 
 # ==============================================================================
-# Individual Student Password Reset Schemas
+# Password Reset Schemas (Student, Faculty Mentor, Department HOD)
 # ==============================================================================
 
-class AdminResetStudentPasswordRequest(BaseModel):
+class AdminResetUserPasswordRequest(BaseModel):
     """
-    Payload for administrator to reset an individual student's login password.
+    Payload for administrator to reset an account login password.
     """
     new_password: str = Field(
         ...,
         min_length=6,
         max_length=128,
-        description="New or temporary password for the student account.",
+        description="New or temporary password for the account.",
     )
     must_change_password: bool = Field(
         default=True,
-        description="Force student to change password upon their next successful login.",
+        description="Force user to change password upon next successful login.",
     )
+
+
+class AdminResetUserPasswordResponse(BaseModel):
+    """
+    Response returned to administrator after resetting an account password.
+    """
+    success: bool = True
+    user_id: uuid.UUID
+    full_name: str
+    email: str
+    role: UserRole
+    staff_id: Optional[str] = None
+    department: Optional[str] = None
+    must_change_password: bool
+    message: str
+    firebase_updated: bool = False
+    password_reset_link: Optional[str] = None
+
+
+class AdminResetStudentPasswordRequest(AdminResetUserPasswordRequest):
+    """Legacy alias for student password reset request."""
+    pass
 
 
 class AdminResetStudentPasswordResponse(BaseModel):

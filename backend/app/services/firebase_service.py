@@ -146,3 +146,18 @@ def sync_delete_firebase_user(uid: Optional[str]) -> bool:
     except Exception as exc:
         logger.error("Failed to delete Firebase user %s: %s", uid, exc)
         return False
+
+
+def generate_firebase_password_reset_link(email: str) -> Optional[str]:
+    """
+    Generates a secure password reset link for the given email address via Firebase Admin SDK.
+    Returns None if Firebase is uninitialized, user not found, or operation fails.
+    Never exposes internal tokens or secrets to unauthenticated callers.
+    """
+    try:
+        app = get_firebase_app()
+        clean_email = email.strip().lower()
+        return firebase_auth.generate_password_reset_link(clean_email, app=app)
+    except Exception as exc:
+        logger.warning("Could not generate Firebase password reset link for %s: %s", email, exc)
+        return None

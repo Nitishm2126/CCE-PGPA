@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.security import create_access_token, get_password_hash, verify_password
 from app.db.session import SessionLocal
 from app.models.achievement import Achievement, AchievementStatus
+from app.models.assignment import MentorAssignment
 from app.models.audit import AuditLog
 from app.models.component import ComponentSemesterConfig, PGPAComponent
 from app.models.semester import Semester
@@ -73,6 +74,14 @@ def test_db():
             ).all()
             for al in audit_logs:
                 session.delete(al)
+
+            assigns = session.scalars(
+                select(MentorAssignment).where(
+                    (MentorAssignment.student_id.in_(created_users)) | (MentorAssignment.mentor_id.in_(created_users))
+                )
+            ).all()
+            for ma in assigns:
+                session.delete(ma)
 
             profiles = session.scalars(
                 select(StudentProfile).where(StudentProfile.user_id.in_(created_users))
@@ -394,11 +403,11 @@ def test_admin_individual_student_password_reset(client: TestClient, test_db: Se
         must_change_password=False,
     )
 
-    test_db.add_all([admin, student_a, student_b])
-    test_db.commit()
     test_db.track_user(admin.id)  # type: ignore
     test_db.track_user(student_a.id)  # type: ignore
     test_db.track_user(student_b.id)  # type: ignore
+    test_db.add_all([admin, student_a, student_b])
+    test_db.commit()
 
     admin_token = create_access_token(subject=admin.id, role="admin")
     admin_headers = {"Authorization": f"Bearer {admin_token}"}
@@ -517,11 +526,11 @@ def test_password_reset_authorization_guards(client: TestClient, test_db: Sessio
         role=UserRole.STUDENT,
         is_active=True,
     )
-    test_db.add_all([student, mentor, victim])
-    test_db.commit()
     test_db.track_user(student.id)  # type: ignore
     test_db.track_user(mentor.id)  # type: ignore
     test_db.track_user(victim.id)  # type: ignore
+    test_db.add_all([student, mentor, victim])
+    test_db.commit()
 
     t_student = create_access_token(subject=student.id, role="student")
     t_mentor = create_access_token(subject=mentor.id, role="mentor")
