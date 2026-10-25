@@ -174,7 +174,72 @@ def grade_sail(points: float, semester: int) -> Tuple[str, int]:
         return "C", 1
 
 
-# 7. Clubs & Cells: Table 7.2 cumulative thresholds
+# 7. Clubs & Cells: Table 7.1 Point Allocation Table & Table 7.2 Cumulative Thresholds
+TABLE_7_1_POINTS: Dict[str, Any] = {
+    "member": 100,
+    "magic": 200,
+    "event coordinator": 200,
+    "volunteer": 100,
+    "event participation": {
+        "within college": 100,
+        "within state (other college)": 200,
+        "national level (other state)": 300,
+        "international level (in college / others)": 400,
+        "international level (other country)": 500,
+    },
+    "winner": {
+        "within college": 200,
+        "within state (other college)": 300,
+        "national level (other state)": 500,
+        "international level (in college / others)": 600,
+        "international level (other country)": 700,
+    },
+}
+
+def calculate_clubs_and_cells_points(role_category: str, event_level: Optional[str] = None) -> int:
+    """
+    Computes exact point allocation for Clubs & Cells from Table 7.1:
+    - Member: 100 points
+    - Event Participation: Within College 100, Within State 200, National 300, International (In College) 400, International (Other Country) 500
+    - Winner: Within College 200, Within State 300, National 500, International (In College) 600, International (Other Country) 700
+    - MAGIC: 200 points
+    - Event Coordinator: 200 points
+    - Volunteer: 100 points
+    """
+    cat = (role_category or "").strip().lower()
+    lvl = (event_level or "").strip().lower()
+
+    if "magic" in cat:
+        return 200
+    if "coordinator" in cat:
+        return 200
+    if "volunteer" in cat:
+        return 100
+    if "member" in cat and "participation" not in cat and "winner" not in cat:
+        return 100
+
+    if "winner" in cat:
+        winner_map = TABLE_7_1_POINTS["winner"]
+        for k, pts in winner_map.items():
+            if k in lvl or (lvl and lvl in k):
+                return pts
+        for k, pts in winner_map.items():
+            if k in cat:
+                return pts
+        return 200  # Default within college winner
+
+    if "participation" in cat or "participant" in cat or "event" in cat:
+        part_map = TABLE_7_1_POINTS["event participation"]
+        for k, pts in part_map.items():
+            if k in lvl or (lvl and lvl in k):
+                return pts
+        for k, pts in part_map.items():
+            if k in cat:
+                return pts
+        return 100  # Default within college participation
+
+    return 100
+
 def grade_clubs_and_cells(points: float, semester: int) -> Tuple[str, int]:
     sem_factor = max(1, semester)
     o_th = 600 * sem_factor
@@ -317,7 +382,12 @@ def grade_fit_india(score: float, category: Optional[str] = None) -> Tuple[str, 
 
 # 14. Academics (GPA)
 def grade_academics(gpa: float) -> Tuple[str, int]:
+    if gpa < 0.0 or gpa > 10.0:
+        raise ValueError("Anna University GPA must be between 0.00 and 10.00.")
     return score_to_grade_table_b(gpa)
+
+
+grade_academics_gpa = grade_academics
 
 
 # ==============================================================================
@@ -383,10 +453,20 @@ def calculate_component_grade(
         explanation = f"SAIL {points:g} pts in Sem {semester_number} -> Grade {grade}"
 
     elif slug == "clubs-and-cells":
-        points = float(inputs.get("points") or inputs.get("raw_score") or 0)
+        role_cat = str(inputs.get("role_category") or inputs.get("category") or inputs.get("activity_type") or "")
+        event_lvl = str(inputs.get("event_level") or "")
+        raw_pts = inputs.get("points") or inputs.get("raw_score")
+        if raw_pts is not None and float(raw_pts) > 0:
+            points = float(raw_pts)
+        elif role_cat:
+            points = float(calculate_clubs_and_cells_points(role_cat, event_lvl))
+        else:
+            points = 0.0
+
         grade, gp = grade_clubs_and_cells(points, semester_number)
         raw_score = points
-        explanation = f"Clubs & Cells {points:g} pts in Sem {semester_number} -> Grade {grade}"
+        category = f"{role_cat} - {event_lvl}".strip(" -") if (role_cat or event_lvl) else "Clubs & Cells"
+        explanation = f"Clubs & Cells: {category} ({points:g} pts, Sem {semester_number}) -> Grade {grade}"
 
     elif slug == "sports-and-games":
         points = float(inputs.get("points") or inputs.get("raw_score") or 0)
@@ -433,10 +513,14 @@ def calculate_component_grade(
         explanation = f"FIT INDIA score {score:g} -> Grade {grade}"
 
     elif slug == "academics-gpa":
-        gpa = float(inputs.get("gpa") or inputs.get("raw_score") or 0)
+        raw_gpa = inputs.get("gpa") if inputs.get("gpa") is not None else inputs.get("raw_score", 0.0)
+        gpa = float(raw_gpa)
+        if gpa < 0.0 or gpa > 10.0:
+            raise ValueError(f"GPA {gpa:.2f} is outside the valid scale [0.0, 10.0].")
         grade, gp = grade_academics(gpa)
         raw_score = gpa
-        explanation = f"Academics Semester GPA {gpa:.2f} -> Grade {grade}"
+        category = "Semester GPA"
+        explanation = f"Academics Semester GPA {gpa:.2f} -> Grade {grade} ({gp} GP)"
 
     else:
         # Fallback for staff direct entry or generic grade

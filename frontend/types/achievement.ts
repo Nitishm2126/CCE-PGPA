@@ -4,7 +4,7 @@ export type ReviewAction = "approved" | "rejected" | "requested_changes";
 export interface DynamicFieldDefinition {
   name: string;
   label: string;
-  type: "text" | "number" | "select" | "date" | "textarea";
+  type: "text" | "number" | "select" | "date" | "textarea" | "checkbox";
   required: boolean;
   options?: string[];
   placeholder?: string;
@@ -23,10 +23,12 @@ export interface PGPAComponentResponse {
   display_order: number;
   is_active: boolean;
   credit_value?: number;
-  submission_mode?: "student_submission" | "hod_excel_import" | "both";
+  submission_mode?: "student_submission" | "hod_excel_import" | "both" | "direct_staff_entry";
   grading_strategy?: string;
   requires_verification?: boolean;
   input_fields?: DynamicFieldDefinition[];
+  is_enabled_for_semester?: boolean;
+  lock_reason?: string | null;
 }
 
 export interface SemesterResponse {
@@ -79,6 +81,11 @@ export interface AchievementResponse {
   event_date?: string | null;
   description?: string | null;
   outcome?: string | null;
+  component_metadata?: Record<string, any> | null;
+  evaluated_grade?: string | null;
+  evaluated_grade_points?: number | null;
+  evaluated_points?: number | null;
+  mentor_remarks?: string | null;
   status: AchievementStatus;
   submitted_at?: string | null;
   created_at: string;
@@ -90,12 +97,13 @@ export interface AchievementResponse {
 export interface AchievementCreate {
   component_id: string;
   semester_id: string;
-  title: string;
+  title?: string;
   activity_type?: string;
   organizer?: string;
   event_date?: string;
   description?: string;
   outcome?: string;
+  component_metadata?: Record<string, any>;
 }
 
 export interface StudentSemesterFolderAuditItem {

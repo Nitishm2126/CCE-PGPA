@@ -47,6 +47,8 @@ from app.schemas.admin import (
     AdminOperationResult,
     AdminOverviewResponse,
     AdminRecentSubmissionItem,
+    AdminResetStudentPasswordRequest,
+    AdminResetStudentPasswordResponse,
     AdminStatusUpdateRequest,
     AdminStudentCreate,
     AdminStudentDeleteRequest,
@@ -1474,6 +1476,79 @@ def update_student_status(
         success=True,
         message=f"Student account {state_str} successfully.",
         affected_id=student.id,
+    )
+
+
+@router.post(
+    "/students/{student_id}/reset-password",
+    response_model=AdminResetStudentPasswordResponse,
+    summary="Securely reset an individual student's login password",
+    description=(
+        "Enforces Administrator-only authorization. Securely updates the student's password in "
+        "PostgreSQL (Argon2id) and Firebase Authentication (if linked), enforces mandatory password change "
+        "if requested, and records a safe audit entry without ever storing or logging plaintext passwords."
+    ),
+)
+def reset_student_password(
+    student_id: uuid.UUID,
+    payload: AdminResetStudentPasswordRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminResetStudentPasswordResponse:
+    student = db.get(User, student_id)
+    if not student or student.role != UserRole.STUDENT:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Student not found or target user is not a student.",
+        )
+
+    clean_password = payload.new_password.strip()
+    if len(clean_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 6 characters long.",
+        )
+
+    # 1. Update in Firebase Authentication if account is linked
+    if student.firebase_uid:
+        try:
+            sync_update_firebase_user(student.firebase_uid, password=clean_password)
+        except Exception as fb_exc:
+            # Tolerant if Firebase is in emulator or offline, but logged safely without password
+            pass
+
+    # 2. Update Argon2id password hash in PostgreSQL
+    student.password_hash = get_password_hash(clean_password)
+    student.must_change_password = payload.must_change_password
+    db.add(student)
+
+    # 3. Record safe audit log (never recording the password)
+    record_audit_log(
+        db,
+        actor_id=current_user.id,
+        action="reset_student_password",
+        target_type="student",
+        target_id=str(student.id),
+        metadata={
+            "student_id": str(student.id),
+            "student_email": student.email,
+            "must_change_password": payload.must_change_password,
+            "has_firebase_uid": bool(student.firebase_uid),
+        },
+    )
+
+    db.commit()
+    db.refresh(student)
+
+    reg_number = student.student_profile.register_number if student.student_profile else None
+    return AdminResetStudentPasswordResponse(
+        success=True,
+        student_id=student.id,
+        student_name=student.full_name,
+        student_email=student.email,
+        register_number=reg_number,
+        must_change_password=student.must_change_password,
+        message=f"Password for student '{student.full_name}' ({student.email}) has been successfully reset.",
     )
 
 

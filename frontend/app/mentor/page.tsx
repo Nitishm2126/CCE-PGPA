@@ -42,6 +42,8 @@ export default function MentorDashboardPage() {
 
   // Review submission state
   const [reviewRemarks, setReviewRemarks] = useState<string>("");
+  const [awardedPoints, setAwardedPoints] = useState<string>("");
+  const [awardedGrade, setAwardedGrade] = useState<string>("");
   const [isSubmittingReview, setIsSubmittingReview] = useState<boolean>(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [reviewSuccessMsg, setReviewSuccessMsg] = useState<string | null>(null);
@@ -204,22 +206,44 @@ export default function MentorDashboardPage() {
   const handleOpenSubmission = (sub: AchievementResponse) => {
     setSelectedSubmission(sub);
     setReviewRemarks("");
+    setAwardedPoints(
+      sub.evaluated_points !== null && sub.evaluated_points !== undefined
+        ? sub.evaluated_points.toString()
+        : sub.component_metadata?.calculated_points !== undefined
+        ? sub.component_metadata.calculated_points.toString()
+        : ""
+    );
+    setAwardedGrade(sub.evaluated_grade || "");
     setReviewError(null);
     setReviewSuccessMsg(null);
   };
 
   const handleReviewSubmission = async (action: "approved" | "rejected" | "requested_changes") => {
     if (!selectedSubmission || !token) return;
+
+    if (action === "rejected" && !reviewRemarks.trim()) {
+      setReviewError("Please provide feedback remarks explaining the reason for rejection so the student can rectify and resubmit.");
+      return;
+    }
+
+    if (action === "requested_changes" && !reviewRemarks.trim()) {
+      setReviewError("Please specify what changes are required before moving this submission back to draft.");
+      return;
+    }
+
     setIsSubmittingReview(true);
     setReviewError(null);
     setReviewSuccessMsg(null);
 
     try {
+      const parsedPoints = awardedPoints.trim() ? parseFloat(awardedPoints.trim()) : undefined;
       const updated = await api.reviewMenteeAchievement(
         selectedSubmission.id,
         {
           action,
           remarks: reviewRemarks.trim() || undefined,
+          awarded_points: action === "approved" ? parsedPoints : undefined,
+          awarded_grade: action === "approved" && awardedGrade.trim() ? awardedGrade.trim() : undefined,
         },
         token
       );
@@ -913,6 +937,72 @@ export default function MentorDashboardPage() {
                   </div>
                 </div>
 
+                {/* Component-Specific Metadata Breakdown */}
+                {selectedSubmission.component_metadata && (
+                  <div className="rounded-xl border border-indigo-100 dark:border-indigo-900/60 bg-indigo-50/50 dark:bg-indigo-950/30 p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+                        Component-Specific Data &amp; Rubric Criteria
+                      </span>
+                      {selectedSubmission.evaluated_grade && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-600 text-white font-bold text-xs shadow-2xs">
+                          Rubric Grade: {selectedSubmission.evaluated_grade} ({selectedSubmission.evaluated_grade_points || 0} GP)
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                      {selectedSubmission.component_metadata.gpa !== undefined && (
+                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400">Anna Univ GPA</span>
+                          <p className="font-bold text-slate-900 dark:text-white text-sm">{selectedSubmission.component_metadata.gpa} / 10.00</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.club_name && (
+                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400">Club / Cell</span>
+                          <p className="font-bold text-slate-900 dark:text-white truncate">{selectedSubmission.component_metadata.club_name}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.role_category && (
+                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400">Role Category</span>
+                          <p className="font-bold text-slate-900 dark:text-white truncate">{selectedSubmission.component_metadata.role_category}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.event_level && (
+                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400">Event Level</span>
+                          <p className="font-bold text-slate-900 dark:text-white truncate">{selectedSubmission.component_metadata.event_level}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.calculated_points !== undefined && (
+                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400">Table 7.1 Points</span>
+                          <p className="font-bold text-indigo-700 dark:text-indigo-400 text-sm">{selectedSubmission.component_metadata.calculated_points} Points</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.points !== undefined && (
+                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400">Calculated Points</span>
+                          <p className="font-bold text-slate-900 dark:text-white text-sm">{selectedSubmission.component_metadata.points} pts</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.stage_tier && (
+                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400">Stage / Award</span>
+                          <p className="font-bold text-slate-900 dark:text-white truncate">{selectedSubmission.component_metadata.stage_tier}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.certificate_type && (
+                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400">Certificate Type</span>
+                          <p className="font-bold text-slate-900 dark:text-white truncate">{selectedSubmission.component_metadata.certificate_type}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Event Details Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div className="rounded-lg border border-slate-200/70 p-2.5">
@@ -1015,7 +1105,7 @@ export default function MentorDashboardPage() {
                         Faculty Evaluation &amp; Verification Action
                       </p>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Inspect evidence and record formal decision with optional verification feedback.
+                        Inspect evidence and record formal decision with authoritative rubric evaluation.
                       </p>
                     </div>
                     {renderStatusBadge(selectedSubmission.status)}
@@ -1035,15 +1125,46 @@ export default function MentorDashboardPage() {
 
                   {selectedSubmission.status === "pending" ? (
                     <div className="space-y-3 pt-1">
+                      {/* Rubric Points & Grade Confirmation */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Awarded Points (Table 7.1 / Rubric)
+                          </label>
+                          <input
+                            type="number"
+                            step="1"
+                            value={awardedPoints}
+                            onChange={(e) => setAwardedPoints(e.target.value)}
+                            placeholder="e.g. 100, 200, 500"
+                            disabled={isSubmittingReview}
+                            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Awarded Grade (O, A+, A, B+, B, C)
+                          </label>
+                          <input
+                            type="text"
+                            value={awardedGrade}
+                            onChange={(e) => setAwardedGrade(e.target.value)}
+                            placeholder="e.g. O, A+, A"
+                            disabled={isSubmittingReview}
+                            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+
                       <div>
                         <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Review Remarks / Feedback (Optional for approval, recommended for changes/rejection)
+                          Review Remarks / Feedback (Required for Rejection or Changes)
                         </label>
                         <textarea
                           rows={2}
                           value={reviewRemarks}
                           onChange={(e) => setReviewRemarks(e.target.value)}
-                          placeholder="e.g., Certificate verified against event criteria. Grade points approved."
+                          placeholder="e.g., Verified against Anna University mark sheet. Grade O approved."
                           disabled={isSubmittingReview}
                           className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />

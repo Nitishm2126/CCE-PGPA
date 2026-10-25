@@ -19,12 +19,32 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
   onSave,
   onRefreshed,
 }) => {
+  const isAcademics =
+    achievement?.component_slug === "academics-gpa" ||
+    achievement?.component_name?.toLowerCase().includes("academic") ||
+    achievement?.component_name?.toLowerCase().includes("gpa");
+
+  const isClubsAndCells =
+    achievement?.component_slug === "clubs-and-cells" ||
+    achievement?.component_name?.toLowerCase().includes("club");
+
+  // General fields
   const [title, setTitle] = useState("");
   const [activityType, setActivityType] = useState("Certification");
   const [organizer, setOrganizer] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [outcome, setOutcome] = useState("");
   const [description, setDescription] = useState("");
+
+  // Academics specific
+  const [gpa, setGpa] = useState("");
+
+  // Clubs & Cells specific
+  const [clubName, setClubName] = useState("");
+  const [roleCategory, setRoleCategory] = useState("Member");
+  const [eventLevel, setEventLevel] = useState("Within College");
+  const [activityName, setActivityName] = useState("");
+
   const [attachedFiles, setAttachedFiles] = useState<AchievementFileResponse[]>([]);
   const [newEvidenceFile, setNewEvidenceFile] = useState<File | null>(null);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
@@ -33,6 +53,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
 
   useEffect(() => {
     if (achievement) {
+      const meta = achievement.component_metadata || {};
       setTitle(achievement.title || "");
       setActivityType(achievement.activity_type || "Certification");
       setOrganizer(achievement.organizer || "");
@@ -43,11 +64,69 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
       );
       setOutcome(achievement.outcome || "");
       setDescription(achievement.description || "");
+
+      // Academics
+      if (meta.gpa !== undefined) {
+        setGpa(meta.gpa.toString());
+      } else if (achievement.outcome && !isNaN(parseFloat(achievement.outcome))) {
+        setGpa(achievement.outcome);
+      } else {
+        setGpa("");
+      }
+
+      // Clubs & Cells
+      setClubName(meta.club_name || achievement.organizer || "");
+      setRoleCategory(meta.role_category || "Member");
+      setEventLevel(meta.event_level || "Within College");
+      setActivityName(achievement.title || "");
+
       setAttachedFiles(achievement.files || []);
       setNewEvidenceFile(null);
       setError(null);
     }
   }, [achievement, isOpen]);
+
+  // Live calculation helpers
+  const calculatedGradePreview = React.useMemo(() => {
+    if (!isAcademics || !gpa) return null;
+    const gpaNum = parseFloat(gpa);
+    if (isNaN(gpaNum) || gpaNum < 0 || gpaNum > 10) return null;
+    if (gpaNum >= 9.0) return { grade: "O", gp: 10.0, label: "Outstanding" };
+    if (gpaNum >= 7.0) return { grade: "A+", gp: 9.0, label: "Excellent" };
+    if (gpaNum >= 4.0) return { grade: "A", gp: 8.0, label: "Very Good" };
+    if (gpaNum >= 2.0) return { grade: "B+", gp: 7.0, label: "Good" };
+    if (gpaNum >= 1.0) return { grade: "B", gp: 6.0, label: "Fair" };
+    return { grade: "C", gp: 5.0, label: "Satisfactory" };
+  }, [isAcademics, gpa]);
+
+  const calculatedClubsPointsPreview = React.useMemo(() => {
+    if (!isClubsAndCells) return 0;
+    if (roleCategory === "Member") return 100;
+    if (roleCategory === "MAGIC") return 200;
+    if (roleCategory === "Event Coordinator") return 200;
+    if (roleCategory === "Volunteer") return 100;
+    if (roleCategory === "Event Participation") {
+      switch (eventLevel) {
+        case "Within College": return 100;
+        case "Within State (Other College)": return 200;
+        case "National Level (Other State)": return 300;
+        case "International Level (In College / Others)": return 400;
+        case "International Level (Other Country)": return 500;
+        default: return 100;
+      }
+    }
+    if (roleCategory === "Winner") {
+      switch (eventLevel) {
+        case "Within College": return 200;
+        case "Within State (Other College)": return 300;
+        case "National Level (Other State)": return 500;
+        case "International Level (In College / Others)": return 600;
+        case "International Level (Other Country)": return 700;
+        default: return 200;
+      }
+    }
+    return 100;
+  }, [isClubsAndCells, roleCategory, eventLevel]);
 
   if (!isOpen || !achievement) return null;
 
@@ -71,10 +150,6 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      setError("Please provide an achievement title.");
-      return;
-    }
 
     try {
       setIsSubmitting(true);
@@ -85,15 +160,68 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
         await api.uploadEvidenceFile(achievement.id, newEvidenceFile);
       }
 
-      // 2. Save achievement metadata (triggers controlled revision if approved, or keeps in review if pending)
-      await onSave(achievement.id, {
-        title: title.trim(),
-        activity_type: activityType,
-        organizer: organizer.trim() || undefined,
-        event_date: eventDate || undefined,
-        outcome: outcome.trim() || undefined,
-        description: description.trim() || undefined,
-      });
+      // 2. Prepare payload based on component
+      if (isAcademics) {
+        const gpaNum = parseFloat(gpa);
+        if (isNaN(gpaNum) || gpaNum < 0 || gpaNum > 10) {
+          setError("Please enter a valid GPA between 0.00 and 10.00.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const semDisplay = achievement.semester?.display_name || (achievement.semester_id ? `Semester ${achievement.semester_id}` : "Current Semester");
+        await onSave(achievement.id, {
+          title: `${semDisplay} GPA: ${gpaNum.toFixed(2)}`,
+          activity_type: "Academic GPA",
+          outcome: gpaNum.toFixed(2),
+          component_metadata: {
+            gpa: gpaNum,
+            scale: "10.00",
+          },
+        });
+      } else if (isClubsAndCells) {
+        if (!clubName.trim()) {
+          setError("Please select or enter the Club/Cell name.");
+          setIsSubmitting(false);
+          return;
+        }
+        if (!activityName.trim()) {
+          setError("Please specify the activity or event name.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const finalLevel = (roleCategory === "Event Participation" || roleCategory === "Winner") ? eventLevel : undefined;
+        await onSave(achievement.id, {
+          title: activityName.trim(),
+          organizer: clubName.trim(),
+          activity_type: roleCategory,
+          event_date: eventDate || undefined,
+          outcome: `${roleCategory}${finalLevel ? ` (${finalLevel})` : ""} - ${calculatedClubsPointsPreview} Points`,
+          component_metadata: {
+            club_name: clubName.trim(),
+            role_category: roleCategory,
+            event_level: finalLevel,
+            calculated_points: calculatedClubsPointsPreview,
+          },
+        });
+      } else {
+        if (!title.trim()) {
+          setError("Please provide an achievement title.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        await onSave(achievement.id, {
+          title: title.trim(),
+          activity_type: activityType,
+          organizer: organizer.trim() || undefined,
+          event_date: eventDate || undefined,
+          outcome: outcome.trim() || undefined,
+          description: description.trim() || undefined,
+          component_metadata: achievement.component_metadata || undefined,
+        });
+      }
 
       if (onRefreshed) {
         await onRefreshed();
@@ -177,96 +305,235 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
             </p>
           </div>
 
-          {/* Title */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-              Activity Title <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
-              placeholder="e.g. NPTEL Elite Gold Cloud Computing"
-            />
-          </div>
+          {/* Component-Specific Form Content */}
+          {isAcademics ? (
+            <div className="space-y-4">
+              <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/40 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                    Academics / Anna University GPA
+                  </span>
+                  {calculatedGradePreview && (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-600 text-white font-bold text-xs shadow-xs">
+                      Tentative Grade: {calculatedGradePreview.grade} ({calculatedGradePreview.gp} GP)
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-blue-700 dark:text-blue-300 mb-3">
+                  Enter your official Anna University Semester GPA on a 10.00 point scale. Grade Points are computed using Table B authoritative rules.
+                </p>
 
-          {/* Activity Type & Event Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                Activity Type
-              </label>
-              <select
-                value={activityType}
-                onChange={(e) => setActivityType(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
-              >
-                <option value="Certification" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Online Certification</option>
-                <option value="Hackathon" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Hackathon / Contest</option>
-                <option value="Workshop" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Technical Workshop</option>
-                <option value="Internship" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Industry Internship</option>
-                <option value="Publication" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Research Publication</option>
-                <option value="Community Service" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Social / Community</option>
-                <option value="Club Activity" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Student Club Activity</option>
-              </select>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Semester GPA (0.00 – 10.00) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="10"
+                    required
+                    value={gpa}
+                    onChange={(e) => setGpa(e.target.value)}
+                    placeholder="e.g. 8.75"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  />
+                </div>
+              </div>
             </div>
+          ) : isClubsAndCells ? (
+            <div className="space-y-4">
+              {/* Table 7.1 Badge */}
+              <div className="rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/60 dark:bg-purple-950/40 p-3.5 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-purple-900 dark:text-purple-200">
+                    Table 7.1 Point Allocation
+                  </p>
+                  <p className="text-[11px] text-purple-700 dark:text-purple-300">
+                    {roleCategory} {roleCategory === "Event Participation" || roleCategory === "Winner" ? `(${eventLevel})` : ""}
+                  </p>
+                </div>
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-purple-600 text-white font-bold text-xs shadow-xs">
+                  {calculatedClubsPointsPreview} Points
+                </span>
+              </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                Event / Completion Date
-              </label>
-              <input
-                type="date"
-                value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
-              />
+              {/* Club / Cell */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  Club or Professional Cell <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={clubName}
+                  onChange={(e) => setClubName(e.target.value)}
+                  placeholder="e.g. Coding Club, IEEE Student Branch, Robotics Club"
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                />
+              </div>
+
+              {/* Role Category */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  Participation / Role Category <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={roleCategory}
+                  onChange={(e) => setRoleCategory(e.target.value)}
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                >
+                  <option value="Member">Club Member (100 Points)</option>
+                  <option value="Event Participation">Event Participation (100 – 500 Points)</option>
+                  <option value="Winner">Winner / Position Award (200 – 700 Points)</option>
+                  <option value="MAGIC">MAGIC (200 Points)</option>
+                  <option value="Event Coordinator">Event Coordinator (200 Points)</option>
+                  <option value="Volunteer">Volunteer (100 Points)</option>
+                </select>
+              </div>
+
+              {/* Event Level if Participation or Winner */}
+              {(roleCategory === "Event Participation" || roleCategory === "Winner") && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Event Level <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={eventLevel}
+                    onChange={(e) => setEventLevel(e.target.value)}
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  >
+                    <option value="Within College">Within College</option>
+                    <option value="Within State (Other College)">Within State (Other College)</option>
+                    <option value="National Level (Other State)">National Level (Other State)</option>
+                    <option value="International Level (In College / Others)">International Level (In College / Others)</option>
+                    <option value="International Level (Other Country)">International Level (Other Country)</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Activity Name & Date */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Activity / Event Name <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={activityName}
+                    onChange={(e) => setActivityName(e.target.value)}
+                    placeholder="e.g. Annual Hackathon 2026"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Event Date
+                  </label>
+                  <input
+                    type="date"
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Title */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  Activity Title <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  placeholder="e.g. NPTEL Elite Gold Cloud Computing"
+                />
+              </div>
 
-          {/* Organizer */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-              Organizing Body / Platform
-            </label>
-            <input
-              type="text"
-              value={organizer}
-              onChange={(e) => setOrganizer(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
-              placeholder="e.g. NPTEL / IIT Madras, Coursera, LeetCode"
-            />
-          </div>
+              {/* Activity Type & Event Date */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Activity Type
+                  </label>
+                  <select
+                    value={activityType}
+                    onChange={(e) => setActivityType(e.target.value)}
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  >
+                    <option value="Certification" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Online Certification</option>
+                    <option value="Hackathon" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Hackathon / Contest</option>
+                    <option value="Workshop" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Technical Workshop</option>
+                    <option value="Internship" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Industry Internship</option>
+                    <option value="Publication" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Research Publication</option>
+                    <option value="Community Service" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Social / Community</option>
+                    <option value="Club Activity" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Student Club Activity</option>
+                  </select>
+                </div>
 
-          {/* Outcome / Score */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-              Outcome / Score / Grade
-            </label>
-            <input
-              type="text"
-              value={outcome}
-              onChange={(e) => setOutcome(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
-              placeholder="e.g. 92% (Top 1%), First Place, Grade A+"
-            />
-          </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Event / Completion Date
+                  </label>
+                  <input
+                    type="date"
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  />
+                </div>
+              </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-              Brief Description / Highlights
-            </label>
-            <textarea
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              placeholder="Provide context or key learning outcomes..."
-            />
-          </div>
+              {/* Organizer */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  Organizing Body / Platform
+                </label>
+                <input
+                  type="text"
+                  value={organizer}
+                  onChange={(e) => setOrganizer(e.target.value)}
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  placeholder="e.g. NPTEL / IIT Madras, Coursera, LeetCode"
+                />
+              </div>
+
+              {/* Outcome / Score */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  Outcome / Score / Grade
+                </label>
+                <input
+                  type="text"
+                  value={outcome}
+                  onChange={(e) => setOutcome(e.target.value)}
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  placeholder="e.g. 92% (Top 1%), First Place, Grade A+"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  Brief Description / Highlights
+                </label>
+                <textarea
+                  rows={2}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  placeholder="Provide context or key learning outcomes..."
+                />
+              </div>
+            </>
+          )}
 
           {/* Attached Evidence Files & Replacement */}
           <div className="pt-2 border-t border-slate-200 dark:border-[#2B3543] space-y-3">

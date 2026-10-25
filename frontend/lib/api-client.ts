@@ -502,7 +502,12 @@ export const api = {
 
   reviewMenteeAchievement: async (
     achievementId: string,
-    data: { action: "approved" | "rejected" | "requested_changes"; remarks?: string },
+    data: {
+      action: "approved" | "rejected" | "requested_changes";
+      remarks?: string;
+      awarded_points?: number;
+      awarded_grade?: string;
+    },
     token?: string | null
   ): Promise<AchievementResponse> => {
     return request<AchievementResponse>(
@@ -624,6 +629,21 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }, token);
+  },
+
+  adminResetStudentPassword: async (
+    studentId: string,
+    data: { new_password: string; must_change_password?: boolean },
+    token?: string | null
+  ): Promise<{ success: boolean; message: string; must_change_password: boolean }> => {
+    return request<{ success: boolean; message: string; must_change_password: boolean }>(
+      `/admin/students/${studentId}/reset-password`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    );
   },
 
   // Faculty Mentors

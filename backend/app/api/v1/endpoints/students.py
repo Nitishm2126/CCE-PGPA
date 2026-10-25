@@ -32,13 +32,25 @@ from app.schemas.component_config import StudentComponentResultItem, StudentPGPA
 from app.schemas.file import AchievementFileResponse
 from app.schemas.semester import SemesterResponse
 from app.services.component_service import get_dynamic_fields_for_component, _recalculate_student_semester_pgpa
-from app.services.grading_engine import calculate_overall_pgpa
+from app.services.grading_engine import (
+    calculate_clubs_and_cells_points,
+    calculate_component_grade,
+    calculate_overall_pgpa,
+)
 
 router = APIRouter()
 
 
-def format_achievement_response(achievement: Achievement) -> AchievementResponse:
-    """Format SQLAlchemy Achievement model into AchievementResponse."""
+def format_achievement_response(
+    achievement: Achievement,
+    db: Optional[Session] = None,
+    is_reviewer: bool = False,
+) -> AchievementResponse:
+    """
+    Format SQLAlchemy Achievement model into AchievementResponse.
+    Strict Result Visibility Invariant:
+    Students must not see unapproved grades, provisional scores, or final point allocations before mentor approval.
+    """
     files_data = [
         AchievementFileResponse(
             id=f.id,
@@ -71,6 +83,69 @@ def format_achievement_response(achievement: Achievement) -> AchievementResponse
     student = achievement.student
     student_profile = student.student_profile if student else None
 
+    # Latest mentor feedback remarks
+    mentor_remarks = None
+    if achievement.verification_logs:
+        sorted_logs = sorted(
+            achievement.verification_logs,
+            key=lambda l: l.created_at or datetime.min.replace(tzinfo=timezone.utc),
+        )
+        if sorted_logs:
+            mentor_remarks = sorted_logs[-1].remarks
+
+    # Component-specific metadata restoration
+    comp_metadata = achievement.component_metadata
+    if not comp_metadata and achievement.outcome:
+        try:
+            import json
+            parsed = json.loads(achievement.outcome)
+            if isinstance(parsed, dict):
+                comp_metadata = parsed
+        except Exception:
+            pass
+
+    # Result visibility enforcement
+    evaluated_grade = None
+    evaluated_grade_points = None
+    evaluated_points = None
+
+    if achievement.status == AchievementStatus.APPROVED:
+        # Load officially verified result from student_component_results
+        if db is not None:
+            res_rec = db.scalars(
+                select(StudentComponentResult).where(
+                    StudentComponentResult.student_id == achievement.student_id,
+                    StudentComponentResult.component_id == achievement.component_id,
+                    StudentComponentResult.semester_id == achievement.semester_id,
+                    StudentComponentResult.is_verified.is_(True),
+                )
+            ).first()
+            if res_rec:
+                evaluated_grade = res_rec.grade
+                evaluated_grade_points = res_rec.grade_points
+                evaluated_points = res_rec.raw_score
+    elif is_reviewer and achievement.status == AchievementStatus.PENDING:
+        # For faculty review inspection: calculate tentative rubric outcome
+        if achievement.component and achievement.semester:
+            try:
+                calc_inputs = {
+                    "raw_score": achievement.outcome,
+                    "category": achievement.activity_type or achievement.title,
+                }
+                if comp_metadata:
+                    calc_inputs.update(comp_metadata)
+                tentative = calculate_component_grade(
+                    component_slug=achievement.component.slug,
+                    semester_number=achievement.semester.semester_number,
+                    inputs=calc_inputs,
+                    credit_value=achievement.component.credit_value,
+                )
+                evaluated_grade = tentative.get("grade")
+                evaluated_grade_points = tentative.get("grade_points")
+                evaluated_points = tentative.get("raw_score")
+            except Exception:
+                pass
+
     return AchievementResponse(
         id=achievement.id,
         student_id=achievement.student_id,
@@ -89,6 +164,11 @@ def format_achievement_response(achievement: Achievement) -> AchievementResponse
         event_date=achievement.event_date,
         description=achievement.description,
         outcome=achievement.outcome,
+        component_metadata=comp_metadata,
+        evaluated_grade=evaluated_grade,
+        evaluated_grade_points=evaluated_grade_points,
+        evaluated_points=evaluated_points,
+        mentor_remarks=mentor_remarks,
         status=achievement.status,
         submitted_at=achievement.submitted_at,
         created_at=achievement.created_at,
@@ -220,15 +300,47 @@ def get_pgpa_components(
     components = db.scalars(stmt).all()
 
     configs_map = {}
-    if semester_id:
+    semester_name = None
+    target_sem_id = semester_id
+    if not target_sem_id and current_user.role == UserRole.STUDENT and getattr(current_user, "student_profile", None) and current_user.student_profile.semester:
+        sem_str = current_user.student_profile.semester.upper()
+        roman_map = {"VIII": 8, "VII": 7, "VI": 6, "IV": 4, "V": 5, "III": 3, "II": 2, "I": 1}
+        num = None
+        for r, val in roman_map.items():
+            if r in sem_str:
+                num = val
+                break
+        if not num:
+            import re
+            m = re.search(r"\d+", sem_str)
+            if m:
+                num = int(m.group())
+        if num:
+            matched_sem = db.scalars(select(Semester).where(Semester.semester_number == num)).first()
+            if matched_sem:
+                target_sem_id = matched_sem.id
+
+    if target_sem_id:
+        sem = db.get(Semester, target_sem_id)
+        if sem:
+            semester_name = sem.display_name
         configs = db.scalars(
-            select(ComponentSemesterConfig).where(ComponentSemesterConfig.semester_id == semester_id)
+            select(ComponentSemesterConfig).where(ComponentSemesterConfig.semester_id == target_sem_id)
         ).all()
         configs_map = {c.component_id: c.is_enabled for c in configs}
 
     results = []
     for c in components:
-        is_enabled = configs_map.get(c.id, True) if semester_id else True
+        is_matrix_enabled = configs_map.get(c.id, True) if target_sem_id else True
+        is_mode_permitted = c.submission_mode != "hod_excel_import"
+        is_enabled = is_matrix_enabled and is_mode_permitted
+
+        lock_reason = None
+        if not is_mode_permitted:
+            lock_reason = f"{c.name} is configured for HOD Excel import only and does not accept direct student submissions."
+        elif not is_matrix_enabled:
+            lock_reason = f"This component is currently unavailable for {semester_name or 'the selected semester'}."
+
         fields = [f.model_dump() for f in get_dynamic_fields_for_component(c.slug)]
         results.append(
             PGPAComponentResponse(
@@ -246,6 +358,7 @@ def get_pgpa_components(
                 requires_verification=c.requires_verification,
                 input_fields=fields,
                 is_enabled_for_semester=is_enabled,
+                lock_reason=lock_reason,
             )
         )
     return results
@@ -296,7 +409,7 @@ def get_my_achievements(
     if semester_id:
         stmt = stmt.where(Achievement.semester_id == semester_id)
     achievements = db.scalars(stmt).all()
-    return [format_achievement_response(a) for a in achievements]
+    return [format_achievement_response(a, db=db) for a in achievements]
 
 
 @router.post(
@@ -317,6 +430,13 @@ def create_achievement(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"PGPA Component with ID '{data.component_id}' not found or inactive.",
+        )
+
+    # Verify component permits student submissions
+    if component.submission_mode == "hod_excel_import":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{component.name} is configured for HOD Excel import only and cannot be submitted by students.",
         )
 
     # Verify semester exists and is enabled
@@ -356,27 +476,124 @@ def create_achievement(
     if comp_sem_cfg and not comp_sem_cfg.is_enabled:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{component.name} is currently disabled for submissions in {semester.display_name}.",
+            detail=f"This component is currently unavailable for {semester.display_name}.",
         )
+
+    # Duplicate prevention for single-submission components like academics-gpa
+    if component.slug == "academics-gpa":
+        existing_gpa = db.scalars(
+            select(Achievement).where(
+                Achievement.student_id == current_user.id,
+                Achievement.component_id == component.id,
+                Achievement.semester_id == resolved_semester_id,
+                Achievement.status.in_([AchievementStatus.DRAFT, AchievementStatus.PENDING, AchievementStatus.APPROVED]),
+            )
+        ).first()
+        if existing_gpa:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"You already have an active or approved Academics submission for {semester.display_name}. Please edit or revise that submission instead.",
+            )
+
+    meta = dict(data.component_metadata or {})
+    title = (data.title or "").strip()
+    activity_type = (data.activity_type or "").strip() or None
+    organizer = (data.organizer or "").strip() or None
+    outcome = (data.outcome or "").strip() or None
+    description = (data.description or "").strip() or None
+    event_date = data.event_date
+
+    # Component-specific schema handling and authoritative validation:
+    if component.slug == "academics-gpa":
+        raw_gpa = meta.get("gpa") if meta.get("gpa") is not None else outcome
+        if raw_gpa is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Semester GPA value is required for Academics evaluation.",
+            )
+        try:
+            gpa_float = float(raw_gpa)
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="GPA must be a valid number on the 10.0 scale.",
+            )
+        if gpa_float < 0.0 or gpa_float > 10.0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"GPA {gpa_float:.2f} is outside the valid scale [0.00, 10.00].",
+            )
+        meta["gpa"] = gpa_float
+        title = f"Semester {semester.semester_number} GPA: {gpa_float:.2f}"
+        outcome = f"{gpa_float:.2f}"
+        activity_type = "Semester GPA"
+
+    elif component.slug == "clubs-and-cells":
+        role_cat = meta.get("role_category") or activity_type or "Member"
+        event_lvl = meta.get("event_level") or ""
+        club_name = meta.get("club_name") or organizer or "Club Activity"
+        act_title = meta.get("activity_title") or title or f"{club_name} {role_cat}"
+
+        calc_pts = calculate_clubs_and_cells_points(role_cat, event_lvl)
+        user_pts = meta.get("points")
+        final_pts = float(user_pts) if (user_pts is not None and float(user_pts) > 0) else float(calc_pts)
+
+        meta["club_name"] = club_name
+        meta["role_category"] = role_cat
+        meta["event_level"] = event_lvl
+        meta["points"] = final_pts
+        meta["calculated_points"] = final_pts
+        meta["activity_title"] = act_title
+
+        title = title or act_title
+        activity_type = role_cat
+        organizer = club_name
+        outcome = f"{final_pts:g} Points ({role_cat})"
+
+    elif component.slug == "skillrack":
+        pts = float(meta.get("points") or 0)
+        meta["points"] = pts
+        title = title or meta.get("milestone_title") or f"Skillrack Milestone ({pts:g} pts)"
+        outcome = f"{pts:g} Points"
+
+    elif component.slug == "amcat":
+        sc = float(meta.get("score") or 0)
+        if sc < 0.0 or sc > 10.0:
+            raise HTTPException(status_code=400, detail="AMCAT score must be between 0.0 and 10.0.")
+        meta["score"] = sc
+        title = title or meta.get("assessment_title") or f"AMCAT Assessment (Score: {sc:g})"
+        outcome = f"Score {sc:g} / 10.0"
+
+    elif component.slug == "internship":
+        org = meta.get("organizer") or organizer or "Host Organization"
+        comp_type = meta.get("company_type") or "Core / with stipend"
+        title = title or f"Internship at {org} ({comp_type})"
+        organizer = org
+        activity_type = comp_type
+        outcome = comp_type
+
+    elif not title:
+        title = f"{component.name} Achievement"
 
     achievement = Achievement(
         id=uuid.uuid4(),
         student_id=current_user.id,
         component_id=data.component_id,
         semester_id=resolved_semester_id,
-        title=data.title.strip(),
-        activity_type=data.activity_type.strip() if data.activity_type else None,
-        organizer=data.organizer.strip() if data.organizer else None,
-        event_date=data.event_date,
-        description=data.description.strip() if data.description else None,
-        outcome=data.outcome.strip() if data.outcome else None,
+        title=title,
+        activity_type=activity_type,
+        organizer=organizer,
+        event_date=event_date,
+        description=description,
+        outcome=outcome,
+        component_metadata=meta,
         status=AchievementStatus.DRAFT,
     )
     db.add(achievement)
     db.commit()
     db.refresh(achievement)
 
-    return format_achievement_response(achievement)
+    return format_achievement_response(achievement, db=db)
 
 
 @router.get(
@@ -414,7 +631,7 @@ def get_achievement_detail(
             detail="Access forbidden: You cannot view achievements belonging to another student.",
         )
 
-    return format_achievement_response(achievement)
+    return format_achievement_response(achievement, db=db)
 
 
 @router.patch(
@@ -427,6 +644,11 @@ def get_achievement_detail(
         "revision workflow is initiated: previous approval audit history is preserved and the record is "
         "re-routed to pending review for mentor re-verification."
     ),
+)
+@router.put(
+    "/me/achievements/{achievement_id}",
+    response_model=AchievementResponse,
+    include_in_schema=False,
 )
 def update_achievement(
     achievement_id: uuid.UUID,
@@ -450,12 +672,58 @@ def update_achievement(
     was_approved = achievement.status == AchievementStatus.APPROVED
     was_pending = achievement.status == AchievementStatus.PENDING
 
+    if data.component_metadata is not None:
+        merged_meta = dict(achievement.component_metadata or {})
+        merged_meta.update(data.component_metadata)
+        achievement.component_metadata = merged_meta
+
+        # Sync clubs-and-cells or academics-gpa specific updates
+        if achievement.component and achievement.component.slug == "academics-gpa":
+            raw_gpa = merged_meta.get("gpa")
+            if raw_gpa is not None:
+                gpa_val = float(raw_gpa)
+                if gpa_val < 0.0 or gpa_val > 10.0:
+                    raise HTTPException(status_code=400, detail="GPA must be between 0.0 and 10.0.")
+                achievement.outcome = f"{gpa_val:.2f}"
+                if achievement.semester:
+                    achievement.title = f"Semester {achievement.semester.semester_number} GPA: {gpa_val:.2f}"
+        elif achievement.component and achievement.component.slug == "clubs-and-cells":
+            rc = merged_meta.get("role_category") or achievement.activity_type or "Member"
+            el = merged_meta.get("event_level") or ""
+            calc_pts = calculate_clubs_and_cells_points(rc, el)
+            merged_meta["points"] = float(calc_pts)
+            merged_meta["calculated_points"] = float(calc_pts)
+            achievement.outcome = f"{calc_pts:g} Points ({rc})"
+
     if data.title is not None:
         achievement.title = data.title.strip()
     if data.activity_type is not None:
         achievement.activity_type = data.activity_type.strip() if data.activity_type else None
     if data.organizer is not None:
         achievement.organizer = data.organizer.strip() if data.organizer else None
+    if data.semester_id is not None and data.semester_id != achievement.semester_id:
+        target_sem = db.get(Semester, data.semester_id)
+        if not target_sem or not target_sem.is_enabled:
+            sem_name = target_sem.display_name if target_sem else "Target semester"
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"{sem_name} is currently closed for submissions.",
+            )
+        cfg = db.scalars(
+            select(ComponentSemesterConfig).where(
+                ComponentSemesterConfig.component_id == achievement.component_id,
+                ComponentSemesterConfig.semester_id == data.semester_id,
+            )
+        ).first()
+        if cfg and not cfg.is_enabled:
+            comp_name = achievement.component.name if achievement.component else "This component"
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"This component is currently unavailable for {target_sem.display_name}.",
+            )
+        achievement.semester_id = data.semester_id
+        achievement.semester = target_sem
+
     if data.event_date is not None:
         achievement.event_date = data.event_date
     if data.description is not None:
@@ -486,7 +754,7 @@ def update_achievement(
     db.commit()
     db.refresh(achievement)
 
-    return format_achievement_response(achievement)
+    return format_achievement_response(achievement, db=db)
 
 
 @router.post(
@@ -519,13 +787,42 @@ def submit_achievement(
             detail=f"Cannot submit achievement with status '{achievement.status.value}'. Must be 'draft' or 'rejected'.",
         )
 
+    # Verify component permits student submissions
+    if achievement.component and achievement.component.submission_mode == "hod_excel_import":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{achievement.component.name} is configured for HOD Excel import only and cannot be submitted by students.",
+        )
+
+    # Verify semester is open and component is enabled for that semester
+    if achievement.semester_id:
+        sem = db.get(Semester, achievement.semester_id)
+        if not sem or not sem.is_enabled:
+            sem_name = sem.display_name if sem else "Selected semester"
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"{sem_name} is currently closed for submissions.",
+            )
+        comp_sem_cfg = db.scalars(
+            select(ComponentSemesterConfig).where(
+                ComponentSemesterConfig.component_id == achievement.component_id,
+                ComponentSemesterConfig.semester_id == achievement.semester_id,
+            )
+        ).first()
+        if comp_sem_cfg and not comp_sem_cfg.is_enabled:
+            comp_name = achievement.component.name if achievement.component else "This component"
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"This component is currently unavailable for {sem.display_name}.",
+            )
+
     achievement.status = AchievementStatus.PENDING
     achievement.submitted_at = datetime.now(timezone.utc)
     db.add(achievement)
     db.commit()
     db.refresh(achievement)
 
-    return format_achievement_response(achievement)
+    return format_achievement_response(achievement, db=db)
 
 
 @router.delete(
@@ -580,7 +877,10 @@ def get_my_component_results(
             joinedload(StudentComponentResult.component),
             joinedload(StudentComponentResult.semester),
         )
-        .where(StudentComponentResult.student_id == current_user.id)
+        .where(
+            StudentComponentResult.student_id == current_user.id,
+            StudentComponentResult.is_verified.is_(True),
+        )
         .order_by(StudentComponentResult.calculated_at.desc())
     )
     if semester_id:

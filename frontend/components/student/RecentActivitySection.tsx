@@ -81,15 +81,15 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
       case "pending":
         return (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-[#132338] px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-[#93C5FD] border border-blue-200 dark:border-blue-800/70">
-            <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-            Submitted
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+            Pending Mentor Review
           </span>
         );
       case "rejected":
         return (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 dark:bg-[#251417] px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:text-[#FDA4AF] border border-rose-200 dark:border-rose-900/60">
             <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-            Action Required
+            Action Required (Rejected)
           </span>
         );
       case "draft":
@@ -297,8 +297,47 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                         {item.title}
                       </p>
 
-                      {/* Supporting Details */}
-                      {(item.organizer || item.outcome) && (
+                      {/* Supporting Details & Component Specific Metadata */}
+                      {item.component_metadata ? (
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                          {item.component_metadata.gpa !== undefined && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-blue-800">
+                              GPA: {item.component_metadata.gpa}
+                            </span>
+                          )}
+                          {item.component_metadata.club_name && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-medium border border-purple-200 dark:border-purple-800">
+                              {item.component_metadata.club_name}
+                            </span>
+                          )}
+                          {item.component_metadata.role_category && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-medium border border-amber-200 dark:border-amber-800">
+                              {item.component_metadata.role_category}
+                              {item.component_metadata.event_level ? ` • ${item.component_metadata.event_level}` : ""}
+                            </span>
+                          )}
+                          {item.component_metadata.points !== undefined && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#171E28] text-slate-700 dark:text-[#A0ACBC] font-medium border border-slate-200 dark:border-[#2B3543]">
+                              {item.component_metadata.points} pts
+                            </span>
+                          )}
+                          {item.component_metadata.stage_tier && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-medium border border-emerald-200 dark:border-emerald-800">
+                              Stage: {item.component_metadata.stage_tier}
+                            </span>
+                          )}
+                          {item.component_metadata.certificate_type && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-medium border border-indigo-200 dark:border-indigo-800">
+                              Type: {item.component_metadata.certificate_type}
+                            </span>
+                          )}
+                          {item.organizer && !item.component_metadata.club_name && (
+                            <span className="text-slate-500 dark:text-[#7E8B9C]">
+                              &bull; {item.organizer}
+                            </span>
+                          )}
+                        </div>
+                      ) : (item.organizer || item.outcome) ? (
                         <p className="mt-0.5 text-xs text-slate-500 dark:text-[#7E8B9C] break-words">
                           {item.organizer}
                           {item.organizer && item.outcome ? " — " : ""}
@@ -308,7 +347,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                             </span>
                           )}
                         </p>
-                      )}
+                      ) : null}
 
                       {/* Attached Evidence Files */}
                       {item.files && item.files.length > 0 && (
@@ -333,9 +372,19 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                       )}
                     </div>
 
-                    {/* Status Badge */}
-                    <div className="self-start shrink-0">
+                    {/* Status Badge & Official Approved Grade/Points */}
+                    <div className="self-start shrink-0 flex items-center gap-1.5 flex-wrap">
                       {renderStatusBadge(item.status)}
+                      {item.status === "approved" && item.evaluated_grade && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                          Grade: {item.evaluated_grade} {item.evaluated_grade_points !== null && item.evaluated_grade_points !== undefined ? `(${item.evaluated_grade_points} GP)` : ""}
+                        </span>
+                      )}
+                      {item.status === "approved" && item.evaluated_points !== null && item.evaluated_points !== undefined && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                          {item.evaluated_points} Points
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -426,13 +475,39 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                     )}
                   </div>
 
-                  {/* Mentor Remarks note if reviewed or rejected */}
-                  {latestLog?.remarks && (
-                    <div className="mt-1 text-xs rounded-lg bg-slate-50 dark:bg-[#131922] p-3 text-slate-700 dark:text-[#A0ACBC] border border-slate-200 dark:border-[#2B3543]">
-                      <span className="font-semibold text-slate-900 dark:text-[#E8EDF4]">
-                        Mentor Feedback:
-                      </span>{" "}
-                      {latestLog.remarks}
+                  {/* Mentor Remarks note if reviewed, rejected, or changes requested */}
+                  {(item.status === "rejected" || latestLog?.remarks || item.mentor_remarks) && (
+                    <div
+                      className={`mt-1 text-xs rounded-xl p-3 border flex items-start gap-2.5 ${
+                        item.status === "rejected"
+                          ? "bg-rose-50/90 dark:bg-[#251417] text-rose-900 dark:text-[#FDA4AF] border-rose-200 dark:border-rose-900/60"
+                          : "bg-slate-50 dark:bg-[#131922] text-slate-700 dark:text-[#A0ACBC] border-slate-200 dark:border-[#2B3543]"
+                      }`}
+                    >
+                      <svg
+                        className={`h-4 w-4 shrink-0 mt-0.5 ${
+                          item.status === "rejected" ? "text-rose-600 dark:text-[#FDA4AF]" : "text-blue-600 dark:text-[#4C83E6]"
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                      </svg>
+                      <div className="flex-1">
+                        <span className="font-semibold text-slate-900 dark:text-[#E8EDF4]">
+                          {item.status === "rejected" ? "Mentor Review Decision (Action Required):" : "Mentor Feedback:"}
+                        </span>{" "}
+                        <p className="mt-0.5 leading-relaxed">
+                          {item.mentor_remarks || latestLog?.remarks || "Please update your submission and evidence, then resubmit for review."}
+                        </p>
+                        {item.status === "rejected" && (
+                          <p className="mt-1 text-[11px] font-semibold text-rose-700 dark:text-[#FDA4AF]">
+                            Click the &quot;Edit&quot; button above to modify your details or re-upload evidence and resubmit.
+                          </p>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

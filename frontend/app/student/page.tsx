@@ -10,6 +10,7 @@ import {
   PGPAComponentResponse,
   AchievementResponse,
   AchievementCreate,
+  SemesterResponse,
 } from "@/types/achievement";
 
 import { StudentHeader } from "@/components/student/StudentHeader";
@@ -39,6 +40,8 @@ export default function StudentDashboardPage() {
   const [studentData, setStudentData] = useState<StudentDetailResponse | null>(null);
   const [components, setComponents] = useState<PGPAComponentResponse[]>([]);
   const [achievements, setAchievements] = useState<AchievementResponse[]>([]);
+  const [semesters, setSemesters] = useState<SemesterResponse[]>([]);
+  const [selectedCatalogueSemesterId, setSelectedCatalogueSemesterId] = useState<string>("");
 
   // Loading states
   const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
@@ -99,12 +102,17 @@ export default function StudentDashboardPage() {
     }
   }, [token]);
 
-  const loadComponents = useCallback(async () => {
+  const loadComponents = useCallback(async (semId?: string) => {
     if (!token) return;
     try {
       setIsLoadingComponents(true);
       setComponentsError(null);
-      const data = await api.getComponents({ token });
+      const targetSemId = semId !== undefined ? semId : selectedCatalogueSemesterId;
+      const data = await api.getComponents({
+        semesterId: targetSemId || undefined,
+        token,
+        forceRefresh: true,
+      });
       setComponents(data);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load PGPA components.";
@@ -112,7 +120,12 @@ export default function StudentDashboardPage() {
     } finally {
       setIsLoadingComponents(false);
     }
-  }, [token]);
+  }, [token, selectedCatalogueSemesterId]);
+
+  const handleCatalogueSemesterChange = (semId: string) => {
+    setSelectedCatalogueSemesterId(semId);
+    loadComponents(semId);
+  };
 
   const loadAchievements = useCallback(async () => {
     if (!token) return;
@@ -147,14 +160,33 @@ export default function StudentDashboardPage() {
 
     const fetchAllData = async () => {
       try {
-        const [profileRes, compRes, achRes, unreadRes] = await Promise.allSettled([
+        const [profileRes, compRes, achRes, unreadRes, semsRes] = await Promise.allSettled([
           api.getStudentDetail(token),
-          api.getComponents({ token }),
+          api.getComponents({ token, forceRefresh: true }),
           api.getMyAchievements(token),
           api.getUnreadMessageCount(token),
+          api.studentGetSemesters(token),
         ]);
 
         if (ignore) return;
+
+        if (semsRes.status === "fulfilled") {
+          const sems = semsRes.value;
+          setSemesters(sems);
+          const studentSemStr = profileRes.status === "fulfilled" ? profileRes.value.profile?.semester : null;
+          const matchedSem = studentSemStr
+            ? sems.find(
+                (s) =>
+                  s.display_name?.toLowerCase() === studentSemStr.toLowerCase() ||
+                  s.semester_number.toString() === studentSemStr.replace(/\D/g, "")
+              )
+            : null;
+          if (matchedSem) {
+            setSelectedCatalogueSemesterId(matchedSem.id);
+          } else if (sems.length > 0) {
+            setSelectedCatalogueSemesterId(sems[0].id);
+          }
+        }
 
         if (profileRes.status === "fulfilled") {
           setStudentData(profileRes.value);
@@ -617,9 +649,12 @@ export default function StudentDashboardPage() {
               achievements={achievements}
               isLoading={isLoadingComponents}
               error={componentsError}
-              onRetry={loadComponents}
+              onRetry={() => loadComponents()}
               onSelectComponentForSubmit={(c) => handleOpenSubmitModal(c.id)}
               studentSemester={profile?.semester}
+              semesters={semesters}
+              selectedSemesterId={selectedCatalogueSemesterId}
+              onSemesterChange={handleCatalogueSemesterChange}
             />
           </div>
         )}

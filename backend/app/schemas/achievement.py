@@ -29,6 +29,7 @@ class PGPAComponentResponse(BaseModel):
     requires_verification: bool = True
     input_fields: List[Dict[str, Any]] = []
     is_enabled_for_semester: bool = True
+    lock_reason: Optional[str] = None
 
 
 class AchievementCreate(BaseModel):
@@ -37,25 +38,27 @@ class AchievementCreate(BaseModel):
     """
     component_id: uuid.UUID = Field(..., description="Target PGPA component UUID")
     semester_id: Optional[uuid.UUID] = Field(None, description="Academic semester UUID")
-    title: str = Field(..., min_length=2, max_length=255, description="Activity title")
+    title: Optional[str] = Field(None, max_length=255, description="Activity title (auto-generated if omitted for GPA)")
     activity_type: Optional[str] = Field(None, max_length=100, description="e.g. Workshop, Hackathon, Course")
     organizer: Optional[str] = Field(None, max_length=255, description="Host institution or organization")
     event_date: Optional[date] = Field(None, description="Date of the event / certificate completion")
     description: Optional[str] = Field(None, description="Detailed activity summary")
     outcome: Optional[str] = Field(None, max_length=255, description="e.g. 1st Prize, Completed with Elite, Participant")
+    component_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Component-specific evaluation parameters")
 
 
 class AchievementUpdate(BaseModel):
     """
     Payload for modifying an existing draft or rejected achievement.
     """
-    title: Optional[str] = Field(None, min_length=2, max_length=255)
+    title: Optional[str] = Field(None, max_length=255)
     semester_id: Optional[uuid.UUID] = Field(None, description="Academic semester UUID")
     activity_type: Optional[str] = Field(None, max_length=100)
     organizer: Optional[str] = Field(None, max_length=255)
     event_date: Optional[date] = None
     description: Optional[str] = None
     outcome: Optional[str] = Field(None, max_length=255)
+    component_metadata: Optional[Dict[str, Any]] = None
 
 
 class VerificationLogResponse(BaseModel):
@@ -76,6 +79,7 @@ class VerificationLogResponse(BaseModel):
 class AchievementResponse(BaseModel):
     """
     Detailed response for student achievements.
+    Result visibility constraint: unapproved submissions must NOT expose tentative or unverified grades/scores to students.
     """
     model_config = ConfigDict(from_attributes=True)
 
@@ -96,6 +100,11 @@ class AchievementResponse(BaseModel):
     event_date: Optional[date] = None
     description: Optional[str] = None
     outcome: Optional[str] = None
+    component_metadata: Optional[Dict[str, Any]] = None
+    evaluated_grade: Optional[str] = None
+    evaluated_grade_points: Optional[int] = None
+    evaluated_points: Optional[float] = None
+    mentor_remarks: Optional[str] = None
     status: AchievementStatus
     submitted_at: Optional[datetime] = None
     created_at: datetime
@@ -110,6 +119,8 @@ class ReviewSubmissionRequest(BaseModel):
     """
     action: ReviewAction = Field(..., description="Review outcome: approved, rejected, requested_changes")
     remarks: Optional[str] = Field(None, description="Feedback or reason for decision (mandatory on rejection)")
+    awarded_points: Optional[float] = Field(None, ge=0, description="Optional confirmed points allocation by mentor")
+    awarded_grade: Optional[str] = Field(None, description="Optional confirmed grade award by mentor (e.g. O, A+, A)")
 
     @field_validator("remarks")
     @classmethod

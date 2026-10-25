@@ -214,7 +214,7 @@ def get_mentee_submissions(
     stmt = stmt.order_by(Achievement.submitted_at.desc(), Achievement.created_at.desc())
     achievements = db.scalars(stmt).all()
 
-    return [format_achievement_response(a) for a in achievements]
+    return [format_achievement_response(a, db=db, is_reviewer=True) for a in achievements]
 
 
 @router.get(
@@ -262,7 +262,7 @@ def get_mentee_achievement(
             detail="Access forbidden: This student is not assigned to you.",
         )
 
-    return format_achievement_response(achievement)
+    return format_achievement_response(achievement, db=db, is_reviewer=True)
 
 
 @router.post(
@@ -317,7 +317,9 @@ def review_mentee_achievement(
                     "category": achievement.activity_type or achievement.title,
                     "notes": achievement.description,
                 }
-                if achievement.outcome:
+                if achievement.component_metadata:
+                    inputs.update(achievement.component_metadata)
+                elif achievement.outcome:
                     try:
                         import json
                         parsed = json.loads(achievement.outcome)
@@ -325,12 +327,26 @@ def review_mentee_achievement(
                             inputs.update(parsed)
                     except Exception:
                         pass
+
+                # If mentor confirmed points allocation:
+                if review_data.awarded_points is not None:
+                    inputs["points"] = review_data.awarded_points
+                    inputs["raw_score"] = review_data.awarded_points
+
                 grading_res = calculate_component_grade(
                     component_slug=achievement.component.slug,
                     semester_number=achievement.semester.semester_number,
                     inputs=inputs,
                     credit_value=achievement.component.credit_value,
                 )
+
+                # If mentor explicitly confirmed or adjusted grade:
+                from app.services.grading_engine import GRADE_POINTS_MAP
+                if review_data.awarded_grade and review_data.awarded_grade.upper() in GRADE_POINTS_MAP:
+                    confirmed_grade = review_data.awarded_grade.upper()
+                    grading_res["grade"] = confirmed_grade
+                    grading_res["grade_points"] = GRADE_POINTS_MAP[confirmed_grade]
+
                 now_utc = datetime.now(timezone.utc)
                 stmt = select(StudentComponentResult).where(
                     StudentComponentResult.student_id == achievement.student_id,
@@ -339,6 +355,8 @@ def review_mentee_achievement(
                 )
                 res_rec = db.scalars(stmt).first()
                 if res_rec:
+                    res_rec.raw_score = grading_res.get("raw_score")
+                    res_rec.category = grading_res.get("category")
                     res_rec.grade = grading_res["grade"]
                     res_rec.grade_points = grading_res["grade_points"]
                     res_rec.credit_value = achievement.component.credit_value
@@ -386,4 +404,4 @@ def review_mentee_achievement(
     db.commit()
     db.refresh(achievement)
 
-    return format_achievement_response(achievement)
+    return format_achievement_response(achievement, db=db, is_reviewer=True)

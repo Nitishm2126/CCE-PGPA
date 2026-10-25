@@ -523,3 +523,36 @@ class RosterImportResponse(BaseModel):
     admin_provisioned: bool
     assignments_created: int = 0
     warnings: List[str] = Field(default_factory=list)
+
+
+# ==============================================================================
+# Individual Student Password Reset Schemas
+# ==============================================================================
+
+class AdminResetStudentPasswordRequest(BaseModel):
+    """
+    Payload for administrator to reset an individual student's login password.
+    """
+    new_password: str = Field(
+        ...,
+        min_length=6,
+        max_length=128,
+        description="New or temporary password for the student account.",
+    )
+    must_change_password: bool = Field(
+        default=True,
+        description="Force student to change password upon their next successful login.",
+    )
+
+
+class AdminResetStudentPasswordResponse(BaseModel):
+    """
+    Response returned to administrator after resetting an individual student's password.
+    """
+    success: bool = True
+    student_id: uuid.UUID
+    student_name: str
+    student_email: str
+    register_number: Optional[str] = None
+    must_change_password: bool
+    message: str

@@ -1233,6 +1233,7 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
       <EditStudentModal
         student={studentToEdit}
         mentors={mentors}
+        token={token}
         onClose={() => setStudentToEdit(null)}
         onSubmit={handleEditStudent}
       />

@@ -573,15 +573,19 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({ mentors, onClo
 interface EditStudentModalProps {
   student: AdminStudentItem | null;
   mentors: AdminMentorItem[];
+  token?: string | null;
   onClose: () => void;
   onSubmit: (studentId: string, data: AdminStudentUpdate) => Promise<void>;
+  onPasswordResetSuccess?: (message: string) => void;
 }
 
 export const EditStudentModal: React.FC<EditStudentModalProps> = ({
   student,
   mentors,
+  token,
   onClose,
   onSubmit,
+  onPasswordResetSuccess,
 }) => {
   if (!student) return null;
 
@@ -600,6 +604,60 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({
   const [isActive, setIsActive] = useState(student.is_active);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Individual Student Password Reset state
+  const [showResetSection, setShowResetSection] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [mustChangePassword, setMustChangePassword] = useState(true);
+  const [showPasswordPlain, setShowPasswordPlain] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
+  const [resetErrorMessage, setResetErrorMessage] = useState<string | null>(null);
+  const [confirmingReset, setConfirmingReset] = useState(false);
+
+  const handleGeneratePassword = () => {
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const chars = ["!", "@", "#", "$", "%"];
+    const special = chars[Math.floor(Math.random() * chars.length)];
+    const generated = `Sairam@${randomSuffix}${special}`;
+    setNewPassword(generated);
+    setShowPasswordPlain(true);
+    setResetErrorMessage(null);
+  };
+
+  const handleExecuteResetPassword = async () => {
+    if (!newPassword.trim() || newPassword.trim().length < 6) {
+      setResetErrorMessage("New password must be at least 6 characters long.");
+      return;
+    }
+
+    try {
+      setIsResettingPassword(true);
+      setResetErrorMessage(null);
+      setResetSuccessMessage(null);
+
+      const res = await api.adminResetStudentPassword(
+        student.id,
+        {
+          new_password: newPassword.trim(),
+          must_change_password: mustChangePassword,
+        },
+        token
+      );
+
+      setResetSuccessMessage(
+        `Password for ${student.full_name} (${student.email}) has been successfully reset. Temporary password: "${newPassword.trim()}". Please share it securely with the student.`
+      );
+      setConfirmingReset(false);
+      if (onPasswordResetSuccess) {
+        onPasswordResetSuccess(res.message);
+      }
+    } catch (err: unknown) {
+      setResetErrorMessage(err instanceof Error ? err.message : "Failed to reset student password.");
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -784,6 +842,173 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({
             <label htmlFor="editIsActive" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
               Account is Active (Uncheck to deactivate login)
             </label>
+          </div>
+
+          {/* ========================================================= */}
+          {/* LOGIN CREDENTIALS & PASSWORD RESET SECTION */}
+          {/* ========================================================= */}
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                  </svg>
+                  Login Credentials & Password Reset
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Securely reset this individual student&apos;s login credentials without affecting any other account.
+                </p>
+              </div>
+
+              {!showResetSection && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowResetSection(true);
+                    setResetErrorMessage(null);
+                    setResetSuccessMessage(null);
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition cursor-pointer"
+                >
+                  Reset Student Password
+                </button>
+              )}
+            </div>
+
+            {resetSuccessMessage && (
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 rounded-xl border border-emerald-200 dark:border-emerald-800/60 text-xs flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Password Reset Successful</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-emerald-800 dark:text-emerald-300 select-all font-mono bg-white/70 dark:bg-black/20 p-2 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
+                  {resetSuccessMessage}
+                </p>
+              </div>
+            )}
+
+            {resetErrorMessage && (
+              <div className="p-2.5 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 rounded-xl border border-rose-200 dark:border-rose-900/60 text-xs">
+                {resetErrorMessage}
+              </div>
+            )}
+
+            {showResetSection && (
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/80 space-y-3">
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    New Password / Temporary Password
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type={showPasswordPlain ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Minimum 6 characters"
+                        disabled={isResettingPassword}
+                        className="w-full px-3 py-2 pr-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-mono text-xs focus:ring-2 focus:ring-amber-500 outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordPlain(!showPasswordPlain)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
+                        title={showPasswordPlain ? "Hide password" : "Show password"}
+                      >
+                        {showPasswordPlain ? (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleGeneratePassword}
+                      disabled={isResettingPassword}
+                      className="px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 rounded-xl font-semibold text-xs whitespace-nowrap transition"
+                    >
+                      Generate Secure
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="editMustChangePassword"
+                    checked={mustChangePassword}
+                    onChange={(e) => setMustChangePassword(e.target.checked)}
+                    disabled={isResettingPassword}
+                    className="h-4 w-4 rounded text-amber-600 focus:ring-amber-500 border-slate-300"
+                  />
+                  <label htmlFor="editMustChangePassword" className="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                    Force mandatory password change upon next login (Recommended)
+                  </label>
+                </div>
+
+                {confirmingReset ? (
+                  <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-300 dark:border-amber-800 space-y-2">
+                    <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">
+                      Confirm Password Reset: Are you sure you want to reset the login password for {student.full_name}? The previous password will immediately stop working.
+                    </p>
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingReset(false)}
+                        disabled={isResettingPassword}
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleExecuteResetPassword}
+                        disabled={isResettingPassword}
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-600 hover:bg-red-500 text-white shadow-2xs transition disabled:opacity-50"
+                      >
+                        {isResettingPassword ? "Resetting..." : "Yes, Reset Password"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2 justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowResetSection(false)}
+                      disabled={isResettingPassword}
+                      className="px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-800"
+                    >
+                      Dismiss
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newPassword.trim() || newPassword.trim().length < 6) {
+                          setResetErrorMessage("New password must be at least 6 characters long.");
+                          return;
+                        }
+                        setResetErrorMessage(null);
+                        setConfirmingReset(true);
+                      }}
+                      disabled={isResettingPassword || !newPassword.trim()}
+                      className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-amber-600 hover:bg-amber-500 text-white shadow-2xs transition disabled:opacity-50"
+                    >
+                      Confirm Password Reset
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">

@@ -1,11 +1,11 @@
 import enum
 import uuid
 from datetime import date, datetime
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import sqlalchemy as sa
 from sqlalchemy import Date, DateTime, ForeignKey, Index, String, Text, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -64,6 +64,7 @@ class Achievement(Base):
     event_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     outcome: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    component_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
     status: Mapped[AchievementStatus] = mapped_column(
         sa.Enum(
             AchievementStatus,

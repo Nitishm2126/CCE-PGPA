@@ -84,10 +84,12 @@ def sync_update_firebase_user(
     email: Optional[str] = None,
     full_name: Optional[str] = None,
     disabled: Optional[bool] = None,
+    password: Optional[str] = None,
 ) -> bool:
     """
     Updates user attributes in Firebase Auth if UID is provided.
     Returns True if update succeeded, False otherwise.
+    Never logs or exposes plaintext password values.
     """
     if not uid:
         return False
@@ -101,6 +103,8 @@ def sync_update_firebase_user(
             update_kwargs["display_name"] = full_name
         if disabled is not None:
             update_kwargs["disabled"] = disabled
+        if password is not None:
+            update_kwargs["password"] = password
 
         if not update_kwargs:
             return True
