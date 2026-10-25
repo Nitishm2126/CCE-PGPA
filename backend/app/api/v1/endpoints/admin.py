@@ -406,6 +406,9 @@ def list_admin_components(
                 grading_strategy=c.grading_strategy,
                 requires_verification=c.requires_verification,
                 rule_version=c.rule_version,
+                pdf_requirement=c.pdf_requirement,
+                pdf_required=c.pdf_required,
+                allow_other_evidence_types=c.allow_other_evidence_types,
                 total_submissions=total_counts.get(c.id, 0),
                 pending_submissions=pending_counts.get(c.id, 0),
             )
@@ -439,6 +442,8 @@ def update_admin_component(
         "credit_value": component.credit_value,
         "submission_mode": component.submission_mode,
         "grading_strategy": component.grading_strategy,
+        "pdf_requirement": component.pdf_requirement,
+        "allow_other_evidence_types": component.allow_other_evidence_types,
     }
 
     if payload.name is not None:
@@ -457,6 +462,12 @@ def update_admin_component(
         component.is_active = payload.is_active
     if payload.display_order is not None:
         component.display_order = payload.display_order
+    if payload.pdf_requirement is not None:
+        component.pdf_requirement = payload.pdf_requirement
+    elif payload.pdf_required is not None:
+        component.pdf_required = payload.pdf_required
+    if payload.allow_other_evidence_types is not None:
+        component.allow_other_evidence_types = payload.allow_other_evidence_types
 
     component.rule_version += 1
     component.updated_at = datetime.now(timezone.utc)
@@ -476,6 +487,8 @@ def update_admin_component(
                 "credit_value": component.credit_value,
                 "submission_mode": component.submission_mode,
                 "grading_strategy": component.grading_strategy,
+                "pdf_requirement": component.pdf_requirement,
+                "allow_other_evidence_types": component.allow_other_evidence_types,
                 "rule_version": component.rule_version,
             },
         },
@@ -503,6 +516,9 @@ def update_admin_component(
         grading_strategy=component.grading_strategy,
         requires_verification=component.requires_verification,
         rule_version=component.rule_version,
+        pdf_requirement=component.pdf_requirement,
+        pdf_required=component.pdf_required,
+        allow_other_evidence_types=component.allow_other_evidence_types,
         total_submissions=total_subs,
         pending_submissions=pending_subs,
     )
@@ -649,6 +665,9 @@ def get_components_semester_matrix(
             "grading_strategy": comp.grading_strategy,
             "requires_verification": comp.requires_verification,
             "is_active": comp.is_active,
+            "pdf_requirement": comp.pdf_requirement,
+            "pdf_required": comp.pdf_required,
+            "allow_other_evidence_types": comp.allow_other_evidence_types,
             "semesters": sem_status,
         })
 

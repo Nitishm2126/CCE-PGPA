@@ -449,7 +449,10 @@ def google_callback(
             refresh_token=refresh_token,
             root_folder_id=settings.GOOGLE_DRIVE_FOLDER_ID,
         )
-        about_info = temp_drive_service.service.about().get(fields="user(emailAddress,displayName)").execute()
+        temp_drive_service.mark_token_valid()
+        about_info = temp_drive_service._execute_api_call(
+            temp_drive_service.service.about().get(fields="user(emailAddress,displayName)")
+        )
         google_account_email = about_info.get("user", {}).get("emailAddress")
     except Exception as exc:
         logger.warning("Could not fetch Google account email from Drive API about.get(): %s", exc)
@@ -488,6 +491,7 @@ def google_callback(
         root_folder_id=settings.GOOGLE_DRIVE_FOLDER_ID,
         authorized_email=authorized_email,
     )
+    new_drive_service.mark_token_valid()
     set_drive_service(new_drive_service)
 
     # 9. Return safe confirmation without leaking tokens

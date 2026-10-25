@@ -28,6 +28,9 @@ class PGPAComponentResponse(BaseModel):
     grading_strategy: str = "categorical"
     requires_verification: bool = True
     input_fields: List[Dict[str, Any]] = []
+    pdf_requirement: str = "optional"
+    pdf_required: bool = False
+    allow_other_evidence_types: bool = False
     is_enabled_for_semester: bool = True
     lock_reason: Optional[str] = None
 

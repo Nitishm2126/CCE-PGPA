@@ -11,7 +11,7 @@ interface SubmitAchievementModalProps {
   initialComponentId?: string | null;
   onSubmit: (
     data: AchievementCreate,
-    evidenceFile: File,
+    evidenceFile: File | null,
     submitImmediately: boolean
   ) => Promise<void>;
 }
@@ -21,7 +21,7 @@ interface FormContentProps {
   initialComponentId?: string | null;
   onSubmit: (
     data: AchievementCreate,
-    evidenceFile: File,
+    evidenceFile: File | null,
     submitImmediately: boolean
   ) => Promise<void>;
   onClose: () => void;
@@ -249,6 +249,11 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
     return activeComponents.find((c) => c.id === componentId) || activeComponents[0] || components[0];
   }, [activeComponents, componentId, components]);
 
+  const pdfRequirement = currentComponent?.pdf_requirement || (currentComponent?.pdf_required ? "required" : "optional");
+  const isPdfRequired = pdfRequirement === "required";
+  const isPdfDisabled = pdfRequirement === "disabled";
+  const allowOtherEvidence = currentComponent?.allow_other_evidence_types ?? false;
+
   const isComponentLocked = useMemo(() => {
     if (!currentComponent) return false;
     return currentComponent.is_enabled_for_semester === false || currentComponent.submission_mode === "hod_excel_import";
@@ -285,18 +290,26 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       return;
     }
 
-    const hasPdfExtension = file.name.toLowerCase().endsWith(".pdf");
+    const fileNameLower = file.name.toLowerCase();
+    const hasPdfExtension = fileNameLower.endsWith(".pdf");
     const isPdfMime = file.type === "application/pdf" || file.type === "";
+    const isImage = file.type.startsWith("image/") || /\.(png|jpe?g|webp)$/i.test(fileNameLower);
 
-    if (!hasPdfExtension && !isPdfMime) {
+    if (!allowOtherEvidence && !hasPdfExtension && !isPdfMime) {
       setEvidenceFile(null);
-      setFileError("Only PDF documents (.pdf) are accepted. Please select a valid PDF file.");
+      setFileError("Only PDF documents (.pdf) are accepted for this component. Please select a valid PDF file.");
+      return;
+    }
+
+    if (allowOtherEvidence && !hasPdfExtension && !isPdfMime && !isImage) {
+      setEvidenceFile(null);
+      setFileError("Accepted file formats are PDF or image files (.pdf, .png, .jpg). Please select a valid document.");
       return;
     }
 
     if (file.size === 0) {
       setEvidenceFile(null);
-      setFileError("The selected PDF file is empty (0 bytes). Please select a valid evidence document.");
+      setFileError("The selected evidence file is empty (0 bytes). Please select a valid evidence document.");
       return;
     }
 
@@ -693,9 +706,9 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       setError(reason);
       return;
     }
-    if (!evidenceFile) {
+    if (isPdfRequired && submitImmediately && !evidenceFile) {
       const evidenceName = currentSlug === "academics-gpa" ? "Semester Marksheet / Grade Sheet PDF" : "Supporting Evidence PDF";
-      setError(`${evidenceName} is required. Please attach a valid PDF document before submitting.`);
+      setError(`${evidenceName} is required by institutional policy for ${currentComponent.name}. Please attach a valid PDF document before submitting.`);
       setFileError(`${evidenceName} is required.`);
       if (fileInputRef.current) {
         fileInputRef.current.focus();
@@ -711,9 +724,13 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       setIsSubmitting(true);
       setError(null);
       setSubmissionStep(
-        submitImmediately
-          ? "Uploading evidence to Google Drive and submitting for mentor review..."
-          : "Uploading evidence to Google Drive and saving draft..."
+        evidenceFile
+          ? submitImmediately
+            ? "Uploading evidence to Google Drive and submitting for mentor review..."
+            : "Uploading evidence to Google Drive and saving draft..."
+          : submitImmediately
+            ? "Submitting achievement for mentor review..."
+            : "Saving draft achievement..."
       );
 
       const payload = buildPayload();
@@ -1961,95 +1978,126 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           <div className="flex items-center justify-between">
             <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
               {currentSlug === "academics-gpa"
-                ? "Semester Marksheet / Grade Sheet (PDF) *"
-                : "Supporting Evidence PDF (Required) *"}
+                ? isPdfRequired
+                  ? "Semester Marksheet / Grade Sheet (PDF Required) *"
+                  : isPdfDisabled
+                  ? "Semester Marksheet / Evidence (Disabled)"
+                  : "Semester Marksheet / Grade Sheet (Optional PDF)"
+                : isPdfRequired
+                ? "Supporting Evidence PDF (Required) *"
+                : isPdfDisabled
+                ? "Supporting Evidence (Disabled)"
+                : "Supporting Evidence (Optional)"}
             </label>
-            <span className="rounded-full bg-slate-100 dark:bg-[#1C2531] px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-[#A0ACBC] border border-slate-200 dark:border-[#2B3543]">
-              Max 5 MB • PDF Only
-            </span>
-          </div>
-          <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-0.5 mb-1.5">
-            {currentSlug === "academics-gpa"
-              ? "Attach your official university marksheet or grade report PDF for faculty verification."
-              : "Attach official certificate, event receipt, score card, or completion record."}
-          </p>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,application/pdf"
-            disabled={isSubmitting}
-            onChange={(e) => {
-              if (e.target.files && e.target.files.length > 0) {
-                handleFileSelect(e.target.files[0]);
-              }
-            }}
-            className="hidden"
-            id="evidence-pdf-input"
-          />
-
-          {!evidenceFile ? (
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => {
-                if (!isSubmitting && fileInputRef.current) {
-                  fileInputRef.current.click();
-                }
-              }}
-              className={`rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${
-                isDragging
-                  ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
-                  : fileError
-                  ? "border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20"
-                  : "border-slate-300 dark:border-[#2B3543] hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/40 dark:bg-[#1C2531]/40"
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
+                isPdfRequired
+                  ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
+                  : isPdfDisabled
+                  ? "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
+                  : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
               }`}
             >
-              <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-2">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-              </div>
-              <p className="text-xs font-semibold text-slate-800 dark:text-[#E8EDF4]">
-                Click to browse or drop your PDF here
-              </p>
-              <p className="text-[11px] text-slate-400 dark:text-[#7E8B9C] mt-0.5">
-                PDF format only &bull; Up to 5 MB
-              </p>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between p-3 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30">
-              <div className="flex items-center gap-2.5 truncate">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-[9px] shrink-0">
-                  PDF
-                </div>
-                <div className="truncate">
-                  <p className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] truncate">
-                    {evidenceFile.name}
-                  </p>
-                  <p className="text-[10px] text-slate-500 dark:text-[#7E8B9C]">
-                    {formatFileSize(evidenceFile.size)} &bull; Ready for upload
-                  </p>
-                </div>
-              </div>
+              {isPdfRequired
+                ? "Mandatory Evidence • Up to 5 MB"
+                : isPdfDisabled
+                ? "Evidence Disabled • Direct Submit"
+                : "Optional Evidence • Up to 5 MB"}
+            </span>
+          </div>
 
-              <button
-                type="button"
-                onClick={() => handleFileSelect(null)}
+          <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-0.5 mb-1.5">
+            {isPdfDisabled
+              ? "System Admin policy: Evidence document upload is disabled for this component. You can proceed with submission directly."
+              : currentSlug === "academics-gpa"
+              ? isPdfRequired
+                ? "Attach your official university marksheet or grade report PDF for faculty verification (Mandatory)."
+                : "Attach your official university marksheet or grade report PDF if available (Optional for this component)."
+              : isPdfRequired
+              ? "Attach official certificate, event receipt, score card, or completion record (Mandatory PDF)."
+              : "Attach official certificate, event receipt, or completion record if available (Optional for this component)."}
+          </p>
+
+          {!isPdfDisabled && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={allowOtherEvidence ? ".pdf,application/pdf,image/png,image/jpeg,.png,.jpg,.jpeg" : ".pdf,application/pdf"}
                 disabled={isSubmitting}
-                className="rounded-lg p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-[#1C2531] transition-colors cursor-pointer"
-                title="Remove selected file"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          )}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0]);
+                  }
+                }}
+                className="hidden"
+                id="evidence-pdf-input"
+              />
 
-          {fileError && (
-            <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1 font-medium">{fileError}</p>
+              {!evidenceFile ? (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => {
+                    if (!isSubmitting && fileInputRef.current) {
+                      fileInputRef.current.click();
+                    }
+                  }}
+                  className={`rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${
+                    isDragging
+                      ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
+                      : fileError
+                      ? "border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20"
+                      : "border-slate-300 dark:border-[#2B3543] hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/40 dark:bg-[#1C2531]/40"
+                  }`}
+                >
+                  <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-2">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-800 dark:text-[#E8EDF4]">
+                    {isPdfRequired ? "Click to browse or drop your mandatory PDF here" : "Click to browse or drop optional PDF here"}
+                  </p>
+                  <p className="text-[11px] text-slate-400 dark:text-[#7E8B9C] mt-0.5">
+                    {allowOtherEvidence ? "PDF, PNG, JPEG format • Up to 5 MB" : "PDF format only • Up to 5 MB"}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-3 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30">
+                  <div className="flex items-center gap-2.5 truncate">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-[9px] shrink-0">
+                      FILE
+                    </div>
+                    <div className="truncate">
+                      <p className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] truncate">
+                        {evidenceFile.name}
+                      </p>
+                      <p className="text-[10px] text-slate-500 dark:text-[#7E8B9C]">
+                        {formatFileSize(evidenceFile.size)} &bull; Ready for upload
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleFileSelect(null)}
+                    disabled={isSubmitting}
+                    className="rounded-lg p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-[#1C2531] transition-colors cursor-pointer"
+                    title="Remove selected file"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+
+              {fileError && (
+                <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1 font-medium">{fileError}</p>
+              )}
+            </>
           )}
         </div>
 

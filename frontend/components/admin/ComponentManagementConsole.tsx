@@ -20,7 +20,7 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
   const [updatingCell, setUpdatingCell] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [modeFilter, setModeFilter] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState<"matrix" | "catalogue">("matrix");
+  const [activeTab, setActiveTab] = useState<"matrix" | "catalogue" | "evidence">("evidence");
   const [actionFeedback, setActionFeedback] = useState<{
     type: "success" | "error";
     text: string;
@@ -32,6 +32,8 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
   const [editMode, setEditMode] = useState<string>("student_submission");
   const [editIsActive, setEditIsActive] = useState<boolean>(true);
   const [editRequiresVerification, setEditRequiresVerification] = useState<boolean>(true);
+  const [editPdfRequirement, setEditPdfRequirement] = useState<"required" | "optional" | "disabled">("optional");
+  const [editAllowOtherEvidence, setEditAllowOtherEvidence] = useState<boolean>(false);
   const [isSavingEdit, setIsSavingEdit] = useState<boolean>(false);
 
   const fetchMatrix = useCallback(async () => {
@@ -128,6 +130,51 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
     setEditMode(comp.submission_mode);
     setEditIsActive(comp.is_active);
     setEditRequiresVerification(comp.requires_verification);
+    setEditPdfRequirement(comp.pdf_requirement || (comp.pdf_required ? "required" : "optional"));
+    setEditAllowOtherEvidence(comp.allow_other_evidence_types ?? false);
+  };
+
+  // Quick update evidence rule from table
+  const handleQuickUpdateEvidence = async (
+    componentId: string,
+    field: "pdf_requirement" | "allow_other_evidence_types" | "is_active",
+    value: string | boolean
+  ) => {
+    setActionFeedback(null);
+    // Optimistic update
+    setMatrixData((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        components: prev.components.map((c) => {
+          if (c.component_id === componentId) {
+            return {
+              ...c,
+              [field]: value,
+              ...(field === "pdf_requirement" ? { pdf_required: value === "required" } : {}),
+            };
+          }
+          return c;
+        }),
+      };
+    });
+
+    try {
+      await api.adminUpdateComponent(
+        componentId,
+        { [field]: value },
+        token
+      );
+      setActionFeedback({
+        type: "success",
+        text: `Updated component configuration successfully.`,
+      });
+      setTimeout(() => setActionFeedback(null), 3000);
+    } catch (err: unknown) {
+      await fetchMatrix();
+      const msg = err instanceof Error ? err.message : "Failed to update component settings.";
+      setActionFeedback({ type: "error", text: msg });
+    }
   };
 
   // Save Edit Component
@@ -143,6 +190,8 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
           submission_mode: editMode,
           is_active: editIsActive,
           requires_verification: editRequiresVerification,
+          pdf_requirement: editPdfRequirement,
+          allow_other_evidence_types: editAllowOtherEvidence,
         },
         token
       );
@@ -252,8 +301,19 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
           <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
             <button
               type="button"
+              onClick={() => setActiveTab("evidence")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                activeTab === "evidence"
+                  ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              Evidence & PDF Rules
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab("matrix")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 activeTab === "matrix"
                   ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -264,7 +324,7 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
             <button
               type="button"
               onClick={() => setActiveTab("catalogue")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 activeTab === "catalogue"
                   ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -307,6 +367,174 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
         <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent" />
           <p className="mt-3 text-xs text-slate-500">Loading component semester matrix...</p>
+        </div>
+      ) : activeTab === "evidence" ? (
+        /* ================= EVIDENCE & PDF RULES VIEW ================= */
+        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
+          <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Evidence & PDF Requirement Policies</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                  All 14 Official Components
+                </span>
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Configure PDF requirement (Required, Optional, or Disabled) and evidence types per component. Changes apply dynamically to student forms.
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold">
+                  <th className="py-3 px-4 min-w-[200px]">Component Name</th>
+                  <th className="py-3 px-3 min-w-[140px]">Student Submission</th>
+                  <th className="py-3 px-3 min-w-[230px]">PDF Evidence Requirement</th>
+                  <th className="py-3 px-3 min-w-[140px]">Other Evidence</th>
+                  <th className="py-3 px-3 min-w-[200px]">Applicable Semesters</th>
+                  <th className="py-3 px-3 text-right min-w-[80px]">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredComponents.map((comp) => {
+                  const isStudentSubmissionAllowed = comp.is_active && comp.submission_mode !== "hod_excel_import";
+                  const req = comp.pdf_requirement || (comp.pdf_required ? "required" : "optional");
+                  const allowsOther = comp.allow_other_evidence_types ?? false;
+
+                  return (
+                    <tr key={comp.component_id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition">
+                      {/* 1. Component Name */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-900 dark:text-white text-xs">
+                            {comp.name}
+                          </span>
+                          <span className="font-mono text-[10px] text-slate-400 mt-0.5">
+                            {comp.slug} &bull; {comp.credit_value} Credits
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 2. Whether student submission is enabled */}
+                      <td className="py-3.5 px-3">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1.5 ${
+                              isStudentSubmissionAllowed
+                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
+                            }`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${isStudentSubmissionAllowed ? "bg-emerald-500" : "bg-slate-400"}`} />
+                            {isStudentSubmissionAllowed ? "Enabled" : "HOD Import Only"}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 3. Whether PDF evidence is required (Independent System Admin selector) */}
+                      <td className="py-3.5 px-3">
+                        <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 bg-slate-100/70 dark:bg-slate-800">
+                          <button
+                            type="button"
+                            onClick={() => handleQuickUpdateEvidence(comp.component_id, "pdf_requirement", "required")}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${
+                              req === "required"
+                                ? "bg-rose-600 text-white shadow-xs"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                            title="Mandatory PDF evidence for student submission"
+                          >
+                            Required
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickUpdateEvidence(comp.component_id, "pdf_requirement", "optional")}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${
+                              req === "optional"
+                                ? "bg-blue-600 text-white shadow-xs"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                            title="Optional PDF evidence"
+                          >
+                            Optional
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickUpdateEvidence(comp.component_id, "pdf_requirement", "disabled")}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${
+                              req === "disabled"
+                                ? "bg-slate-700 text-white shadow-xs"
+                                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            }`}
+                            title="PDF evidence disabled for this component"
+                          >
+                            Disabled
+                          </button>
+                        </div>
+                      </td>
+
+                      {/* 4. Whether other evidence types are allowed */}
+                      <td className="py-3.5 px-3">
+                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={allowsOther}
+                            onChange={(e) => handleQuickUpdateEvidence(comp.component_id, "allow_other_evidence_types", e.target.checked)}
+                            className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                          />
+                          <span className={`text-[11px] ${allowsOther ? "text-indigo-600 dark:text-indigo-400 font-semibold" : "text-slate-500"}`}>
+                            {allowsOther ? "Allowed (Images/Docs)" : "PDF Only"}
+                          </span>
+                        </label>
+                      </td>
+
+                      {/* 5. Applicable semester settings, respecting existing semester matrix */}
+                      <td className="py-3.5 px-3">
+                        <div className="flex flex-wrap items-center gap-1">
+                          {matrixData?.semesters.map((s) => {
+                            const isSemActive = comp.semesters[String(s.number)] && s.is_enabled;
+                            return (
+                              <span
+                                key={s.id}
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
+                                  isSemActive
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300"
+                                    : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 line-through"
+                                }`}
+                                title={`Semester ${s.number}: ${isSemActive ? "Active" : "Unavailable"}`}
+                              >
+                                S{s.number}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </td>
+
+                      {/* Action */}
+                      <td className="py-3.5 px-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(comp)}
+                          className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-semibold text-[11px] transition cursor-pointer"
+                        >
+                          Configure
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="p-4 bg-slate-50/50 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+            <span>Configuring evidence requirements for all 14 official PGPA components.</span>
+            <span className="font-semibold text-slate-600 dark:text-slate-400">
+              Changes take effect immediately on student submission forms.
+            </span>
+          </div>
         </div>
       ) : activeTab === "matrix" ? (
         /* ================= MATRIX VIEW ================= */
@@ -583,6 +811,43 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
                   type="checkbox"
                   checked={editRequiresVerification}
                   onChange={(e) => setEditRequiresVerification(e.target.checked)}
+                  className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+                />
+              </div>
+
+              {/* PDF Evidence Requirement */}
+              <div className="py-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+                <label className="block font-semibold text-slate-800 dark:text-slate-200">
+                  PDF Evidence Requirement
+                </label>
+                <select
+                  value={editPdfRequirement}
+                  onChange={(e) => setEditPdfRequirement(e.target.value as any)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                >
+                  <option value="required">Required — Mandatory PDF attachment to submit</option>
+                  <option value="optional">Optional — Evidence upload available, not mandatory</option>
+                  <option value="disabled">Disabled — No evidence upload required for submissions</option>
+                </select>
+                <span className="text-[10px] text-slate-400 block">
+                  System Admin control: independently configure whether students must attach a PDF document for this component.
+                </span>
+              </div>
+
+              {/* Allow Other Evidence Types */}
+              <div className="flex items-center justify-between py-2 border-t border-slate-100 dark:border-slate-800">
+                <div>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 block">
+                    Allow Other Evidence Types
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Allow students to attach images (.png, .jpg) in addition to PDF documents.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={editAllowOtherEvidence}
+                  onChange={(e) => setEditAllowOtherEvidence(e.target.checked)}
                   className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
                 />
               </div>

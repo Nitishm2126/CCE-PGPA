@@ -357,6 +357,9 @@ def get_pgpa_components(
                 grading_strategy=c.grading_strategy,
                 requires_verification=c.requires_verification,
                 input_fields=fields,
+                pdf_requirement=c.pdf_requirement,
+                pdf_required=c.pdf_required,
+                allow_other_evidence_types=c.allow_other_evidence_types,
                 is_enabled_for_semester=is_enabled,
                 lock_reason=lock_reason,
             )
@@ -768,7 +771,14 @@ def submit_achievement(
     current_user: User = Depends(require_student),
     db: Session = Depends(get_db),
 ) -> AchievementResponse:
-    achievement = db.get(Achievement, achievement_id)
+    achievement = db.scalars(
+        select(Achievement)
+        .options(
+            joinedload(Achievement.component),
+            selectinload(Achievement.files),
+        )
+        .where(Achievement.id == achievement_id)
+    ).first()
     if not achievement:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -793,6 +803,22 @@ def submit_achievement(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"{achievement.component.name} is configured for HOD Excel import only and cannot be submitted by students.",
         )
+
+    # Enforce admin-controlled PDF evidence requirement
+    if achievement.component:
+        pdf_req = achievement.component.pdf_requirement or ("required" if achievement.component.pdf_required else "optional")
+        if pdf_req == "required":
+            has_pdf = any(
+                (f.mime_type == "application/pdf" or (f.original_filename and f.original_filename.lower().endswith(".pdf")))
+                for f in achievement.files
+            )
+            has_evidence = has_pdf or (achievement.component.allow_other_evidence_types and len(achievement.files) > 0)
+            if not has_evidence:
+                evidence_desc = "evidence" if achievement.component.allow_other_evidence_types else "PDF evidence"
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Supporting {evidence_desc} is required for {achievement.component.name} submissions. Please upload required documentation before submitting.",
+                )
 
     # Verify semester is open and component is enabled for that semester
     if achievement.semester_id:

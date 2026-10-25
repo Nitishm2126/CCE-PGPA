@@ -11,7 +11,7 @@ from app.models.assignment import MentorAssignment
 from app.models.audit import AuditLog
 from app.models.file import AchievementFile, FileCategory
 from app.models.user import User, UserRole
-from app.services.drive_service import GoogleDriveService, get_drive_service
+from app.services.drive_service import GoogleDriveAuthRevokedError, GoogleDriveService, get_drive_service
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +85,12 @@ def upload_achievement_file(
             detail="Google Drive storage is not configured. Please contact the system administrator.",
         )
 
+    if getattr(ds, "is_token_revoked", False):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google Drive OAuth authorization expired or was revoked. Please ask the System Administrator to reconnect Google Drive from the Admin Console.",
+        )
+
     # 1. Authorize achievement ownership
     achievement = session.get(Achievement, achievement_id)
     if not achievement:
@@ -145,6 +151,15 @@ def upload_achievement_file(
                 drive_service=ds,
             )
     except Exception as e:
+        err_lower = str(e).lower()
+        if "invalid_grant" in err_lower or "expired or revoked" in err_lower or isinstance(e, GoogleDriveAuthRevokedError):
+            if hasattr(ds, "mark_token_revoked"):
+                ds.mark_token_revoked()
+            logger.warning("Dedicated student folder resolution failed due to revoked token: %s", e)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Google Drive OAuth authorization expired or was revoked. Please ask the System Administrator to reconnect Google Drive from the Admin Console.",
+            )
         logger.warning("Dedicated student folder resolution failed (%s), attempting fallback...", e)
         if hasattr(ds, "ensure_achievement_folder"):
             try:
@@ -153,6 +168,14 @@ def upload_achievement_file(
                     achievement_id=achievement.id,
                 )
             except Exception as e2:
+                err2_lower = str(e2).lower()
+                if "invalid_grant" in err2_lower or "expired or revoked" in err2_lower or isinstance(e2, GoogleDriveAuthRevokedError):
+                    if hasattr(ds, "mark_token_revoked"):
+                        ds.mark_token_revoked()
+                    raise HTTPException(
+                        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                        detail="Google Drive OAuth authorization expired or was revoked. Please ask the System Administrator to reconnect Google Drive from the Admin Console.",
+                    )
                 logger.error("Both dedicated folder and fallback folder resolution failed: %s", e2)
                 raise HTTPException(
                     status_code=status.HTTP_502_BAD_GATEWAY,
@@ -174,6 +197,15 @@ def upload_achievement_file(
             folder_id=folder_id,
         )
     except Exception as e:
+        err_lower = str(e).lower()
+        if "invalid_grant" in err_lower or "expired or revoked" in err_lower or isinstance(e, GoogleDriveAuthRevokedError):
+            if hasattr(ds, "mark_token_revoked"):
+                ds.mark_token_revoked()
+            logger.warning("Google Drive upload failed due to expired/revoked OAuth token.")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Google Drive OAuth authorization expired or was revoked. Please ask the System Administrator to reconnect Google Drive from the Admin Console.",
+            )
         logger.error("Google Drive upload failed: %s", e)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,

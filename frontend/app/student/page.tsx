@@ -275,29 +275,53 @@ export default function StudentDashboardPage() {
   // Create achievement handler
   const handleCreateAchievement = async (
     data: AchievementCreate,
-    evidenceFile: File,
+    evidenceFile: File | null,
     submitImmediately: boolean
   ) => {
     if (!token) return;
 
     const created = await api.createAchievement(data, token);
 
-    try {
-      await api.uploadEvidenceFile(created.id, evidenceFile, "certificate", token);
+    let uploadSucceeded = false;
+    let uploadErrorMsg: string | null = null;
 
-      if (submitImmediately) {
-        await api.submitAchievement(created.id, token);
-        setToastMessage("Achievement and PDF evidence submitted successfully!");
-      } else {
-        setToastMessage("Achievement and PDF evidence saved as draft.");
-      }
-    } catch (uploadErr: unknown) {
+    if (evidenceFile) {
       try {
-        await api.deleteAchievement(created.id, token);
-      } catch (delErr) {
-        console.error("Failed to delete draft after upload failure:", delErr);
+        await api.uploadEvidenceFile(created.id, evidenceFile, "certificate", token);
+        uploadSucceeded = true;
+      } catch (uploadErr: unknown) {
+        uploadErrorMsg = uploadErr instanceof Error ? uploadErr.message : "Evidence upload failed";
+        console.error("Evidence upload failed:", uploadErr);
+        // Do NOT delete the created draft when Drive is unavailable!
+        if (submitImmediately) {
+          await loadAchievements();
+          throw new Error(
+            `Draft was saved successfully, but Google Drive upload failed: ${uploadErrorMsg}. You can reconnect Drive or upload your file later.`
+          );
+        }
       }
-      throw uploadErr;
+    }
+
+    if (submitImmediately) {
+      try {
+        await api.submitAchievement(created.id, token);
+        setToastMessage(
+          uploadSucceeded
+            ? "Achievement and evidence submitted successfully for mentor review!"
+            : "Achievement submitted successfully for mentor review!"
+        );
+      } catch (submitErr: unknown) {
+        await loadAchievements();
+        throw submitErr;
+      }
+    } else {
+      if (uploadErrorMsg) {
+        setToastMessage(`Achievement saved as draft. Evidence upload failed: ${uploadErrorMsg}`);
+      } else if (uploadSucceeded) {
+        setToastMessage("Achievement and evidence saved as draft.");
+      } else {
+        setToastMessage("Achievement saved as draft.");
+      }
     }
 
     await loadAchievements();

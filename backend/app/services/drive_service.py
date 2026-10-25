@@ -7,6 +7,8 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from google.auth.exceptions import RefreshError
+from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2.credentials import Credentials as UserCredentials
 from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 from googleapiclient.discovery import Resource, build
@@ -20,8 +22,26 @@ logger = logging.getLogger(__name__)
 # Scopes: least privilege for managing drive files created/used by this app
 DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 
-
 _SENTINEL = object()
+
+# Module-level flag to avoid repeatedly hammering Google's token endpoint when a token is known revoked/invalid
+_drive_token_revoked_state: bool = False
+
+
+def reset_drive_revocation_state() -> None:
+    """Reset module-level revocation state (for reconnection or tests)."""
+    global _drive_token_revoked_state
+    _drive_token_revoked_state = False
+
+
+class GoogleDriveAuthRevokedError(RuntimeError):
+    """Raised when Google Drive OAuth refresh token has expired or been revoked."""
+    pass
+
+
+class GoogleDriveServiceUnavailableError(RuntimeError):
+    """Raised when Google Drive is unconfigured or unavailable."""
+    pass
 
 
 class GoogleDriveService:
@@ -48,7 +68,10 @@ class GoogleDriveService:
         root_folder_id: Any = _SENTINEL,
         authorized_email: Optional[str] = None,
     ):
+        global _drive_token_revoked_state
         self._service: Optional[Resource] = service
+        self._creds: Optional[UserCredentials] = None
+        self._token_revoked: bool = _drive_token_revoked_state
         self.oauth_client_id = settings.GOOGLE_OAUTH_CLIENT_ID if oauth_client_id is _SENTINEL else oauth_client_id
         self.oauth_client_secret = settings.GOOGLE_OAUTH_CLIENT_SECRET if oauth_client_secret is _SENTINEL else oauth_client_secret
         self.refresh_token = refresh_token
@@ -56,6 +79,124 @@ class GoogleDriveService:
         self.service_account_file = settings.GOOGLE_SERVICE_ACCOUNT_FILE if service_account_file is _SENTINEL else service_account_file
         self.service_account_json = settings.GOOGLE_SERVICE_ACCOUNT_JSON if service_account_json is _SENTINEL else service_account_json
         self.root_folder_id = settings.GOOGLE_DRIVE_FOLDER_ID if root_folder_id is _SENTINEL else root_folder_id
+
+    @property
+    def is_token_revoked(self) -> bool:
+        """True if the OAuth refresh token has been detected as revoked or expired."""
+        global _drive_token_revoked_state
+        return _drive_token_revoked_state or self._token_revoked
+
+    def mark_token_revoked(self) -> None:
+        """Flags the OAuth refresh token as revoked/invalid to avoid redundant retries."""
+        global _drive_token_revoked_state
+        _drive_token_revoked_state = True
+        self._token_revoked = True
+
+    def mark_token_valid(self) -> None:
+        """Resets the revoked token state."""
+        global _drive_token_revoked_state
+        _drive_token_revoked_state = False
+        self._token_revoked = False
+
+    def _persist_rotated_refresh_token(self, new_token: str) -> None:
+        """Persists any newly rotated OAuth refresh token to PostgreSQL."""
+        try:
+            from app.core.oauth_crypto import encrypt_token
+            from app.db.session import SessionLocal
+            from app.models.oauth import OAuthCredential
+            from sqlalchemy import select
+
+            encrypted = encrypt_token(new_token)
+            db = SessionLocal()
+            try:
+                rec = db.scalars(
+                    select(OAuthCredential).where(OAuthCredential.provider == "google_drive")
+                ).first()
+                if rec:
+                    rec.encrypted_refresh_token = encrypted
+                    db.commit()
+            finally:
+                db.close()
+        except Exception as exc:
+            logger.error("Failed to persist rotated Google OAuth refresh token: %s", exc)
+
+    def refresh_access_token(self, force: bool = False) -> bool:
+        """
+        Refreshes user OAuth credentials using the stored refresh token.
+        - If already known to be revoked, fails fast unless force=True.
+        - Persists any rotated refresh token returned by Google to PostgreSQL.
+        - Updates internal credentials and resets revocation state on success.
+        """
+        if self.is_token_revoked and not force:
+            raise GoogleDriveAuthRevokedError(
+                "Google Drive OAuth authorization expired or was revoked. "
+                "Please reconnect Google Drive from the Admin Console."
+            )
+
+        if not (self.oauth_client_id and self.oauth_client_secret and self.refresh_token):
+            return False
+
+        try:
+            if self._creds is None:
+                self._creds = UserCredentials(
+                    token=None,
+                    refresh_token=self.refresh_token,
+                    token_uri="https://oauth2.googleapis.com/token",
+                    client_id=self.oauth_client_id,
+                    client_secret=self.oauth_client_secret,
+                    scopes=DRIVE_SCOPES,
+                )
+
+            self._creds.refresh(GoogleAuthRequest())
+            self.mark_token_valid()
+
+            if self._creds.refresh_token and self._creds.refresh_token != self.refresh_token:
+                logger.info("Google rotated OAuth refresh token. Persisting updated token.")
+                self.refresh_token = self._creds.refresh_token
+                self._persist_rotated_refresh_token(self._creds.refresh_token)
+
+            return True
+        except RefreshError as re:
+            err_str = str(re).lower()
+            if "invalid_grant" in err_str or "expired or revoked" in err_str:
+                self.mark_token_revoked()
+                logger.warning("Google Drive OAuth refresh token is revoked or expired: %s", re)
+                raise GoogleDriveAuthRevokedError(
+                    "Google Drive OAuth authorization expired or was revoked. "
+                    "Please reconnect Google Drive from the Admin Console."
+                ) from re
+            raise
+
+    def _execute_api_call(self, request_call: Any) -> Any:
+        """
+        Executes a Google Drive API resource request, intercepting authentication failures.
+        Never repeatedly retries an invalid refresh token.
+        """
+        if self.is_token_revoked:
+            raise GoogleDriveAuthRevokedError(
+                "Google Drive OAuth authorization expired or was revoked. "
+                "Please reconnect Google Drive from the Admin Console."
+            )
+        try:
+            return request_call.execute()
+        except RefreshError as re:
+            err_str = str(re).lower()
+            if "invalid_grant" in err_str or "expired or revoked" in err_str:
+                self.mark_token_revoked()
+                raise GoogleDriveAuthRevokedError(
+                    "Google Drive OAuth authorization expired or was revoked. "
+                    "Please reconnect Google Drive from the Admin Console."
+                ) from re
+            raise
+        except Exception as e:
+            err_str = str(e).lower()
+            if "invalid_grant" in err_str or "expired or revoked" in err_str:
+                self.mark_token_revoked()
+                raise GoogleDriveAuthRevokedError(
+                    "Google Drive OAuth authorization expired or was revoked. "
+                    "Please reconnect Google Drive from the Admin Console."
+                ) from e
+            raise
 
     @property
     def is_oauth_credentials_configured(self) -> bool:
@@ -102,15 +243,22 @@ class GoogleDriveService:
                     "Please visit /api/v1/auth/google/authorize to complete authorization."
                 )
 
-            creds = UserCredentials(
-                token=None,
-                refresh_token=self.refresh_token,
-                token_uri="https://oauth2.googleapis.com/token",
-                client_id=self.oauth_client_id,
-                client_secret=self.oauth_client_secret,
-                scopes=DRIVE_SCOPES,
-            )
-            return build("drive", "v3", credentials=creds, cache_discovery=False)
+            if self.is_token_revoked:
+                raise GoogleDriveAuthRevokedError(
+                    "Google Drive OAuth authorization expired or was revoked. "
+                    "Please reconnect Google Drive from the Admin Console."
+                )
+
+            if self._creds is None:
+                self._creds = UserCredentials(
+                    token=None,
+                    refresh_token=self.refresh_token,
+                    token_uri="https://oauth2.googleapis.com/token",
+                    client_id=self.oauth_client_id,
+                    client_secret=self.oauth_client_secret,
+                    scopes=DRIVE_SCOPES,
+                )
+            return build("drive", "v3", credentials=self._creds, cache_discovery=False)
 
         # Path B: Service Account (only when OAuth is not configured)
         if self.service_account_json:
@@ -143,6 +291,17 @@ class GoogleDriveService:
         Verifies authentication and access to the configured Google Drive root folder.
         Never claims connectivity unless an active API request succeeds.
         """
+        if self.is_token_revoked:
+            return {
+                "configured": True,
+                "connected": False,
+                "oauth_authorized": False,
+                "authorized_email": self.authorized_email,
+                "root_folder_id": self.root_folder_id,
+                "message": "Google OAuth authorization expired or was revoked. Please re-authorize Google Drive from the Admin Console.",
+                "detail": "OAuth refresh token invalid or revoked.",
+            }
+
         if not self.is_configured:
             if self.is_oauth_credentials_configured:
                 return {
@@ -166,9 +325,9 @@ class GoogleDriveService:
 
         try:
             folder = (
-                self.service.files()
-                .get(fileId=self.root_folder_id, fields="id, name, mimeType, trashed")
-                .execute()
+                self._execute_api_call(
+                    self.service.files().get(fileId=self.root_folder_id, fields="id, name, mimeType, trashed")
+                )
             )
             if folder.get("trashed", False):
                 return {
@@ -191,6 +350,17 @@ class GoogleDriveService:
                 "message": "Google Drive API connectivity and root folder verified successfully.",
                 "detail": None,
             }
+        except GoogleDriveAuthRevokedError as rve:
+            self.mark_token_revoked()
+            return {
+                "configured": True,
+                "connected": False,
+                "oauth_authorized": False,
+                "authorized_email": self.authorized_email,
+                "root_folder_id": self.root_folder_id,
+                "message": str(rve),
+                "detail": "OAuth refresh token invalid or revoked.",
+            }
         except HttpError as he:
             # Under drive.file scope, an externally created folder cannot be fetched directly
             # with files().get() (Google returns 404). However, the folder is accessible for
@@ -199,12 +369,14 @@ class GoogleDriveService:
             if he.resp.status == 404 and self.is_oauth_configured and self.root_folder_id:
                 try:
                     safe_id = self.root_folder_id.replace("'", "\\'")
-                    self.service.files().list(
-                        q=f"'{safe_id}' in parents and trashed = false",
-                        spaces="drive",
-                        fields="files(id, name)",
-                        pageSize=1,
-                    ).execute()
+                    self._execute_api_call(
+                        self.service.files().list(
+                            q=f"'{safe_id}' in parents and trashed = false",
+                            spaces="drive",
+                            fields="files(id, name)",
+                            pageSize=1,
+                        )
+                    )
                     return {
                         "configured": True,
                         "connected": True,
@@ -214,6 +386,17 @@ class GoogleDriveService:
                         "folder_name": "Google Drive Evidence Root (drive.file scope)",
                         "message": "Google Drive API connectivity and root folder verified successfully.",
                         "detail": None,
+                    }
+                except GoogleDriveAuthRevokedError as rve:
+                    self.mark_token_revoked()
+                    return {
+                        "configured": True,
+                        "connected": False,
+                        "oauth_authorized": False,
+                        "authorized_email": self.authorized_email,
+                        "root_folder_id": self.root_folder_id,
+                        "message": str(rve),
+                        "detail": "OAuth refresh token invalid or revoked.",
                     }
                 except HttpError as parent_he:
                     logger.warning("Drive root folder verification failed: %s", parent_he)
@@ -249,12 +432,29 @@ class GoogleDriveService:
                 "message": msg,
                 "detail": str(he),
             }
+        except RefreshError as re:
+            err_lower = str(re).lower()
+            if "invalid_grant" in err_lower or "expired or revoked" in err_lower:
+                self.mark_token_revoked()
+                msg = "Google OAuth authorization expired or was revoked. Please re-authorize Google Drive from the Admin Console."
+            else:
+                msg = f"Google Drive token refresh failed: {re}"
+            return {
+                "configured": True,
+                "connected": False,
+                "oauth_authorized": False,
+                "authorized_email": self.authorized_email,
+                "root_folder_id": self.root_folder_id,
+                "message": msg,
+                "detail": str(re),
+            }
         except Exception as e:
             logger.warning("Google Drive connectivity check failed with unexpected error: %s", e)
             err_lower = str(e).lower()
             if "invalid_client" in err_lower or "client was not found" in err_lower:
                 msg = "Google OAuth client configuration is invalid or missing. Please re-authorize Google Drive from the Admin Console."
             elif "invalid_grant" in err_lower or "expired or revoked" in err_lower:
+                self.mark_token_revoked()
                 msg = "Google OAuth authorization expired or was revoked. Please re-authorize Google Drive from the Admin Console."
             elif "quota" in err_lower:
                 msg = "Google Drive API quota limit reached. Please check Google Cloud Console quotas."
@@ -264,7 +464,7 @@ class GoogleDriveService:
             return {
                 "configured": True,
                 "connected": False,
-                "oauth_authorized": self.is_oauth_configured,
+                "oauth_authorized": self.is_oauth_configured and not self.is_token_revoked,
                 "authorized_email": self.authorized_email,
                 "root_folder_id": self.root_folder_id,
                 "message": msg,
@@ -371,10 +571,8 @@ class GoogleDriveService:
             f"trashed = false"
         )
 
-        response = (
-            self.service.files()
-            .list(q=query, spaces="drive", fields="files(id, name)")
-            .execute()
+        response = self._execute_api_call(
+            self.service.files().list(q=query, spaces="drive", fields="files(id, name)")
         )
         existing_folders = response.get("files", [])
         if existing_folders:
@@ -386,10 +584,8 @@ class GoogleDriveService:
             "mimeType": "application/vnd.google-apps.folder",
             "parents": [parent_id],
         }
-        created = (
-            self.service.files()
-            .create(body=file_metadata, fields="id, name")
-            .execute()
+        created = self._execute_api_call(
+            self.service.files().create(body=file_metadata, fields="id, name")
         )
         return created["id"]
 
@@ -407,16 +603,14 @@ class GoogleDriveService:
         folders: List[Dict[str, Any]] = []
         page_token = None
         while True:
-            res = (
-                self.service.files()
-                .list(
+            res = self._execute_api_call(
+                self.service.files().list(
                     q=query,
                     spaces="drive",
                     fields="nextPageToken, files(id, name)",
                     pageSize=100,
                     pageToken=page_token,
                 )
-                .execute()
             )
             folders.extend(res.get("files", []))
             page_token = res.get("nextPageToken")
@@ -430,10 +624,8 @@ class GoogleDriveService:
         and is a folder.
         """
         try:
-            res = (
-                self.service.files()
-                .get(fileId=folder_id, fields="id, name, mimeType, trashed")
-                .execute()
+            res = self._execute_api_call(
+                self.service.files().get(fileId=folder_id, fields="id, name, mimeType, trashed")
             )
             return (
                 res.get("mimeType") == "application/vnd.google-apps.folder"
@@ -441,7 +633,6 @@ class GoogleDriveService:
             )
         except Exception:
             return False
-
 
     def ensure_achievement_folder(self, student_id: uuid.UUID, achievement_id: uuid.UUID) -> str:
         """
@@ -484,10 +675,12 @@ class GoogleDriveService:
             "parents": [folder_id],
         }
 
-        created = (
-            self.service.files()
-            .create(body=body, media_body=media, fields="id, name, mimeType, size, createdTime")
-            .execute()
+        created = self._execute_api_call(
+            self.service.files().create(
+                body=body,
+                media_body=media,
+                fields="id, name, mimeType, size, createdTime",
+            )
         )
 
         return {
@@ -502,10 +695,11 @@ class GoogleDriveService:
         """
         Fetches metadata for a file in Google Drive.
         """
-        return (
-            self.service.files()
-            .get(fileId=drive_file_id, fields="id, name, mimeType, size, createdTime, modifiedTime")
-            .execute()
+        return self._execute_api_call(
+            self.service.files().get(
+                fileId=drive_file_id,
+                fields="id, name, mimeType, size, createdTime, modifiedTime",
+            )
         )
 
     def download_file(self, drive_file_id: str) -> Tuple[bytes, Dict[str, Any]]:
@@ -514,23 +708,46 @@ class GoogleDriveService:
         Returns: (content_bytes, metadata)
         """
         metadata = self.get_file_metadata(drive_file_id)
-        request = self.service.files().get_media(fileId=drive_file_id)
+        if self.is_token_revoked:
+            raise GoogleDriveAuthRevokedError(
+                "Google Drive OAuth authorization expired or was revoked. "
+                "Please reconnect Google Drive from the Admin Console."
+            )
+        try:
+            request = self.service.files().get_media(fileId=drive_file_id)
+            fh = io.BytesIO()
+            downloader = MediaIoBaseDownload(fh, request)
+            done = False
+            while not done:
+                status, done = downloader.next_chunk()
 
-        fh = io.BytesIO()
-        downloader = MediaIoBaseDownload(fh, request)
-        done = False
-        while not done:
-            status, done = downloader.next_chunk()
-
-        fh.seek(0)
-        return fh.read(), metadata
+            fh.seek(0)
+            return fh.read(), metadata
+        except RefreshError as re:
+            err_str = str(re).lower()
+            if "invalid_grant" in err_str or "expired or revoked" in err_str:
+                self.mark_token_revoked()
+                raise GoogleDriveAuthRevokedError(
+                    "Google Drive OAuth authorization expired or was revoked. "
+                    "Please reconnect Google Drive from the Admin Console."
+                ) from re
+            raise
+        except Exception as e:
+            err_str = str(e).lower()
+            if "invalid_grant" in err_str or "expired or revoked" in err_str:
+                self.mark_token_revoked()
+                raise GoogleDriveAuthRevokedError(
+                    "Google Drive OAuth authorization expired or was revoked. "
+                    "Please reconnect Google Drive from the Admin Console."
+                ) from e
+            raise
 
     def delete_file(self, drive_file_id: str) -> bool:
         """
         Deletes a file permanently from Google Drive.
         """
         try:
-            self.service.files().delete(fileId=drive_file_id).execute()
+            self._execute_api_call(self.service.files().delete(fileId=drive_file_id))
             return True
         except HttpError as e:
             if e.resp.status == 404:
@@ -600,7 +817,7 @@ def get_drive_service(reload: bool = False) -> GoogleDriveService:
     OAuth 2.0 user credentials if available, when requested via reload=True,
     or when the current singleton lacks active tokens and was not explicitly injected.
     """
-    global _drive_service_instance, _is_injected_instance
+    global _drive_service_instance, _is_injected_instance, _drive_token_revoked_state
     if _is_injected_instance:
         return _drive_service_instance
 
@@ -615,6 +832,8 @@ def get_drive_service(reload: bool = False) -> GoogleDriveService:
                 authorized_email=creds_data.get("authorized_email"),
             )
             _is_injected_instance = False
+            if reload:
+                _drive_token_revoked_state = False
         elif _drive_service_instance is None:
             _drive_service_instance = GoogleDriveService()
             _is_injected_instance = False
@@ -625,6 +844,9 @@ def set_drive_service(service: Optional[GoogleDriveService]) -> None:
     """
     Sets or resets the GoogleDriveService singleton (primarily for tests and dependency injection).
     """
-    global _drive_service_instance, _is_injected_instance
+    global _drive_service_instance, _is_injected_instance, _drive_token_revoked_state
     _drive_service_instance = service
     _is_injected_instance = service is not None
+    _drive_token_revoked_state = False
+    if service is not None:
+        service.mark_token_valid()

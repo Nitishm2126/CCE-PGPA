@@ -100,6 +100,9 @@ class AdminComponentItem(BaseModel):
     grading_strategy: str = "categorical"
     requires_verification: bool = True
     rule_version: int = 1
+    pdf_requirement: str = "optional"
+    pdf_required: bool = False
+    allow_other_evidence_types: bool = False
     total_submissions: int = 0
     pending_submissions: int = 0
 

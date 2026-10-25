@@ -27,6 +27,9 @@ export interface PGPAComponentResponse {
   grading_strategy?: string;
   requires_verification?: boolean;
   input_fields?: DynamicFieldDefinition[];
+  pdf_requirement?: "required" | "optional" | "disabled";
+  pdf_required?: boolean;
+  allow_other_evidence_types?: boolean;
   is_enabled_for_semester?: boolean;
   lock_reason?: string | null;
 }
@@ -159,6 +162,9 @@ export interface AdminMatrixComponentItem {
   grading_strategy: string;
   requires_verification: boolean;
   is_active: boolean;
+  pdf_requirement?: "required" | "optional" | "disabled";
+  pdf_required?: boolean;
+  allow_other_evidence_types?: boolean;
   semesters: ComponentSemesterStatusMap;
 }
 

@@ -1677,6 +1677,31 @@ export default function AdminDashboardPage() {
                   </div>
                 )}
 
+                {/* Reconnection Alert Banner if Token is Expired or Revoked */}
+                {(!storageStatus?.connected || storageStatus?.message?.toLowerCase().includes("revoked") || storageStatus?.message?.toLowerCase().includes("expired")) && (
+                  <div className="rounded-xl border border-amber-300 dark:border-amber-700/80 bg-amber-50 dark:bg-amber-950/40 p-4 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-amber-900 dark:text-amber-200">
+                    <div className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-amber-200 dark:bg-amber-900/60 flex items-center justify-center shrink-0 text-amber-700 dark:text-amber-300 font-bold">
+                        !
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm">Action Required: Google Drive OAuth Reconnection</p>
+                        <p className="mt-0.5 text-xs text-amber-800 dark:text-amber-300">
+                          {storageStatus?.message || "Google Drive OAuth token has expired or been revoked. System Administrator must reconnect Google Drive to enable student evidence uploads."}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleConnectDrive}
+                      disabled={isConnectingDrive}
+                      className="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl transition shadow-xs shrink-0 cursor-pointer disabled:opacity-50"
+                    >
+                      {isConnectingDrive ? "Connecting..." : "Reconnect Google Drive Now"}
+                    </button>
+                  </div>
+                )}
+
                 {storageStatus?.message && (
                   <div className="p-3.5 rounded-xl border border-blue-200/70 bg-blue-50/50 dark:bg-blue-950/20 text-xs text-blue-900 dark:text-blue-200">
                     <span className="font-bold">Diagnostic Status: </span>

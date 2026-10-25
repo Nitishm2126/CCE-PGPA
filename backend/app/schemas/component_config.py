@@ -19,6 +19,9 @@ class ComponentDetailItem(BaseModel):
     submission_mode: str
     grading_strategy: str
     requires_verification: bool
+    pdf_requirement: str = "optional"
+    pdf_required: bool = False
+    allow_other_evidence_types: bool = False
     rule_version: int
     total_submissions: int = 0
     pending_submissions: int = 0
@@ -31,6 +34,9 @@ class ComponentUpdatePayload(BaseModel):
     submission_mode: Optional[str] = Field(None, pattern="^(student_submission|hod_excel_import|both|direct_staff_entry)$")
     grading_strategy: Optional[str] = None
     requires_verification: Optional[bool] = None
+    pdf_requirement: Optional[str] = Field(None, pattern="^(required|optional|disabled)$")
+    pdf_required: Optional[bool] = None
+    allow_other_evidence_types: Optional[bool] = None
     is_active: Optional[bool] = None
     display_order: Optional[int] = None
 
@@ -74,6 +80,9 @@ class StudentComponentMetadata(BaseModel):
     submission_mode: str
     grading_strategy: str
     requires_verification: bool
+    pdf_requirement: str = "optional"
+    pdf_required: bool = False
+    allow_other_evidence_types: bool = False
     is_enabled_for_semester: bool = True
     input_fields: List[DynamicFieldDefinition] = []
 

@@ -990,11 +990,16 @@ export const api = {
   adminUpdateComponent: async (
     componentId: string,
     data: {
+      name?: string;
+      description?: string | null;
       credit_value?: number;
       submission_mode?: string;
       grading_strategy?: string;
       requires_verification?: boolean;
       is_active?: boolean;
+      pdf_requirement?: "required" | "optional" | "disabled";
+      pdf_required?: boolean;
+      allow_other_evidence_types?: boolean;
     },
     token?: string | null
   ): Promise<PGPAComponentResponse> => {

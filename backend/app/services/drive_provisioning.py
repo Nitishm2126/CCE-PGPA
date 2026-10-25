@@ -33,6 +33,10 @@ def create_folder_with_retry(
             return ds.get_or_create_folder(folder_name, parent_id)
         except Exception as exc:
             err_str = str(exc).lower()
+            if "invalid_grant" in err_str or "expired or revoked" in err_str or exc.__class__.__name__ == "GoogleDriveAuthRevokedError":
+                if hasattr(ds, "mark_token_revoked"):
+                    ds.mark_token_revoked()
+                raise
             is_transient = any(k in err_str for k in ["429", "rate", "quota", "503", "500", "backenderror", "timed out", "connection"])
             if is_transient and attempt < max_retries:
                 logger.warning(

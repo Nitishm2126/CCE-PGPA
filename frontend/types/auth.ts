@@ -426,6 +426,14 @@ export interface AdminComponentItem {
   description?: string | null;
   display_order: number;
   is_active: boolean;
+  credit_value?: number;
+  submission_mode?: string;
+  grading_strategy?: string;
+  requires_verification?: boolean;
+  rule_version?: number;
+  pdf_requirement?: "required" | "optional" | "disabled";
+  pdf_required?: boolean;
+  allow_other_evidence_types?: boolean;
   total_submissions: number;
   pending_submissions: number;
 }

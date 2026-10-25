@@ -62,6 +62,18 @@ class PGPAComponent(Base):
         default=True,
         nullable=False,
     )
+    pdf_requirement: Mapped[str] = mapped_column(
+        String(20),
+        default="optional",
+        server_default="optional",
+        nullable=False,
+    )
+    allow_other_evidence_types: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
     config_schema: Mapped[Optional[Dict[str, Any]]] = mapped_column(
         JSON,
         nullable=True,
@@ -71,6 +83,14 @@ class PGPAComponent(Base):
         default=1,
         nullable=False,
     )
+
+    @property
+    def pdf_required(self) -> bool:
+        return self.pdf_requirement == "required"
+
+    @pdf_required.setter
+    def pdf_required(self, value: bool) -> None:
+        self.pdf_requirement = "required" if value else "optional"
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
