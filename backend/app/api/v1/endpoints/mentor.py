@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import uuid
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
@@ -16,6 +16,7 @@ from app.models.user import StudentProfile, User
 from app.schemas.achievement import AchievementResponse, ReviewSubmissionRequest
 from app.schemas.auth import MentorStudentItem
 from app.services.component_service import _recalculate_student_semester_pgpa
+from app.services.export_service import build_report_data, generate_excel_report, generate_pdf_report
 from app.services.grading_engine import calculate_component_grade
 from app.api.v1.endpoints.students import format_achievement_response
 
@@ -405,3 +406,132 @@ def review_mentee_achievement(
     db.refresh(achievement)
 
     return format_achievement_response(achievement, db=db, is_reviewer=True)
+
+
+# ==============================================================================
+# Academic Report Export Endpoints (Excel & PDF)
+# ==============================================================================
+
+@router.get(
+    "/export/excel",
+    summary="Export mentor academic report as Excel (.xlsx)",
+    description=(
+        "Generates a multi-tab Excel workbook with Student Summary, Semester-wise PGPA Matrix, "
+        "14 Components Breakdown, and Submissions Trail. Strictly isolated to assigned mentees."
+    ),
+)
+def export_mentor_excel(
+    semester_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter by semester"),
+    component_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter by PGPA component"),
+    student_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter for individual student report"),
+    status_filter: Optional[str] = Query(default=None, alias="status", description="Optional status filter ('approved', 'pending', 'all')"),
+    current_user: User = Depends(require_mentor),
+    db: Session = Depends(get_db),
+) -> Response:
+    ensure_mentor_assignments(db, current_user)
+
+    assigned_student_ids = list(db.scalars(
+        select(MentorAssignment.student_id).where(
+            MentorAssignment.mentor_id == current_user.id,
+            MentorAssignment.is_active.is_(True),
+        )
+    ).all())
+
+    if student_id:
+        if student_id not in assigned_student_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: The requested student is not assigned to your mentor account.",
+            )
+        target_student_ids = [student_id]
+    else:
+        target_student_ids = assigned_student_ids
+
+    dept_name = current_user.mentor_profile.department if current_user.mentor_profile else "CCE"
+    report_data = build_report_data(
+        db=db,
+        student_ids=target_student_ids,
+        semester_id=semester_id,
+        component_id=component_id,
+        status_filter=status_filter,
+        department_name=dept_name,
+        requester_role="Faculty Mentor",
+        requester_name=current_user.full_name,
+    )
+
+    content = generate_excel_report(report_data)
+    date_stamp = report_data["metadata"]["date_stamp"]
+    prefix = "Individual_Student" if student_id else "Mentor_Cohort"
+    filename = f"CCE_PGPA_{prefix}_Report_{date_stamp}.xlsx"
+
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+
+
+@router.get(
+    "/export/pdf",
+    summary="Export mentor academic report as PDF (.pdf)",
+    description=(
+        "Generates a formal, printable PDF document with Summary, 8-Semester Matrix, "
+        "and Evaluation details. Strictly isolated to assigned mentees."
+    ),
+)
+def export_mentor_pdf(
+    semester_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter by semester"),
+    component_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter by PGPA component"),
+    student_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter for individual student report"),
+    status_filter: Optional[str] = Query(default=None, alias="status", description="Optional status filter ('approved', 'pending', 'all')"),
+    current_user: User = Depends(require_mentor),
+    db: Session = Depends(get_db),
+) -> Response:
+    ensure_mentor_assignments(db, current_user)
+
+    assigned_student_ids = list(db.scalars(
+        select(MentorAssignment.student_id).where(
+            MentorAssignment.mentor_id == current_user.id,
+            MentorAssignment.is_active.is_(True),
+        )
+    ).all())
+
+    if student_id:
+        if student_id not in assigned_student_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: The requested student is not assigned to your mentor account.",
+            )
+        target_student_ids = [student_id]
+    else:
+        target_student_ids = assigned_student_ids
+
+    dept_name = current_user.mentor_profile.department if current_user.mentor_profile else "CCE"
+    report_data = build_report_data(
+        db=db,
+        student_ids=target_student_ids,
+        semester_id=semester_id,
+        component_id=component_id,
+        status_filter=status_filter,
+        department_name=dept_name,
+        requester_role="Faculty Mentor",
+        requester_name=current_user.full_name,
+    )
+
+    content = generate_pdf_report(report_data)
+    date_stamp = report_data["metadata"]["date_stamp"]
+    prefix = "Individual_Student" if student_id else "Mentor_Cohort"
+    filename = f"CCE_PGPA_{prefix}_Report_{date_stamp}.pdf"
+
+    return Response(
+        content=content,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+

@@ -32,6 +32,7 @@ from app.services.component_service import (
     generate_hod_excel_template,
     parse_and_preview_hod_import,
 )
+from app.services.export_service import build_report_data, generate_excel_report, generate_pdf_report
 from app.services.grading_engine import calculate_component_grade
 from app.api.v1.endpoints.students import format_achievement_response
 
@@ -691,3 +692,134 @@ def correct_component_result(
         notes=res.notes,
         calculated_at=res.calculated_at,
     )
+
+
+# ==============================================================================
+# HOD Academic Report Export Endpoints (Excel & PDF)
+# ==============================================================================
+
+@router.get(
+    "/export/excel",
+    summary="Export department academic report as Excel (.xlsx)",
+    description=(
+        "Generates a multi-tab Excel workbook with Student Summary, Semester-wise PGPA Matrix, "
+        "14 Components Breakdown, and Submissions Trail. Strictly isolated to HOD's department."
+    ),
+)
+def export_hod_excel(
+    semester_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter by semester"),
+    component_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter by PGPA component"),
+    student_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter for individual student report"),
+    status_filter: Optional[str] = Query(default=None, alias="status", description="Optional status filter ('approved', 'pending', 'all')"),
+    current_user: User = Depends(require_hod),
+    db: Session = Depends(get_db),
+) -> Response:
+    dept_name = current_user.hod_profile.department if current_user.hod_profile else "CCE"
+
+    dept_student_ids = list(db.scalars(
+        select(User.id)
+        .join(StudentProfile, User.id == StudentProfile.user_id)
+        .where(
+            User.role == UserRole.STUDENT,
+            StudentProfile.department == dept_name,
+        )
+    ).all())
+
+    if student_id:
+        if student_id not in dept_student_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied: The requested student does not belong to the {dept_name} department.",
+            )
+        target_student_ids = [student_id]
+    else:
+        target_student_ids = dept_student_ids
+
+    report_data = build_report_data(
+        db=db,
+        student_ids=target_student_ids,
+        semester_id=semester_id,
+        component_id=component_id,
+        status_filter=status_filter,
+        department_name=dept_name,
+        requester_role="Department HOD",
+        requester_name=current_user.full_name,
+    )
+
+    content = generate_excel_report(report_data)
+    date_stamp = report_data["metadata"]["date_stamp"]
+    prefix = "Individual_Student" if student_id else f"{dept_name}_Department"
+    filename = f"CCE_PGPA_{prefix}_Report_{date_stamp}.xlsx"
+
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+
+
+@router.get(
+    "/export/pdf",
+    summary="Export department academic report as PDF (.pdf)",
+    description=(
+        "Generates a formal, printable PDF document with Summary, 8-Semester Matrix, "
+        "and Evaluation details. Strictly isolated to HOD's department."
+    ),
+)
+def export_hod_pdf(
+    semester_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter by semester"),
+    component_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter by PGPA component"),
+    student_id: Optional[uuid.UUID] = Query(default=None, description="Optional filter for individual student report"),
+    status_filter: Optional[str] = Query(default=None, alias="status", description="Optional status filter ('approved', 'pending', 'all')"),
+    current_user: User = Depends(require_hod),
+    db: Session = Depends(get_db),
+) -> Response:
+    dept_name = current_user.hod_profile.department if current_user.hod_profile else "CCE"
+
+    dept_student_ids = list(db.scalars(
+        select(User.id)
+        .join(StudentProfile, User.id == StudentProfile.user_id)
+        .where(
+            User.role == UserRole.STUDENT,
+            StudentProfile.department == dept_name,
+        )
+    ).all())
+
+    if student_id:
+        if student_id not in dept_student_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied: The requested student does not belong to the {dept_name} department.",
+            )
+        target_student_ids = [student_id]
+    else:
+        target_student_ids = dept_student_ids
+
+    report_data = build_report_data(
+        db=db,
+        student_ids=target_student_ids,
+        semester_id=semester_id,
+        component_id=component_id,
+        status_filter=status_filter,
+        department_name=dept_name,
+        requester_role="Department HOD",
+        requester_name=current_user.full_name,
+    )
+
+    content = generate_pdf_report(report_data)
+    date_stamp = report_data["metadata"]["date_stamp"]
+    prefix = "Individual_Student" if student_id else f"{dept_name}_Department"
+    filename = f"CCE_PGPA_{prefix}_Report_{date_stamp}.pdf"
+
+    return Response(
+        content=content,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+

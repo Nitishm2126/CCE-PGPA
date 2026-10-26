@@ -11,6 +11,7 @@ import { MentorStudentItem } from "@/types/auth";
 import { AchievementResponse } from "@/types/achievement";
 import { MessageDrawerModal } from "@/components/messages/MessageDrawerModal";
 import { MessagesHubView } from "@/components/messages/MessagesHubView";
+import { ExportDataModal } from "@/components/export/ExportDataModal";
 
 export default function MentorDashboardPage() {
   const router = useRouter();
@@ -54,6 +55,8 @@ export default function MentorDashboardPage() {
   const [drawerAchievement, setDrawerAchievement] = useState<AchievementResponse | null>(null);
   const [drawerStudent, setDrawerStudent] = useState<{ id: string; name: string; register_number?: string } | null>(null);
   const [isMessageDrawerOpen, setIsMessageDrawerOpen] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+  const [exportStudentId, setExportStudentId] = useState<string>("all");
 
   // Authentication Guard
   useEffect(() => {
@@ -384,6 +387,21 @@ export default function MentorDashboardPage() {
                 </button>
               )}
               <RoleBadge role={user?.role === "hod" ? "hod" : "mentor"} />
+              <button
+                type="button"
+                onClick={() => {
+                  setExportStudentId("all");
+                  setIsExportModalOpen(true);
+                }}
+                id="btn-mentor-export-data"
+                className="rounded-lg border border-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold transition cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                title="Export CCE-PGPA academic report as Excel or PDF"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                <span>Export Data</span>
+              </button>
               <ThemeToggle size="sm" />
               <button
                 type="button"
@@ -842,16 +860,32 @@ export default function MentorDashboardPage() {
                         <span className="font-medium text-slate-600">
                           {displayCount} submissions
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedMenteeId(st.student_id);
-                            setActiveTab("submissions");
-                          }}
-                          className="font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
-                        >
-                          Filter Activities &rarr;
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setExportStudentId(st.student_id);
+                              setIsExportModalOpen(true);
+                            }}
+                            className="font-semibold text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors cursor-pointer inline-flex items-center gap-1"
+                            title="Export individual student report"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                            Export
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedMenteeId(st.student_id);
+                              setActiveTab("submissions");
+                            }}
+                            className="font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                          >
+                            Filter Activities &rarr;
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -1272,6 +1306,23 @@ export default function MentorDashboardPage() {
           onMessageSent={() => loadUnreadCounts()}
         />
       )}
+
+      {/* Export Data Modal */}
+      <ExportDataModal
+        isOpen={isExportModalOpen}
+        onClose={() => {
+          setIsExportModalOpen(false);
+          setExportStudentId("all");
+        }}
+        role="mentor"
+        students={students.map((s) => ({
+          id: s.student_id,
+          full_name: s.full_name,
+          register_number: s.register_number,
+        }))}
+        token={token}
+        initialStudentId={exportStudentId}
+      />
     </div>
   );
 }

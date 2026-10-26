@@ -12,6 +12,7 @@ import { AchievementResponse, PGPAComponentResponse } from "@/types/achievement"
 import { MessageDrawerModal } from "@/components/messages/MessageDrawerModal";
 import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { HODExcelImportConsole } from "@/components/hod/HODExcelImportConsole";
+import { ExportDataModal } from "@/components/export/ExportDataModal";
 
 export default function HODDashboardPage() {
   const router = useRouter();
@@ -63,6 +64,8 @@ export default function HODDashboardPage() {
   const [drawerAchievement, setDrawerAchievement] = useState<AchievementResponse | null>(null);
   const [drawerStudent, setDrawerStudent] = useState<{ id: string; name: string; register_number?: string } | null>(null);
   const [isMessageDrawerOpen, setIsMessageDrawerOpen] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+  const [exportStudentId, setExportStudentId] = useState<string>("all");
 
   // Auth Guard
   useEffect(() => {
@@ -399,6 +402,21 @@ export default function HODDashboardPage() {
                 <span>Faculty Mentor Portal (11 Mentees) &rarr;</span>
               </button>
               <RoleBadge role="hod" />
+              <button
+                type="button"
+                onClick={() => {
+                  setExportStudentId("all");
+                  setIsExportModalOpen(true);
+                }}
+                id="btn-hod-export-data"
+                className="rounded-lg border border-purple-500 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 text-xs font-semibold transition cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                title="Export CCE Department PGPA academic report as Excel or PDF"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                <span>Export Data</span>
+              </button>
               <ThemeToggle size="sm" />
               <button
                 type="button"
@@ -902,16 +920,31 @@ export default function HODDashboardPage() {
                           <td className="py-2.5 px-4 text-slate-500">{st.email}</td>
                           <td className="py-2.5 px-4 text-slate-600 font-medium">{st.section || "A"}</td>
                           <td className="py-2.5 px-4 text-slate-800 font-medium">{st.mentor_name || "Unassigned"}</td>
-                          <td className="py-2.5 px-4 text-right">
+                          <td className="py-2.5 px-4 text-right flex items-center justify-end gap-1.5">
                             <button
                               type="button"
                               onClick={() => {
                                 setSearchQuery(st.register_number || st.full_name);
                                 setActiveTab("submissions");
                               }}
-                              className="inline-flex items-center rounded-md bg-purple-50 px-2.5 py-1 text-[11px] font-bold text-purple-700 hover:bg-purple-100 transition-colors cursor-pointer"
+                              className="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-950/40 px-2 py-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 transition-colors cursor-pointer"
+                              title="Filter submissions for this student"
                             >
                               {studentSubmissions.length} &rarr;
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setExportStudentId(st.student_id);
+                                setIsExportModalOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer"
+                              title="Export individual student report"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                              </svg>
+                              <span>Export</span>
                             </button>
                           </td>
                         </tr>
@@ -1230,6 +1263,22 @@ export default function HODDashboardPage() {
           onMessageSent={() => loadUnreadCounts()}
         />
       )}
+      {/* Export Data Modal */}
+      <ExportDataModal
+        isOpen={isExportModalOpen}
+        onClose={() => {
+          setIsExportModalOpen(false);
+          setExportStudentId("all");
+        }}
+        role="hod"
+        students={students.map((s) => ({
+          id: s.student_id,
+          full_name: s.full_name,
+          register_number: s.register_number,
+        }))}
+        token={token}
+        initialStudentId={exportStudentId}
+      />
     </div>
   );
 }

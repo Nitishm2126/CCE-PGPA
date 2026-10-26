@@ -251,6 +251,42 @@ async function requestBlob(
   return response.blob();
 }
 
+async function downloadFileWithFilename(
+  path: string,
+  options: RequestInit = {},
+  token?: string | null
+): Promise<{ blob: Blob; filename: string }> {
+  const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const authToken = token !== undefined ? token : getStoredToken();
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+  };
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+  const response = await fetch(url, { ...options, headers });
+  if (!response.ok) {
+    let errorMessage = `Download failed with status ${response.status}`;
+    try {
+      const err = await response.json();
+      if (err.detail) errorMessage = err.detail;
+    } catch {
+      // fallback
+    }
+    throw new ApiError(errorMessage, response.status);
+  }
+  const disposition = response.headers.get("Content-Disposition");
+  let filename = "CCE_PGPA_Report";
+  if (disposition && disposition.includes("filename=")) {
+    const match = disposition.match(/filename="?([^";]+)"?/);
+    if (match && match[1]) {
+      filename = match[1];
+    }
+  }
+  const blob = await response.blob();
+  return { blob, filename };
+}
+
 let cachedComponents: PGPAComponentResponse[] | null = null;
 let cachedSemesters: SemesterResponse[] | null = null;
 
@@ -522,6 +558,25 @@ export const api = {
     );
   },
 
+  exportMentorReport: async (
+    format: "excel" | "pdf",
+    filters?: {
+      semester_id?: string;
+      component_id?: string;
+      student_id?: string;
+      status?: string;
+    },
+    token?: string | null
+  ): Promise<{ blob: Blob; filename: string }> => {
+    const params = new URLSearchParams();
+    if (filters?.semester_id) params.set("semester_id", filters.semester_id);
+    if (filters?.component_id) params.set("component_id", filters.component_id);
+    if (filters?.student_id) params.set("student_id", filters.student_id);
+    if (filters?.status && filters.status !== "all") params.set("status", filters.status);
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    return downloadFileWithFilename(`/mentor/export/${format}${qs}`, { method: "GET" }, token);
+  },
+
   // HOD Endpoints (View-Only Department Oversight)
   getHodOverview: async (token?: string | null): Promise<DepartmentOverviewResponse> => {
     return request<DepartmentOverviewResponse>("/hod/overview", { method: "GET" }, token);
@@ -547,6 +602,25 @@ export const api = {
 
   getStudentAchievementsForHod: async (studentId: string, token?: string | null): Promise<AchievementResponse[]> => {
     return request<AchievementResponse[]>(`/hod/students/${studentId}/achievements`, { method: "GET" }, token);
+  },
+
+  exportHODReport: async (
+    format: "excel" | "pdf",
+    filters?: {
+      semester_id?: string;
+      component_id?: string;
+      student_id?: string;
+      status?: string;
+    },
+    token?: string | null
+  ): Promise<{ blob: Blob; filename: string }> => {
+    const params = new URLSearchParams();
+    if (filters?.semester_id) params.set("semester_id", filters.semester_id);
+    if (filters?.component_id) params.set("component_id", filters.component_id);
+    if (filters?.student_id) params.set("student_id", filters.student_id);
+    if (filters?.status && filters.status !== "all") params.set("status", filters.status);
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    return downloadFileWithFilename(`/hod/export/${format}${qs}`, { method: "GET" }, token);
   },
 
   downloadFile: async (fileId: string, token?: string | null): Promise<{ blob: Blob; url: string }> => {
@@ -1205,6 +1279,18 @@ export const api = {
       },
       token
     );
+  },
+
+  getSemesters: async (
+    token?: string | null,
+    forceRefresh: boolean = false
+  ): Promise<SemesterResponse[]> => {
+    if (cachedSemesters && !forceRefresh) {
+      return cachedSemesters;
+    }
+    const res = await request<SemesterResponse[]>("/students/semesters", { method: "GET" }, token);
+    cachedSemesters = res;
+    return res;
   },
 };
 
