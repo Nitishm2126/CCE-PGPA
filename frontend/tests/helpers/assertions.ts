@@ -9,6 +9,22 @@ export interface OverflowResult {
   overflowingElements: string[];
 }
 
+export interface VerticalScrollResult {
+  hasVerticalOverflow: boolean;
+  scrollHeight: number;
+  innerHeight: number;
+  overflowPx: number;
+}
+
+export interface ElementViewportResult {
+  selector: string;
+  exists: boolean;
+  visible: boolean;
+  fullyInViewport: boolean;
+  rect: { top: number; bottom: number; left: number; right: number; width: number; height: number } | null;
+  clipping: { top: boolean; bottom: boolean; left: boolean; right: boolean };
+}
+
 export async function checkHorizontalOverflow(page: Page): Promise<OverflowResult> {
   return await page.evaluate(() => {
     const doc = document.documentElement;
@@ -45,6 +61,83 @@ export async function checkHorizontalOverflow(page: Page): Promise<OverflowResul
       overflowingElements: overflowingElements.slice(0, 5),
     };
   });
+}
+
+export async function checkVerticalScrollContainment(page: Page): Promise<VerticalScrollResult> {
+  return await page.evaluate(() => {
+    const doc = document.documentElement;
+    const body = document.body;
+    const scrollHeight = Math.max(doc.scrollHeight, body ? body.scrollHeight : 0);
+    const innerHeight = window.innerHeight;
+    const overflowPx = Math.max(0, scrollHeight - innerHeight);
+
+    return {
+      hasVerticalOverflow: scrollHeight > innerHeight,
+      scrollHeight,
+      innerHeight,
+      overflowPx,
+    };
+  });
+}
+
+export async function checkElementsFullyInViewport(
+  page: Page,
+  selectors: string[]
+): Promise<ElementViewportResult[]> {
+  return await page.evaluate((selList) => {
+    const innerHeight = window.innerHeight;
+    const innerWidth = window.innerWidth;
+
+    return selList.map((sel) => {
+      const el = document.querySelector(sel);
+      if (!el) {
+        return {
+          selector: sel,
+          exists: false,
+          visible: false,
+          fullyInViewport: false,
+          rect: null,
+          clipping: { top: false, bottom: false, left: false, right: false },
+        };
+      }
+
+      const rect = el.getBoundingClientRect();
+      const style = window.getComputedStyle(el);
+      const isVisible =
+        style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        style.opacity !== '0' &&
+        rect.width > 0 &&
+        rect.height > 0;
+
+      // Allow 1px tolerance for browser subpixel calculation
+      const clippedTop = rect.top < -1;
+      const clippedBottom = rect.bottom > innerHeight + 1;
+      const clippedLeft = rect.left < -1;
+      const clippedRight = rect.right > innerWidth + 1;
+
+      return {
+        selector: sel,
+        exists: true,
+        visible: isVisible,
+        fullyInViewport: isVisible && !clippedTop && !clippedBottom && !clippedLeft && !clippedRight,
+        rect: {
+          top: Math.round(rect.top),
+          bottom: Math.round(rect.bottom),
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+        },
+        clipping: {
+          top: clippedTop,
+          bottom: clippedBottom,
+          left: clippedLeft,
+          right: clippedRight,
+        },
+      };
+    });
+  }, selectors);
 }
 
 export async function checkLogoAspectRatio(page: Page) {

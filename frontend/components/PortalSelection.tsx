@@ -174,11 +174,11 @@ export function PortalSelection() {
   const { user, logout, isLoading } = useAuth();
 
   // Determine authorized roles for current session
-  // If not authenticated, display all 4 portals (Student, Mentor, HOD, Admin)
-  // If authenticated, display authorized portals
+  // If not authenticated, display the 3 public institutional portals (Student, Mentor, HOD)
+  // Admin is accessed discreetly via the "CCE PGPA" title link and hidden from the public cards
   const authorizedRoles: UserRole[] = React.useMemo(() => {
     if (!user || isLoading) {
-      return ["student", "mentor", "hod", "admin"];
+      return ["student", "mentor", "hod"];
     }
     if (user.role === "hod") {
       // HOD possesses dual capabilities: Department Head and Faculty Mentor
@@ -294,7 +294,7 @@ export function PortalSelection() {
           {/* Institutional Portal Name & Tagline */}
           <div className="space-y-0.5">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-[#800000] dark:text-[#f87171] leading-tight">
-              CCE Achieve
+              CCE PGPA
             </h1>
             <p className="text-[10px] sm:text-[11px] md:text-xs font-bold uppercase tracking-[0.22em] text-[#0f2942] dark:text-slate-300">
               PGPA MANAGEMENT SYSTEM
@@ -370,13 +370,14 @@ export function PortalSelection() {
 
         {/* Portal Selection Cards */}
         <div
-          className={`grid gap-4 sm:gap-4 md:gap-5 lg:gap-5 w-full ${
-            authorizedRoles.length === 1
+          className={`grid gap-4 sm:gap-4 md:gap-5 lg:gap-5 w-full ${authorizedRoles.length === 1
               ? "grid-cols-1 max-w-md mx-auto"
               : authorizedRoles.length === 2
-              ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto"
-              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto"
-          }`}
+                ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto"
+                : authorizedRoles.length === 3
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto"
+            }`}
         >
           {authorizedRoles.map((roleKey, idx) => {
             const cfg = ROLE_CONFIGS[roleKey];
@@ -584,24 +585,23 @@ export function PortalSelection() {
             </div>
           </div>
 
-          {/* Lower Footer: Legal, Department Notice & Subtle Admin Login */}
+          {/* Lower Footer: Legal, Department Notice & Discreet Admin Entry */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2 text-center sm:text-left text-[10px] sm:text-[10.5px] text-slate-500 dark:text-slate-400">
-            <div>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-1.5 gap-y-0.5">
+              <Link
+                href="/login/admin"
+                className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-500 rounded"
+                title="CCE PGPA Management System"
+              >
+                CCE PGPA Management System
+              </Link>
+              <span className="hidden sm:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
               <span>Department of Computer and Communication Engineering</span>
-              <span className="hidden sm:inline mx-1.5 text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
+              <span className="hidden sm:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
               <span className="block sm:inline">Sri Sairam Engineering College (Autonomous)</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Link
-                href="/login/admin"
-                className="hover:underline hover:text-slate-800 dark:hover:text-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors text-[10px] text-slate-400 dark:text-slate-500"
-                title="System Administrator Portal Login"
-                aria-label="System Administrator Portal Login"
-              >
-                CCE Achieve System
-              </Link>
-              <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
+            <div className="flex items-center gap-1.5 shrink-0">
               <span className="text-[10px] text-slate-400 dark:text-slate-500">Version 1.0.0</span>
             </div>
           </div>

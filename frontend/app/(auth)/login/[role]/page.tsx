@@ -47,46 +47,46 @@ async function RoleSpecificLoginContent({ params }: PageProps) {
 function RoleLoginSkeleton() {
   return (
     <div className="w-full min-h-[100dvh] flex flex-col justify-between bg-[#fbfbfc] dark:bg-[#0c1117] text-slate-900 dark:text-slate-100">
-      <header className="w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl h-14 sm:h-16 px-4">
+      <header className="w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl h-12 sm:h-13 px-4">
         <div className="mx-auto max-w-7xl h-full flex items-center justify-between">
-          <div className="h-10 w-48 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
-          <div className="h-8 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
+          <div className="h-8 w-44 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
+          <div className="h-7 w-20 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
         </div>
       </header>
 
-      <section className="text-center pt-5 pb-3 sm:pt-6 sm:pb-4 px-4">
-        <div className="mx-auto max-w-4xl space-y-2">
-          <div className="h-6 w-72 sm:w-96 mx-auto bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse" />
-          <div className="h-10 w-44 sm:w-56 mx-auto bg-slate-200 dark:bg-slate-800 rounded-xl animate-pulse" />
-          <div className="h-4 w-60 sm:w-72 mx-auto bg-slate-100 dark:bg-slate-800/60 rounded animate-pulse" />
+      <section className="text-center pt-2 sm:pt-2.5 pb-1 sm:pb-1.5 px-4">
+        <div className="mx-auto max-w-4xl space-y-1 sm:space-y-1.5">
+          <div className="h-5 w-72 sm:w-80 mx-auto bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse" />
+          <div className="h-8 w-40 sm:w-48 mx-auto bg-slate-200 dark:bg-slate-800 rounded-xl animate-pulse" />
+          <div className="h-3 w-52 sm:w-64 mx-auto bg-slate-100 dark:bg-slate-800/60 rounded animate-pulse" />
         </div>
       </section>
 
-      <main className="w-full max-w-xl mx-auto px-4 sm:px-6 pb-10 flex-1 flex flex-col items-center">
-        <div className="w-full flex items-center justify-between mb-4 text-xs">
+      <main className="w-full max-w-lg mx-auto px-4 sm:px-6 flex-1 flex flex-col justify-center items-center py-1 sm:py-2 min-h-0">
+        <div className="w-full flex items-center justify-between mb-2 text-xs">
           <span className="text-slate-400 dark:text-slate-500">&larr; Back to Portal Selection</span>
         </div>
 
-        <div className="w-full rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-xs animate-pulse">
-          <div className="pb-5 border-b border-slate-100 dark:border-slate-800 mb-6 space-y-2">
+        <div className="w-full rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 p-4 sm:p-5 shadow-xs animate-pulse">
+          <div className="pb-2.5 border-b border-slate-100 dark:border-slate-800 mb-3 space-y-1.5">
             <div className="flex items-center justify-between">
-              <div className="h-6 w-36 sm:w-44 bg-slate-200 dark:bg-slate-800 rounded-md" />
-              <div className="h-6 w-20 bg-slate-200 dark:bg-slate-800 rounded-full" />
+              <div className="h-5 w-32 sm:w-40 bg-slate-200 dark:bg-slate-800 rounded-md" />
+              <div className="h-5 w-16 bg-slate-200 dark:bg-slate-800 rounded-full" />
             </div>
-            <div className="h-3 w-56 sm:w-72 bg-slate-100 dark:bg-slate-800/60 rounded" />
+            <div className="h-3 w-52 sm:w-64 bg-slate-100 dark:bg-slate-800/60 rounded" />
           </div>
 
-          <div className="space-y-4 sm:space-y-5">
+          <div className="space-y-2.5 sm:space-y-3">
             <div>
-              <div className="h-3 w-28 bg-slate-200 dark:bg-slate-800 rounded mb-1.5" />
-              <div className="h-11 w-full bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
+              <div className="h-2.5 w-24 bg-slate-200 dark:bg-slate-800 rounded mb-1" />
+              <div className="h-9 w-full bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
             </div>
             <div>
-              <div className="h-3 w-28 bg-slate-200 dark:bg-slate-800 rounded mb-1.5" />
-              <div className="h-11 w-full bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
+              <div className="h-2.5 w-24 bg-slate-200 dark:bg-slate-800 rounded mb-1" />
+              <div className="h-9 w-full bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
             </div>
-            <div className="pt-2">
-              <div className="h-12 w-full bg-sky-600/30 rounded-xl" />
+            <div className="pt-1">
+              <div className="h-10 w-full bg-sky-600/30 rounded-xl" />
             </div>
           </div>
         </div>

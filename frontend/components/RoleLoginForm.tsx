@@ -10,6 +10,10 @@ import { RoleBadge } from "@/components/RoleBadge";
 import { ROLE_CONFIGS, ALL_ROLES } from "@/lib/role-config";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
+// Only Student, Mentor, and HOD portals are shown in public switch navigation
+// Admin login is hidden and accessed discreetly via the "CCE PGPA" branding title
+const PUBLIC_SWITCH_ROLES: UserRole[] = ["student", "mentor", "hod"];
+
 interface RoleLoginFormProps {
   role: UserRole;
 }
@@ -139,29 +143,29 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
       {/* 1. Official Institutional Header */}
       <header className="w-full shrink-0 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-40 transition-colors shadow-2xs">
         <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8">
-          <div className="flex h-14 sm:h-16 items-center justify-between gap-2.5 sm:gap-4">
+          <div className="flex h-12 sm:h-13 items-center justify-between gap-2.5 sm:gap-4">
             {/* Left: SEC Crest & College Identification */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Link
                 href="/"
-                className="flex items-center gap-2.5 sm:gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 rounded-xl p-1 min-h-[44px]"
+                className="flex items-center gap-2.5 sm:gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 rounded-xl p-0.5 min-h-[40px]"
                 title="Sri Sairam Engineering College - CCE PGPA Portal"
               >
-                <div className="relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 flex items-center justify-center">
+                <div className="relative h-8 w-8 sm:h-8.5 sm:w-8.5 shrink-0 flex items-center justify-center">
                   <Image
                     src="/images/sec logo.png"
                     alt="Sri Sairam Engineering College Crest"
-                    width={40}
-                    height={40}
+                    width={36}
+                    height={36}
                     priority
                     className="h-full w-full object-contain"
                   />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-extrabold text-[12px] sm:text-[13.5px] md:text-[14px] tracking-tight text-[#0f2942] dark:text-slate-100 uppercase leading-tight truncate">
+                  <span className="font-extrabold text-[12px] sm:text-[13px] md:text-[13.5px] tracking-tight text-[#0f2942] dark:text-slate-100 uppercase leading-tight truncate">
                     Sri Sairam Engineering College
                   </span>
-                  <div className="flex items-center gap-1.5 text-[9.5px] sm:text-[10.5px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
+                  <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
                     <span className="truncate">Autonomous Institution</span>
                     <span className="hidden sm:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
                     <span className="hidden sm:inline truncate">Anna University Affiliated</span>
@@ -176,14 +180,14 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
             <div className="flex items-center gap-2 sm:gap-3.5 lg:gap-4 shrink-0">
               <ThemeToggle size="sm" />
 
-              <div className="relative h-7 sm:h-8 w-auto shrink-0 flex items-center">
+              <div className="relative h-6.5 sm:h-7.5 w-auto shrink-0 flex items-center">
                 <Image
                   src="/images/logo1.png"
                   alt="Sri Sairam Institutions Logo"
-                  width={64}
-                  height={36}
+                  width={60}
+                  height={32}
                   priority
-                  className="h-6.5 sm:h-7.5 w-auto object-contain"
+                  className="h-6 sm:h-7 w-auto object-contain"
                 />
               </div>
             </div>
@@ -192,42 +196,42 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
       </header>
 
       {/* 2. Institutional Title Hierarchy */}
-      <section className="text-center pt-5 pb-3 sm:pt-6 sm:pb-4 px-4 shrink-0 animate-apple-fade">
-        <div className="mx-auto max-w-4xl space-y-2">
+      <section className="text-center pt-2 sm:pt-2.5 pb-1 sm:pb-1.5 px-4 shrink-0 animate-apple-fade">
+        <div className="mx-auto max-w-4xl space-y-1 sm:space-y-1.5">
           {/* Department Identity Element */}
           <div
             id="department-identity-container"
-            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs max-w-full"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs max-w-full"
           >
-            <span className={`h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full ${themeDetails.dotColor} shrink-0`} aria-hidden="true" />
+            <span className={`h-1.5 w-1.5 rounded-full ${themeDetails.dotColor} shrink-0`} aria-hidden="true" />
             <span
               id="department-identity-name"
               className="font-bold tracking-wider uppercase text-slate-700 dark:text-slate-300 text-center leading-snug break-words whitespace-normal md:whitespace-nowrap"
-              style={{ fontSize: "clamp(10px, 1.8vw, 11.5px)" }}
+              style={{ fontSize: "clamp(10px, 1.8vw, 11px)" }}
             >
               DEPARTMENT OF COMPUTER AND COMMUNICATION ENGINEERING
             </span>
           </div>
 
           <div className="space-y-0.5">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-[#800000] dark:text-[#f87171] leading-tight">
-              CCE Achieve
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-[#800000] dark:text-[#f87171] leading-tight">
+              CCE PGPA
             </h1>
-            <p className="text-[10px] sm:text-[11px] md:text-xs font-bold uppercase tracking-[0.22em] text-[#0f2942] dark:text-slate-300">
+            <p className="text-[9.5px] sm:text-[10px] font-bold uppercase tracking-[0.22em] text-[#0f2942] dark:text-slate-300">
               PGPA MANAGEMENT SYSTEM
             </p>
           </div>
 
-          <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 italic">
+          <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 italic">
             &ldquo;Academic Performance. Structured. Simplified.&rdquo;
           </p>
         </div>
       </section>
 
       {/* 3. Main Form Container */}
-      <main className="w-full max-w-xl mx-auto px-4 sm:px-6 pb-10 flex-1 flex flex-col items-center">
+      <main className="w-full max-w-lg mx-auto px-4 sm:px-6 flex-1 flex flex-col justify-center items-center py-1 sm:py-2 min-h-0">
         {/* Navigation Breadcrumb / Role Switch Bar */}
-        <div className="w-full flex flex-wrap items-center justify-between mb-4 gap-2 text-xs">
+        <div className="w-full flex flex-wrap items-center justify-between mb-2 sm:mb-2.5 gap-2 text-xs shrink-0">
           <Link
             href="/login"
             className="inline-flex items-center gap-1.5 font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 transition-colors shrink-0"
@@ -236,45 +240,44 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
             <span>Back to Portal Selection</span>
           </Link>
 
-          {/* Quick role switcher links */}
-          <div className="flex items-center gap-1 text-slate-400 shrink-0">
-            <span className="hidden sm:inline text-slate-400 dark:text-slate-500 text-[11px]">Switch:</span>
-            {ALL_ROLES.map((r) => {
-              const isCurrent = r === role;
-              return (
-                <Link
-                  key={r}
-                  href={ROLE_CONFIGS[r].path}
-                  className={`px-1.5 sm:px-2 py-0.5 rounded-md text-[11px] transition-colors whitespace-nowrap ${
-                    isCurrent
-                      ? "bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold cursor-default"
-                      : "text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:underline"
-                  }`}
-                >
-                  {ROLE_CONFIGS[r].shortTitle}
-                </Link>
-              );
-            })}
-          </div>
+          {/* Quick role switcher links: Shown only for non-admin portals; Admin has no public switch bar */}
+          {role !== "admin" && (
+            <div className="flex items-center gap-1 text-slate-400 shrink-0">
+              <span className="hidden sm:inline text-slate-400 dark:text-slate-500 text-[11px]">Switch:</span>
+              {PUBLIC_SWITCH_ROLES.map((r) => {
+                const isCurrent = r === role;
+                return (
+                  <Link
+                    key={r}
+                    href={ROLE_CONFIGS[r].path}
+                    className={`px-1.5 sm:px-2 py-0.5 rounded-md text-[11px] transition-colors whitespace-nowrap ${isCurrent
+                        ? "bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold cursor-default"
+                        : "text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:underline"
+                      }`}
+                  >
+                    {ROLE_CONFIGS[r].shortTitle}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Existing Session Alert (if user is currently authenticated) */}
         {user && !authLoading && (
           <div
             role="status"
-            className={`w-full mb-5 rounded-2xl border p-3.5 text-xs shadow-xs flex flex-wrap items-center justify-between gap-3 animate-apple-fade ${
-              user.role === role || (user.role === "hod" && role === "mentor")
+            className={`w-full mb-5 rounded-2xl border p-3.5 text-xs shadow-xs flex flex-wrap items-center justify-between gap-3 animate-apple-fade ${user.role === role || (user.role === "hod" && role === "mentor")
                 ? "border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/80 dark:bg-emerald-950/50 text-emerald-950 dark:text-emerald-200"
                 : "border-sky-200 dark:border-sky-800/80 bg-sky-50/80 dark:bg-sky-950/50 text-sky-950 dark:text-sky-200"
-            }`}
+              }`}
           >
             <div className="flex items-center gap-2">
               <span
-                className={`h-2 w-2 rounded-full ${
-                  user.role === role || (user.role === "hod" && role === "mentor")
+                className={`h-2 w-2 rounded-full ${user.role === role || (user.role === "hod" && role === "mentor")
                     ? "bg-emerald-600 dark:bg-emerald-400"
                     : "bg-sky-600 dark:bg-sky-400"
-                }`}
+                  }`}
               />
               <span>
                 Active Session: <strong>{user.full_name}</strong> (
@@ -331,7 +334,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         )}
 
         {/* Login Form Card */}
-        <div className="w-full relative rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] overflow-hidden animate-apple-slide-up">
+        <div className="w-full relative rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] overflow-hidden animate-apple-slide-up">
           {/* Top Subtle Color Accent Bar */}
           <div
             className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${themeDetails.accentGradient}`}
@@ -339,18 +342,18 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           />
 
           {/* Card Header */}
-          <div className="pb-5 border-b border-slate-100 dark:border-slate-800 mb-6">
+          <div className="pb-2.5 border-b border-slate-100 dark:border-slate-800 mb-3">
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${themeDetails.iconBg}`}>
+              <div className="flex items-center gap-2.5">
+                <div className={`h-8 w-8 sm:h-8.5 sm:w-8.5 rounded-xl flex items-center justify-center shrink-0 ${themeDetails.iconBg}`}>
                   {role === "student" && (
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
                       <path d="M6 12v5c3 3 9 3 12 0v-5" />
                     </svg>
                   )}
                   {role === "mentor" && (
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                       <circle cx="9" cy="7" r="4" />
                       <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -358,29 +361,29 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                     </svg>
                   )}
                   {role === "hod" && (
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20L12 2z" />
                     </svg>
                   )}
                   {role === "admin" && (
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                       <path d="m9 12 2 2 4-4" />
                     </svg>
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">
                     {currentConfig.portalTitle}
                   </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400">
                     Authorized institutional access
                   </p>
                 </div>
               </div>
               <RoleBadge role={role} size="sm" />
             </div>
-            <p className="mt-3 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p className="mt-1.5 text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 leading-snug">
               {currentConfig.description}
             </p>
           </div>
@@ -389,11 +392,11 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           {roleMismatch && (
             <div
               role="alert"
-              className="mb-6 rounded-2xl border border-amber-300 dark:border-amber-700/80 bg-amber-50/95 dark:bg-amber-950/60 p-4 text-xs text-amber-950 dark:text-amber-200 shadow-xs animate-apple-fade"
+              className="mb-4 rounded-xl border border-amber-300 dark:border-amber-700/80 bg-amber-50/95 dark:bg-amber-950/60 p-3 text-xs text-amber-950 dark:text-amber-200 shadow-xs animate-apple-fade"
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2.5">
                 <svg
-                  className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
+                  className="h-4.5 w-4.5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -406,15 +409,15 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                   />
                 </svg>
-                <div className="flex-1 space-y-2">
-                  <p className="font-bold text-amber-900 dark:text-amber-200 text-sm">
+                <div className="flex-1 space-y-1.5">
+                  <p className="font-bold text-amber-900 dark:text-amber-200 text-xs">
                     Access Denied: Role Mismatch
                   </p>
-                  <p className="text-amber-800 dark:text-amber-300 leading-relaxed">{displayError}</p>
-                  <div className="pt-2 flex flex-wrap gap-2">
+                  <p className="text-amber-800 dark:text-amber-300 leading-tight text-[11px]">{displayError}</p>
+                  <div className="pt-1 flex flex-wrap gap-2">
                     <Link
                       href={ROLE_CONFIGS[roleMismatch.actualRole].path}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold transition-colors shadow-xs"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold transition-colors shadow-xs"
                     >
                       <span>
                         Open {ROLE_CONFIGS[roleMismatch.actualRole].shortTitle} Portal &rarr;
@@ -427,7 +430,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                         setRoleMismatch(null);
                         setLocalError(null);
                       }}
-                      className="inline-flex items-center px-3 py-1.5 rounded-xl border border-amber-400 dark:border-amber-600 bg-white dark:bg-slate-800 text-amber-900 dark:text-amber-200 text-xs font-medium hover:bg-amber-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                      className="inline-flex items-center px-2.5 py-1 rounded-lg border border-amber-400 dark:border-amber-600 bg-white dark:bg-slate-800 text-amber-900 dark:text-amber-200 text-xs font-medium hover:bg-amber-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     >
                       Sign Out
                     </button>
@@ -441,11 +444,11 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           {!roleMismatch && displayError && (
             <div
               role="alert"
-              className="mb-6 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/90 dark:bg-rose-950/50 p-4 text-xs text-rose-800 dark:text-rose-200 shadow-xs animate-apple-fade"
+              className="mb-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/90 dark:bg-rose-950/50 p-3 text-xs text-rose-800 dark:text-rose-200 shadow-xs animate-apple-fade"
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2.5">
                 <svg
-                  className="h-5 w-5 text-rose-600 dark:text-rose-400 mt-0.5 flex-shrink-0"
+                  className="h-4.5 w-4.5 text-rose-600 dark:text-rose-400 mt-0.5 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -459,24 +462,24 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                   />
                 </svg>
                 <div className="flex-1">
-                  <p className="font-semibold text-rose-900 dark:text-rose-200">Authentication Error</p>
-                  <p className="mt-0.5 text-rose-700 dark:text-rose-300 leading-relaxed">{displayError}</p>
+                  <p className="font-semibold text-rose-900 dark:text-rose-200 text-xs">Authentication Error</p>
+                  <p className="mt-0.5 text-rose-700 dark:text-rose-300 leading-tight text-[11px]">{displayError}</p>
                 </div>
               </div>
             </div>
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3" noValidate>
             {/* Email / Identifier Field */}
             <div>
               <label
                 htmlFor="login-email-input"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300"
+                className="block text-[11px] font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300"
               >
                 {role === "student" ? "Register Number or College Email" : "Official College Email"}
               </label>
-              <div className="mt-1.5">
+              <div className="mt-1">
                 <input
                   id="login-email-input"
                   name="email"
@@ -491,7 +494,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                       : currentConfig.placeholder
                   }
                   disabled={isSubmitting}
-                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-4 py-3 text-base text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
+                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-3.5 py-2 sm:py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
                 />
               </div>
             </div>
@@ -501,18 +504,18 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="login-password-input"
-                  className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300"
+                  className="block text-[11px] font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300"
                 >
                   Account Password
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs font-medium text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 transition-colors"
+                  className="text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 transition-colors"
                 >
                   Forgot password?
                 </Link>
               </div>
-              <div className="mt-1.5 relative">
+              <div className="mt-1 relative">
                 <input
                   id="login-password-input"
                   name="password"
@@ -523,18 +526,18 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your account password"
                   disabled={isSubmitting}
-                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-4 py-3 pr-11 text-base text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
+                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-3.5 py-2 sm:py-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   title={showPassword ? "Hide password" : "Show password"}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer"
                 >
                   {showPassword ? (
                     <svg
-                      className="h-5 w-5"
+                      className="h-4.5 w-4.5"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -549,7 +552,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                     </svg>
                   ) : (
                     <svg
-                      className="h-5 w-5"
+                      className="h-4.5 w-4.5"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -581,20 +584,20 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-sky-600 focus:ring-sky-500 cursor-pointer"
+                className="h-3.5 w-3.5 rounded border-slate-300 dark:border-slate-700 text-sky-600 focus:ring-sky-500 cursor-pointer"
               />
-              <label htmlFor="remember-me-checkbox" className="text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+              <label htmlFor="remember-me-checkbox" className="text-[11px] text-slate-600 dark:text-slate-400 cursor-pointer select-none">
                 Remember this device for seamless access
               </label>
             </div>
 
             {/* Role-Specific Login Button */}
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="submit"
                 id="login-submit-button"
                 disabled={isSubmitting}
-                className={`apple-pressable w-full flex items-center justify-center gap-2 rounded-xl py-3 px-4 font-semibold text-sm transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer ${themeDetails.buttonBg}`}
+                className={`apple-pressable w-full flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 font-semibold text-xs sm:text-sm transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer ${themeDetails.buttonBg}`}
               >
                 {isSubmitting ? (
                   <>
@@ -628,8 +631,8 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           </form>
 
           {/* Institutional Closed Cohort Notice */}
-          <div className="mt-6 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-3.5 text-center">
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+          <div className="mt-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-2 sm:p-2.5 text-center">
+            <p className="text-[10.5px] sm:text-[11px] text-slate-500 dark:text-slate-400">
               <strong className="text-slate-700 dark:text-slate-300">Authorized Access Only:</strong> Cohort accounts are provisioned via verified departmental rosters. Public self-registration is disabled.
             </p>
           </div>
@@ -637,26 +640,26 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
       </main>
 
       {/* 4. Refined Institutional Footer */}
-      <footer className="w-full shrink-0 mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-950/60 py-3 sm:py-4 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl flex flex-col space-y-2.5 sm:space-y-3">
+      <footer className="w-full shrink-0 mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-950/60 py-2 sm:py-2.5 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-col space-y-1.5 sm:space-y-2">
           {/* Upper Footer: Founder Chairman Identity & FINEWORKS Development Branding */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 border-b border-slate-200/70 dark:border-slate-800/70 pb-2.5 sm:pb-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800/70 pb-1.5 sm:pb-2">
             {/* Founder Chairman Medallion */}
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              <div className="relative h-8 w-8 sm:h-9 sm:w-9 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <div className="relative h-7 w-7 sm:h-7.5 sm:w-7.5 shrink-0">
                 <Image
                   src="/images/founder logo.png"
                   alt="Founder Chairman MJF. Ln. Leo Muthu"
-                  width={38}
-                  height={38}
+                  width={32}
+                  height={32}
                   className="h-full w-full object-contain"
                 />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-xs sm:text-[12.5px] font-bold text-slate-800 dark:text-slate-200 leading-tight">
+                <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">
                   MJF. Ln. Leo Muthu
                 </span>
-                <span className="text-[9.5px] sm:text-[10.5px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
+                <span className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
                   Founder Chairman &bull; Sri Sairam Group of Institutions
                 </span>
               </div>
@@ -664,11 +667,11 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
             {/* FINEWORKS Development Wordmark */}
             <div className="flex flex-col items-center sm:items-end text-center sm:text-right">
-              <span className="text-[9.5px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 Designed &amp; Developed by
               </span>
-              <div className="inline-flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs sm:text-[12.5px] font-extrabold tracking-[0.22em] text-slate-900 dark:text-white">
+              <div className="inline-flex items-center gap-1 mt-0.5">
+                <span className="text-[11px] sm:text-xs font-extrabold tracking-[0.22em] text-slate-900 dark:text-white">
                   FINE<span className="text-sky-600 dark:text-sky-400">WORKS</span>
                 </span>
                 <span className="h-1.5 w-1.5 rounded-full bg-sky-500" aria-hidden="true" />
@@ -677,24 +680,23 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           </div>
 
           {/* Lower Footer: Legal & Department Notice */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2 text-center sm:text-left text-[10px] sm:text-[10.5px] text-slate-500 dark:text-slate-400">
-            <div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-1 text-center sm:text-left text-[9.5px] sm:text-[10px] text-slate-500 dark:text-slate-400">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-1.5 gap-y-0.5">
+              <Link
+                href="/login/admin"
+                className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-500 rounded"
+                title="CCE PGPA Management System"
+              >
+                CCE PGPA Management System
+              </Link>
+              <span className="hidden sm:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
               <span>Department of Computer and Communication Engineering</span>
-              <span className="hidden sm:inline mx-1.5 text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
+              <span className="hidden sm:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
               <span className="block sm:inline">Sri Sairam Engineering College (Autonomous)</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Link
-                href="/login/admin"
-                className="hover:underline hover:text-slate-800 dark:hover:text-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors text-[10px] text-slate-400 dark:text-slate-500"
-                title="System Administrator Portal Login"
-                aria-label="System Administrator Portal Login"
-              >
-                CCE Achieve System
-              </Link>
-              <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">Version 1.0.0</span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span>Version 1.0.0</span>
             </div>
           </div>
         </div>

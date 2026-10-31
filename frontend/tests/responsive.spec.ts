@@ -235,8 +235,8 @@ test.describe('Navigation between Portals', () => {
     await page.getByRole('link', { name: /Back to Portal Selection/i }).click();
     await expect(page).toHaveURL(/(\/login|\/)$/);
 
-    // 4. Navigate to Admin Portal
-    await page.click('#portal-card-admin');
+    // 4. Navigate to Admin Portal via interactive brand title
+    await page.locator('#cce-pgpa-brand-title, #brand-title-admin-trigger').click();
     await expect(page).toHaveURL(/\/login\/admin/);
 
     // Return to Portal Selection
