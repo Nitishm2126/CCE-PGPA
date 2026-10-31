@@ -64,7 +64,7 @@ export async function checkLogoAspectRatio(page: Page) {
   return images;
 }
 
-export async function checkDepartmentNameExactness(page: Page, viewport: ViewportDefinition) {
+export async function checkDepartmentNameExactness(page: Page, _viewport?: ViewportDefinition) {
   const deptElement = page.locator('#department-identity-name');
   await expect(deptElement).toBeVisible();
 
@@ -91,7 +91,7 @@ export async function checkDepartmentNameExactness(page: Page, viewport: Viewpor
   return details;
 }
 
-export async function checkPortalCardsAlignment(page: Page, viewport: ViewportDefinition) {
+export async function checkPortalCardsAlignment(page: Page, _viewport?: ViewportDefinition) {
   const cardStudent = page.locator('#portal-card-student');
   const cardMentor = page.locator('#portal-card-mentor');
   const cardHod = page.locator('#portal-card-hod');

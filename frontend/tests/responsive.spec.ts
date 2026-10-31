@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
-import { VIEWPORTS, PAGES, ViewportDefinition, PageDefinition } from './helpers/viewports';
+import { VIEWPORTS, PAGES } from './helpers/viewports';
 import {
   checkHorizontalOverflow,
   checkLogoAspectRatio,
@@ -166,6 +166,7 @@ test.describe('Login Form Responsiveness', () => {
     { role: 'student', path: '/login/student', badgeText: '2025-2029 Students' },
     { role: 'mentor', path: '/login/mentor', badgeText: 'Review & Verification' },
     { role: 'hod', path: '/login/hod', badgeText: 'Department Administration' },
+    { role: 'admin', path: '/login/admin', badgeText: 'System Administration' },
   ];
 
   for (const roleDef of roles) {
@@ -206,7 +207,7 @@ test.describe('Login Form Responsiveness', () => {
 
 // Group 4: Navigation between all portals (Check 8)
 test.describe('Navigation between Portals', () => {
-  test('Navigate from Landing page to Student, Mentor, and HOD portals and back', async ({ page }) => {
+  test('Navigate from Landing page to Student, Mentor, HOD, and Admin portals and back', async ({ page }) => {
     // Start at landing page
     await page.goto('/');
 
@@ -229,6 +230,14 @@ test.describe('Navigation between Portals', () => {
     // 3. Navigate to HOD Portal
     await page.click('#portal-card-hod');
     await expect(page).toHaveURL(/\/login\/hod/);
+
+    // Return to Portal Selection
+    await page.getByRole('link', { name: /Back to Portal Selection/i }).click();
+    await expect(page).toHaveURL(/(\/login|\/)$/);
+
+    // 4. Navigate to Admin Portal
+    await page.click('#portal-card-admin');
+    await expect(page).toHaveURL(/\/login\/admin/);
 
     // Return to Portal Selection
     await page.getByRole('link', { name: /Back to Portal Selection/i }).click();

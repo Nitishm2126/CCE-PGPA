@@ -105,3 +105,83 @@ body {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* Mobile-native platform foundations */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Prevent auto-zoom on mobile inputs */
+@media (pointer: coarse) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Apple-inspired subtle keyframes */
+@keyframes appleFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes appleSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-apple-fade {
+  animation: appleFadeIn 0.35s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-apple-slide-up {
+  opacity: 0;
+  animation: appleSlideUp 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+/* Stagger utilities for cards */
+.stagger-1 {
+  animation-delay: 40ms;
+}
+.stagger-2 {
+  animation-delay: 90ms;
+}
+.stagger-3 {
+  animation-delay: 140ms;
+}
+.stagger-4 {
+  animation-delay: 190ms;
+}
+
+/* Apple-style spring press feedback on controls */
+.apple-pressable {
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.apple-pressable:active {
+  transform: scale(0.98);
+}
+
+/* Respect prefers-reduced-motion per apple-design & emil-design-eng */
+@media (prefers-reduced-motion: reduce) {
+  .animate-apple-slide-up {
+    animation: appleFadeIn 0.2s ease forwards !important;
+    transform: none !important;
+  }
+  .apple-pressable:active {
+    transform: none !important;
+  }
+}

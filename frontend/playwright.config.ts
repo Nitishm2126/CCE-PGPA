@@ -1,5 +1,4 @@
 import { defineConfig } from '@playwright/test';
-import path from 'path';
 
 export default defineConfig({
   testDir: './tests',
@@ -22,4 +21,10 @@ export default defineConfig({
     video: 'off',
   },
   outputDir: 'test-results/artifacts',
+  webServer: {
+    command: 'npm run start',
+    url: 'http://localhost:3000',
+    reuseExistingServer: true,
+    timeout: 60000,
+  },
 });

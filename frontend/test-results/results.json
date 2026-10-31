@@ -94,7 +94,12 @@
     "updateSourceMethod": "patch",
     "version": "1.64.1",
     "workers": 1,
-    "webServer": null
+    "webServer": {
+      "command": "npm run start",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 60000
+    }
   },
   "suites": [
     {
@@ -133,12 +138,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 2448,
+                          "duration": 2396,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:34.007Z",
+                          "startTime": "2026-10-31T07:48:30.702Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -167,12 +172,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 2014,
+                          "duration": 2375,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:36.646Z",
+                          "startTime": "2026-10-31T07:48:34.685Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -201,12 +206,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1796,
+                          "duration": 3035,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:38.680Z",
+                          "startTime": "2026-10-31T07:48:37.103Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -235,12 +240,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 2095,
+                          "duration": 1980,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:40.491Z",
+                          "startTime": "2026-10-31T07:48:40.160Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -269,12 +274,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 2025,
+                          "duration": 2031,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:42.617Z",
+                          "startTime": "2026-10-31T07:48:42.156Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -303,12 +308,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 2304,
+                          "duration": 2453,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:44.680Z",
+                          "startTime": "2026-10-31T07:48:44.205Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -337,12 +342,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1933,
+                          "duration": 1928,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:47.018Z",
+                          "startTime": "2026-10-31T07:48:46.681Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -371,12 +376,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1874,
+                          "duration": 1906,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:48.983Z",
+                          "startTime": "2026-10-31T07:48:48.628Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -405,12 +410,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1930,
+                          "duration": 1844,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:50.878Z",
+                          "startTime": "2026-10-31T07:48:50.553Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -447,12 +452,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1759,
+                          "duration": 2130,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:52.829Z",
+                          "startTime": "2026-10-31T07:48:52.418Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -481,12 +486,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1745,
+                          "duration": 2080,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:54.604Z",
+                          "startTime": "2026-10-31T07:48:54.606Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -515,12 +520,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 2031,
+                          "duration": 2039,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:56.367Z",
+                          "startTime": "2026-10-31T07:48:56.703Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -549,12 +554,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1853,
+                          "duration": 1833,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:54:58.413Z",
+                          "startTime": "2026-10-31T07:48:58.761Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -583,12 +588,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1640,
+                          "duration": 1728,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:00.284Z",
+                          "startTime": "2026-10-31T07:49:00.615Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -617,12 +622,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1612,
+                          "duration": 1886,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:01.947Z",
+                          "startTime": "2026-10-31T07:49:02.357Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -651,12 +656,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1734,
+                          "duration": 1980,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:03.573Z",
+                          "startTime": "2026-10-31T07:49:04.262Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -685,12 +690,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1864,
+                          "duration": 1837,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:05.323Z",
+                          "startTime": "2026-10-31T07:49:06.260Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -719,12 +724,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1899,
+                          "duration": 1867,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:07.214Z",
+                          "startTime": "2026-10-31T07:49:08.115Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -761,12 +766,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1812,
+                          "duration": 1789,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:09.132Z",
+                          "startTime": "2026-10-31T07:49:09.999Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -795,12 +800,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1765,
+                          "duration": 2041,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:10.957Z",
+                          "startTime": "2026-10-31T07:49:11.801Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -829,12 +834,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1667,
+                          "duration": 1715,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:12.740Z",
+                          "startTime": "2026-10-31T07:49:13.861Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -863,12 +868,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1829,
+                          "duration": 1816,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:14.423Z",
+                          "startTime": "2026-10-31T07:49:15.590Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -897,12 +902,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1940,
+                          "duration": 1706,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:16.269Z",
+                          "startTime": "2026-10-31T07:49:17.422Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -931,12 +936,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1738,
+                          "duration": 1781,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:18.221Z",
+                          "startTime": "2026-10-31T07:49:19.147Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -965,12 +970,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1890,
+                          "duration": 1849,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:19.974Z",
+                          "startTime": "2026-10-31T07:49:20.944Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -999,12 +1004,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 2373,
+                          "duration": 1842,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:21.885Z",
+                          "startTime": "2026-10-31T07:49:22.807Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1033,12 +1038,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 2133,
+                          "duration": 2105,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:24.277Z",
+                          "startTime": "2026-10-31T07:49:24.670Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1075,12 +1080,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1782,
+                          "duration": 1981,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:26.429Z",
+                          "startTime": "2026-10-31T07:49:26.792Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1109,12 +1114,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1800,
+                          "duration": 1894,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:28.223Z",
+                          "startTime": "2026-10-31T07:49:28.798Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1143,12 +1148,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1553,
+                          "duration": 1671,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:30.038Z",
+                          "startTime": "2026-10-31T07:49:30.718Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1177,12 +1182,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1631,
+                          "duration": 1799,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:31.608Z",
+                          "startTime": "2026-10-31T07:49:32.411Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1211,12 +1216,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1670,
+                          "duration": 1836,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:33.255Z",
+                          "startTime": "2026-10-31T07:49:34.231Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1245,12 +1250,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1721,
+                          "duration": 1657,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:34.940Z",
+                          "startTime": "2026-10-31T07:49:36.116Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1279,12 +1284,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1725,
+                          "duration": 1883,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:36.682Z",
+                          "startTime": "2026-10-31T07:49:37.797Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1313,12 +1318,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1752,
+                          "duration": 1860,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:38.420Z",
+                          "startTime": "2026-10-31T07:49:39.698Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1347,12 +1352,12 @@
                           "workerIndex": 0,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 1805,
+                          "duration": 1986,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-10-31T06:55:40.188Z",
+                          "startTime": "2026-10-31T07:49:41.577Z",
                           "annotations": [],
                           "attachments": []
                         }
@@ -1361,6 +1366,320 @@
                     }
                   ],
                   "id": "e0223b006feb3d306446-acfe250a72a05cb9581d",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                }
+              ]
+            },
+            {
+              "title": "Page: Admin Login (/login/admin)",
+              "file": "responsive.spec.ts",
+              "line": 23,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "Viewport mobile-375x667 (375x667) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1649,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T07:49:43.582Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-f30443a0b48574e5e847",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-390x844 (390x844) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1810,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T07:49:45.249Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-d70c0606f8fd879727dc",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-402x874 (402x874) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1778,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T07:49:47.073Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-b05f0219f52fdd2e65e6",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-360x800 (360x800) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 2046,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T07:49:48.869Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-f3a43947316535ffa9a1",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-412x915 (412x915) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 2087,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T07:49:50.937Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-9c382d3010bbd626742e",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport tablet-768x1024 (768x1024) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1839,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T07:49:53.051Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-cf1e04bb79de2fecc7d3",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1280x720 (1280x720) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 2208,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T07:49:54.913Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-84f3ff0b47bae95f3090",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1366x768 (1366x768) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 2467,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T07:49:57.138Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-6be54abb76f1521c8ae9",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1920x1080 (1920x1080) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 2269,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T07:49:59.624Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-b14e9aca47e5ece1b5d2",
                   "file": "responsive.spec.ts",
                   "line": 25,
                   "column": 13
@@ -1391,12 +1710,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1105,
+                      "duration": 1465,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:42.009Z",
+                      "startTime": "2026-10-31T07:50:01.915Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1425,12 +1744,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1301,
+                      "duration": 1291,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:43.132Z",
+                      "startTime": "2026-10-31T07:50:03.398Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1459,12 +1778,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1134,
+                      "duration": 1274,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:44.449Z",
+                      "startTime": "2026-10-31T07:50:04.702Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1493,12 +1812,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1160,
+                      "duration": 1230,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:45.600Z",
+                      "startTime": "2026-10-31T07:50:05.995Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1527,12 +1846,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1294,
+                      "duration": 1420,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:46.774Z",
+                      "startTime": "2026-10-31T07:50:07.241Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1561,12 +1880,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1181,
+                      "duration": 1319,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:48.085Z",
+                      "startTime": "2026-10-31T07:50:08.683Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1595,12 +1914,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1253,
+                      "duration": 1301,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:49.281Z",
+                      "startTime": "2026-10-31T07:50:10.016Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1629,12 +1948,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1190,
+                      "duration": 1770,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:50.550Z",
+                      "startTime": "2026-10-31T07:50:11.337Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1663,12 +1982,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1094,
+                      "duration": 1639,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:51.753Z",
+                      "startTime": "2026-10-31T07:50:13.128Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1697,12 +2016,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1227,
+                      "duration": 1178,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:52.866Z",
+                      "startTime": "2026-10-31T07:50:14.783Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1731,12 +2050,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1222,
+                      "duration": 1301,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:54.107Z",
+                      "startTime": "2026-10-31T07:50:15.974Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1765,12 +2084,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1146,
+                      "duration": 1299,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:55.348Z",
+                      "startTime": "2026-10-31T07:50:17.290Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1799,12 +2118,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1238,
+                      "duration": 1202,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:56.508Z",
+                      "startTime": "2026-10-31T07:50:18.604Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1833,12 +2152,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1126,
+                      "duration": 1135,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:57.767Z",
+                      "startTime": "2026-10-31T07:50:19.820Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1867,12 +2186,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1212,
+                      "duration": 1306,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:55:58.912Z",
+                      "startTime": "2026-10-31T07:50:20.967Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1901,12 +2220,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1269,
+                      "duration": 1497,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:00.138Z",
+                      "startTime": "2026-10-31T07:50:22.298Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1935,12 +2254,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1236,
+                      "duration": 1776,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:01.421Z",
+                      "startTime": "2026-10-31T07:50:23.812Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1969,12 +2288,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1201,
+                      "duration": 1714,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:02.672Z",
+                      "startTime": "2026-10-31T07:50:25.606Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2011,12 +2330,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1526,
+                      "duration": 1742,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:03.887Z",
+                      "startTime": "2026-10-31T07:50:27.338Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2026,7 +2345,7 @@
               ],
               "id": "e0223b006feb3d306446-2d922d8b2763fbbbb73f",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2045,12 +2364,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1512,
+                      "duration": 2070,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:05.435Z",
+                      "startTime": "2026-10-31T07:50:29.099Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2060,7 +2379,7 @@
               ],
               "id": "e0223b006feb3d306446-1c0e7aa48fafa374548d",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2079,12 +2398,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1626,
+                      "duration": 1346,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:06.968Z",
+                      "startTime": "2026-10-31T07:50:31.188Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2094,7 +2413,7 @@
               ],
               "id": "e0223b006feb3d306446-01c09286c648d41cccb5",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2113,12 +2432,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1472,
+                      "duration": 1379,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:08.618Z",
+                      "startTime": "2026-10-31T07:50:32.550Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2128,7 +2447,7 @@
               ],
               "id": "e0223b006feb3d306446-44fb7d0fb39e216737d1",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2147,12 +2466,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1657,
+                      "duration": 1516,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:10.122Z",
+                      "startTime": "2026-10-31T07:50:33.945Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2162,7 +2481,7 @@
               ],
               "id": "e0223b006feb3d306446-5cfa4f23e1a0a910d70e",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2181,12 +2500,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1758,
+                      "duration": 1561,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:11.808Z",
+                      "startTime": "2026-10-31T07:50:35.480Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2196,7 +2515,7 @@
               ],
               "id": "e0223b006feb3d306446-a464cbc3fbd467017e4c",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2215,12 +2534,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1592,
+                      "duration": 1571,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:13.596Z",
+                      "startTime": "2026-10-31T07:50:37.055Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2230,11 +2549,181 @@
               ],
               "id": "e0223b006feb3d306446-fdb133f9b0b80094d31e",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
               "title": "student login form responsiveness at desktop-1366x768",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1365,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:50:38.645Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-98a10ad475347542f311",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "student login form responsiveness at desktop-1920x1080",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1824,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:50:40.029Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-18d8d45d6796b6237498",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at mobile-375x667",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1553,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:50:41.869Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-2fa7fb25198a1ab0197e",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at mobile-390x844",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1297,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:50:43.443Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-523b727f764c3284c6c7",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at mobile-402x874",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1391,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:50:44.754Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-b21c1cd93be400ac0bc2",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at mobile-360x800",
               "ok": true,
               "tags": [],
               "tests": [
@@ -2254,177 +2743,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:15.222Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "e0223b006feb3d306446-98a10ad475347542f311",
-              "file": "responsive.spec.ts",
-              "line": 173,
-              "column": 11
-            },
-            {
-              "title": "student login form responsiveness at desktop-1920x1080",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 45000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2661,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-31T06:56:16.864Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "e0223b006feb3d306446-18d8d45d6796b6237498",
-              "file": "responsive.spec.ts",
-              "line": 173,
-              "column": 11
-            },
-            {
-              "title": "mentor login form responsiveness at mobile-375x667",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 45000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1766,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-31T06:56:19.552Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "e0223b006feb3d306446-2fa7fb25198a1ab0197e",
-              "file": "responsive.spec.ts",
-              "line": 173,
-              "column": 11
-            },
-            {
-              "title": "mentor login form responsiveness at mobile-390x844",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 45000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2014,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-31T06:56:21.335Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "e0223b006feb3d306446-523b727f764c3284c6c7",
-              "file": "responsive.spec.ts",
-              "line": 173,
-              "column": 11
-            },
-            {
-              "title": "mentor login form responsiveness at mobile-402x874",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 45000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1444,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-31T06:56:23.369Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "e0223b006feb3d306446-b21c1cd93be400ac0bc2",
-              "file": "responsive.spec.ts",
-              "line": 173,
-              "column": 11
-            },
-            {
-              "title": "mentor login form responsiveness at mobile-360x800",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 45000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1941,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-31T06:56:24.837Z",
+                      "startTime": "2026-10-31T07:50:46.162Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2434,7 +2753,7 @@
               ],
               "id": "e0223b006feb3d306446-a0a33789b21d70016191",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2453,12 +2772,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2204,
+                      "duration": 1405,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:26.801Z",
+                      "startTime": "2026-10-31T07:50:47.795Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2468,7 +2787,7 @@
               ],
               "id": "e0223b006feb3d306446-e66539cfd413770d9561",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2487,12 +2806,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1774,
+                      "duration": 1682,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:29.026Z",
+                      "startTime": "2026-10-31T07:50:49.216Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2502,7 +2821,7 @@
               ],
               "id": "e0223b006feb3d306446-1a2c1a57b87c37656b41",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2521,12 +2840,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1462,
+                      "duration": 1569,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:30.818Z",
+                      "startTime": "2026-10-31T07:50:50.915Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2536,7 +2855,7 @@
               ],
               "id": "e0223b006feb3d306446-13dd5f961049dcff37eb",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2555,12 +2874,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1500,
+                      "duration": 2052,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:32.296Z",
+                      "startTime": "2026-10-31T07:50:52.499Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2570,7 +2889,7 @@
               ],
               "id": "e0223b006feb3d306446-cfff3942184a78c299c2",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2589,12 +2908,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1507,
+                      "duration": 1322,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:33.818Z",
+                      "startTime": "2026-10-31T07:50:54.566Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2604,7 +2923,7 @@
               ],
               "id": "e0223b006feb3d306446-c9eb2b5ab35de6c15042",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2623,12 +2942,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1520,
+                      "duration": 1352,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:35.339Z",
+                      "startTime": "2026-10-31T07:50:55.905Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2638,7 +2957,7 @@
               ],
               "id": "e0223b006feb3d306446-e9653ac3ca0d86d54b7b",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2657,12 +2976,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1692,
+                      "duration": 1443,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:36.881Z",
+                      "startTime": "2026-10-31T07:50:57.271Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2672,7 +2991,7 @@
               ],
               "id": "e0223b006feb3d306446-3f8f6ddeee425c3eba12",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2691,12 +3010,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1483,
+                      "duration": 1627,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:38.590Z",
+                      "startTime": "2026-10-31T07:50:58.732Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2706,7 +3025,7 @@
               ],
               "id": "e0223b006feb3d306446-48f1252d2868125096f3",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2725,12 +3044,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1351,
+                      "duration": 1320,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:40.090Z",
+                      "startTime": "2026-10-31T07:51:00.373Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2740,7 +3059,7 @@
               ],
               "id": "e0223b006feb3d306446-b4546558b39e59b18488",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2759,12 +3078,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1428,
+                      "duration": 1605,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:41.458Z",
+                      "startTime": "2026-10-31T07:51:01.711Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2774,7 +3093,7 @@
               ],
               "id": "e0223b006feb3d306446-ad9fe23a5b5777f899f9",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2793,12 +3112,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1934,
+                      "duration": 2253,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:42.905Z",
+                      "startTime": "2026-10-31T07:51:03.334Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2808,7 +3127,7 @@
               ],
               "id": "e0223b006feb3d306446-482eab2824655c64516e",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2827,12 +3146,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1581,
+                      "duration": 1620,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:44.857Z",
+                      "startTime": "2026-10-31T07:51:05.605Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2842,7 +3161,7 @@
               ],
               "id": "e0223b006feb3d306446-ceda4dbc9f525d6549ad",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2861,12 +3180,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1541,
+                      "duration": 1664,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:46.465Z",
+                      "startTime": "2026-10-31T07:51:07.244Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2876,7 +3195,7 @@
               ],
               "id": "e0223b006feb3d306446-2559d13d4ff7d286a3b0",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
             },
             {
@@ -2895,12 +3214,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1917,
+                      "duration": 2266,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:48.023Z",
+                      "startTime": "2026-10-31T07:51:08.929Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2910,19 +3229,11 @@
               ],
               "id": "e0223b006feb3d306446-0a7b2e2097b620049077",
               "file": "responsive.spec.ts",
-              "line": 173,
+              "line": 174,
               "column": 11
-            }
-          ]
-        },
-        {
-          "title": "Navigation between Portals",
-          "file": "responsive.spec.ts",
-          "line": 208,
-          "column": 6,
-          "specs": [
+            },
             {
-              "title": "Navigate from Landing page to Student, Mentor, and HOD portals and back",
+              "title": "admin login form responsiveness at mobile-375x667",
               "ok": true,
               "tags": [],
               "tests": [
@@ -2937,12 +3248,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3300,
+                      "duration": 1909,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:49.963Z",
+                      "startTime": "2026-10-31T07:51:11.213Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2950,9 +3261,323 @@
                   "status": "expected"
                 }
               ],
-              "id": "e0223b006feb3d306446-a314a64b5b24fecf6080",
+              "id": "e0223b006feb3d306446-b6381964520ab18a9ed4",
               "file": "responsive.spec.ts",
-              "line": 209,
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "admin login form responsiveness at mobile-390x844",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1953,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:51:13.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-cd543a3f4a6c13516a0d",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "admin login form responsiveness at mobile-402x874",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1680,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:51:15.111Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-e86342890a19c7f87c24",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "admin login form responsiveness at mobile-360x800",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1960,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:51:16.812Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-90a431d3fe2c50c2c05e",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "admin login form responsiveness at mobile-412x915",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1922,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:51:18.787Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-5b630856f32b0617d069",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "admin login form responsiveness at tablet-768x1024",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2214,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:51:20.729Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-313d2d8e94288face1a7",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "admin login form responsiveness at desktop-1280x720",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1849,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:51:22.961Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-90f18bc78689c7e80c40",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "admin login form responsiveness at desktop-1366x768",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1794,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:51:24.830Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-a231731255724ff8e2a4",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            },
+            {
+              "title": "admin login form responsiveness at desktop-1920x1080",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1730,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:51:26.645Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-ab8165f724eaa8a18d2b",
+              "file": "responsive.spec.ts",
+              "line": 174,
+              "column": 11
+            }
+          ]
+        },
+        {
+          "title": "Navigation between Portals",
+          "file": "responsive.spec.ts",
+          "line": 209,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Navigate from Landing page to Student, Mentor, HOD, and Admin portals and back",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5662,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T07:51:28.395Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-787f6c6f074434db5397",
+              "file": "responsive.spec.ts",
+              "line": 210,
               "column": 7
             },
             {
@@ -2971,12 +3596,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1548,
+                      "duration": 2672,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-31T06:56:53.282Z",
+                      "startTime": "2026-10-31T07:51:34.077Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2986,7 +3611,7 @@
               ],
               "id": "e0223b006feb3d306446-5cdba52903154791e2bc",
               "file": "responsive.spec.ts",
-              "line": 238,
+              "line": 247,
               "column": 7
             }
           ]
@@ -2996,9 +3621,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-31T06:54:32.823Z",
-    "duration": 142359.837,
-    "expected": 83,
+    "startTime": "2026-10-31T07:48:29.251Z",
+    "duration": 188655.342,
+    "expected": 101,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

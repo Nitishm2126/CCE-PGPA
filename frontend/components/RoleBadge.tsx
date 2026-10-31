@@ -13,23 +13,23 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({ role, size = "md" }) => {
   const config = {
     student: {
       label: "Student",
-      classes: "bg-emerald-500/15 text-emerald-700 dark:bg-[#13261c] dark:text-[#4ade80] dark:border-[#1e3f2f] border-emerald-500/30",
-      dot: "bg-emerald-500 dark:bg-[#4ade80]",
+      classes: "bg-sky-500/15 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/40 border-sky-500/30",
+      dot: "bg-sky-500 dark:bg-sky-400",
     },
     mentor: {
       label: "Faculty Mentor",
-      classes: "bg-blue-500/15 text-blue-700 dark:bg-[#162234] dark:text-[#7db0fb] dark:border-[#233754] border-blue-500/30",
-      dot: "bg-blue-500 dark:bg-[#4c83e6]",
-    },
-    admin: {
-      label: "System Administrator",
-      classes: "bg-amber-500/15 text-amber-700 dark:bg-[#2a2012] dark:text-[#fcd34d] dark:border-[#48341a] border-amber-500/30",
-      dot: "bg-amber-500 dark:bg-[#fcd34d]",
+      classes: "bg-purple-500/15 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/40 border-purple-500/30",
+      dot: "bg-purple-500 dark:bg-purple-400",
     },
     hod: {
       label: "Head of Department",
-      classes: "bg-purple-500/15 text-purple-700 dark:bg-[#1f1a2e] dark:text-[#c084fc] dark:border-[#382b52] border-purple-500/30",
-      dot: "bg-purple-500 dark:bg-[#c084fc]",
+      classes: "bg-amber-500/15 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40 border-amber-500/30",
+      dot: "bg-amber-500 dark:bg-amber-400",
+    },
+    admin: {
+      label: "System Administrator",
+      classes: "bg-slate-500/15 text-slate-800 dark:bg-slate-800/60 dark:text-slate-200 dark:border-slate-700 border-slate-500/30",
+      dot: "bg-slate-600 dark:bg-slate-400",
     },
   }[role];
 

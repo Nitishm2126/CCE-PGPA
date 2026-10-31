@@ -31,4 +31,5 @@ export const PAGES: PageDefinition[] = [
   { id: 'login-student', title: 'Student Login', path: '/login/student' },
   { id: 'login-mentor', title: 'Faculty Mentor Login', path: '/login/mentor' },
   { id: 'login-hod', title: 'HOD Login', path: '/login/hod' },
+  { id: 'login-admin', title: 'Admin Login', path: '/login/admin' },
 ];

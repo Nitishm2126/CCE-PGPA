@@ -6,10 +6,11 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { UserRole } from "@/types/auth";
 import { ROLE_CONFIGS } from "@/lib/role-config";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
-// Dedicated refined theme tokens for each institutional portal
+// Dedicated Apple-inspired refined theme tokens for each institutional portal
 interface PortalCardTheme {
-  accentBar: string;
+  accentGradient: string;
   cardBorder: string;
   hoverBorder: string;
   hoverShadow: string;
@@ -35,104 +36,100 @@ interface PortalCardTheme {
 
 const PORTAL_CARD_THEMES: Record<string, PortalCardTheme> = {
   student: {
-    // Student Portal: Professional Institutional Blue
-    accentBar: "bg-sky-600",
-    cardBorder: "border-slate-200/90",
-    hoverBorder: "hover:border-sky-400",
-    hoverShadow: "hover:shadow-[0_16px_32px_-8px_rgba(2,132,199,0.14)]",
+    accentGradient: "from-sky-500 to-blue-600",
+    cardBorder: "border-slate-200/90 dark:border-slate-800/90",
+    hoverBorder: "hover:border-sky-400 dark:hover:border-sky-500",
+    hoverShadow: "hover:shadow-[0_16px_32px_-8px_rgba(2,132,199,0.18)] dark:hover:shadow-[0_16px_32px_-8px_rgba(2,132,199,0.25)]",
     focusRing: "focus-visible:ring-sky-500",
-    iconBg: "bg-sky-50",
-    iconText: "text-sky-700",
-    iconHoverBg: "group-hover:bg-sky-600",
-    iconHoverText: "group-hover:text-white",
-    badgeBg: "bg-sky-50/90",
-    badgeBorder: "border-sky-200/80",
-    badgeText: "text-sky-800",
-    tagBg: "bg-sky-50/60",
-    tagBorder: "border-sky-100",
-    tagText: "text-sky-800",
-    ctaBg: "bg-sky-50/80",
-    ctaText: "text-sky-800",
-    ctaBorder: "border-sky-200/70",
-    ctaHoverBg: "group-hover:bg-sky-600",
+    iconBg: "bg-sky-50 dark:bg-sky-950/60",
+    iconText: "text-sky-600 dark:text-sky-400",
+    iconHoverBg: "group-hover:bg-sky-600 dark:group-hover:bg-sky-500",
+    iconHoverText: "group-hover:text-white dark:group-hover:text-white",
+    badgeBg: "bg-sky-50/90 dark:bg-sky-950/60",
+    badgeBorder: "border-sky-200/80 dark:border-sky-800/80",
+    badgeText: "text-sky-800 dark:text-sky-300",
+    tagBg: "bg-sky-50/60 dark:bg-sky-950/40",
+    tagBorder: "border-sky-100 dark:border-sky-900/60",
+    tagText: "text-sky-800 dark:text-sky-300",
+    ctaBg: "bg-sky-50/80 dark:bg-sky-950/50",
+    ctaText: "text-sky-700 dark:text-sky-300",
+    ctaBorder: "border-sky-200/70 dark:border-sky-800/60",
+    ctaHoverBg: "group-hover:bg-sky-600 dark:group-hover:bg-sky-500",
     ctaHoverText: "group-hover:text-white",
-    ctaHoverBorder: "group-hover:border-sky-600",
-    titleHover: "group-hover:text-sky-700",
+    ctaHoverBorder: "group-hover:border-sky-600 dark:group-hover:border-sky-500",
+    titleHover: "group-hover:text-sky-600 dark:group-hover:text-sky-400",
   },
   mentor: {
-    // Faculty Mentor Portal: Professional Academic Purple
-    accentBar: "bg-purple-600",
-    cardBorder: "border-slate-200/90",
-    hoverBorder: "hover:border-purple-400",
-    hoverShadow: "hover:shadow-[0_16px_32px_-8px_rgba(124,58,237,0.14)]",
+    accentGradient: "from-purple-500 to-indigo-600",
+    cardBorder: "border-slate-200/90 dark:border-slate-800/90",
+    hoverBorder: "hover:border-purple-400 dark:hover:border-purple-500",
+    hoverShadow: "hover:shadow-[0_16px_32px_-8px_rgba(124,58,237,0.18)] dark:hover:shadow-[0_16px_32px_-8px_rgba(124,58,237,0.25)]",
     focusRing: "focus-visible:ring-purple-500",
-    iconBg: "bg-purple-50",
-    iconText: "text-purple-700",
-    iconHoverBg: "group-hover:bg-purple-600",
-    iconHoverText: "group-hover:text-white",
-    badgeBg: "bg-purple-50/90",
-    badgeBorder: "border-purple-200/80",
-    badgeText: "text-purple-800",
-    tagBg: "bg-purple-50/60",
-    tagBorder: "border-purple-100",
-    tagText: "text-purple-800",
-    ctaBg: "bg-purple-50/80",
-    ctaText: "text-purple-800",
-    ctaBorder: "border-purple-200/70",
-    ctaHoverBg: "group-hover:bg-purple-600",
+    iconBg: "bg-purple-50 dark:bg-purple-950/60",
+    iconText: "text-purple-600 dark:text-purple-400",
+    iconHoverBg: "group-hover:bg-purple-600 dark:group-hover:bg-purple-500",
+    iconHoverText: "group-hover:text-white dark:group-hover:text-white",
+    badgeBg: "bg-purple-50/90 dark:bg-purple-950/60",
+    badgeBorder: "border-purple-200/80 dark:border-purple-800/80",
+    badgeText: "text-purple-800 dark:text-purple-300",
+    tagBg: "bg-purple-50/60 dark:bg-purple-950/40",
+    tagBorder: "border-purple-100 dark:border-purple-900/60",
+    tagText: "text-purple-800 dark:text-purple-300",
+    ctaBg: "bg-purple-50/80 dark:bg-purple-950/50",
+    ctaText: "text-purple-700 dark:text-purple-300",
+    ctaBorder: "border-purple-200/70 dark:border-purple-800/60",
+    ctaHoverBg: "group-hover:bg-purple-600 dark:group-hover:bg-purple-500",
     ctaHoverText: "group-hover:text-white",
-    ctaHoverBorder: "group-hover:border-purple-600",
-    titleHover: "group-hover:text-purple-700",
+    ctaHoverBorder: "group-hover:border-purple-600 dark:group-hover:border-purple-500",
+    titleHover: "group-hover:text-purple-600 dark:group-hover:text-purple-400",
   },
   hod: {
-    // Department Head (HOD): Warm Institutional Amber/Orange
-    accentBar: "bg-amber-500",
-    cardBorder: "border-slate-200/90",
-    hoverBorder: "hover:border-amber-400",
-    hoverShadow: "hover:shadow-[0_16px_32px_-8px_rgba(217,119,6,0.14)]",
+    accentGradient: "from-amber-500 to-orange-600",
+    cardBorder: "border-slate-200/90 dark:border-slate-800/90",
+    hoverBorder: "hover:border-amber-400 dark:hover:border-amber-500",
+    hoverShadow: "hover:shadow-[0_16px_32px_-8px_rgba(217,119,6,0.18)] dark:hover:shadow-[0_16px_32px_-8px_rgba(217,119,6,0.25)]",
     focusRing: "focus-visible:ring-amber-500",
-    iconBg: "bg-amber-50",
-    iconText: "text-amber-700",
-    iconHoverBg: "group-hover:bg-amber-500",
-    iconHoverText: "group-hover:text-white",
-    badgeBg: "bg-amber-50/90",
-    badgeBorder: "border-amber-200/80",
-    badgeText: "text-amber-800",
-    tagBg: "bg-amber-50/60",
-    tagBorder: "border-amber-100",
-    tagText: "text-amber-800",
-    ctaBg: "bg-amber-50/80",
-    ctaText: "text-amber-800",
-    ctaBorder: "border-amber-200/70",
-    ctaHoverBg: "group-hover:bg-amber-500",
+    iconBg: "bg-amber-50 dark:bg-amber-950/60",
+    iconText: "text-amber-600 dark:text-amber-400",
+    iconHoverBg: "group-hover:bg-amber-500 dark:group-hover:bg-amber-500",
+    iconHoverText: "group-hover:text-white dark:group-hover:text-white",
+    badgeBg: "bg-amber-50/90 dark:bg-amber-950/60",
+    badgeBorder: "border-amber-200/80 dark:border-amber-800/80",
+    badgeText: "text-amber-800 dark:text-amber-300",
+    tagBg: "bg-amber-50/60 dark:bg-amber-950/40",
+    tagBorder: "border-amber-100 dark:border-amber-900/60",
+    tagText: "text-amber-800 dark:text-amber-300",
+    ctaBg: "bg-amber-50/80 dark:bg-amber-950/50",
+    ctaText: "text-amber-700 dark:text-amber-300",
+    ctaBorder: "border-amber-200/70 dark:border-amber-800/60",
+    ctaHoverBg: "group-hover:bg-amber-500 dark:group-hover:bg-amber-500",
     ctaHoverText: "group-hover:text-white",
-    ctaHoverBorder: "group-hover:border-amber-500",
-    titleHover: "group-hover:text-amber-700",
+    ctaHoverBorder: "group-hover:border-amber-500 dark:group-hover:border-amber-500",
+    titleHover: "group-hover:text-amber-600 dark:group-hover:text-amber-400",
   },
   admin: {
-    // Administrator fallback
-    accentBar: "bg-slate-700",
-    cardBorder: "border-slate-200/90",
-    hoverBorder: "hover:border-slate-400",
-    hoverShadow: "hover:shadow-[0_16px_32px_-8px_rgba(30,41,59,0.14)]",
+    accentGradient: "from-slate-700 to-slate-900 dark:from-slate-400 dark:to-slate-200",
+    cardBorder: "border-slate-200/90 dark:border-slate-800/90",
+    hoverBorder: "hover:border-slate-500 dark:hover:border-slate-400",
+    hoverShadow: "hover:shadow-[0_16px_32px_-8px_rgba(15,23,42,0.18)] dark:hover:shadow-[0_16px_32px_-8px_rgba(15,23,42,0.35)]",
     focusRing: "focus-visible:ring-slate-500",
-    iconBg: "bg-slate-100",
-    iconText: "text-slate-700",
-    iconHoverBg: "group-hover:bg-slate-800",
-    iconHoverText: "group-hover:text-white",
-    badgeBg: "bg-slate-100",
-    badgeBorder: "border-slate-200",
-    badgeText: "text-slate-800",
-    tagBg: "bg-slate-50",
-    tagBorder: "border-slate-200",
-    tagText: "text-slate-700",
-    ctaBg: "bg-slate-100",
-    ctaText: "text-slate-800",
-    ctaBorder: "border-slate-200",
-    ctaHoverBg: "group-hover:bg-slate-800",
-    ctaHoverText: "group-hover:text-white",
-    ctaHoverBorder: "group-hover:border-slate-800",
-    titleHover: "group-hover:text-slate-900",
+    iconBg: "bg-slate-100 dark:bg-slate-800",
+    iconText: "text-slate-700 dark:text-slate-300",
+    iconHoverBg: "group-hover:bg-slate-900 dark:group-hover:bg-slate-100",
+    iconHoverText: "group-hover:text-white dark:group-hover:text-slate-900",
+    badgeBg: "bg-slate-100/90 dark:bg-slate-800/90",
+    badgeBorder: "border-slate-200 dark:border-slate-700",
+    badgeText: "text-slate-800 dark:text-slate-200",
+    tagBg: "bg-slate-100/60 dark:bg-slate-800/60",
+    tagBorder: "border-slate-200 dark:border-slate-700",
+    tagText: "text-slate-700 dark:text-slate-300",
+    ctaBg: "bg-slate-100/80 dark:bg-slate-800/80",
+    ctaText: "text-slate-800 dark:text-slate-200",
+    ctaBorder: "border-slate-200 dark:border-slate-700",
+    ctaHoverBg: "group-hover:bg-slate-900 dark:group-hover:bg-slate-100",
+    ctaHoverText: "group-hover:text-white dark:group-hover:text-slate-900",
+    ctaHoverBorder: "group-hover:border-slate-900 dark:group-hover:border-slate-100",
+    titleHover: "group-hover:text-slate-900 dark:group-hover:text-white",
   },
 };
 
@@ -148,38 +145,40 @@ const PORTAL_CARD_METADATA: Record<
   student: {
     audience: "Enrolled CCE Undergraduates (2025–2029)",
     description:
-      "Submit PGPA activities, upload evidence and track progress.",
-    tags: ["Point Submission", "Evidence Vault", "Grade Audit"],
+      "Submit academic activities, upload evidence and track PGPA progress.",
+    tags: ["Point Submission", "Evidence Vault", "PGPA Progress"],
   },
   mentor: {
     audience: "Faculty Advisors & Verification Officers",
     description:
-      "Review assigned students, verify evidence and provide remarks.",
+      "Review student submissions, verify evidence and provide feedback.",
     tags: ["Mentee Directory", "Evidence Audit", "Remarks Ledger"],
   },
   hod: {
     audience: "Head of Department & Academic Governance",
     description:
-      "Manage students, mentor allocations and academic performance.",
-    tags: ["Cohort Analytics", "Mentor Allocation", "QR Verification"],
+      "Monitor department-wide performance, mentor activity and PGPA progress.",
+    tags: ["Cohort Analytics", "Mentor Allocation", "Executive Reports"],
   },
   admin: {
     audience: "System Administration & Infrastructure",
     description:
-      "Technical console, PostgreSQL directory authority, RBAC policy enforcement, and system audit oversight.",
-    tags: ["System Directory", "RBAC Enforcement", "Audit Oversight"],
+      "Manage student accounts, mentors, components and system configuration.",
+    tags: ["System Directory", "RBAC Policies", "System Audit"],
   },
 };
+
+const STAGGER_CLASSES = ["stagger-1", "stagger-2", "stagger-3", "stagger-4"];
 
 export function PortalSelection() {
   const { user, logout, isLoading } = useAuth();
 
   // Determine authorized roles for current session
-  // If not authenticated, display all 3 academic portals to allow signing in
-  // If authenticated, display only the portals the user is authorized to access
+  // If not authenticated, display all 4 portals (Student, Mentor, HOD, Admin)
+  // If authenticated, display authorized portals
   const authorizedRoles: UserRole[] = React.useMemo(() => {
     if (!user || isLoading) {
-      return ["student", "mentor", "hod"];
+      return ["student", "mentor", "hod", "admin"];
     }
     if (user.role === "hod") {
       // HOD possesses dual capabilities: Department Head and Faculty Mentor
@@ -198,22 +197,22 @@ export function PortalSelection() {
   }, [user, isLoading]);
 
   return (
-    <div className="w-full min-h-[100dvh] md:min-h-0 md:h-full flex-1 flex flex-col justify-between bg-[#fcfcfd] text-slate-900 overflow-x-hidden selection:bg-sky-100 selection:text-sky-900">
+    <div className="w-full min-h-[100dvh] flex flex-col justify-between bg-[#fbfbfc] dark:bg-[#0c1117] text-slate-900 dark:text-slate-100 overflow-x-hidden selection:bg-sky-100 selection:text-sky-900 dark:selection:bg-sky-900/40 dark:selection:text-sky-200">
       {/* =========================================================================
-          1. COMPACT INSTITUTIONAL HEADER
+          1. REFINED APPLE-INSPIRED INSTITUTIONAL HEADER
           Dedicated Desktop & Mobile compositions with SEC emblem & Sairam branding
           ========================================================================= */}
-      <header className="w-full shrink-0 border-b border-slate-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-40 transition-colors shadow-2xs">
+      <header className="w-full shrink-0 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-40 transition-colors shadow-2xs">
         <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8">
-          <div className="flex h-13 sm:h-14 md:h-14 items-center justify-between gap-2.5 sm:gap-4">
+          <div className="flex h-14 sm:h-16 items-center justify-between gap-2.5 sm:gap-4">
             {/* Left: SEC Institutional Emblem & College Identification */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Link
                 href="/"
-                className="flex items-center gap-2 sm:gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 rounded-lg p-0.5"
+                className="flex items-center gap-2.5 sm:gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 rounded-xl p-1 min-h-[44px]"
                 title="Sri Sairam Engineering College - CCE PGPA Portal"
               >
-                <div className="relative h-9 w-9 sm:h-10 sm:w-10 md:h-10 md:w-10 shrink-0 flex items-center justify-center">
+                <div className="relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 flex items-center justify-center">
                   <Image
                     src="/images/sec logo.png"
                     alt="Sri Sairam Engineering College Crest"
@@ -224,15 +223,15 @@ export function PortalSelection() {
                   />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-extrabold text-[12px] sm:text-[13.5px] md:text-[14px] tracking-tight text-[#0f2942] uppercase leading-tight truncate">
+                  <span className="font-extrabold text-[12px] sm:text-[13.5px] md:text-[14px] tracking-tight text-[#0f2942] dark:text-slate-100 uppercase leading-tight truncate">
                     Sri Sairam Engineering College
                   </span>
-                  <div className="flex items-center gap-1.5 text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                  <div className="flex items-center gap-1.5 text-[9.5px] sm:text-[10.5px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
                     <span className="truncate">Autonomous Institution</span>
-                    <span className="hidden sm:inline text-slate-300" aria-hidden="true">&bull;</span>
+                    <span className="hidden sm:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
                     <span className="hidden sm:inline truncate">Anna University Affiliated</span>
-                    <span className="hidden md:inline text-slate-300" aria-hidden="true">&bull;</span>
-                    <span className="hidden md:inline text-sky-700 font-semibold truncate">NBA &amp; NAAC &apos;A+&apos;</span>
+                    <span className="hidden md:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
+                    <span className="hidden md:inline text-sky-600 dark:text-sky-400 font-semibold truncate">NBA &amp; NAAC &apos;A+&apos;</span>
                   </div>
                 </div>
               </Link>
@@ -241,24 +240,27 @@ export function PortalSelection() {
             {/* Right: Department Identity & Sairam Institutions Brand */}
             <div className="flex items-center gap-2 sm:gap-3.5 lg:gap-4 shrink-0">
               {/* Desktop Department Identity Lockup */}
-              <div className="hidden lg:flex flex-col items-end text-right border-r border-slate-200/90 pr-3.5">
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-800">
+              <div className="hidden lg:flex flex-col items-end text-right border-r border-slate-200/90 dark:border-slate-800 pr-3.5">
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                   Department of CCE
                 </span>
-                <span className="text-[9.5px] text-slate-500 font-medium">
+                <span className="text-[9.5px] text-slate-500 dark:text-slate-400 font-medium">
                   Academic Performance Portal
                 </span>
               </div>
 
+              {/* Theme Toggle Button */}
+              <ThemeToggle size="sm" />
+
               {/* Sairam Institutions Official Logo */}
-              <div className="relative h-7 sm:h-8 md:h-8 w-auto shrink-0 flex items-center">
+              <div className="relative h-7 sm:h-8 w-auto shrink-0 flex items-center">
                 <Image
                   src="/images/logo1.png"
                   alt="Sri Sairam Institutions Logo"
-                  width={60}
+                  width={64}
                   height={36}
                   priority
-                  className="h-6.5 sm:h-7.5 md:h-7.5 w-auto object-contain"
+                  className="h-6.5 sm:h-7.5 w-auto object-contain"
                 />
               </div>
             </div>
@@ -271,18 +273,18 @@ export function PortalSelection() {
           Engineered for balanced viewport fit on Desktop (1280, 1366, 1440, 1920)
           and thumb-optimized vertical stack on Mobile (360, 390, 430)
           ========================================================================= */}
-      <main className="w-full flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-2.5 sm:py-3 md:py-2.5 lg:py-3 min-h-0">
+      <main className="w-full flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-5 sm:py-6 md:py-7 min-h-0">
         {/* Department Title & Institutional Heading */}
-        <section className="text-center w-full max-w-3xl mx-auto space-y-1 sm:space-y-1.5 shrink-0">
+        <section className="text-center w-full max-w-3xl mx-auto space-y-2 sm:space-y-2.5 shrink-0 animate-apple-fade">
           {/* Department Identity Element */}
           <div
             id="department-identity-container"
-            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 rounded-xl sm:rounded-full bg-slate-100/90 border border-slate-200/90 shadow-2xs max-w-full"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs max-w-full"
           >
-            <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-sky-600 shrink-0" aria-hidden="true" />
+            <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-sky-600 dark:bg-sky-400 shrink-0" aria-hidden="true" />
             <span
               id="department-identity-name"
-              className="font-bold tracking-wider uppercase text-slate-700 text-center leading-snug break-words whitespace-normal md:whitespace-nowrap"
+              className="font-bold tracking-wider uppercase text-slate-700 dark:text-slate-300 text-center leading-snug break-words whitespace-normal md:whitespace-nowrap"
               style={{ fontSize: "clamp(10px, 1.8vw, 11.5px)" }}
             >
               DEPARTMENT OF COMPUTER AND COMMUNICATION ENGINEERING
@@ -291,28 +293,28 @@ export function PortalSelection() {
 
           {/* Institutional Portal Name & Tagline */}
           <div className="space-y-0.5">
-            <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-[34px] font-black tracking-tight text-[#800000] leading-tight">
-              CCE PGPA
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-[#800000] dark:text-[#f87171] leading-tight">
+              CCE Achieve
             </h1>
-            <p className="text-[10px] sm:text-[11px] md:text-xs font-bold uppercase tracking-[0.2em] text-[#0f2942]">
+            <p className="text-[10px] sm:text-[11px] md:text-xs font-bold uppercase tracking-[0.22em] text-[#0f2942] dark:text-slate-300">
               PGPA MANAGEMENT SYSTEM
             </p>
           </div>
 
-          <p className="text-[11px] sm:text-xs font-medium text-slate-600 italic">
+          <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 italic">
             &ldquo;Academic Performance. Structured. Simplified.&rdquo;
           </p>
         </section>
 
         {/* Discreet Active Session Status Bar (if already signed in) */}
         {user && !isLoading && (
-          <div aria-label="Current Session" className="w-full max-w-2xl mx-auto mt-2 sm:mt-2.5 shrink-0">
-            <div className="rounded-lg border border-sky-200/90 bg-sky-50/80 py-1.5 px-3 sm:px-3.5 text-xs text-sky-950 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
-              <div className="flex items-center gap-1.5">
+          <div aria-label="Current Session" className="w-full max-w-2xl mx-auto mt-4 shrink-0 animate-apple-fade">
+            <div className="rounded-xl border border-sky-200/90 dark:border-sky-800/80 bg-sky-50/80 dark:bg-sky-950/60 py-2 px-3.5 sm:px-4 text-xs text-sky-950 dark:text-sky-200 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+              <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" aria-hidden="true" />
                 <span className="font-medium text-[11px] sm:text-xs">
-                  Active Session: <strong className="font-semibold text-slate-900">{user.full_name}</strong>{" "}
-                  <span className="text-sky-800">
+                  Active Session: <strong className="font-semibold text-slate-900 dark:text-white">{user.full_name}</strong>{" "}
+                  <span className="text-sky-800 dark:text-sky-300">
                     ({user.role === "hod" ? "Department HOD & Mentor" : ROLE_CONFIGS[user.role]?.shortTitle})
                   </span>
                 </span>
@@ -322,14 +324,14 @@ export function PortalSelection() {
                   <>
                     <Link
                       href="/hod"
-                      className="font-semibold text-purple-700 hover:text-purple-900 hover:underline inline-flex items-center gap-1"
+                      className="font-semibold text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 hover:underline inline-flex items-center gap-1"
                     >
                       HOD Dashboard &rarr;
                     </Link>
-                    <span className="text-sky-300" aria-hidden="true">&bull;</span>
+                    <span className="text-sky-300 dark:text-sky-700" aria-hidden="true">&bull;</span>
                     <Link
                       href="/mentor"
-                      className="font-semibold text-indigo-700 hover:text-indigo-900 hover:underline inline-flex items-center gap-1"
+                      className="font-semibold text-indigo-700 dark:text-indigo-300 hover:text-indigo-900 dark:hover:text-indigo-100 hover:underline inline-flex items-center gap-1"
                     >
                       Mentor Dashboard &rarr;
                     </Link>
@@ -337,16 +339,16 @@ export function PortalSelection() {
                 ) : (
                   <Link
                     href={ROLE_CONFIGS[user.role]?.dashboardPath || `/${user.role}`}
-                    className="font-semibold text-sky-700 hover:text-sky-900 hover:underline inline-flex items-center gap-1"
+                    className="font-semibold text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-sky-100 hover:underline inline-flex items-center gap-1"
                   >
                     Open Dashboard &rarr;
                   </Link>
                 )}
-                <span className="text-sky-300" aria-hidden="true">&bull;</span>
+                <span className="text-sky-300 dark:text-sky-700" aria-hidden="true">&bull;</span>
                 <button
                   type="button"
                   onClick={() => logout()}
-                  className="font-medium text-slate-600 hover:text-rose-700 hover:underline cursor-pointer"
+                  className="font-medium text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:underline cursor-pointer"
                 >
                   Sign Out
                 </button>
@@ -356,27 +358,27 @@ export function PortalSelection() {
         )}
 
         {/* Portal Selection Divider */}
-        <div className="w-full max-w-4xl mx-auto flex items-center justify-center gap-3 my-2 sm:my-2.5 md:my-2.5 lg:my-3 shrink-0">
-          <span className="h-px flex-1 max-w-[50px] sm:max-w-[80px] bg-slate-200" aria-hidden="true" />
-          <span className="text-[9.5px] sm:text-[10.5px] font-bold uppercase tracking-[0.16em] text-slate-400 text-center">
+        <div className="w-full max-w-4xl mx-auto flex items-center justify-center gap-3 my-4 sm:my-5 shrink-0">
+          <span className="h-px flex-1 max-w-[60px] sm:max-w-[100px] bg-slate-200 dark:bg-slate-800" aria-hidden="true" />
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500 text-center">
             {user && !isLoading
               ? "Select Authorized Portal to Enter"
               : "Select Institutional Portal to Sign In"}
           </span>
-          <span className="h-px flex-1 max-w-[50px] sm:max-w-[80px] bg-slate-200" aria-hidden="true" />
+          <span className="h-px flex-1 max-w-[60px] sm:max-w-[100px] bg-slate-200 dark:bg-slate-800" aria-hidden="true" />
         </div>
 
         {/* Portal Selection Cards */}
         <div
-          className={`grid gap-3 sm:gap-3.5 md:gap-4 lg:gap-5 w-full ${
+          className={`grid gap-4 sm:gap-4 md:gap-5 lg:gap-5 w-full ${
             authorizedRoles.length === 1
               ? "grid-cols-1 max-w-md mx-auto"
               : authorizedRoles.length === 2
               ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto"
-              : "grid-cols-1 md:grid-cols-3 max-w-5xl mx-auto"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto"
           }`}
         >
-          {authorizedRoles.map((roleKey) => {
+          {authorizedRoles.map((roleKey, idx) => {
             const cfg = ROLE_CONFIGS[roleKey];
             const theme = PORTAL_CARD_THEMES[roleKey] || PORTAL_CARD_THEMES.student;
             const meta = PORTAL_CARD_METADATA[roleKey] || PORTAL_CARD_METADATA.student;
@@ -397,28 +399,30 @@ export function PortalSelection() {
                 ? "Review assigned students, verify evidence and provide remarks."
                 : meta.description;
 
+            const staggerClass = STAGGER_CLASSES[idx % STAGGER_CLASSES.length];
+
             return (
               <Link
                 key={roleKey}
                 href={cardHref}
                 id={`portal-card-${roleKey}`}
-                className={`group relative flex flex-col justify-between rounded-xl border ${theme.cardBorder} ${theme.hoverBorder} ${theme.hoverShadow} bg-white p-3.5 sm:p-4 md:p-3.5 lg:p-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${theme.focusRing} w-full h-full overflow-hidden`}
+                className={`apple-pressable group relative flex flex-col justify-between rounded-2xl border ${theme.cardBorder} ${theme.hoverBorder} ${theme.hoverShadow} bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-4 sm:p-5 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.3)] hover:-translate-y-1 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${theme.focusRing} w-full min-h-[220px] overflow-hidden animate-apple-slide-up ${staggerClass}`}
               >
                 {/* Top Subtle Color Accent Bar */}
                 <div
-                  className={`absolute top-0 left-0 right-0 h-[3px] ${theme.accentBar}`}
+                  className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${theme.accentGradient}`}
                   aria-hidden="true"
                 />
 
-                <div className="flex-1 flex flex-col pt-0.5">
+                <div className="flex-1 flex flex-col pt-1">
                   {/* Card Header: Role Icon & Official Badge */}
-                  <div className="flex items-center justify-between gap-2 mb-2 sm:mb-2.5">
+                  <div className="flex items-center justify-between gap-2 mb-3">
                     <div
-                      className={`flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg ${theme.iconBg} ${theme.iconText} ${theme.iconHoverBg} ${theme.iconHoverText} transition-colors duration-200 shadow-2xs`}
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${theme.iconBg} ${theme.iconText} ${theme.iconHoverBg} ${theme.iconHoverText} transition-colors duration-200 shadow-2xs`}
                     >
                       {roleKey === "student" && (
                         <svg
-                          className="h-4.5 w-4.5 sm:h-5 sm:w-5"
+                          className="h-5 w-5"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -433,7 +437,7 @@ export function PortalSelection() {
                       )}
                       {roleKey === "mentor" && (
                         <svg
-                          className="h-4.5 w-4.5 sm:h-5 sm:w-5"
+                          className="h-5 w-5"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -442,13 +446,15 @@ export function PortalSelection() {
                           strokeLinejoin="round"
                           aria-hidden="true"
                         >
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                          <path d="m9 12 2 2 4-4" />
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                          <circle cx="9" cy="7" r="4" />
+                          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                         </svg>
                       )}
                       {roleKey === "hod" && (
                         <svg
-                          className="h-4.5 w-4.5 sm:h-5 sm:w-5"
+                          className="h-5 w-5"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -462,7 +468,7 @@ export function PortalSelection() {
                       )}
                       {roleKey === "admin" && (
                         <svg
-                          className="h-4.5 w-4.5 sm:h-5 sm:w-5"
+                          className="h-5 w-5"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -471,15 +477,14 @@ export function PortalSelection() {
                           strokeLinejoin="round"
                           aria-hidden="true"
                         >
-                          <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                          <line x1="8" y1="21" x2="16" y2="21" />
-                          <line x1="12" y1="17" x2="12" y2="21" />
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                          <path d="m9 12 2 2 4-4" />
                         </svg>
                       )}
                     </div>
 
                     <span
-                      className={`text-[9.5px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 text-center ${theme.badgeBorder} ${theme.badgeBg} ${theme.badgeText}`}
+                      className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border whitespace-nowrap shrink-0 text-center ${theme.badgeBorder} ${theme.badgeBg} ${theme.badgeText}`}
                     >
                       {badgeLabel}
                     </span>
@@ -488,26 +493,26 @@ export function PortalSelection() {
                   {/* Title & Audience Identification */}
                   <div>
                     <h2
-                      className={`text-[15px] sm:text-[16px] md:text-[16.5px] font-bold text-slate-900 ${theme.titleHover} transition-colors leading-snug`}
+                      className={`text-[16px] sm:text-[17px] font-bold text-slate-900 dark:text-slate-100 ${theme.titleHover} transition-colors leading-snug`}
                     >
                       {cfg.portalName}
                     </h2>
-                    <p className="text-[10.5px] sm:text-[11px] font-medium text-slate-500 mt-0.5 leading-tight">
+                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
                       {meta.audience}
                     </p>
                   </div>
 
                   {/* Concise Institutional Description */}
-                  <p className="mt-1.5 sm:mt-2 text-[11.5px] sm:text-xs text-slate-600 leading-relaxed min-h-[32px]">
+                  <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed min-h-[36px]">
                     {descriptionText}
                   </p>
 
                   {/* Key Capabilities Chips */}
-                  <div className="mt-2 sm:mt-2.5 flex flex-wrap gap-1.5" aria-label="Portal Capabilities">
+                  <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Portal Capabilities">
                     {meta.tags.map((tag) => (
                       <span
                         key={tag}
-                        className={`text-[9px] sm:text-[9.5px] font-medium px-2 py-0.5 rounded border ${theme.tagBorder} ${theme.tagBg} ${theme.tagText}`}
+                        className={`text-[9.5px] font-medium px-2 py-0.5 rounded-md border ${theme.tagBorder} ${theme.tagBg} ${theme.tagText}`}
                       >
                         {tag}
                       </span>
@@ -517,7 +522,7 @@ export function PortalSelection() {
 
                 {/* Bottom Action CTA Button */}
                 <div
-                  className={`mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between min-h-[38px] sm:min-h-[40px] px-3 sm:px-3.5 py-1.5 rounded-lg ${theme.ctaBg} ${theme.ctaText} ${theme.ctaBorder} ${theme.ctaHoverBg} ${theme.ctaHoverText} ${theme.ctaHoverBorder} border transition-all duration-200 text-xs sm:text-[12.5px] font-semibold`}
+                  className={`mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between min-h-[40px] px-3.5 py-2 rounded-xl ${theme.ctaBg} ${theme.ctaText} ${theme.ctaBorder} ${theme.ctaHoverBg} ${theme.ctaHoverText} ${theme.ctaHoverBorder} border transition-all duration-200 text-xs font-semibold`}
                 >
                   <span className="truncate pr-2 font-medium group-hover:font-semibold transition-all">
                     {ctaLabel}
@@ -540,13 +545,13 @@ export function PortalSelection() {
           Founder Chairman subtle identity, FineWorks development wordmark,
           and institutional legal / governance fine print
           ========================================================================= */}
-      <footer className="w-full shrink-0 mt-auto border-t border-slate-200/90 bg-slate-50/70 py-2.5 sm:py-3 lg:py-2.5 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl flex flex-col space-y-2 sm:space-y-2.5 lg:space-y-1.5">
+      <footer className="w-full shrink-0 mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-950/60 py-3 sm:py-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-col space-y-2.5 sm:space-y-3">
           {/* Upper Footer: Founder Chairman Identity & FINEWORKS Development Branding */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 border-b border-slate-200/70 pb-2 sm:pb-2.5 lg:pb-1.5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 border-b border-slate-200/70 dark:border-slate-800/70 pb-2.5 sm:pb-3">
             {/* Founder Chairman Medallion */}
             <div className="flex items-center gap-2.5 sm:gap-3">
-              <div className="relative h-8 w-8 sm:h-9 sm:w-9 md:h-9 md:w-9 shrink-0">
+              <div className="relative h-8 w-8 sm:h-9 sm:w-9 shrink-0">
                 <Image
                   src="/images/founder logo.png"
                   alt="Founder Chairman MJF. Ln. Leo Muthu"
@@ -556,10 +561,10 @@ export function PortalSelection() {
                 />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-xs sm:text-[12.5px] font-bold text-slate-800 leading-tight">
+                <span className="text-xs sm:text-[12.5px] font-bold text-slate-800 dark:text-slate-200 leading-tight">
                   MJF. Ln. Leo Muthu
                 </span>
-                <span className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                <span className="text-[9.5px] sm:text-[10.5px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
                   Founder Chairman &bull; Sri Sairam Group of Institutions
                 </span>
               </div>
@@ -567,12 +572,12 @@ export function PortalSelection() {
 
             {/* FINEWORKS Tasteful Development Wordmark */}
             <div className="flex flex-col items-center sm:items-end text-center sm:text-right">
-              <span className="text-[9.5px] font-semibold uppercase tracking-wider text-slate-400">
+              <span className="text-[9.5px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 Designed &amp; Developed by
               </span>
               <div className="inline-flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs sm:text-[12.5px] font-extrabold tracking-[0.22em] text-slate-900">
-                  FINE<span className="text-sky-600">WORKS</span>
+                <span className="text-xs sm:text-[12.5px] font-extrabold tracking-[0.22em] text-slate-900 dark:text-white">
+                  FINE<span className="text-sky-600 dark:text-sky-400">WORKS</span>
                 </span>
                 <span className="h-1.5 w-1.5 rounded-full bg-sky-500" aria-hidden="true" />
               </div>
@@ -580,24 +585,24 @@ export function PortalSelection() {
           </div>
 
           {/* Lower Footer: Legal, Department Notice & Subtle Admin Login */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2 text-center sm:text-left text-[10px] sm:text-[10.5px] text-slate-500">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2 text-center sm:text-left text-[10px] sm:text-[10.5px] text-slate-500 dark:text-slate-400">
             <div>
               <span>Department of Computer and Communication Engineering</span>
-              <span className="hidden sm:inline mx-1.5 text-slate-300" aria-hidden="true">&bull;</span>
+              <span className="hidden sm:inline mx-1.5 text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
               <span className="block sm:inline">Sri Sairam Engineering College (Autonomous)</span>
             </div>
 
             <div className="flex items-center gap-2">
               <Link
                 href="/login/admin"
-                className="hover:underline hover:text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors text-[10px] text-slate-400"
+                className="hover:underline hover:text-slate-800 dark:hover:text-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors text-[10px] text-slate-400 dark:text-slate-500"
                 title="System Administrator Portal Login"
                 aria-label="System Administrator Portal Login"
               >
-                CCE-PGPA Management System
+                CCE Achieve System
               </Link>
-              <span className="text-slate-300" aria-hidden="true">&bull;</span>
-              <span className="text-[10px] text-slate-400">Version 1.0.0</span>
+              <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">Version 1.0.0</span>
             </div>
           </div>
         </div>
