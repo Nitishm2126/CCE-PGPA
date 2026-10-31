@@ -255,8 +255,10 @@ CLUBS_CUMULATIVE_THRESHOLDS: Dict[int, Dict[str, int]] = {
 
 def grade_clubs_and_cells(points: float, semester: int) -> Tuple[str, int]:
     """Table 7.2 Cumulative Clubs & Cells grade thresholds."""
-    safe_sem = max(1, min(10, semester)) if semester > 0 else 1
-    thresholds = CLUBS_CUMULATIVE_THRESHOLDS.get(safe_sem, CLUBS_CUMULATIVE_THRESHOLDS[8])
+    min_sem = min(CLUBS_CUMULATIVE_THRESHOLDS.keys())
+    max_sem = max(CLUBS_CUMULATIVE_THRESHOLDS.keys())
+    sem = max(min_sem, min(max_sem, semester))
+    thresholds = CLUBS_CUMULATIVE_THRESHOLDS[sem]
     if points >= thresholds["O"]:
         return "O", 10
     elif points >= thresholds["A+"]:
@@ -287,11 +289,11 @@ def calculate_sports_points(position: Optional[str], competition_level: Optional
     Calculate sports points from Table 8.1.
     Returns (points, criteria_pending) where criteria_pending=True means HOD must confirm.
     """
-    pos = (position or "").strip().lower()
-    level = (competition_level or "").strip().lower()
-
-    if not pos or not level:
+    if not position or not competition_level:
         return 0, True
+
+    pos = str(position).strip().lower()
+    level = str(competition_level).strip().lower()
 
     if "all india" in level:
         return 0, True  # Pending HOD confirmation

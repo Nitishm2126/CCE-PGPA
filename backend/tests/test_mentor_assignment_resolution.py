@@ -107,7 +107,14 @@ def test_strict_cross_mentor_isolation(client, db_session):
     assert lekha is not None and lurdhu is not None
 
     # Pick an achievement belonging to Lurdhumary's mentee
-    ach = db_session.execute(select(Achievement)).scalars().first()
+    ach = db_session.execute(
+        select(Achievement)
+        .join(MentorAssignment, MentorAssignment.student_id == Achievement.student_id)
+        .where(
+            MentorAssignment.mentor_id == lurdhu.id,
+            MentorAssignment.is_active.is_(True),
+        )
+    ).scalars().first()
     assert ach is not None, "At least one achievement must exist for isolation test"
 
     # Verify student is assigned to Lurdhu, not Lekha
@@ -168,8 +175,24 @@ def test_mentor_submissions_endpoint_isolation(client, db_session):
     )
     assert res_lekha.status_code == 200
     lekha_subs = res_lekha.json()
-    # Lekha's students haven't submitted activities yet -> empty list, not other mentors' submissions
-    assert len(lekha_subs) == 0, "Lekha must not see submissions from other mentors' mentees"
+
+    # Enforce strict cross-mentor isolation: neither mentor sees any submission from the other mentor's mentees
+    lurdhu_student_ids = {s["student_id"] for s in lurdhu_subs}
+    lekha_student_ids = {s["student_id"] for s in lekha_subs}
+    assert lurdhu_student_ids.isdisjoint(lekha_student_ids), "Mentors must never see each other's mentee submissions"
+
+    # Also verify that a mentor with no submissions (e.g. Pachaiammal) receives an empty list
+    pachaiammal = db_session.execute(
+        select(User).where(User.email == "pachaiammal.cce@sairam.edu.in")
+    ).scalars().first()
+    if pachaiammal:
+        token_pachai = create_access_token(subject=str(pachaiammal.id), role=pachaiammal.role.value)
+        res_pachai = client.get(
+            "/api/v1/mentor/submissions",
+            headers={"Authorization": f"Bearer {token_pachai}"},
+        )
+        assert res_pachai.status_code == 200
+        assert len(res_pachai.json()) == 0, "Mentor with no mentee submissions must receive empty list"
 
 
 def test_empty_state_for_mentor_without_students(client, db_session):

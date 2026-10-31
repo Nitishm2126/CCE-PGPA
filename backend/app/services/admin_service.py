@@ -1409,6 +1409,7 @@ def import_roster_data(
 
     # 4. Transactional import execution
     admin_created = False
+    resolved_initial_password = initial_password.strip() if initial_password and initial_password.strip() else "cce@123"
     try:
         summary = execute_roster_import(
             session=db,
@@ -1417,7 +1418,7 @@ def import_roster_data(
             students_data=validated_students,
             output_credentials_path=None,
             allow_unassigned_mentors=True,
-            initial_password=initial_password,
+            initial_password=resolved_initial_password,
         )
 
         # 5. Optional admin account provisioning

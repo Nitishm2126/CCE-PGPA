@@ -27,7 +27,6 @@ import { MessageDrawerModal } from "@/components/messages/MessageDrawerModal";
 import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { DesignationBadge } from "@/components/DesignationBadge";
 import { RoleBadge } from "@/components/RoleBadge";
-import { StudentPGPASummaryCard } from "@/components/student/StudentPGPASummaryCard";
 import { PGPAPerformanceTracker } from "@/components/student/PGPAPerformanceTracker";
 
 export default function StudentDashboardPage() {
@@ -560,12 +559,6 @@ export default function StudentDashboardPage() {
                 </div>
               </div>
             </div>
-
-            {/* Official PGPA Formula Calculation & Breakdown Card */}
-            <StudentPGPASummaryCard
-              token={token}
-              onNavigateComponents={() => setActiveTab("components")}
-            />
 
             {/* Interactive PGPA Performance Tracker (Pure SVG Points Time-Series & 5 Target Cards) */}
             <PGPAPerformanceTracker

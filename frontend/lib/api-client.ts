@@ -62,7 +62,8 @@ import {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  (typeof window !== "undefined" && window.location.hostname.includes("vercel.app")
+  (typeof window !== "undefined" &&
+  !["localhost", "127.0.0.1", "::1"].includes(window.location.hostname)
     ? "https://cce-pgpa.onrender.com/api/v1"
     : "http://127.0.0.1:8000/api/v1");
 
@@ -179,7 +180,7 @@ async function request<T>(
     headers["Authorization"] = `Bearer ${authToken}`;
   }
 
-  const { timeoutMs = 12000, ...fetchOptions } = options;
+  const { timeoutMs = 45000, ...fetchOptions } = options;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 

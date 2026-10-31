@@ -63,9 +63,9 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
           Promise<StudentComponentResultItem[]>,
           Promise<AchievementResponse[]> | Promise<null>
         ] = [
-          api.getMyComponentResults({ token }),
-          achievementsProp ? Promise.resolve(null) : api.getMyAchievements(token),
-        ];
+            api.getMyComponentResults({ token }),
+            achievementsProp ? Promise.resolve(null) : api.getMyAchievements(token),
+          ];
 
         const [resultsData, achievementsData] = await Promise.all(promises);
 
@@ -108,62 +108,62 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
       category: string;
       icon: React.ReactNode;
     }[] = [
-      {
-        name: "Clubs & Cells",
-        slug: "clubs-and-cells",
-        shortName: "Clubs",
-        category: "Institutional Engagement",
-        icon: (
-          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-          </svg>
-        ),
-      },
-      {
-        name: "NPTEL Non-Credit Transfer",
-        slug: "nptel-non-credit-transfer",
-        shortName: "NPTEL",
-        category: "Academic Enrichment",
-        icon: (
-          <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-5.25 6.557c.75.25 1.5.474 2.25.672" />
-          </svg>
-        ),
-      },
-      {
-        name: "Online Certifications",
-        slug: "online-certifications",
-        shortName: "Online Certs",
-        category: "Skill Development",
-        icon: (
-          <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
-          </svg>
-        ),
-      },
-      {
-        name: "Internship",
-        slug: "internship",
-        shortName: "Internship",
-        category: "Industry Experience",
-        icon: (
-          <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z" />
-          </svg>
-        ),
-      },
-      {
-        name: "Sports & Games",
-        slug: "sports-and-games",
-        shortName: "Sports",
-        category: "Athletics & Physical Fitness",
-        icon: (
-          <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.004 0H9.496m5.004 0V9.75a3 3 0 10-6 0v4.5m6 0a3 3 0 00-3-3m-3 3a3 3 0 013-3m0 0V3.75" />
-          </svg>
-        ),
-      },
-    ];
+        {
+          name: "Clubs & Cells",
+          slug: "clubs-and-cells",
+          shortName: "Clubs",
+          category: "Institutional Engagement",
+          icon: (
+            <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+            </svg>
+          ),
+        },
+        {
+          name: "NPTEL Non-Credit Transfer",
+          slug: "nptel-non-credit-transfer",
+          shortName: "NPTEL",
+          category: "Academic Enrichment",
+          icon: (
+            <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-5.25 6.557c.75.25 1.5.474 2.25.672" />
+            </svg>
+          ),
+        },
+        {
+          name: "Online Certifications",
+          slug: "online-certifications",
+          shortName: "Online Certs",
+          category: "Skill Development",
+          icon: (
+            <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+            </svg>
+          ),
+        },
+        {
+          name: "Internship",
+          slug: "internship",
+          shortName: "Internship",
+          category: "Industry Experience",
+          icon: (
+            <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z" />
+            </svg>
+          ),
+        },
+        {
+          name: "Sports & Games",
+          slug: "sports-and-games",
+          shortName: "Sports",
+          category: "Athletics & Physical Fitness",
+          icon: (
+            <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.004 0H9.496m5.004 0V9.75a3 3 0 10-6 0v4.5m6 0a3 3 0 00-3-3m-3 3a3 3 0 013-3m0 0V3.75" />
+            </svg>
+          ),
+        },
+      ];
 
     return definitions.map((def) => {
       const res = slugMap[def.slug] || null;
@@ -201,8 +201,6 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
       title: string;
       points: number;
       isPending: boolean;
-      semesterNumber?: number;
-      semesterId?: string;
     }
 
     const records: PointRecord[] = [];
@@ -211,8 +209,6 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
     activeAchievements.forEach((a) => {
       const dStr = a.event_date || a.updated_at || a.created_at;
       const d = dStr ? new Date(dStr) : new Date();
-      const semNum = a.semester_number || a.semester?.semester_number || undefined;
-      const semId = a.semester_id ? String(a.semester_id) : undefined;
 
       if (a.status === "approved" && a.evaluated_points !== null && a.evaluated_points !== undefined) {
         records.push({
@@ -221,8 +217,6 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
           title: a.title,
           points: Number(a.evaluated_points),
           isPending: false,
-          semesterNumber: semNum,
-          semesterId: semId,
         });
       } else if (a.status === "pending") {
         // Tentative points from metadata
@@ -234,8 +228,6 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
             title: a.title,
             points: tentativePts,
             isPending: true,
-            semesterNumber: semNum,
-            semesterId: semId,
           });
         }
       }
@@ -256,36 +248,14 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
             title: r.component_name || "Verified PGPA Component",
             points: Number(r.raw_score),
             isPending: false,
-            semesterNumber: r.semester_number || undefined,
-            semesterId: r.semester_id || undefined,
           });
         }
       }
     });
 
-    // Find active / latest semester for "This Semester" filter
-    const maxSemesterNumber = Math.max(
-      0,
-      ...records.map((r) => r.semesterNumber || 0),
-      ...componentResults.map((r) => r.semester_number || 0)
-    );
-    const activeSemesterId =
-      records.find((r) => r.semesterNumber === maxSemesterNumber)?.semesterId ||
-      componentResults.find((r) => r.semester_number === maxSemesterNumber)?.semester_id;
-
     // Filter by time window
     const filtered = records.filter((r) => {
       if (timeFilter === "30days") return r.date >= thirtyDaysAgo;
-      if (timeFilter === "semester") {
-        if (maxSemesterNumber > 0 && r.semesterNumber) {
-          return r.semesterNumber === maxSemesterNumber;
-        }
-        if (activeSemesterId && r.semesterId) {
-          return r.semesterId === activeSemesterId;
-        }
-        const oneSemesterAgo = new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000);
-        return r.date >= oneSemesterAgo;
-      }
       return true;
     });
 
@@ -491,33 +461,30 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
               <button
                 type="button"
                 onClick={() => setTimeFilter("all")}
-                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-                  timeFilter === "all"
-                    ? "bg-blue-600 text-white shadow-2xs"
-                    : "text-slate-600 dark:text-[#7E8B9C] hover:text-slate-900 dark:hover:text-white"
-                }`}
+                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${timeFilter === "all"
+                  ? "bg-blue-600 text-white shadow-2xs"
+                  : "text-slate-600 dark:text-[#7E8B9C] hover:text-slate-900 dark:hover:text-white"
+                  }`}
               >
                 All Time
               </button>
               <button
                 type="button"
                 onClick={() => setTimeFilter("semester")}
-                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-                  timeFilter === "semester"
-                    ? "bg-blue-600 text-white shadow-2xs"
-                    : "text-slate-600 dark:text-[#7E8B9C] hover:text-slate-900 dark:hover:text-white"
-                }`}
+                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${timeFilter === "semester"
+                  ? "bg-blue-600 text-white shadow-2xs"
+                  : "text-slate-600 dark:text-[#7E8B9C] hover:text-slate-900 dark:hover:text-white"
+                  }`}
               >
-                This Semester
+                Semester
               </button>
               <button
                 type="button"
                 onClick={() => setTimeFilter("30days")}
-                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-                  timeFilter === "30days"
-                    ? "bg-blue-600 text-white shadow-2xs"
-                    : "text-slate-600 dark:text-[#7E8B9C] hover:text-slate-900 dark:hover:text-white"
-                }`}
+                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${timeFilter === "30days"
+                  ? "bg-blue-600 text-white shadow-2xs"
+                  : "text-slate-600 dark:text-[#7E8B9C] hover:text-slate-900 dark:hover:text-white"
+                  }`}
               >
                 Last 30 Days
               </button>

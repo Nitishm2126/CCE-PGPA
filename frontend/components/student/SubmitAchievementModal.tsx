@@ -76,14 +76,6 @@ export const calculateTable81Points = (
   const pos = (position || "").trim().toLowerCase();
   const lvl = (competitionLevel || "").trim().toLowerCase();
 
-  if (!pos || !lvl) {
-    return { points: 0, criteriaPending: true };
-  }
-
-  if (lvl.includes("all india")) {
-    return { points: 0, criteriaPending: true };
-  }
-
   let levelKey: "sports_day" | "au_zonal_district" | "au_intl_state" | "national_south_univ" | null = null;
   if (lvl.includes("sports day") || lvl.includes("intra")) {
     levelKey = "sports_day";
@@ -93,6 +85,8 @@ export const calculateTable81Points = (
     levelKey = "au_intl_state";
   } else if (lvl.includes("national") || lvl.includes("south university")) {
     levelKey = "national_south_univ";
+  } else if (lvl.includes("all india")) {
+    return { points: 0, criteriaPending: true };
   }
 
   let posKey: "gold" | "silver" | "bronze" | "participation" | null = null;
@@ -131,23 +125,6 @@ export const scoreToGradeTableB = (score: number): { grade: string; points: numb
   return { grade: "C", points: 1 };
 };
 
-// Institutional Clubs list
-const INSTITUTIONAL_CLUBS = [
-  "Rotaract Club",
-  "Leo Club",
-  "IEEE Student Branch",
-  "CSI Student Chapter",
-  "NCC (National Cadet Corps)",
-  "NSS (National Service Scheme)",
-  "EDC (Entrepreneurship Development Cell)",
-  "Women Empowerment Cell",
-  "Fine Arts Club",
-  "Tamil Mandram",
-  "English Literary Club",
-  "Yuva Tourism Club",
-  "Other Club / Cell",
-];
-
 const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   components,
   initialComponentId,
@@ -167,8 +144,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   const [gpa, setGpa] = useState<string>("");
 
   // 2. Clubs & Cells
-  const [clubName, setClubName] = useState<string>(INSTITUTIONAL_CLUBS[0]);
-  const [customClubName, setCustomClubName] = useState<string>("");
+  const [clubName, setClubName] = useState<string>("");
   const [clubRoleCategory, setClubRoleCategory] = useState<string>("Member");
   const [clubEventLevel, setClubEventLevel] = useState<string>("Within College");
   const [clubActivityTitle, setClubActivityTitle] = useState<string>("");
@@ -436,9 +412,9 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       }
 
       case "clubs-and-cells": {
-        const effectiveClub = clubName === "Other Club / Cell" ? customClubName.trim() : clubName;
+        const effectiveClub = clubName.trim();
         if (!effectiveClub) {
-          throw new Error("Please select or enter the Club / Cell name.");
+          throw new Error("Please enter your Club or Cell name.");
         }
         const effectiveTitle = clubActivityTitle.trim() || `${effectiveClub} ${clubRoleCategory}`;
         payload = {
@@ -1001,26 +977,16 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
                 Club / Cell Name *
               </label>
-              <select
+              <input
+                type="text"
+                required
+                maxLength={150}
+                placeholder="Enter your Club or Cell name"
                 value={clubName}
                 onChange={(e) => setClubName(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
-              >
-                {INSTITUTIONAL_CLUBS.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              {clubName === "Other Club / Cell" && (
-                <input
-                  type="text"
-                  required
-                  placeholder="Enter custom Club / Cell name..."
-                  value={customClubName}
-                  onChange={(e) => setCustomClubName(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4]"
-                />
-              )}
+                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+              />
             </div>
 
             {/* Role / Participation Category */}
@@ -1688,14 +1654,14 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                     {sportsCalculatedResult.points > 699
                       ? "Grade O (10 GP)"
                       : sportsCalculatedResult.points >= 401
-                      ? "Grade A+ (9 GP)"
-                      : sportsCalculatedResult.points >= 250
-                      ? "Grade A (7 GP)"
-                      : sportsCalculatedResult.points >= 91
-                      ? "Grade B+ (5 GP)"
-                      : sportsCalculatedResult.points >= 21
-                      ? "Grade B (3 GP)"
-                      : "Grade C (1 GP)"}
+                        ? "Grade A+ (9 GP)"
+                        : sportsCalculatedResult.points >= 250
+                          ? "Grade A (7 GP)"
+                          : sportsCalculatedResult.points >= 91
+                            ? "Grade B+ (5 GP)"
+                            : sportsCalculatedResult.points >= 21
+                              ? "Grade B (3 GP)"
+                              : "Grade C (1 GP)"}
                   </span>
                 </div>
               )}
@@ -2100,28 +2066,27 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 ? isPdfRequired
                   ? "Semester Marksheet / Grade Sheet (PDF Required) *"
                   : isPdfDisabled
-                  ? "Semester Marksheet / Evidence (Disabled)"
-                  : "Semester Marksheet / Grade Sheet (Optional PDF)"
+                    ? "Semester Marksheet / Evidence (Disabled)"
+                    : "Semester Marksheet / Grade Sheet (Optional PDF)"
                 : isPdfRequired
-                ? "Supporting Evidence PDF (Required) *"
-                : isPdfDisabled
-                ? "Supporting Evidence (Disabled)"
-                : "Supporting Evidence (Optional)"}
+                  ? "Supporting Evidence PDF (Required) *"
+                  : isPdfDisabled
+                    ? "Supporting Evidence (Disabled)"
+                    : "Supporting Evidence (Optional)"}
             </label>
             <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
-                isPdfRequired
+              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${isPdfRequired
                   ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
                   : isPdfDisabled
-                  ? "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
-                  : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
-              }`}
+                    ? "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
+                    : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
+                }`}
             >
               {isPdfRequired
                 ? "Mandatory Evidence • Up to 5 MB"
                 : isPdfDisabled
-                ? "Evidence Disabled • Direct Submit"
-                : "Optional Evidence • Up to 5 MB"}
+                  ? "Evidence Disabled • Direct Submit"
+                  : "Optional Evidence • Up to 5 MB"}
             </span>
           </div>
 
@@ -2129,12 +2094,12 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             {isPdfDisabled
               ? "System Admin policy: Evidence document upload is disabled for this component. You can proceed with submission directly."
               : currentSlug === "academics-gpa"
-              ? isPdfRequired
-                ? "Attach your official university marksheet or grade report PDF for faculty verification (Mandatory)."
-                : "Attach your official university marksheet or grade report PDF if available (Optional for this component)."
-              : isPdfRequired
-              ? "Attach official certificate, event receipt, score card, or completion record (Mandatory PDF)."
-              : "Attach official certificate, event receipt, or completion record if available (Optional for this component)."}
+                ? isPdfRequired
+                  ? "Attach your official university marksheet or grade report PDF for faculty verification (Mandatory)."
+                  : "Attach your official university marksheet or grade report PDF if available (Optional for this component)."
+                : isPdfRequired
+                  ? "Attach official certificate, event receipt, score card, or completion record (Mandatory PDF)."
+                  : "Attach official certificate, event receipt, or completion record if available (Optional for this component)."}
           </p>
 
           {!isPdfDisabled && (
@@ -2163,13 +2128,12 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                       fileInputRef.current.click();
                     }
                   }}
-                  className={`rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${
-                    isDragging
+                  className={`rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${isDragging
                       ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
                       : fileError
-                      ? "border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20"
-                      : "border-slate-300 dark:border-[#2B3543] hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/40 dark:bg-[#1C2531]/40"
-                  }`}
+                        ? "border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20"
+                        : "border-slate-300 dark:border-[#2B3543] hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/40 dark:bg-[#1C2531]/40"
+                    }`}
                 >
                   <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-2">
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -2252,11 +2216,10 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             type="submit"
             disabled={isSubmitting || semesterLoading || isComponentLocked}
             id="btn-submit-achievement"
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-bold text-white shadow-xs transition-colors min-h-[38px] ${
-              isComponentLocked
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-bold text-white shadow-xs transition-colors min-h-[38px] ${isComponentLocked
                 ? "bg-slate-400 dark:bg-slate-600 cursor-not-allowed opacity-60"
                 : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800 cursor-pointer"
-            }`}
+              }`}
           >
             {isComponentLocked ? (
               <>

@@ -1015,23 +1015,25 @@ def test_bootstrap_roster_with_institutional_password_and_must_change_flag():
             assert r["temporary_password"] == "cce@123"
     finally:
         session.rollback()
-        if created_user_ids:
-            with session.begin():
-                session.execute(
-                    text("DELETE FROM mentor_assignments WHERE student_id = ANY(:uids) OR mentor_id = ANY(:uids)"),
-                    {"uids": created_user_ids},
-                )
-                session.execute(
-                    text("DELETE FROM student_profiles WHERE user_id = ANY(:uids)"),
-                    {"uids": created_user_ids},
-                )
-                session.execute(
-                    text("DELETE FROM mentor_profiles WHERE user_id = ANY(:uids)"),
-                    {"uids": created_user_ids},
-                )
-                session.execute(
-                    text("DELETE FROM users WHERE id = ANY(:uids)"),
-                    {"uids": created_user_ids},
-                )
+        all_emails = [hod["email"]] + [m["email"] for m in mentors] + [s["email"] for s in validated_students]
+        uids = session.scalars(select(User.id).where(User.email.in_(all_emails))).all()
+        if uids:
+            session.execute(
+                text("DELETE FROM mentor_assignments WHERE student_id = ANY(:uids) OR mentor_id = ANY(:uids)"),
+                {"uids": uids},
+            )
+            session.execute(
+                text("DELETE FROM student_profiles WHERE user_id = ANY(:uids)"),
+                {"uids": uids},
+            )
+            session.execute(
+                text("DELETE FROM mentor_profiles WHERE user_id = ANY(:uids)"),
+                {"uids": uids},
+            )
+            session.execute(
+                text("DELETE FROM users WHERE id = ANY(:uids)"),
+                {"uids": uids},
+            )
+            session.commit()
         session.close()
         cred_file.unlink(missing_ok=True)

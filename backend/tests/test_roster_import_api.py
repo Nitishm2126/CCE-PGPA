@@ -39,6 +39,14 @@ def generate_mock_students(count: int = 5, prefix: str = None) -> list:
     return students
 
 
+DEFAULT_ROSTER_STAFF_EMAILS = [
+    "hod.cce@sairam.edu.in",
+    "lekha.cce@sairam.edu.in",
+    "lurdhumary.cce@sairam.edu.in",
+    "pachaiammal.cce@sairam.edu.in",
+]
+
+
 @pytest.fixture
 def db_session():
     session = SessionLocal()
@@ -67,6 +75,14 @@ def cleanup_users(emails: list):
                 {"uids": uids},
             )
             session.execute(
+                text("DELETE FROM mentor_profiles WHERE user_id = ANY(:uids)"),
+                {"uids": uids},
+            )
+            session.execute(
+                text("DELETE FROM hod_profiles WHERE user_id = ANY(:uids)"),
+                {"uids": uids},
+            )
+            session.execute(
                 text("DELETE FROM users WHERE id = ANY(:uids)"),
                 {"uids": uids},
             )
@@ -76,6 +92,13 @@ def cleanup_users(emails: list):
         raise
     finally:
         session.close()
+
+
+@pytest.fixture(autouse=True)
+def clean_imported_roster_staff():
+    cleanup_users(DEFAULT_ROSTER_STAFF_EMAILS)
+    yield
+    cleanup_users(DEFAULT_ROSTER_STAFF_EMAILS)
 
 
 def test_roster_bootstrap_unauthenticated(client: TestClient):
