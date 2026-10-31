@@ -73,11 +73,11 @@ export default function StudentDashboardPage() {
   // Authentication & Role Guard
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push("/login");
+      router.push("/login/student");
       return;
     }
     if (!authLoading && user && user.role !== "student") {
-      router.push(`/${user.role}`);
+      router.push("/login/student");
       return;
     }
     if (!authLoading && user && user.must_change_password) {
@@ -564,6 +564,7 @@ export default function StudentDashboardPage() {
             <PGPAPerformanceTracker
               token={token}
               achievements={achievements}
+              visibleComponents={components}
               onNavigateComponents={() => setActiveTab("components")}
               onSubmitActivity={() => handleOpenSubmitModal(null)}
             />
@@ -725,6 +726,7 @@ export default function StudentDashboardPage() {
             <PGPAPerformanceTracker
               token={token}
               achievements={achievements}
+              visibleComponents={components}
               onNavigateComponents={() => setActiveTab("components")}
               onSubmitActivity={() => handleOpenSubmitModal(null)}
             />

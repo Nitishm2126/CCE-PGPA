@@ -2,11 +2,12 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { api, getStoredToken } from "@/lib/api-client";
-import { AchievementResponse, StudentComponentResultItem } from "@/types/achievement";
+import { AchievementResponse, StudentComponentResultItem, PGPAComponentResponse } from "@/types/achievement";
 
 interface PGPAPerformanceTrackerProps {
   token?: string | null;
   achievements?: AchievementResponse[];
+  visibleComponents?: PGPAComponentResponse[];
   onNavigateComponents?: () => void;
   onSubmitActivity?: () => void;
 }
@@ -34,6 +35,7 @@ const TARGET_SLUGS = [
 export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
   token: tokenProp,
   achievements: achievementsProp,
+  visibleComponents,
   onNavigateComponents,
   onSubmitActivity,
 }) => {
@@ -165,7 +167,15 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
         },
       ];
 
-    return definitions.map((def) => {
+    const allowedSlugs = visibleComponents
+      ? new Set(visibleComponents.filter((c) => c.is_visible !== false).map((c) => c.slug))
+      : null;
+
+    const filteredDefinitions = allowedSlugs
+      ? definitions.filter((d) => allowedSlugs.has(d.slug))
+      : definitions;
+
+    return filteredDefinitions.map((def) => {
       const res = slugMap[def.slug] || null;
       const verifiedCount = activeAchievements.filter(
         (a) => a.component_slug === def.slug && a.status === "approved"
@@ -187,12 +197,16 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
         criteriaPending: Boolean(isCriteriaPending),
       };
     });
-  }, [componentResults, activeAchievements]);
+  }, [componentResults, activeAchievements, visibleComponents]);
 
   // Build time-series points from verified achievements & results
   const chartData = useMemo(() => {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const allowedSlugs = visibleComponents
+      ? new Set(visibleComponents.filter((c) => c.is_visible !== false).map((c) => c.slug))
+      : null;
 
     // Collect verified items with their dates and points
     interface PointRecord {
@@ -219,6 +233,9 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
           isPending: false,
         });
       } else if (a.status === "pending") {
+        if (allowedSlugs && a.component_slug && !allowedSlugs.has(a.component_slug)) {
+          return;
+        }
         // Tentative points from metadata
         const tentativePts = Number(a.component_metadata?.calculated_points || a.component_metadata?.points || 0);
         if (tentativePts > 0) {
@@ -322,7 +339,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
       maxProjected,
       hasPending: runningProjected > runningVerified,
     };
-  }, [activeAchievements, componentResults, timeFilter]);
+  }, [activeAchievements, componentResults, timeFilter, visibleComponents]);
 
   // Pure SVG coordinate math
   const svgDimensions = { width: 560, height: 200, paddingLeft: 45, paddingRight: 20, paddingTop: 20, paddingBottom: 35 };

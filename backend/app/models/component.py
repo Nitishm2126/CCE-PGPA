@@ -42,6 +42,13 @@ class PGPAComponent(Base):
         nullable=False,
         index=True,
     )
+    is_visible: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        server_default="true",
+        nullable=False,
+        index=True,
+    )
     credit_value: Mapped[int] = mapped_column(
         Integer,
         default=3,

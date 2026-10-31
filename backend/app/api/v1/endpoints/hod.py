@@ -199,7 +199,14 @@ def get_department_submissions(
         )
         .join(User, Achievement.student_id == User.id)
         .outerjoin(StudentProfile, User.id == StudentProfile.user_id)
-        .where(User.role == UserRole.STUDENT)
+        .join(PGPAComponent, Achievement.component_id == PGPAComponent.id)
+        .where(
+            User.role == UserRole.STUDENT,
+            or_(
+                Achievement.status != AchievementStatus.PENDING,
+                PGPAComponent.is_visible.is_(True),
+            ),
+        )
     )
 
     if status_filter:
@@ -391,6 +398,7 @@ def get_hod_components(
         select(PGPAComponent)
         .where(
             PGPAComponent.is_active.is_(True),
+            PGPAComponent.is_visible.is_(True),
             PGPAComponent.submission_mode.in_(["both", "hod_excel_import", "direct_staff_entry"]),
         )
         .order_by(PGPAComponent.display_order.asc())
@@ -404,6 +412,7 @@ def get_hod_components(
             description=c.description,
             display_order=c.display_order,
             is_active=c.is_active,
+            is_visible=c.is_visible,
             credit_value=c.credit_value,
             submission_mode=c.submission_mode,
             grading_strategy=c.grading_strategy,
@@ -428,6 +437,11 @@ def download_hod_template(
     component = db.get(PGPAComponent, component_id)
     if not component:
         raise HTTPException(status_code=404, detail="Component not found.")
+    if not component.is_visible:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Component '{component.name}' is currently hidden and does not accept imports.",
+        )
 
     semester = db.get(Semester, semester_id)
     if not semester:

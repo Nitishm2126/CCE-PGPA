@@ -23,6 +23,7 @@ class PGPAComponentResponse(BaseModel):
     academic_period: Optional[str] = None
     display_order: int
     is_active: bool
+    is_visible: bool = True
     credit_value: int = 3
     submission_mode: str = "both"
     grading_strategy: str = "categorical"

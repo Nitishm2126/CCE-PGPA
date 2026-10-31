@@ -104,11 +104,11 @@ export default function AdminDashboardPage() {
   // ============================================================================
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push("/login");
+      router.push("/login/admin");
       return;
     }
     if (!authLoading && user && user.role !== "admin") {
-      router.push(`/${user.role}`);
+      router.push("/login/admin");
       return;
     }
     if (!authLoading && user && user.must_change_password) {

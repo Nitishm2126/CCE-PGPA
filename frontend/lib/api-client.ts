@@ -51,6 +51,7 @@ import {
   SemesterDriveAuditReport,
   SemesterDriveProvisionResponse,
   AdminSemesterMatrixResponse,
+  AdminComponentVisibilityResponse,
   ComponentSemesterConfigResponse,
   HODImportPreviewResponse,
   HODImportConfirmResult,
@@ -291,6 +292,11 @@ async function downloadFileWithFilename(
 
 let cachedComponents: PGPAComponentResponse[] | null = null;
 let cachedSemesters: SemesterResponse[] | null = null;
+
+export const clearApiCache = (): void => {
+  cachedComponents = null;
+  cachedSemesters = null;
+};
 
 export const api = {
   login: async (email: string, password: string): Promise<TokenResponse> => {
@@ -672,6 +678,7 @@ export const api = {
       return await request<{ message: string }>("/auth/logout", { method: "POST" }, token);
     } finally {
       clearStoredToken();
+      clearApiCache();
     }
   },
 
@@ -1192,6 +1199,22 @@ export const api = {
     return request<AdminSemesterMatrixResponse>(
       "/admin/components/semester-matrix",
       { method: "GET" },
+      token
+    );
+  },
+
+  adminUpdateComponentVisibility: async (
+    componentId: string,
+    isVisible: boolean,
+    token?: string | null
+  ): Promise<AdminComponentVisibilityResponse> => {
+    clearApiCache();
+    return request<AdminComponentVisibilityResponse>(
+      `/admin/components/${componentId}/visibility`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ is_visible: isVisible }),
+      },
       token
     );
   },

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { UserResponse, UserRole } from "@/types/auth";
-import { api, getStoredToken, setStoredToken, clearStoredToken, ApiError } from "@/lib/api-client";
+import { api, getStoredToken, setStoredToken, clearStoredToken, clearApiCache, ApiError } from "@/lib/api-client";
 import { auth as firebaseAuth, isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 import {
   signInWithEmailAndPassword,
@@ -46,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearError = useCallback(() => setError(null), []);
 
   const isLoggingInRef = React.useRef(false);
+  const isLoggingOutRef = React.useRef(false);
 
   // Initialize session and sync with Firebase Auth state
   useEffect(() => {
@@ -56,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!isFirebaseConfigured() || !activeAuth) {
       // Direct / Legacy session initialization when Firebase is not configured
       const stored = getStoredToken();
-      if (!stored) {
+      if (!stored || isLoggingOutRef.current) {
         queueMicrotask(() => {
           if (isMounted) setIsLoading(false);
         });
@@ -66,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       api
         .getMe(stored)
         .then((userData) => {
-          if (isMounted) {
+          if (isMounted && !isLoggingOutRef.current && !isLoggingInRef.current) {
             setUser(userData);
             setToken(stored);
             setIsProvisioned(true);
@@ -75,6 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .catch(() => {
           if (isMounted) {
             clearStoredToken();
+            clearApiCache();
             setUser(null);
             setToken(null);
             setIsProvisioned(false);
@@ -91,29 +93,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(activeAuth, async (fbUser) => {
       if (!isMounted) return;
 
-      setFirebaseUser(fbUser);
-
-      // If active login() method is currently in-flight, let login() handle tokens and profile loading
-      if (isLoggingInRef.current) {
+      // Prevent background auth listener from mutating session during active login or logout
+      if (isLoggingOutRef.current || isLoggingInRef.current) {
         return;
       }
+
+      setFirebaseUser(fbUser);
 
       if (fbUser) {
         try {
           const idToken = await fbUser.getIdToken();
-          if (!isMounted) return;
+          if (!isMounted || isLoggingOutRef.current || isLoggingInRef.current) return;
           setToken(idToken);
           setStoredToken(idToken);
 
           try {
             const userData = await api.getMe(idToken);
-            if (isMounted) {
+            if (isMounted && !isLoggingOutRef.current && !isLoggingInRef.current) {
               setUser(userData);
               setIsProvisioned(true);
             }
           } catch {
             // Firebase account is authenticated, but database record is pending provisioning
-            if (isMounted) {
+            if (isMounted && !isLoggingOutRef.current) {
               setUser(null);
               setIsProvisioned(false);
             }
@@ -121,6 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch {
           if (isMounted) {
             clearStoredToken();
+            clearApiCache();
             setToken(null);
             setUser(null);
             setIsProvisioned(false);
@@ -128,12 +131,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } else {
         if (isMounted) {
+          if (isLoggingOutRef.current) {
+            setFirebaseUser(null);
+            setUser(null);
+            setToken(null);
+            setIsProvisioned(false);
+            setIsLoading(false);
+            return;
+          }
+
           const stored = getStoredToken();
           if (stored) {
             api
               .getMe(stored)
               .then((userData) => {
-                if (isMounted) {
+                if (isMounted && !isLoggingOutRef.current && !isLoggingInRef.current) {
                   setUser(userData);
                   setToken(stored);
                   setIsProvisioned(true);
@@ -147,6 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   setToken(null);
                   setIsProvisioned(false);
                   clearStoredToken();
+                  clearApiCache();
                   setIsLoading(false);
                 }
               });
@@ -158,6 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setToken(null);
           setIsProvisioned(false);
           clearStoredToken();
+          clearApiCache();
         }
       }
 
@@ -180,6 +194,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     isLoggingInRef.current = true;
+
+    // STEP 0: Flush any preexisting session credentials to guarantee complete role isolation
+    clearStoredToken();
+    clearApiCache();
+    setUser(null);
+    setToken(null);
+    setFirebaseUser(null);
+    setIsProvisioned(false);
 
     const normalizedEmail = email.trim().toLowerCase();
     const isAdminAccount =
@@ -364,25 +386,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
+    isLoggingOutRef.current = true;
     setIsLoading(true);
+
+    // 1. Immediately and synchronously flush stored token and in-memory caches
+    clearStoredToken();
+    clearApiCache();
+
+    // 2. Synchronously nullify user state to prevent any stale reads
+    setFirebaseUser(null);
+    setUser(null);
+    setToken(null);
+    setIsProvisioned(false);
+    setError(null);
+
+    // 3. Perform asynchronous sign-outs
     try {
-      if (firebaseAuth && firebaseAuth.currentUser) {
-        await firebaseSignOut(firebaseAuth);
+      const activeAuth = getFirebaseAuth() || firebaseAuth;
+      if (activeAuth && activeAuth.currentUser) {
+        await firebaseSignOut(activeAuth).catch(() => {});
       }
       if (token) {
         await api.logout(token).catch(() => {});
       }
     } catch {
-      // Best-effort logout
+      // Best-effort remote session revocation
     } finally {
+      // 4. Guarantee state and storage are completely clear
       clearStoredToken();
+      clearApiCache();
       setFirebaseUser(null);
       setUser(null);
       setToken(null);
       setIsProvisioned(false);
       setIsLoading(false);
       setError(null);
+      isLoggingOutRef.current = false;
     }
   };
 

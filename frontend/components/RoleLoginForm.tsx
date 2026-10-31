@@ -71,6 +71,15 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
     }
   }, [user, role, authLoading]);
 
+  const handleSwitchAccount = async () => {
+    await logout();
+    setEmail("");
+    setPassword("");
+    setLocalError(null);
+    setRoleMismatch(null);
+    clearError();
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -104,12 +113,14 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           (authenticatedUser.role === "hod" && role === "mentor");
 
         if (!isAuthorizedForRole) {
+          // Immediately revoke session so unauthorized role credentials are not persisted
+          await logout();
           setRoleMismatch({
             actualRole: authenticatedUser.role,
             attemptedRole: role,
           });
           setLocalError(
-            `Unauthorized Role: You authenticated with valid credentials, but your account is registered in PostgreSQL as "${ROLE_CONFIGS[authenticatedUser.role].shortTitle}". You cannot access the ${ROLE_CONFIGS[role].shortTitle} portal.`
+            `Unauthorized Role: You authenticated with valid credentials, but your account is registered as "${ROLE_CONFIGS[authenticatedUser.role].shortTitle}". You cannot access the ${ROLE_CONFIGS[role].shortTitle} portal.`
           );
           return;
         }
@@ -263,74 +274,101 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           )}
         </div>
 
-        {/* Existing Session Alert (if user is currently authenticated) */}
+        {/* Existing Session Alert / Role Mismatch Protection */}
         {user && !authLoading && (
-          <div
-            role="status"
-            className={`w-full mb-5 rounded-2xl border p-3.5 text-xs shadow-xs flex flex-wrap items-center justify-between gap-3 animate-apple-fade ${user.role === role || (user.role === "hod" && role === "mentor")
-                ? "border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/80 dark:bg-emerald-950/50 text-emerald-950 dark:text-emerald-200"
-                : "border-sky-200 dark:border-sky-800/80 bg-sky-50/80 dark:bg-sky-950/50 text-sky-950 dark:text-sky-200"
-              }`}
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className={`h-2 w-2 rounded-full ${user.role === role || (user.role === "hod" && role === "mentor")
-                    ? "bg-emerald-600 dark:bg-emerald-400"
-                    : "bg-sky-600 dark:bg-sky-400"
-                  }`}
-              />
-              <span>
-                Active Session: <strong>{user.full_name}</strong> (
-                {ROLE_CONFIGS[user.role]?.shortTitle})
-                {user.role === "hod" && role === "mentor" && (
-                  <span className="ml-1.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
-                    Dual Mentor Access
-                  </span>
-                )}
-              </span>
-            </div>
+          user.role === role || (user.role === "hod" && role === "mentor") ? (
+            <div
+              role="status"
+              className="w-full mb-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/80 dark:bg-emerald-950/50 p-3.5 text-xs text-emerald-950 dark:text-emerald-200 shadow-xs flex flex-wrap items-center justify-between gap-3 animate-apple-fade"
+            >
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+                <span>
+                  Active Session: <strong>{user.full_name}</strong> (
+                  {ROLE_CONFIGS[user.role]?.shortTitle})
+                  {user.role === "hod" && role === "mentor" && (
+                    <span className="ml-1.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
+                      Dual Mentor Access
+                    </span>
+                  )}
+                </span>
+              </div>
 
-            <div className="flex items-center gap-2.5 flex-wrap">
-              {user.role === role ? (
-                <Link
-                  href={`/${user.role}`}
-                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
-                >
-                  Open Dashboard &rarr;
-                </Link>
-              ) : user.role === "hod" && role === "mentor" ? (
-                <>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                {user.role === role ? (
                   <Link
-                    href="/mentor"
+                    href={`/${user.role}`}
                     className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
                   >
-                    Open Mentor Dashboard &rarr;
+                    Open Dashboard &rarr;
                   </Link>
-                  <Link
-                    href="/hod"
-                    className="font-semibold text-purple-600 dark:text-purple-400 hover:underline text-xs"
-                  >
-                    Go to HOD Dashboard &rarr;
-                  </Link>
-                </>
-              ) : (
-                <Link
-                  href={`/${user.role}`}
-                  className="font-semibold text-sky-600 dark:text-sky-400 hover:underline"
+                ) : (
+                  <>
+                    <Link
+                      href="/mentor"
+                      className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
+                    >
+                      Open Mentor Dashboard &rarr;
+                    </Link>
+                    <Link
+                      href="/hod"
+                      className="font-semibold text-purple-600 dark:text-purple-400 hover:underline text-xs"
+                    >
+                      Go to HOD Dashboard &rarr;
+                    </Link>
+                  </>
+                )}
+                <span className="text-slate-300 dark:text-slate-700">&bull;</span>
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  className="font-medium text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:underline cursor-pointer"
                 >
-                  Go to {ROLE_CONFIGS[user.role]?.shortTitle} &rarr;
-                </Link>
-              )}
-              <span className="text-slate-300 dark:text-slate-700">&bull;</span>
-              <button
-                type="button"
-                onClick={() => logout()}
-                className="font-medium text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:underline cursor-pointer"
-              >
-                Sign Out
-              </button>
+                  Sign Out
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div
+              role="alert"
+              className="w-full mb-5 rounded-2xl border border-amber-300 dark:border-amber-700/80 bg-amber-50/95 dark:bg-amber-950/60 p-3.5 text-xs text-amber-950 dark:text-amber-200 shadow-xs animate-apple-fade"
+            >
+              <div className="flex items-start gap-2.5">
+                <span className="h-5 w-5 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5" aria-hidden="true">
+                  !
+                </span>
+                <div className="flex-1 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <h4 className="font-bold text-xs sm:text-sm text-amber-950 dark:text-amber-100">
+                      Active {ROLE_CONFIGS[user.role]?.shortTitle} Session Detected
+                    </h4>
+                    <span className="text-[10px] font-semibold bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 px-2 py-0.5 rounded-full">
+                      Signed in as {user.full_name}
+                    </span>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-amber-900/90 dark:text-amber-200/90 leading-relaxed">
+                    You are viewing the <strong>{currentConfig.portalTitle}</strong>, but your browser is currently authenticated as a <strong>{ROLE_CONFIGS[user.role]?.shortTitle}</strong>. To access this portal, please sign out to switch accounts, or return to your authorized dashboard.
+                  </p>
+                  <div className="flex items-center gap-2.5 pt-1 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={handleSwitchAccount}
+                      id="switch-account-button"
+                      className="rounded-lg bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-semibold px-3 py-1.5 text-xs transition-colors shadow-2xs cursor-pointer"
+                    >
+                      Sign Out &amp; Log In as {currentConfig.shortTitle}
+                    </button>
+                    <Link
+                      href={`/${user.role}`}
+                      className="font-semibold text-amber-900 dark:text-amber-200 hover:underline text-xs"
+                    >
+                      Go to {ROLE_CONFIGS[user.role]?.shortTitle} Dashboard &rarr;
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
         )}
 
         {/* Login Form Card */}

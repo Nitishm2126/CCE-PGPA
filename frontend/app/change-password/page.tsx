@@ -36,6 +36,11 @@ export default function ChangePasswordPage() {
     }
   }, [user, authLoading, router]);
 
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
+
   const isMandatoryChange = Boolean(user?.must_change_password);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -114,16 +119,26 @@ export default function ChangePasswordPage() {
   return (
     <div className="w-full min-h-screen flex flex-col bg-slate-50 text-slate-900">
       {/* 1. Official Sairam Logos Header Banner */}
-      <header className="w-full border-b border-slate-200/80 bg-white pt-4 pb-3 sm:pt-6 sm:pb-4 px-4 shadow-2xs">
-        <div className="mx-auto max-w-5xl">
-          <Image
-            src="/images/sairam-logos.png"
-            alt="Sri Sairam Engineering College - Autonomous Institution - Affiliated to Anna University"
-            width={1600}
-            height={130}
-            priority
-            className="w-full h-auto object-contain mx-auto"
-          />
+      <header className="w-full border-b border-slate-200/80 bg-white py-3 sm:py-3.5 px-4 shadow-2xs">
+        <div className="mx-auto max-w-5xl flex items-center justify-between gap-3 sm:gap-4">
+          <div className="flex-1 max-w-3xl">
+            <Image
+              src="/images/sairam-logos.png"
+              alt="Sri Sairam Engineering College - Autonomous Institution - Affiliated to Anna University"
+              width={1600}
+              height={130}
+              priority
+              className="w-full h-auto max-h-10 sm:max-h-12 object-contain"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            id="change-password-header-signout"
+            className="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer"
+          >
+            Sign Out
+          </button>
         </div>
       </header>
 
@@ -333,15 +348,16 @@ export default function ChangePasswordPage() {
             </div>
           </form>
 
-          {/* Alternative sign out if user wants to cancel on first login */}
+          {/* Alternative sign out if user wants to cancel or switch account */}
           <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Need assistance? Contact CCE Admin</span>
+            <span>Wrong account or need to switch role?</span>
             <button
               type="button"
-              onClick={() => logout()}
-              className="text-rose-600 hover:underline font-semibold"
+              onClick={handleLogout}
+              id="change-password-card-signout"
+              className="text-rose-600 hover:text-rose-800 hover:underline font-semibold cursor-pointer"
             >
-              Sign Out
+              Sign Out &amp; Switch Account
             </button>
           </div>
         </div>

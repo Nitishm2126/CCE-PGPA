@@ -61,11 +61,11 @@ export default function MentorDashboardPage() {
   // Authentication Guard
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push("/login");
+      router.push("/login/mentor");
       return;
     }
     if (!authLoading && user && user.role !== "mentor" && user.role !== "hod") {
-      router.push(`/${user.role}`);
+      router.push("/login/mentor");
       return;
     }
     if (!authLoading && user && user.must_change_password) {

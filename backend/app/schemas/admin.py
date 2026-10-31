@@ -105,6 +105,23 @@ class AdminComponentItem(BaseModel):
     allow_other_evidence_types: bool = False
     total_submissions: int = 0
     pending_submissions: int = 0
+    is_visible: bool = True
+
+
+class AdminComponentVisibilityUpdateRequest(BaseModel):
+    """Request payload to toggle component visibility."""
+    is_visible: bool
+
+
+class AdminComponentVisibilityUpdateResponse(BaseModel):
+    """Response payload for component visibility update."""
+    id: uuid.UUID
+    name: str
+    slug: str
+    is_visible: bool
+    previous_is_visible: bool
+    updated_at: datetime
+    message: str
 
 
 class AdminUserItem(BaseModel):

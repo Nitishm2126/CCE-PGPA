@@ -15,6 +15,7 @@ class ComponentDetailItem(BaseModel):
     academic_period: Optional[str] = None
     display_order: int
     is_active: bool
+    is_visible: bool = True
     credit_value: int
     submission_mode: str
     grading_strategy: str
@@ -38,6 +39,7 @@ class ComponentUpdatePayload(BaseModel):
     pdf_required: Optional[bool] = None
     allow_other_evidence_types: Optional[bool] = None
     is_active: Optional[bool] = None
+    is_visible: Optional[bool] = None
     display_order: Optional[int] = None
 
 

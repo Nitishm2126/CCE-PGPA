@@ -3,13 +3,14 @@ import uuid
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.permissions import require_mentor
 from app.db.session import get_db
 from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
+from app.models.component import PGPAComponent
 from app.models.grading import StudentComponentResult
 from app.models.review import ReviewAction, VerificationLog
 from app.models.user import StudentProfile, User
@@ -202,8 +203,13 @@ def get_mentee_submissions(
             selectinload(Achievement.files),
             selectinload(Achievement.verification_logs).joinedload(VerificationLog.reviewer),
         )
+        .join(PGPAComponent, Achievement.component_id == PGPAComponent.id)
         .where(
-            Achievement.student_id.in_(mentee_ids)
+            Achievement.student_id.in_(mentee_ids),
+            or_(
+                Achievement.status != AchievementStatus.PENDING,
+                PGPAComponent.is_visible.is_(True),
+            ),
         )
     )
     if status_filter:

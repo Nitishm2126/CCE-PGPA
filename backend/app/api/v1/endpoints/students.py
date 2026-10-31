@@ -296,8 +296,10 @@ def get_pgpa_components(
     stmt = (
         select(PGPAComponent)
         .where(PGPAComponent.is_active.is_(True))
-        .order_by(PGPAComponent.display_order.asc())
     )
+    if current_user.role != UserRole.ADMIN:
+        stmt = stmt.where(PGPAComponent.is_visible.is_(True))
+    stmt = stmt.order_by(PGPAComponent.display_order.asc())
     components = db.scalars(stmt).all()
 
     configs_map = {}
@@ -353,6 +355,7 @@ def get_pgpa_components(
                 academic_period=c.academic_period,
                 display_order=c.display_order,
                 is_active=c.is_active,
+                is_visible=c.is_visible,
                 credit_value=c.credit_value,
                 submission_mode=c.submission_mode,
                 grading_strategy=c.grading_strategy,
@@ -434,6 +437,12 @@ def create_achievement(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"PGPA Component with ID '{data.component_id}' not found or inactive.",
+        )
+
+    if not component.is_visible:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"{component.name} is currently hidden and does not accept submissions.",
         )
 
     # Verify component permits student submissions

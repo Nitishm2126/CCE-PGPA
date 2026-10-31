@@ -36,6 +36,10 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
   const [editAllowOtherEvidence, setEditAllowOtherEvidence] = useState<boolean>(false);
   const [isSavingEdit, setIsSavingEdit] = useState<boolean>(false);
 
+  // Visibility Confirmation Modal State
+  const [visibilityModalComp, setVisibilityModalComp] = useState<AdminMatrixComponentItem | null>(null);
+  const [isUpdatingVisibility, setIsUpdatingVisibility] = useState<boolean>(false);
+
   const fetchMatrix = useCallback(async () => {
     try {
       setLoading(true);
@@ -206,6 +210,51 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
       setActionFeedback({ type: "error", text: msg });
     } finally {
       setIsSavingEdit(false);
+    }
+  };
+
+  // Confirm Visibility Toggle
+  const handleConfirmVisibilityToggle = async () => {
+    if (!visibilityModalComp) return;
+    const comp = visibilityModalComp;
+    const targetVisibility = comp.is_visible === false ? true : false;
+    setIsUpdatingVisibility(true);
+    setActionFeedback(null);
+
+    // Optimistic update
+    setMatrixData((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        components: prev.components.map((c) =>
+          c.component_id === comp.component_id ? { ...c, is_visible: targetVisibility } : c
+        ),
+      };
+    });
+
+    try {
+      const res = await api.adminUpdateComponentVisibility(comp.component_id, targetVisibility, token);
+      setActionFeedback({
+        type: "success",
+        text: res.message || `Visibility for '${comp.name}' updated successfully.`,
+      });
+      setVisibilityModalComp(null);
+      setTimeout(() => setActionFeedback(null), 4000);
+    } catch (err: unknown) {
+      // Revert optimistic update
+      setMatrixData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          components: prev.components.map((c) =>
+            c.component_id === comp.component_id ? { ...c, is_visible: comp.is_visible } : c
+          ),
+        };
+      });
+      const msg = err instanceof Error ? err.message : "Failed to update component visibility.";
+      setActionFeedback({ type: "error", text: msg });
+    } finally {
+      setIsUpdatingVisibility(false);
     }
   };
 
@@ -719,16 +768,41 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
                       {comp.requires_verification ? "Required" : "Automated (HOD)"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between py-1">
+                  <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
                     <span className="text-slate-500">Status</span>
                     <span className={`font-semibold ${comp.is_active ? "text-emerald-600" : "text-rose-500"}`}>
                       {comp.is_active ? "Active" : "Archived"}
                     </span>
                   </div>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="text-slate-500">Visibility Status</span>
+                    {comp.is_visible !== false ? (
+                      <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        Visible
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 font-semibold text-slate-400 dark:text-slate-500">
+                        <span className="h-2 w-2 rounded-full bg-slate-400" />
+                        Hidden
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end">
+              <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setVisibilityModalComp(comp)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    comp.is_visible !== false
+                      ? "bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200/80 dark:border-slate-700"
+                      : "bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                  }`}
+                >
+                  {comp.is_visible !== false ? "Hide Component" : "Show Component"}
+                </button>
                 <button
                   type="button"
                   onClick={() => openEditModal(comp)}
@@ -885,6 +959,60 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
                 className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-xs transition cursor-pointer disabled:opacity-50"
               >
                 {isSavingEdit ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 4. Visibility Confirmation Modal */}
+      {visibilityModalComp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                  {visibilityModalComp.is_visible !== false ? "Hide Component" : "Show Component"}
+                </h3>
+                <p className="font-mono text-xs text-slate-400">{visibilityModalComp.name}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVisibilityModalComp(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl font-bold cursor-pointer"
+              >
+                &times;
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              {visibilityModalComp.is_visible !== false
+                ? "Are you sure you want to hide this component? Students will no longer be able to view or submit new activities under it."
+                : "Make this component visible to Students, Mentors and HOD?"}
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setVisibilityModalComp(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-semibold text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmVisibilityToggle}
+                disabled={isUpdatingVisibility}
+                className={`px-4 py-2 rounded-xl font-semibold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 ${
+                  visibilityModalComp.is_visible !== false
+                    ? "bg-rose-600 hover:bg-rose-700 text-white"
+                    : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                }`}
+              >
+                {isUpdatingVisibility
+                  ? "Updating..."
+                  : visibilityModalComp.is_visible !== false
+                  ? "Hide Component"
+                  : "Show Component"}
               </button>
             </div>
           </div>

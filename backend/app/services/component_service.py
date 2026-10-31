@@ -668,6 +668,8 @@ def parse_and_preview_hod_import(
     component = db.get(PGPAComponent, component_id)
     if not component:
         raise ValueError(f"Component with ID '{component_id}' not found.")
+    if not component.is_visible:
+        raise ValueError(f"Component '{component.name}' is currently hidden and does not accept imports.")
 
     semester = db.get(Semester, semester_id)
     if not semester:
@@ -958,6 +960,8 @@ def commit_hod_import(
 
     if not component or not semester:
         raise ValueError("Target component or semester no longer exists.")
+    if not component.is_visible:
+        raise ValueError(f"Component '{component.name}' is currently hidden and does not accept imports.")
 
     valid_rows_data = cached["rows"]
     if not valid_rows_data:

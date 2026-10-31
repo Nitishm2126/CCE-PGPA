@@ -22,6 +22,7 @@ export interface PGPAComponentResponse {
   academic_period?: string | null;
   display_order: number;
   is_active: boolean;
+  is_visible?: boolean;
   credit_value?: number;
   submission_mode?: "student_submission" | "hod_excel_import" | "both" | "direct_staff_entry";
   grading_strategy?: string;
@@ -162,10 +163,21 @@ export interface AdminMatrixComponentItem {
   grading_strategy: string;
   requires_verification: boolean;
   is_active: boolean;
+  is_visible?: boolean;
   pdf_requirement?: "required" | "optional" | "disabled";
   pdf_required?: boolean;
   allow_other_evidence_types?: boolean;
   semesters: ComponentSemesterStatusMap;
+}
+
+export interface AdminComponentVisibilityResponse {
+  id: string;
+  name: string;
+  slug: string;
+  is_visible: boolean;
+  previous_is_visible: boolean;
+  updated_at?: string;
+  message: string;
 }
 
 export interface AdminSemesterMatrixResponse {

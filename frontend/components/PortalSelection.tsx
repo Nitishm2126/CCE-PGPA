@@ -173,28 +173,9 @@ const STAGGER_CLASSES = ["stagger-1", "stagger-2", "stagger-3", "stagger-4"];
 export function PortalSelection() {
   const { user, logout, isLoading } = useAuth();
 
-  // Determine authorized roles for current session
-  // If not authenticated, display the 3 public institutional portals (Student, Mentor, HOD)
-  // Admin is accessed discreetly via the "CCE PGPA" title link and hidden from the public cards
-  const authorizedRoles: UserRole[] = React.useMemo(() => {
-    if (!user || isLoading) {
-      return ["student", "mentor", "hod"];
-    }
-    if (user.role === "hod") {
-      // HOD possesses dual capabilities: Department Head and Faculty Mentor
-      return ["hod", "mentor"];
-    }
-    if (user.role === "mentor") {
-      return ["mentor"];
-    }
-    if (user.role === "student") {
-      return ["student"];
-    }
-    if (user.role === "admin") {
-      return ["admin"];
-    }
-    return [user.role];
-  }, [user, isLoading]);
+  // Display the 3 public institutional portals (Student, Mentor, HOD)
+  // Admin is accessed discreetly via the footer text and hidden from the public cards
+  const publicPortals: UserRole[] = ["student", "mentor", "hod"];
 
   return (
     <div className="w-full min-h-[100dvh] flex flex-col justify-between bg-[#fbfbfc] dark:bg-[#0c1117] text-slate-900 dark:text-slate-100 overflow-x-hidden selection:bg-sky-100 selection:text-sky-900 dark:selection:bg-sky-900/40 dark:selection:text-sky-200">
@@ -369,22 +350,17 @@ export function PortalSelection() {
         </div>
 
         {/* Portal Selection Cards */}
-        <div
-          className={`grid gap-4 sm:gap-4 md:gap-5 lg:gap-5 w-full ${authorizedRoles.length === 1
-              ? "grid-cols-1 max-w-md mx-auto"
-              : authorizedRoles.length === 2
-                ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto"
-                : authorizedRoles.length === 3
-                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto"
-                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto"
-            }`}
-        >
-          {authorizedRoles.map((roleKey, idx) => {
+        <div className="grid gap-4 sm:gap-4 md:gap-5 lg:gap-5 w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+          {publicPortals.map((roleKey, idx) => {
             const cfg = ROLE_CONFIGS[roleKey];
             const theme = PORTAL_CARD_THEMES[roleKey] || PORTAL_CARD_THEMES.student;
             const meta = PORTAL_CARD_METADATA[roleKey] || PORTAL_CARD_METADATA.student;
-            const cardHref = user ? cfg.dashboardPath : cfg.path;
-            const ctaLabel = user
+
+            const isAuthorized = Boolean(
+              user && (user.role === roleKey || (user.role === "hod" && roleKey === "mentor"))
+            );
+            const cardHref = isAuthorized ? cfg.dashboardPath : cfg.path;
+            const ctaLabel = isAuthorized
               ? `Open ${cfg.shortTitle} Dashboard`
               : cfg.ctaText;
 

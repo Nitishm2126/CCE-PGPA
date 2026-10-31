@@ -71,11 +71,11 @@ export default function HODDashboardPage() {
   // Auth Guard
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push("/login");
+      router.push("/login/hod");
       return;
     }
     if (!authLoading && user && user.role !== "hod") {
-      router.push(`/${user.role}`);
+      router.push("/login/hod");
       return;
     }
     if (!authLoading && user && user.must_change_password) {

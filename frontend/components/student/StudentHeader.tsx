@@ -163,7 +163,8 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
             <button
               type="button"
               onClick={onLogout}
-              className="hidden xl:inline-flex items-center text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
+              id="student-header-signout"
+              className="hidden md:inline-flex items-center text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900 transition-colors cursor-pointer"
             >
               Sign Out
             </button>

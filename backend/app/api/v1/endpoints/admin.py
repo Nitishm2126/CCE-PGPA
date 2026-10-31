@@ -31,6 +31,8 @@ from app.schemas.component_config import (
 )
 from app.schemas.admin import (
     AdminComponentItem,
+    AdminComponentVisibilityUpdateRequest,
+    AdminComponentVisibilityUpdateResponse,
     AdminEmailUpdateRequest,
     AdminEmailUpdateResponse,
     AdminSendVerificationEmailResponse,
@@ -409,6 +411,7 @@ def list_admin_components(
                 description=c.description,
                 display_order=c.display_order,
                 is_active=c.is_active,
+                is_visible=c.is_visible,
                 credit_value=c.credit_value,
                 submission_mode=c.submission_mode,
                 grading_strategy=c.grading_strategy,
@@ -468,6 +471,8 @@ def update_admin_component(
         component.requires_verification = payload.requires_verification
     if payload.is_active is not None:
         component.is_active = payload.is_active
+    if payload.is_visible is not None:
+        component.is_visible = payload.is_visible
     if payload.display_order is not None:
         component.display_order = payload.display_order
     if payload.pdf_requirement is not None:
@@ -519,6 +524,7 @@ def update_admin_component(
         description=component.description,
         display_order=component.display_order,
         is_active=component.is_active,
+        is_visible=component.is_visible,
         credit_value=component.credit_value,
         submission_mode=component.submission_mode,
         grading_strategy=component.grading_strategy,
@@ -529,6 +535,62 @@ def update_admin_component(
         allow_other_evidence_types=component.allow_other_evidence_types,
         total_submissions=total_subs,
         pending_submissions=pending_subs,
+    )
+
+
+@router.patch(
+    "/components/{component_id}/visibility",
+    response_model=AdminComponentVisibilityUpdateResponse,
+    summary="Update individual PGPA component visibility",
+    description="Allows System Administrator to show or hide any of the 14 PGPA components across student, mentor, and HOD workflows.",
+)
+def update_admin_component_visibility(
+    component_id: uuid.UUID,
+    payload: AdminComponentVisibilityUpdateRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AdminComponentVisibilityUpdateResponse:
+    component = db.get(PGPAComponent, component_id)
+    if not component:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"PGPA Component with ID '{component_id}' not found.",
+        )
+
+    prev_visible = component.is_visible
+    component.is_visible = payload.is_visible
+    component.updated_at = datetime.now(timezone.utc)
+    db.add(component)
+
+    record_audit_log(
+        db,
+        actor_id=current_user.id,
+        action="update_component_visibility",
+        target_type="pgpa_component",
+        target_id=str(component.id),
+        metadata={
+            "component_id": str(component.id),
+            "component_name": component.name,
+            "component_slug": component.slug,
+            "previous_visibility": prev_visible,
+            "new_visibility": payload.is_visible,
+            "admin_user_id": str(current_user.id),
+            "admin_email": current_user.email,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+    db.commit()
+    db.refresh(component)
+
+    status_str = "visible to Students, Mentors, and HOD" if component.is_visible else "hidden from active student submissions and queues"
+    return AdminComponentVisibilityUpdateResponse(
+        id=component.id,
+        name=component.name,
+        slug=component.slug,
+        is_visible=component.is_visible,
+        previous_is_visible=prev_visible,
+        updated_at=component.updated_at,
+        message=f"Component '{component.name}' is now {status_str}.",
     )
 
 
@@ -673,6 +735,7 @@ def get_components_semester_matrix(
             "grading_strategy": comp.grading_strategy,
             "requires_verification": comp.requires_verification,
             "is_active": comp.is_active,
+            "is_visible": comp.is_visible,
             "pdf_requirement": comp.pdf_requirement,
             "pdf_required": comp.pdf_required,
             "allow_other_evidence_types": comp.allow_other_evidence_types,
