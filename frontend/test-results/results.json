@@ -1,0 +1,3006 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "E:\\Projects\\pgpa web-app\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test"
+    ],
+    "configFile": "E:\\Projects\\pgpa web-app\\frontend\\playwright.config.ts",
+    "rootDir": "E:/Projects/pgpa web-app/frontend/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "E:/Projects/pgpa web-app/frontend/test-results/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "E:/Projects/pgpa web-app/frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "E:\\Projects\\pgpa web-app\\frontend\\tests",
+        "snapshotDir": "E:\\Projects\\pgpa web-app\\frontend\\tests",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 45000,
+        "use": {
+          "baseURL": "http://localhost:3000",
+          "trace": "off",
+          "video": "off"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "test-results/html-report",
+          "open": "never"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "responsive.spec.ts",
+      "file": "responsive.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Responsive UI Suite across Viewports",
+          "file": "responsive.spec.ts",
+          "line": 21,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Page: Landing Page (/)",
+              "file": "responsive.spec.ts",
+              "line": 23,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "Viewport mobile-375x667 (375x667) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1641,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:11.380Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-6063bfb99b2e960c2abc",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-390x844 (390x844) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1580,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:13.240Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-8e69b874d359668badf8",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-402x874 (402x874) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1598,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:14.838Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-db8d5844b2c2362b7082",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-360x800 (360x800) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1605,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:16.454Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-3015038fc794d362e05f",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-412x915 (412x915) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1439,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:18.076Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-a45658f90f5b7e29d2a0",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport tablet-768x1024 (768x1024) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1506,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:19.533Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-9bede77e4d2e215f49bc",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1280x720 (1280x720) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1568,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:21.056Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-8b6584049b71895548d8",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1366x768 (1366x768) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1591,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:22.639Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-4d5ddaef4c112434dfd9",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1920x1080 (1920x1080) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1644,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:24.249Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-07c85269c24cabd9790e",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                }
+              ]
+            },
+            {
+              "title": "Page: Student Login (/login/student)",
+              "file": "responsive.spec.ts",
+              "line": 23,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "Viewport mobile-375x667 (375x667) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1603,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:25.907Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-47067f17f968a5b33c98",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-390x844 (390x844) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1736,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:27.526Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-3b0340d40b77e33456a9",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-402x874 (402x874) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1615,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:29.281Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-5cbc7eed5e7bff02252e",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-360x800 (360x800) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1612,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:30.917Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-9c972a378d9971ac2084",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-412x915 (412x915) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1660,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:32.549Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-c744f68de2331b382bfa",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport tablet-768x1024 (768x1024) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1744,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:34.231Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-198c5ca0f3cbb8f4e79b",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1280x720 (1280x720) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1781,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:35.990Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-4c8bdc6df81d3d00c039",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1366x768 (1366x768) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1649,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:37.788Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-7c36abab878fb15c7dd9",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1920x1080 (1920x1080) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1799,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:39.454Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-752e5afb454f32f5e0fd",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                }
+              ]
+            },
+            {
+              "title": "Page: Faculty Mentor Login (/login/mentor)",
+              "file": "responsive.spec.ts",
+              "line": 23,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "Viewport mobile-375x667 (375x667) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1650,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:41.272Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-2bc56cb1af781a90811b",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-390x844 (390x844) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1692,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:42.938Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-e81fcb4646c25083e8db",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-402x874 (402x874) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1537,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:44.648Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-3dde90b9f9ec315c6691",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-360x800 (360x800) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1631,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:46.209Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-54460f9681fd95a4ec9b",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-412x915 (412x915) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1686,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:47.857Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-ccabf0c6cc36d5198dd9",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport tablet-768x1024 (768x1024) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1719,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:49.560Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-b0b8cd3516878e4543b9",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1280x720 (1280x720) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1626,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:51.298Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-a0c2eb7c8dce1d42a641",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1366x768 (1366x768) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1689,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:52.937Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-59191b9a957fe48a99ca",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1920x1080 (1920x1080) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1841,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:54.640Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-e1a750ffa7a7f4dd22ef",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                }
+              ]
+            },
+            {
+              "title": "Page: HOD Login (/login/hod)",
+              "file": "responsive.spec.ts",
+              "line": 23,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "Viewport mobile-375x667 (375x667) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1712,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:56.498Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-0a0f60ec9b4feca6a342",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-390x844 (390x844) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1681,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:58.230Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-16d0d7738a79e350e1f2",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-402x874 (402x874) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1582,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:39:59.930Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-db75d078328727c9c586",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-360x800 (360x800) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1768,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:40:01.527Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-151075ce14fb798a5fe5",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport mobile-412x915 (412x915) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1532,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:40:03.316Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-b7f826691b9b7ba60ea2",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport tablet-768x1024 (768x1024) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1631,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:40:04.864Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-6d4f55ea78e718ebaf34",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1280x720 (1280x720) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1686,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:40:06.511Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-53d2dd13f78e96b22538",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1366x768 (1366x768) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1764,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:40:08.216Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-58bad3af11ebe0094562",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                },
+                {
+                  "title": "Viewport desktop-1920x1080 (1920x1080) - checks 1, 2, 3, 9 & 10",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 45000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1729,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-10-31T06:40:09.995Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e0223b006feb3d306446-acfe250a72a05cb9581d",
+                  "file": "responsive.spec.ts",
+                  "line": 25,
+                  "column": 13
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Landing Page Specific Responsive Checks",
+          "file": "responsive.spec.ts",
+          "line": 92,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Landing Page: Full Department Name Visibility at mobile-375x667 (375x667)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1328,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:11.737Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-391b95a97f88642f103c",
+              "file": "responsive.spec.ts",
+              "line": 94,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Portal Cards Alignment & Touch Targets at mobile-375x667",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1092,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:13.084Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-465a000142826cb57f68",
+              "file": "responsive.spec.ts",
+              "line": 125,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Full Department Name Visibility at mobile-390x844 (390x844)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1285,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:14.191Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-9f8cfa58c6731eaff301",
+              "file": "responsive.spec.ts",
+              "line": 94,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Portal Cards Alignment & Touch Targets at mobile-390x844",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1159,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:15.495Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-0ae8f73d889a5896ce06",
+              "file": "responsive.spec.ts",
+              "line": 125,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Full Department Name Visibility at mobile-402x874 (402x874)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1078,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:16.670Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-af0b3883212a37e4dea5",
+              "file": "responsive.spec.ts",
+              "line": 94,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Portal Cards Alignment & Touch Targets at mobile-402x874",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1127,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:17.765Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-9ca0c89342213de605d6",
+              "file": "responsive.spec.ts",
+              "line": 125,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Full Department Name Visibility at mobile-360x800 (360x800)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1277,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:18.911Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-0a73c6320d11fc4629dd",
+              "file": "responsive.spec.ts",
+              "line": 94,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Portal Cards Alignment & Touch Targets at mobile-360x800",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1155,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:20.204Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-d2e442f5d3266340c034",
+              "file": "responsive.spec.ts",
+              "line": 125,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Full Department Name Visibility at mobile-412x915 (412x915)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1153,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:21.377Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-894b48b97cbf366cd862",
+              "file": "responsive.spec.ts",
+              "line": 94,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Portal Cards Alignment & Touch Targets at mobile-412x915",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1452,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:22.547Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-d4d059725945fc4c29e3",
+              "file": "responsive.spec.ts",
+              "line": 125,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Full Department Name Visibility at tablet-768x1024 (768x1024)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1746,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:24.014Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-76716fce7549e91513f6",
+              "file": "responsive.spec.ts",
+              "line": 94,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Portal Cards Alignment & Touch Targets at tablet-768x1024",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1431,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:25.776Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-9313f8873635321ed54c",
+              "file": "responsive.spec.ts",
+              "line": 125,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Full Department Name Visibility at desktop-1280x720 (1280x720)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1432,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:27.223Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-bc228ec3cd985e04baa9",
+              "file": "responsive.spec.ts",
+              "line": 94,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Portal Cards Alignment & Touch Targets at desktop-1280x720",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2050,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:28.671Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-a2a3e551e383aa62b93b",
+              "file": "responsive.spec.ts",
+              "line": 125,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Full Department Name Visibility at desktop-1366x768 (1366x768)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1559,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:30.737Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-a443410387ec402d150e",
+              "file": "responsive.spec.ts",
+              "line": 94,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Portal Cards Alignment & Touch Targets at desktop-1366x768",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4381,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:32.315Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-44ee97c5ecd3c088f2f7",
+              "file": "responsive.spec.ts",
+              "line": 125,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Full Department Name Visibility at desktop-1920x1080 (1920x1080)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1618,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:36.730Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-65c5daeec47cb7c885ea",
+              "file": "responsive.spec.ts",
+              "line": 94,
+              "column": 9
+            },
+            {
+              "title": "Landing Page: Portal Cards Alignment & Touch Targets at desktop-1920x1080",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2922,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:38.375Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-14f85dd6d25d8cdce5b8",
+              "file": "responsive.spec.ts",
+              "line": 125,
+              "column": 9
+            }
+          ]
+        },
+        {
+          "title": "Login Form Responsiveness",
+          "file": "responsive.spec.ts",
+          "line": 164,
+          "column": 6,
+          "specs": [
+            {
+              "title": "student login form responsiveness at mobile-375x667",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2141,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:41.331Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-2d922d8b2763fbbbb73f",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "student login form responsiveness at mobile-390x844",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1519,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:43.491Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-1c0e7aa48fafa374548d",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "student login form responsiveness at mobile-402x874",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1505,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:45.032Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-01c09286c648d41cccb5",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "student login form responsiveness at mobile-360x800",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1699,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:46.552Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-44fb7d0fb39e216737d1",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "student login form responsiveness at mobile-412x915",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1714,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:48.268Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-5cfa4f23e1a0a910d70e",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "student login form responsiveness at tablet-768x1024",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1296,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:49.998Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-a464cbc3fbd467017e4c",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "student login form responsiveness at desktop-1280x720",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1295,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:51.311Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-fdb133f9b0b80094d31e",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "student login form responsiveness at desktop-1366x768",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1716,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:52.621Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-98a10ad475347542f311",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "student login form responsiveness at desktop-1920x1080",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1579,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:54.354Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-18d8d45d6796b6237498",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at mobile-375x667",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1555,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:55.950Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-2fa7fb25198a1ab0197e",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at mobile-390x844",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1510,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:57.519Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-523b727f764c3284c6c7",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at mobile-402x874",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2023,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:40:59.051Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-b21c1cd93be400ac0bc2",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at mobile-360x800",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1961,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:01.102Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-a0a33789b21d70016191",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at mobile-412x915",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1623,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:03.113Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-e66539cfd413770d9561",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at tablet-768x1024",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1928,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:04.764Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-1a2c1a57b87c37656b41",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at desktop-1280x720",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1745,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:06.820Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-13dd5f961049dcff37eb",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at desktop-1366x768",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1487,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:08.596Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-cfff3942184a78c299c2",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "mentor login form responsiveness at desktop-1920x1080",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1551,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:10.115Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-c9eb2b5ab35de6c15042",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "hod login form responsiveness at mobile-375x667",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1672,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:11.694Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-e9653ac3ca0d86d54b7b",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "hod login form responsiveness at mobile-390x844",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1448,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:13.397Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-3f8f6ddeee425c3eba12",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "hod login form responsiveness at mobile-402x874",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1453,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:14.868Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-48f1252d2868125096f3",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "hod login form responsiveness at mobile-360x800",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1832,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:16.344Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-b4546558b39e59b18488",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "hod login form responsiveness at mobile-412x915",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1483,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:18.204Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-ad9fe23a5b5777f899f9",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "hod login form responsiveness at tablet-768x1024",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1382,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:19.718Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-482eab2824655c64516e",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "hod login form responsiveness at desktop-1280x720",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1524,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:21.130Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-ceda4dbc9f525d6549ad",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "hod login form responsiveness at desktop-1366x768",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1693,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:22.688Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-2559d13d4ff7d286a3b0",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            },
+            {
+              "title": "hod login form responsiveness at desktop-1920x1080",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1713,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:24.413Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-0a7b2e2097b620049077",
+              "file": "responsive.spec.ts",
+              "line": 173,
+              "column": 11
+            }
+          ]
+        },
+        {
+          "title": "Navigation between Portals",
+          "file": "responsive.spec.ts",
+          "line": 208,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Navigate from Landing page to Student, Mentor, and HOD portals and back",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4353,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:26.149Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-a314a64b5b24fecf6080",
+              "file": "responsive.spec.ts",
+              "line": 209,
+              "column": 7
+            },
+            {
+              "title": "Navigate between role login pages using role switch links on desktop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1705,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T06:41:30.530Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0223b006feb3d306446-5cdba52903154791e2bc",
+              "file": "responsive.spec.ts",
+              "line": 238,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-31T06:39:10.652Z",
+    "duration": 141857.13700000002,
+    "expected": 83,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
