@@ -508,7 +508,7 @@ class AdminSendVerificationEmailResponse(BaseModel):
 # ==============================================================================
 
 class RosterImportRequest(BaseModel):
-    initial_password: Optional[str] = Field(default="cce@123", description="Initial institutional temporary password. Defaults to cce@123.")
+    initial_password: Optional[str] = Field(default=None, description="Initial institutional temporary password. If omitted, cryptographically random individual passwords will be generated per user.")
     provision_admin: bool = Field(default=True, description="Ensure System Administrator account is provisioned in PostgreSQL")
     csv_content: Optional[str] = Field(default=None, description="Optional raw student CSV text content. If omitted, server attempts to read data/import/students_roster.csv")
     staff_csv_content: Optional[str] = Field(default=None, description="Optional raw staff CSV text content defining HOD and Mentors. If omitted, attempts to read data/import/staff_roster.csv if present.")

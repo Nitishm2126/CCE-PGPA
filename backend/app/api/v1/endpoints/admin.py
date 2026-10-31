@@ -793,7 +793,7 @@ def bootstrap_student_roster(
 )
 async def upload_student_roster_csv(
     file: UploadFile = File(...),
-    initial_password: Optional[str] = Form("cce@123"),
+    initial_password: Optional[str] = Form(None),
     provision_admin: bool = Form(True),
     staff_file: Optional[UploadFile] = File(None),
     current_admin: Optional[User] = Depends(require_admin_or_setup_token),

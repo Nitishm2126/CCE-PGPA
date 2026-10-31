@@ -142,16 +142,25 @@ export async function checkElementsFullyInViewport(
 
 export async function checkLogoAspectRatio(page: Page) {
   const images = await page.evaluate(() => {
-    const imgs = Array.from(document.querySelectorAll<HTMLImageElement>('header img, main img'));
-    return imgs.map((img) => ({
-      src: img.src,
-      alt: img.alt,
-      naturalWidth: img.naturalWidth,
-      naturalHeight: img.naturalHeight,
-      clientWidth: img.clientWidth,
-      clientHeight: img.clientHeight,
-      visible: img.offsetParent !== null && img.clientWidth > 0 && img.clientHeight > 0,
-    }));
+    const rawElements = Array.from(document.querySelectorAll('header img, main img'));
+    const imageElements = rawElements.filter(
+      (el): el is HTMLImageElement => el instanceof HTMLImageElement
+    );
+
+    return imageElements.map((img) => {
+      const isHtmlElement = img instanceof HTMLElement;
+      const offsetParent = isHtmlElement ? img.offsetParent : null;
+
+      return {
+        src: img.src,
+        alt: img.alt,
+        naturalWidth: img.naturalWidth,
+        naturalHeight: img.naturalHeight,
+        clientWidth: img.clientWidth,
+        clientHeight: img.clientHeight,
+        visible: offsetParent !== null && img.clientWidth > 0 && img.clientHeight > 0,
+      };
+    });
   });
 
   return images;
