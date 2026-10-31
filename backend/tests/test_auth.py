@@ -565,3 +565,76 @@ def test_login_safe_diagnostic_logging(client: TestClient, db: Session, caplog: 
     )
     assert "FailureCategory=SUCCESS" in caplog.text
     assert "CorrectPassword_123!" not in caplog.text
+
+
+def test_login_student_register_number_as_initial_password(client: TestClient, db: Session):
+    """
+    Verify uninitialized student accounts (must_change_password=True) can authenticate
+    using either their institutional default password ('cce@123') or their register number.
+    """
+    reg_no = f"SEC25CO{uuid.uuid4().hex[:4].upper()}"
+    student_user = User(
+        id=uuid.uuid4(),
+        full_name="First Time Student",
+        email=f"{reg_no.lower()}@sairamtap.edu.in",
+        password_hash=get_password_hash("cce@123"),
+        role=UserRole.STUDENT,
+        is_active=True,
+        must_change_password=True,
+    )
+    db.add(student_user)
+    db.flush()
+    db.track_user(student_user.id)  # type: ignore
+
+    profile = StudentProfile(
+        id=uuid.uuid4(),
+        user_id=student_user.id,
+        register_number=reg_no,
+        department="CCE",
+        year=2,
+        section="A",
+        semester="III SEM",
+        batch="2025-2029",
+    )
+    db.add(profile)
+    db.commit()
+
+    # Case 1: Authenticate using register number as password
+    resp1 = client.post(
+        "/api/v1/auth/login",
+        json={"email": student_user.email, "password": reg_no},
+    )
+    assert resp1.status_code == 200
+    assert resp1.json()["role"] == "student"
+
+    # Case 2: Authenticate using lowercase register number as password
+    resp2 = client.post(
+        "/api/v1/auth/login",
+        json={"email": reg_no, "password": reg_no.lower()},
+    )
+    assert resp2.status_code == 200
+    assert resp2.json()["role"] == "student"
+
+    # Case 3: Alternate domain prefix fallback (e.g., student typed @sairam.edu.in instead of @sairamtap.edu.in)
+    resp3 = client.post(
+        "/api/v1/auth/login",
+        json={"email": f"{reg_no.lower()}@sairam.edu.in", "password": "cce@123"},
+    )
+    assert resp3.status_code == 200
+    assert resp3.json()["role"] == "student"
+
+    # Case 4: Password with accidental trailing space
+    resp4 = client.post(
+        "/api/v1/auth/login",
+        json={"email": student_user.email, "password": "cce@123 "},
+    )
+    assert resp4.status_code == 200
+    assert resp4.json()["role"] == "student"
+
+    # Case 5: Incorrect password returns 401
+    resp5 = client.post(
+        "/api/v1/auth/login",
+        json={"email": student_user.email, "password": "WrongPassword123!"},
+    )
+    assert resp5.status_code == 401
+

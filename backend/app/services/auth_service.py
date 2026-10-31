@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.security import verify_password
-from app.models.user import StudentProfile, User
+from app.models.user import StudentProfile, User, UserRole
 
 logger = logging.getLogger(__name__)
 
@@ -30,14 +30,20 @@ def authenticate_user(
     stmt = select(User).where(func.lower(User.email) == normalized_identifier)
     user = db.scalars(stmt).first()
 
-    # Step 2: Fallback lookup by register number for students if identifier has no @
-    if user is None and "@" not in normalized_identifier:
-        stmt_reg = (
-            select(User)
-            .join(StudentProfile, StudentProfile.user_id == User.id)
-            .where(func.lower(StudentProfile.register_number) == normalized_identifier)
+    # Step 2: Fallback lookup by register number for students (exact register number or email local-part)
+    if user is None:
+        candidate_reg = (
+            normalized_identifier.split("@")[0].strip()
+            if "@" in normalized_identifier
+            else normalized_identifier
         )
-        user = db.scalars(stmt_reg).first()
+        if candidate_reg:
+            stmt_reg = (
+                select(User)
+                .join(StudentProfile, StudentProfile.user_id == User.id)
+                .where(func.lower(StudentProfile.register_number) == candidate_reg)
+            )
+            user = db.scalars(stmt_reg).first()
 
     if user is None:
         logger.warning(
@@ -65,7 +71,32 @@ def authenticate_user(
         return None
 
     # Step 4: Verify password
-    if not verify_password(password, user.password_hash):
+    clean_password = password or ""
+    is_valid_pw = verify_password(clean_password, user.password_hash)
+
+    # Allow password stripped of accidental leading/trailing whitespace
+    if not is_valid_pw and clean_password != clean_password.strip():
+        is_valid_pw = verify_password(clean_password.strip(), user.password_hash)
+
+    # For student accounts pending mandatory first-login password change (must_change_password=True):
+    # Support both the institutional default password 'cce@123' and their personal register number (case-insensitive)
+    if not is_valid_pw and user.must_change_password and user.role == UserRole.STUDENT:
+        entered_pw_lower = clean_password.strip().lower()
+        if entered_pw_lower == "cce@123":
+            is_valid_pw = True
+        elif user.student_profile and user.student_profile.register_number:
+            student_reg = user.student_profile.register_number.strip().lower()
+            if entered_pw_lower and entered_pw_lower == student_reg:
+                is_valid_pw = True
+
+    # For faculty mentor / HOD accounts pending mandatory first-login password change:
+    # Support institutional default password 'cce@123'
+    if not is_valid_pw and user.must_change_password and user.role in (UserRole.MENTOR, UserRole.HOD):
+        entered_pw = clean_password.strip()
+        if entered_pw == "cce@123":
+            is_valid_pw = True
+
+    if not is_valid_pw:
         logger.warning(
             "Auth diagnostic: FailureCategory=PASSWORD_MISMATCH user_id=%s role=%s must_change_password=%s",
             user.id,
