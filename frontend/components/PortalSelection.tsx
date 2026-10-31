@@ -148,19 +148,19 @@ const PORTAL_CARD_METADATA: Record<
   student: {
     audience: "Enrolled CCE Undergraduates (2025–2029)",
     description:
-      "Submit semester activity points across PGPA components, upload verified certificate credentials, and monitor mentor verification milestones.",
+      "Submit PGPA activities, upload evidence and track progress.",
     tags: ["Point Submission", "Evidence Vault", "Grade Audit"],
   },
   mentor: {
     audience: "Faculty Advisors & Verification Officers",
     description:
-      "Inspect assigned mentee submissions, review certificate documentation via secure proxy, and record official verification remarks.",
+      "Review assigned students, verify evidence and provide remarks.",
     tags: ["Mentee Directory", "Evidence Audit", "Remarks Ledger"],
   },
   hod: {
     audience: "Head of Department & Academic Governance",
     description:
-      "Department-wide cohort analytics, mentor-student allocation management, QR badge verification, and academic performance audit.",
+      "Manage students, mentor allocations and academic performance.",
     tags: ["Cohort Analytics", "Mentor Allocation", "QR Verification"],
   },
   admin: {
@@ -198,36 +198,36 @@ export function PortalSelection() {
   }, [user, isLoading]);
 
   return (
-    <div className="w-full min-h-[100svh] flex flex-col justify-between bg-[#fcfcfd] text-slate-900 overflow-x-hidden selection:bg-sky-100 selection:text-sky-900">
+    <div className="w-full min-h-[100dvh] md:min-h-0 md:h-full flex-1 flex flex-col justify-between bg-[#fcfcfd] text-slate-900 overflow-x-hidden selection:bg-sky-100 selection:text-sky-900">
       {/* =========================================================================
           1. COMPACT INSTITUTIONAL HEADER
           Dedicated Desktop & Mobile compositions with SEC emblem & Sairam branding
           ========================================================================= */}
       <header className="w-full shrink-0 border-b border-slate-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-40 transition-colors shadow-2xs">
         <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8">
-          <div className="flex h-14 sm:h-16 md:h-[68px] items-center justify-between gap-2.5 sm:gap-4">
+          <div className="flex h-13 sm:h-14 md:h-14 items-center justify-between gap-2.5 sm:gap-4">
             {/* Left: SEC Institutional Emblem & College Identification */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Link
                 href="/"
-                className="flex items-center gap-2.5 sm:gap-3.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 rounded-lg p-0.5"
+                className="flex items-center gap-2 sm:gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 rounded-lg p-0.5"
                 title="Sri Sairam Engineering College - CCE PGPA Portal"
               >
-                <div className="relative h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12 shrink-0 flex items-center justify-center">
+                <div className="relative h-9 w-9 sm:h-10 sm:w-10 md:h-10 md:w-10 shrink-0 flex items-center justify-center">
                   <Image
                     src="/images/sec logo.png"
                     alt="Sri Sairam Engineering College Crest"
-                    width={48}
-                    height={48}
+                    width={40}
+                    height={40}
                     priority
                     className="h-full w-full object-contain"
                   />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-extrabold text-[12.5px] sm:text-[14px] md:text-[15px] tracking-tight text-[#0f2942] uppercase leading-tight truncate">
+                  <span className="font-extrabold text-[12px] sm:text-[13.5px] md:text-[14px] tracking-tight text-[#0f2942] uppercase leading-tight truncate">
                     Sri Sairam Engineering College
                   </span>
-                  <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-slate-500 font-medium leading-tight mt-0.5">
+                  <div className="flex items-center gap-1.5 text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
                     <span className="truncate">Autonomous Institution</span>
                     <span className="hidden sm:inline text-slate-300" aria-hidden="true">&bull;</span>
                     <span className="hidden sm:inline truncate">Anna University Affiliated</span>
@@ -239,26 +239,26 @@ export function PortalSelection() {
             </div>
 
             {/* Right: Department Identity & Sairam Institutions Brand */}
-            <div className="flex items-center gap-2 sm:gap-4 lg:gap-5 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3.5 lg:gap-4 shrink-0">
               {/* Desktop Department Identity Lockup */}
-              <div className="hidden lg:flex flex-col items-end text-right border-r border-slate-200/90 pr-4">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-800">
+              <div className="hidden lg:flex flex-col items-end text-right border-r border-slate-200/90 pr-3.5">
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-800">
                   Department of CCE
                 </span>
-                <span className="text-[10px] text-slate-500 font-medium">
+                <span className="text-[9.5px] text-slate-500 font-medium">
                   Academic Performance Portal
                 </span>
               </div>
 
               {/* Sairam Institutions Official Logo */}
-              <div className="relative h-8 sm:h-9 md:h-10 w-auto shrink-0 flex items-center">
+              <div className="relative h-7 sm:h-8 md:h-8 w-auto shrink-0 flex items-center">
                 <Image
                   src="/images/logo1.png"
                   alt="Sri Sairam Institutions Logo"
-                  width={68}
-                  height={44}
+                  width={60}
+                  height={36}
                   priority
-                  className="h-7 sm:h-8 md:h-9.5 w-auto object-contain"
+                  className="h-6.5 sm:h-7.5 md:h-7.5 w-auto object-contain"
                 />
               </div>
             </div>
@@ -271,19 +271,19 @@ export function PortalSelection() {
           Engineered for balanced viewport fit on Desktop (1280, 1366, 1440, 1920)
           and thumb-optimized vertical stack on Mobile (360, 390, 430)
           ========================================================================= */}
-      <main className="w-full flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-5 sm:py-6 md:py-8 lg:py-10">
+      <main className="w-full flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-2.5 sm:py-3 md:py-2.5 lg:py-3 min-h-0">
         {/* Department Title & Institutional Heading */}
-        <section className="text-center w-full max-w-3xl mx-auto space-y-1.5 sm:space-y-2 shrink-0">
+        <section className="text-center w-full max-w-3xl mx-auto space-y-1 sm:space-y-1.5 shrink-0">
           {/* Department Identity Element */}
           <div
             id="department-identity-container"
-            className="inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-1.5 rounded-xl sm:rounded-full bg-slate-100/90 border border-slate-200/90 shadow-2xs max-w-full"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 rounded-xl sm:rounded-full bg-slate-100/90 border border-slate-200/90 shadow-2xs max-w-full"
           >
-            <span className="h-2 w-2 rounded-full bg-sky-600 shrink-0" aria-hidden="true" />
+            <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-sky-600 shrink-0" aria-hidden="true" />
             <span
               id="department-identity-name"
               className="font-bold tracking-wider uppercase text-slate-700 text-center leading-snug break-words whitespace-normal md:whitespace-nowrap"
-              style={{ fontSize: "clamp(10.5px, 2.2vw, 12px)" }}
+              style={{ fontSize: "clamp(10px, 1.8vw, 11.5px)" }}
             >
               DEPARTMENT OF COMPUTER AND COMMUNICATION ENGINEERING
             </span>
@@ -291,33 +291,33 @@ export function PortalSelection() {
 
           {/* Institutional Portal Name & Tagline */}
           <div className="space-y-0.5">
-            <h1 className="text-3xl sm:text-4xl md:text-[42px] font-black tracking-tight text-[#800000] leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-[34px] font-black tracking-tight text-[#800000] leading-tight">
               CCE PGPA
             </h1>
-            <p className="text-[11px] sm:text-xs md:text-[13px] font-bold uppercase tracking-[0.2em] text-[#0f2942]">
-              PGPA Management System
+            <p className="text-[10px] sm:text-[11px] md:text-xs font-bold uppercase tracking-[0.2em] text-[#0f2942]">
+              PGPA MANAGEMENT SYSTEM
             </p>
           </div>
 
-          <p className="text-xs sm:text-sm font-medium text-slate-600 italic">
+          <p className="text-[11px] sm:text-xs font-medium text-slate-600 italic">
             &ldquo;Academic Performance. Structured. Simplified.&rdquo;
           </p>
         </section>
 
         {/* Discreet Active Session Status Bar (if already signed in) */}
         {user && !isLoading && (
-          <div aria-label="Current Session" className="w-full max-w-2xl mx-auto mt-3.5 sm:mt-4 shrink-0">
-            <div className="rounded-xl border border-sky-200/90 bg-sky-50/80 py-2 px-3.5 sm:px-4 text-xs text-sky-950 flex flex-wrap items-center justify-between gap-2.5 shadow-2xs">
-              <div className="flex items-center gap-2">
+          <div aria-label="Current Session" className="w-full max-w-2xl mx-auto mt-2 sm:mt-2.5 shrink-0">
+            <div className="rounded-lg border border-sky-200/90 bg-sky-50/80 py-1.5 px-3 sm:px-3.5 text-xs text-sky-950 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+              <div className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" aria-hidden="true" />
-                <span className="font-medium text-[11.5px] sm:text-xs">
+                <span className="font-medium text-[11px] sm:text-xs">
                   Active Session: <strong className="font-semibold text-slate-900">{user.full_name}</strong>{" "}
                   <span className="text-sky-800">
                     ({user.role === "hod" ? "Department HOD & Mentor" : ROLE_CONFIGS[user.role]?.shortTitle})
                   </span>
                 </span>
               </div>
-              <div className="flex items-center gap-2 sm:gap-2.5 text-xs">
+              <div className="flex items-center gap-2 text-xs">
                 {user.role === "hod" ? (
                   <>
                     <Link
@@ -356,19 +356,19 @@ export function PortalSelection() {
         )}
 
         {/* Portal Selection Divider */}
-        <div className="w-full max-w-4xl mx-auto flex items-center justify-center gap-3 my-3.5 sm:my-4 md:my-5 shrink-0">
-          <span className="h-px flex-1 max-w-[50px] sm:max-w-[90px] bg-slate-200" aria-hidden="true" />
-          <span className="text-[10px] sm:text-[11.5px] font-bold uppercase tracking-[0.16em] text-slate-400 text-center">
+        <div className="w-full max-w-4xl mx-auto flex items-center justify-center gap-3 my-2 sm:my-2.5 md:my-2.5 lg:my-3 shrink-0">
+          <span className="h-px flex-1 max-w-[50px] sm:max-w-[80px] bg-slate-200" aria-hidden="true" />
+          <span className="text-[9.5px] sm:text-[10.5px] font-bold uppercase tracking-[0.16em] text-slate-400 text-center">
             {user && !isLoading
               ? "Select Authorized Portal to Enter"
               : "Select Institutional Portal to Sign In"}
           </span>
-          <span className="h-px flex-1 max-w-[50px] sm:max-w-[90px] bg-slate-200" aria-hidden="true" />
+          <span className="h-px flex-1 max-w-[50px] sm:max-w-[80px] bg-slate-200" aria-hidden="true" />
         </div>
 
         {/* Portal Selection Cards */}
         <div
-          className={`grid gap-4 sm:gap-4.5 md:gap-5 lg:gap-6 w-full ${
+          className={`grid gap-3 sm:gap-3.5 md:gap-4 lg:gap-5 w-full ${
             authorizedRoles.length === 1
               ? "grid-cols-1 max-w-md mx-auto"
               : authorizedRoles.length === 2
@@ -394,7 +394,7 @@ export function PortalSelection() {
             // Dynamic description text for HOD's mentor view
             const descriptionText =
               user && user.role === "hod" && roleKey === "mentor"
-                ? "Review achievements, verify certificate evidence via secure proxy, and record verification audit remarks for your 11 assigned mentees."
+                ? "Review assigned students, verify evidence and provide remarks."
                 : meta.description;
 
             return (
@@ -402,23 +402,23 @@ export function PortalSelection() {
                 key={roleKey}
                 href={cardHref}
                 id={`portal-card-${roleKey}`}
-                className={`group relative flex flex-col justify-between rounded-xl border ${theme.cardBorder} ${theme.hoverBorder} ${theme.hoverShadow} bg-white p-4.5 sm:p-5 md:p-5 lg:p-5.5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:-translate-y-1 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${theme.focusRing} w-full h-full overflow-hidden`}
+                className={`group relative flex flex-col justify-between rounded-xl border ${theme.cardBorder} ${theme.hoverBorder} ${theme.hoverShadow} bg-white p-3.5 sm:p-4 md:p-3.5 lg:p-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${theme.focusRing} w-full h-full overflow-hidden`}
               >
                 {/* Top Subtle Color Accent Bar */}
                 <div
-                  className={`absolute top-0 left-0 right-0 h-[3.5px] ${theme.accentBar}`}
+                  className={`absolute top-0 left-0 right-0 h-[3px] ${theme.accentBar}`}
                   aria-hidden="true"
                 />
 
-                <div className="flex-1 flex flex-col pt-1">
+                <div className="flex-1 flex flex-col pt-0.5">
                   {/* Card Header: Role Icon & Official Badge */}
-                  <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center justify-between gap-2 mb-2 sm:mb-2.5">
                     <div
-                      className={`flex h-10 w-10 sm:h-10.5 sm:w-10.5 shrink-0 items-center justify-center rounded-lg ${theme.iconBg} ${theme.iconText} ${theme.iconHoverBg} ${theme.iconHoverText} transition-colors duration-200 shadow-2xs`}
+                      className={`flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg ${theme.iconBg} ${theme.iconText} ${theme.iconHoverBg} ${theme.iconHoverText} transition-colors duration-200 shadow-2xs`}
                     >
                       {roleKey === "student" && (
                         <svg
-                          className="h-5 w-5 sm:h-5.5 sm:w-5.5"
+                          className="h-4.5 w-4.5 sm:h-5 sm:w-5"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -433,7 +433,7 @@ export function PortalSelection() {
                       )}
                       {roleKey === "mentor" && (
                         <svg
-                          className="h-5 w-5 sm:h-5.5 sm:w-5.5"
+                          className="h-4.5 w-4.5 sm:h-5 sm:w-5"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -448,7 +448,7 @@ export function PortalSelection() {
                       )}
                       {roleKey === "hod" && (
                         <svg
-                          className="h-5 w-5 sm:h-5.5 sm:w-5.5"
+                          className="h-4.5 w-4.5 sm:h-5 sm:w-5"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -462,7 +462,7 @@ export function PortalSelection() {
                       )}
                       {roleKey === "admin" && (
                         <svg
-                          className="h-5 w-5 sm:h-5.5 sm:w-5.5"
+                          className="h-4.5 w-4.5 sm:h-5 sm:w-5"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -479,7 +479,7 @@ export function PortalSelection() {
                     </div>
 
                     <span
-                      className={`text-[10px] sm:text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full border whitespace-nowrap shrink-0 text-center ${theme.badgeBorder} ${theme.badgeBg} ${theme.badgeText}`}
+                      className={`text-[9.5px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 text-center ${theme.badgeBorder} ${theme.badgeBg} ${theme.badgeText}`}
                     >
                       {badgeLabel}
                     </span>
@@ -488,26 +488,26 @@ export function PortalSelection() {
                   {/* Title & Audience Identification */}
                   <div>
                     <h2
-                      className={`text-[16px] sm:text-[17px] md:text-[17.5px] font-bold text-slate-900 ${theme.titleHover} transition-colors leading-snug`}
+                      className={`text-[15px] sm:text-[16px] md:text-[16.5px] font-bold text-slate-900 ${theme.titleHover} transition-colors leading-snug`}
                     >
                       {cfg.portalName}
                     </h2>
-                    <p className="text-[11px] font-medium text-slate-500 mt-0.5 leading-tight">
+                    <p className="text-[10.5px] sm:text-[11px] font-medium text-slate-500 mt-0.5 leading-tight">
                       {meta.audience}
                     </p>
                   </div>
 
                   {/* Concise Institutional Description */}
-                  <p className="mt-2 text-xs sm:text-[12.5px] text-slate-600 leading-relaxed">
+                  <p className="mt-1.5 sm:mt-2 text-[11.5px] sm:text-xs text-slate-600 leading-relaxed min-h-[32px]">
                     {descriptionText}
                   </p>
 
                   {/* Key Capabilities Chips */}
-                  <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Portal Capabilities">
+                  <div className="mt-2 sm:mt-2.5 flex flex-wrap gap-1.5" aria-label="Portal Capabilities">
                     {meta.tags.map((tag) => (
                       <span
                         key={tag}
-                        className={`text-[10px] font-medium px-2 py-0.5 rounded border ${theme.tagBorder} ${theme.tagBg} ${theme.tagText}`}
+                        className={`text-[9px] sm:text-[9.5px] font-medium px-2 py-0.5 rounded border ${theme.tagBorder} ${theme.tagBg} ${theme.tagText}`}
                       >
                         {tag}
                       </span>
@@ -517,7 +517,7 @@ export function PortalSelection() {
 
                 {/* Bottom Action CTA Button */}
                 <div
-                  className={`mt-4 pt-3 border-t border-slate-100 flex items-center justify-between min-h-[42px] sm:min-h-[44px] px-3.5 py-2 rounded-lg ${theme.ctaBg} ${theme.ctaText} ${theme.ctaBorder} ${theme.ctaHoverBg} ${theme.ctaHoverText} ${theme.ctaHoverBorder} border transition-all duration-200 text-xs sm:text-[12.5px] font-semibold`}
+                  className={`mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between min-h-[38px] sm:min-h-[40px] px-3 sm:px-3.5 py-1.5 rounded-lg ${theme.ctaBg} ${theme.ctaText} ${theme.ctaBorder} ${theme.ctaHoverBg} ${theme.ctaHoverText} ${theme.ctaHoverBorder} border transition-all duration-200 text-xs sm:text-[12.5px] font-semibold`}
                 >
                   <span className="truncate pr-2 font-medium group-hover:font-semibold transition-all">
                     {ctaLabel}
@@ -540,26 +540,26 @@ export function PortalSelection() {
           Founder Chairman subtle identity, FineWorks development wordmark,
           and institutional legal / governance fine print
           ========================================================================= */}
-      <footer className="w-full shrink-0 mt-auto border-t border-slate-200/90 bg-slate-50/70 py-4 sm:py-5 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl flex flex-col space-y-3.5 sm:space-y-4">
+      <footer className="w-full shrink-0 mt-auto border-t border-slate-200/90 bg-slate-50/70 py-2.5 sm:py-3 lg:py-2.5 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-col space-y-2 sm:space-y-2.5 lg:space-y-1.5">
           {/* Upper Footer: Founder Chairman Identity & FINEWORKS Development Branding */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3.5 sm:gap-4 border-b border-slate-200/70 pb-3.5 sm:pb-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 border-b border-slate-200/70 pb-2 sm:pb-2.5 lg:pb-1.5">
             {/* Founder Chairman Medallion */}
-            <div className="flex items-center gap-3">
-              <div className="relative h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12 shrink-0">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="relative h-8 w-8 sm:h-9 sm:w-9 md:h-9 md:w-9 shrink-0">
                 <Image
                   src="/images/founder logo.png"
                   alt="Founder Chairman MJF. Ln. Leo Muthu"
-                  width={48}
-                  height={48}
+                  width={38}
+                  height={38}
                   className="h-full w-full object-contain"
                 />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-xs sm:text-[13px] font-bold text-slate-800 leading-tight">
+                <span className="text-xs sm:text-[12.5px] font-bold text-slate-800 leading-tight">
                   MJF. Ln. Leo Muthu
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium leading-tight mt-0.5">
+                <span className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
                   Founder Chairman &bull; Sri Sairam Group of Institutions
                 </span>
               </div>
@@ -567,11 +567,11 @@ export function PortalSelection() {
 
             {/* FINEWORKS Tasteful Development Wordmark */}
             <div className="flex flex-col items-center sm:items-end text-center sm:text-right">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              <span className="text-[9.5px] font-semibold uppercase tracking-wider text-slate-400">
                 Designed &amp; Developed by
               </span>
               <div className="inline-flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs sm:text-[13px] font-extrabold tracking-[0.24em] text-slate-900">
+                <span className="text-xs sm:text-[12.5px] font-extrabold tracking-[0.22em] text-slate-900">
                   FINE<span className="text-sky-600">WORKS</span>
                 </span>
                 <span className="h-1.5 w-1.5 rounded-full bg-sky-500" aria-hidden="true" />
@@ -580,7 +580,7 @@ export function PortalSelection() {
           </div>
 
           {/* Lower Footer: Legal, Department Notice & Subtle Admin Login */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left text-[11px] text-slate-500">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2 text-center sm:text-left text-[10px] sm:text-[10.5px] text-slate-500">
             <div>
               <span>Department of Computer and Communication Engineering</span>
               <span className="hidden sm:inline mx-1.5 text-slate-300" aria-hidden="true">&bull;</span>
@@ -590,14 +590,14 @@ export function PortalSelection() {
             <div className="flex items-center gap-2">
               <Link
                 href="/login/admin"
-                className="hover:underline hover:text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors text-[10.5px] text-slate-400"
+                className="hover:underline hover:text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded transition-colors text-[10px] text-slate-400"
                 title="System Administrator Portal Login"
                 aria-label="System Administrator Portal Login"
               >
                 CCE-PGPA Management System
               </Link>
               <span className="text-slate-300" aria-hidden="true">&bull;</span>
-              <span className="text-[10.5px] text-slate-400">Version 1.0.0</span>
+              <span className="text-[10px] text-slate-400">Version 1.0.0</span>
             </div>
           </div>
         </div>

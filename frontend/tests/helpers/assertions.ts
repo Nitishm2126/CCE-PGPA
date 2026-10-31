@@ -49,7 +49,7 @@ export async function checkHorizontalOverflow(page: Page): Promise<OverflowResul
 
 export async function checkLogoAspectRatio(page: Page) {
   const images = await page.evaluate(() => {
-    const imgs = Array.from(document.querySelectorAll('header img, main img'));
+    const imgs = Array.from(document.querySelectorAll<HTMLImageElement>('header img, main img'));
     return imgs.map((img) => ({
       src: img.src,
       alt: img.alt,
