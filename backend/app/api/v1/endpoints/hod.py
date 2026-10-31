@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile, status
 from sqlalchemy import func, or_, select
@@ -24,6 +24,8 @@ from app.schemas.component_config import (
     HODImportConfirmRequest,
     HODImportPreviewResponse,
     StudentComponentResultItem,
+    StudentPGPAComponentScore,
+    StudentPGPAGradeRow,
 )
 from app.services.admin_service import record_audit_log
 from app.services.component_service import (
@@ -822,4 +824,184 @@ def export_hod_pdf(
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
+
+
+TARGET_PGPA_SLUGS = [
+    "clubs-and-cells",
+    "nptel-non-credit-transfer",
+    "online-certifications",
+    "internship",
+    "sports-and-games",
+]
+
+
+@router.get(
+    "/student-pgpa-grades",
+    response_model=List[StudentPGPAGradeRow],
+    summary="Get cohort-wide 5-component PGPA grades matrix for HOD",
+    description="Returns verified grades and points for Clubs, NPTEL, Online Certs, Internship, and Sports across department students.",
+)
+def get_student_pgpa_grades(
+    semester_id: Optional[uuid.UUID] = Query(None, description="Optional semester filter"),
+    section: Optional[str] = Query(None, description="Optional section filter (e.g. 'A')"),
+    mentor_id: Optional[uuid.UUID] = Query(None, description="Optional mentor filter"),
+    component_slug: Optional[str] = Query(None, description="Filter by component slug"),
+    grade: Optional[str] = Query(None, description="Filter by grade (e.g. 'O', 'A+', etc.)"),
+    search: Optional[str] = Query(None, description="Search by student name or register number"),
+    current_user: User = Depends(require_hod),
+    db: Session = Depends(get_db),
+) -> List[StudentPGPAGradeRow]:
+    dept_name = current_user.hod_profile.department if current_user.hod_profile else "CCE"
+
+    stmt = (
+        select(User)
+        .options(joinedload(User.student_profile))
+        .join(StudentProfile, User.id == StudentProfile.user_id)
+        .where(
+            User.role == UserRole.STUDENT,
+            StudentProfile.department == dept_name,
+        )
+    )
+
+    if section and section.strip() and section.strip().lower() != "all":
+        stmt = stmt.where(StudentProfile.section.ilike(section.strip()))
+
+    if search and search.strip():
+        term = f"%{search.strip()}%"
+        stmt = stmt.where(
+            or_(
+                User.full_name.ilike(term),
+                StudentProfile.register_number.ilike(term),
+            )
+        )
+
+    if mentor_id:
+        stmt = stmt.join(
+            MentorAssignment,
+            (MentorAssignment.student_id == User.id) & (MentorAssignment.is_active.is_(True)),
+        ).where(MentorAssignment.mentor_id == mentor_id)
+
+    stmt = stmt.order_by(StudentProfile.register_number.asc(), User.full_name.asc())
+    students = db.scalars(stmt).unique().all()
+
+    if not students:
+        return []
+
+    student_ids = [s.id for s in students]
+
+    # Resolve active mentor assignments
+    assign_stmt = (
+        select(MentorAssignment)
+        .options(joinedload(MentorAssignment.mentor))
+        .where(
+            MentorAssignment.student_id.in_(student_ids),
+            MentorAssignment.is_active.is_(True),
+        )
+    )
+    assignments = db.scalars(assign_stmt).all()
+    mentor_map = {
+        a.student_id: (a.mentor.id, a.mentor.full_name)
+        for a in assignments
+        if a.mentor
+    }
+
+    # Resolve target component IDs
+    comps_stmt = select(PGPAComponent).where(PGPAComponent.slug.in_(TARGET_PGPA_SLUGS))
+    target_comps = db.scalars(comps_stmt).all()
+    comp_id_to_slug = {c.id: c.slug for c in target_comps}
+    comp_ids = list(comp_id_to_slug.keys())
+
+    # Fetch verified / recorded StudentComponentResult records
+    results_stmt = (
+        select(StudentComponentResult)
+        .where(
+            StudentComponentResult.student_id.in_(student_ids),
+            StudentComponentResult.component_id.in_(comp_ids),
+        )
+        .order_by(StudentComponentResult.is_verified.desc(), StudentComponentResult.calculated_at.desc())
+    )
+    if semester_id:
+        results_stmt = results_stmt.where(StudentComponentResult.semester_id == semester_id)
+
+    all_results = db.scalars(results_stmt).all()
+
+    # Map (student_id, slug) -> best result (verified preferred, then latest)
+    student_results_map: Dict[Tuple[uuid.UUID, str], StudentComponentResult] = {}
+    for r in all_results:
+        slug = comp_id_to_slug.get(r.component_id)
+        if not slug:
+            continue
+        key = (r.student_id, slug)
+        if key not in student_results_map:
+            student_results_map[key] = r
+
+    rows: List[StudentPGPAGradeRow] = []
+    clean_comp_filter = component_slug.strip().lower() if component_slug and component_slug.strip().lower() != "all" else None
+    clean_grade_filter = grade.strip().upper() if grade and grade.strip().lower() != "all" else None
+
+    for student in students:
+        components_map: Dict[str, Optional[StudentPGPAComponentScore]] = {}
+        total_pts = 0.0
+        total_gp = 0
+
+        for slug in TARGET_PGPA_SLUGS:
+            res = student_results_map.get((student.id, slug))
+            if res:
+                is_pending = "pending" in (res.notes or "").lower() or (
+                    slug == "sports-and-games" and res.category and "all india" in res.category.lower()
+                )
+                score_item = StudentPGPAComponentScore(
+                    grade=res.grade,
+                    grade_points=res.grade_points,
+                    raw_score=res.raw_score,
+                    credit_value=res.credit_value,
+                    is_verified=res.is_verified,
+                    source=res.source,
+                    notes=res.notes,
+                    criteria_pending=is_pending,
+                    calculated_at=res.calculated_at,
+                )
+                components_map[slug] = score_item
+                if res.is_verified and res.raw_score:
+                    total_pts += float(res.raw_score)
+                if res.is_verified:
+                    total_gp += res.grade_points
+            else:
+                components_map[slug] = None
+
+        # Filter by component_slug & grade if provided
+        if clean_comp_filter:
+            target_comp = components_map.get(clean_comp_filter)
+            if not target_comp:
+                continue
+            if clean_grade_filter and target_comp.grade.upper() != clean_grade_filter:
+                continue
+        elif clean_grade_filter:
+            has_matching_grade = any(
+                c is not None and c.grade and c.grade.upper() == clean_grade_filter
+                for c in components_map.values()
+            )
+            if not has_matching_grade:
+                continue
+
+        m_id, m_name = mentor_map.get(student.id, (None, None))
+        rows.append(
+            StudentPGPAGradeRow(
+                student_id=student.id,
+                register_number=student.student_profile.register_number if student.student_profile else None,
+                student_name=student.full_name,
+                email=student.email,
+                department=dept_name,
+                year=student.student_profile.year if student.student_profile else 2,
+                section=student.student_profile.section if student.student_profile else None,
+                mentor_id=m_id,
+                mentor_name=m_name,
+                components=components_map,
+                total_points=round(total_pts, 2),
+                total_grade_points=total_gp,
+            )
+        )
+
+    return rows
+
 

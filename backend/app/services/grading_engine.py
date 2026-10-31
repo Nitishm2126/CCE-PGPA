@@ -240,40 +240,100 @@ def calculate_clubs_and_cells_points(role_category: str, event_level: Optional[s
 
     return 100
 
+CLUBS_CUMULATIVE_THRESHOLDS: Dict[int, Dict[str, int]] = {
+    1:  {"O": 600,  "A+": 500, "A": 400, "B+": 300, "B": 200, "C": 100},
+    2:  {"O": 1200, "A+": 1000,"A": 800, "B+": 600, "B": 400, "C": 200},
+    3:  {"O": 1800, "A+": 1500,"A": 1200,"B+": 900, "B": 600, "C": 300},
+    4:  {"O": 2400, "A+": 2000,"A": 1600,"B+": 1200,"B": 800, "C": 400},
+    5:  {"O": 3000, "A+": 2500,"A": 2000,"B+": 1500,"B": 1000,"C": 500},
+    6:  {"O": 3600, "A+": 3000,"A": 2400,"B+": 1800,"B": 1200,"C": 600},
+    7:  {"O": 4200, "A+": 3500,"A": 2800,"B+": 2100,"B": 1400,"C": 700},
+    8:  {"O": 4800, "A+": 4000,"A": 3200,"B+": 2400,"B": 1600,"C": 800},
+    9:  {"O": 5400, "A+": 4500,"A": 3600,"B+": 2700,"B": 1800,"C": 900},
+    10: {"O": 6000, "A+": 5000,"A": 4000,"B+": 3000,"B": 2000,"C": 1000},
+}
+
 def grade_clubs_and_cells(points: float, semester: int) -> Tuple[str, int]:
-    sem_factor = max(1, semester)
-    o_th = 600 * sem_factor
-    ap_th = 500 * sem_factor
-    a_th = 400 * sem_factor
-    bp_th = 300 * sem_factor
-    b_th = 200 * sem_factor
-    if points >= o_th:
+    """Table 7.2 Cumulative Clubs & Cells grade thresholds."""
+    safe_sem = max(1, min(10, semester)) if semester > 0 else 1
+    thresholds = CLUBS_CUMULATIVE_THRESHOLDS.get(safe_sem, CLUBS_CUMULATIVE_THRESHOLDS[8])
+    if points >= thresholds["O"]:
         return "O", 10
-    elif points >= ap_th:
+    elif points >= thresholds["A+"]:
         return "A+", 9
-    elif points >= a_th:
+    elif points >= thresholds["A"]:
         return "A", 7
-    elif points >= bp_th:
+    elif points >= thresholds["B+"]:
         return "B+", 5
-    elif points >= b_th:
+    elif points >= thresholds["B"]:
         return "B", 3
     else:
         return "C", 1
 
 
-# 8. Sports & Games: Table 8.1
+# 8. Sports & Games: Table 8.1 Medal × Competition Level Point Matrix & Table 8.2 Grade Thresholds
+SPORTS_POINTS_TABLE: Dict[str, Dict[str, int]] = {
+    "gold":         {"sports_day": 20, "au_zonal_district": 65, "au_intl_state": 100, "national_south_univ": 115},
+    "silver":       {"sports_day": 15, "au_zonal_district": 50, "au_intl_state": 80,  "national_south_univ": 95},
+    "bronze":       {"sports_day": 10, "au_zonal_district": 35, "au_intl_state": 40,  "national_south_univ": 60},
+    "participation":{"sports_day": 5,  "au_zonal_district": 25, "au_intl_state": 30,  "national_south_univ": 30},
+}
+# All India column (225 total) – medal breakdown NOT available in official document.
+# Keep as HOD-configurable; return 0 with a flag.
+ALL_INDIA_PENDING_HOD = True
+
+def calculate_sports_points(position: Optional[str], competition_level: Optional[str]) -> Tuple[int, bool]:
+    """
+    Calculate sports points from Table 8.1.
+    Returns (points, criteria_pending) where criteria_pending=True means HOD must confirm.
+    """
+    pos = (position or "").strip().lower()
+    level = (competition_level or "").strip().lower()
+
+    if not pos or not level:
+        return 0, True
+
+    if "all india" in level:
+        return 0, True  # Pending HOD confirmation
+
+    level_key = None
+    if "sports day" in level or "intra" in level:
+        level_key = "sports_day"
+    elif "zonal" in level or "district" in level:
+        level_key = "au_zonal_district"
+    elif "state" in level or "international" in level:
+        level_key = "au_intl_state"
+    elif "national" in level or "south university" in level:
+        level_key = "national_south_univ"
+
+    pos_key = None
+    if "gold" in pos or "first" in pos or "1st" in pos:
+        pos_key = "gold"
+    elif "silver" in pos or "second" in pos or "2nd" in pos:
+        pos_key = "silver"
+    elif "bronze" in pos or "third" in pos or "3rd" in pos:
+        pos_key = "bronze"
+    elif "participat" in pos:
+        pos_key = "participation"
+
+    if level_key and pos_key:
+        return SPORTS_POINTS_TABLE[pos_key][level_key], False
+
+    return 0, True  # Unknown mapping – pending HOD
+
 def grade_sports_and_games(points: float, is_international_or_record: bool = False) -> Tuple[str, int]:
+    """Table 8.2 Sports Grade thresholds (exact from official document)."""
     if is_international_or_record:
         return "O", 10
-    if points >= 200:
+    if points > 699:
         return "O", 10
-    elif points >= 150:
+    elif points >= 401:
         return "A+", 9
-    elif points >= 95:
+    elif points >= 250:
         return "A", 7
-    elif points >= 50:
+    elif points >= 91:
         return "B+", 5
-    elif points >= 25:
+    elif points >= 21:
         return "B", 3
     else:
         return "C", 1
@@ -469,11 +529,20 @@ def calculate_component_grade(
         explanation = f"Clubs & Cells: {category} ({points:g} pts, Sem {semester_number}) -> Grade {grade}"
 
     elif slug == "sports-and-games":
-        points = float(inputs.get("points") or inputs.get("raw_score") or 0)
-        is_intl = bool(inputs.get("is_international") or False)
-        grade, gp = grade_sports_and_games(points, is_intl)
-        raw_score = points
-        explanation = f"Sports {points:g} pts {'(International)' if is_intl else ''} -> Grade {grade}"
+        position = str(inputs.get("position") or inputs.get("outcome") or "Participation")
+        competition_level = str(inputs.get("competition_level") or inputs.get("event_level") or inputs.get("activity_type") or "Sports Day")
+        pts, pending = calculate_sports_points(position, competition_level)
+        if pending:
+            raw_pts = inputs.get("points") if inputs.get("points") is not None else inputs.get("raw_score")
+            if raw_pts is not None and float(raw_pts) > 0:
+                pts = int(float(raw_pts))
+                pending = False
+            else:
+                raise ValueError(f"Sports points for position='{position}', level='{competition_level}' require HOD confirmation (All India category or unknown mapping).")
+        grade, gp = grade_sports_and_games(float(pts))
+        raw_score = float(pts)
+        category = f"{position} - {competition_level}"
+        explanation = f"Sports & Games: {position} at {competition_level} = {pts} pts → Grade {grade}"
 
     elif slug == "online-certifications":
         cat = str(inputs.get("category") or inputs.get("outcome") or "Completed")

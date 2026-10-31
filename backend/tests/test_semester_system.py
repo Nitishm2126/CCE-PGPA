@@ -218,9 +218,12 @@ def test_student_available_semesters_and_submission(client: TestClient, admin_db
     ).first()
     assert sem_disabled is not None
 
-    # Get an active component
+    # Get an active component (exclude academics-gpa which requires numeric GPA)
     component = admin_db.scalars(
-        select(PGPAComponent).where(PGPAComponent.is_active.is_(True))
+        select(PGPAComponent).where(
+            PGPAComponent.is_active.is_(True),
+            PGPAComponent.slug != "academics-gpa",
+        )
     ).first()
     assert component is not None
 

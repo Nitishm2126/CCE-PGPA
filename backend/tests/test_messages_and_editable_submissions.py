@@ -101,7 +101,7 @@ def _create_user(db: Session, full_name: str, email: str, role: UserRole) -> Use
 
 
 def _get_component(db: Session) -> PGPAComponent:
-    comp = db.scalars(select(PGPAComponent)).first()
+    comp = db.scalars(select(PGPAComponent).where(PGPAComponent.slug != "academics-gpa")).first()
     assert comp is not None
     return comp
 

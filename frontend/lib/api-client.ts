@@ -57,6 +57,7 @@ import {
   HODImportBatchItem,
   StudentComponentResultItem,
   StudentPGPAResponse,
+  StudentPGPAGradeRow,
 } from "@/types/achievement";
 
 const API_BASE_URL =
@@ -602,6 +603,28 @@ export const api = {
 
   getStudentAchievementsForHod: async (studentId: string, token?: string | null): Promise<AchievementResponse[]> => {
     return request<AchievementResponse[]>(`/hod/students/${studentId}/achievements`, { method: "GET" }, token);
+  },
+
+  getHodStudentPgpaGrades: async (
+    filters?: {
+      semester_id?: string;
+      section?: string;
+      mentor_id?: string;
+      component_slug?: string;
+      grade?: string;
+      search?: string;
+    },
+    token?: string | null
+  ): Promise<StudentPGPAGradeRow[]> => {
+    const searchParams = new URLSearchParams();
+    if (filters?.semester_id) searchParams.set("semester_id", filters.semester_id);
+    if (filters?.section) searchParams.set("section", filters.section);
+    if (filters?.mentor_id) searchParams.set("mentor_id", filters.mentor_id);
+    if (filters?.component_slug) searchParams.set("component_slug", filters.component_slug);
+    if (filters?.grade) searchParams.set("grade", filters.grade);
+    if (filters?.search) searchParams.set("search", filters.search);
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : "";
+    return request<StudentPGPAGradeRow[]>(`/hod/student-pgpa-grades${query}`, { method: "GET" }, token);
   },
 
   exportHODReport: async (

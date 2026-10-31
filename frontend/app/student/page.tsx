@@ -28,6 +28,7 @@ import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { DesignationBadge } from "@/components/DesignationBadge";
 import { RoleBadge } from "@/components/RoleBadge";
 import { StudentPGPASummaryCard } from "@/components/student/StudentPGPASummaryCard";
+import { PGPAPerformanceTracker } from "@/components/student/PGPAPerformanceTracker";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
@@ -566,6 +567,14 @@ export default function StudentDashboardPage() {
               onNavigateComponents={() => setActiveTab("components")}
             />
 
+            {/* Interactive PGPA Performance Tracker (Pure SVG Points Time-Series & 5 Target Cards) */}
+            <PGPAPerformanceTracker
+              token={token}
+              achievements={achievements}
+              onNavigateComponents={() => setActiveTab("components")}
+              onSubmitActivity={() => handleOpenSubmitModal(null)}
+            />
+
             {/* Balanced PGPA Progress Summary Metrics Card */}
             <div className="bg-white dark:bg-[#171E28] rounded-2xl border border-slate-200 dark:border-[#2B3543] p-5 sm:p-6 shadow-2xs transition-colors">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#2B3543]">
@@ -720,6 +729,12 @@ export default function StudentDashboardPage() {
         {/* TAB 5: PROGRESS (Real PGPA Progress Analytics) */}
         {activeTab === "progress" && (
           <div className="space-y-6">
+            <PGPAPerformanceTracker
+              token={token}
+              achievements={achievements}
+              onNavigateComponents={() => setActiveTab("components")}
+              onSubmitActivity={() => handleOpenSubmitModal(null)}
+            />
             <ProgressAnalyticsSection
               components={components}
               achievements={achievements}

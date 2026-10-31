@@ -68,6 +68,59 @@ export const calculateTable71Points = (roleCategory: string, eventLevel?: string
   return 100;
 };
 
+// Table 8.1 Sports & Games Point Calculation
+export const calculateTable81Points = (
+  position: string,
+  competitionLevel: string
+): { points: number; criteriaPending: boolean } => {
+  const pos = (position || "").trim().toLowerCase();
+  const lvl = (competitionLevel || "").trim().toLowerCase();
+
+  if (!pos || !lvl) {
+    return { points: 0, criteriaPending: true };
+  }
+
+  if (lvl.includes("all india")) {
+    return { points: 0, criteriaPending: true };
+  }
+
+  let levelKey: "sports_day" | "au_zonal_district" | "au_intl_state" | "national_south_univ" | null = null;
+  if (lvl.includes("sports day") || lvl.includes("intra")) {
+    levelKey = "sports_day";
+  } else if (lvl.includes("zonal") || lvl.includes("district")) {
+    levelKey = "au_zonal_district";
+  } else if (lvl.includes("state") || lvl.includes("international")) {
+    levelKey = "au_intl_state";
+  } else if (lvl.includes("national") || lvl.includes("south university")) {
+    levelKey = "national_south_univ";
+  }
+
+  let posKey: "gold" | "silver" | "bronze" | "participation" | null = null;
+  if (pos.includes("gold") || pos.includes("first") || pos.includes("1st")) {
+    posKey = "gold";
+  } else if (pos.includes("silver") || pos.includes("second") || pos.includes("2nd")) {
+    posKey = "silver";
+  } else if (pos.includes("bronze") || pos.includes("third") || pos.includes("3rd")) {
+    posKey = "bronze";
+  } else if (pos.includes("participat")) {
+    posKey = "participation";
+  }
+
+  const table: Record<string, Record<string, number>> = {
+    gold: { sports_day: 20, au_zonal_district: 65, au_intl_state: 100, national_south_univ: 115 },
+    silver: { sports_day: 15, au_zonal_district: 50, au_intl_state: 80, national_south_univ: 95 },
+    bronze: { sports_day: 10, au_zonal_district: 35, au_intl_state: 40, national_south_univ: 60 },
+    participation: { sports_day: 5, au_zonal_district: 25, au_intl_state: 30, national_south_univ: 30 },
+  };
+
+  if (posKey && levelKey && table[posKey] && table[posKey][levelKey] !== undefined) {
+    return { points: table[posKey][levelKey], criteriaPending: false };
+  }
+
+  return { points: 0, criteriaPending: true };
+};
+
+
 // Table B Score/GPA to Grade Mapping
 export const scoreToGradeTableB = (score: number): { grade: string; points: number } => {
   if (score >= 9.0) return { grade: "O", points: 10 };
@@ -158,9 +211,9 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
   // 9. Sports & Games
   const [sportName, setSportName] = useState<string>("");
-  const [sportLevel, setSportLevel] = useState<string>("State Level");
-  const [sportIsInternational, setSportIsInternational] = useState<boolean>(false);
-  const [sportPoints, setSportPoints] = useState<string>("95");
+  const [sportCompetitionName, setSportCompetitionName] = useState<string>("");
+  const [sportLevel, setSportLevel] = useState<string>("Sports Day (Intra-College)");
+  const [sportPosition, setSportPosition] = useState<string>("Participation");
   const [sportDate, setSportDate] = useState<string>(() => new Date().toISOString().split("T")[0]);
 
   // 10. Online Certifications
@@ -281,6 +334,11 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   const clubsCalculatedPoints = useMemo(() => {
     return calculateTable71Points(clubRoleCategory, clubEventLevel);
   }, [clubRoleCategory, clubEventLevel]);
+
+  // Table 8.1 Calculated points for Sports & Games
+  const sportsCalculatedResult = useMemo(() => {
+    return calculateTable81Points(sportPosition, sportLevel);
+  }, [sportPosition, sportLevel]);
 
   // Validate and set chosen file
   const handleFileSelect = (file: File | null) => {
@@ -539,26 +597,30 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
       case "sports-and-games": {
         if (!sportName.trim()) {
-          throw new Error("Please enter the Sport / Game Discipline.");
+          throw new Error("Please enter the Sport / Game Name.");
         }
-        const pts = parseFloat(sportPoints);
-        if (isNaN(pts) || pts < 0) {
-          throw new Error("Please enter valid sports points (>= 0).");
+        if (!sportCompetitionName.trim()) {
+          throw new Error("Please enter the Competition / Tournament Name.");
         }
-        const title = `${sportName.trim()} — ${sportLevel}`;
+        const pts = sportsCalculatedResult.points;
+        const pending = sportsCalculatedResult.criteriaPending;
+        const title = `${sportName.trim()} — ${sportPosition} (${sportLevel})`;
         payload = {
           component_id: componentId,
           semester_id: semesterId,
           title,
-          activity_type: sportLevel,
-          organizer: "Sports & Athletics Department",
+          activity_type: `${sportPosition} (${sportLevel})`,
+          organizer: sportCompetitionName.trim(),
           event_date: sportDate || undefined,
-          outcome: `${pts} Points${sportIsInternational ? " (International)" : ""}`,
+          outcome: pending ? "Criteria Pending HOD Confirmation" : `${pts} Points (${sportPosition})`,
           component_metadata: {
             sport_name: sportName.trim(),
-            event_level: sportLevel,
-            is_international: sportIsInternational,
+            competition_name: sportCompetitionName.trim(),
+            competition_level: sportLevel,
+            position: sportPosition,
             points: pts,
+            calculated_points: pts,
+            criteria_pending: pending,
           },
         };
         break;
@@ -1500,22 +1562,22 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
-                Sports &amp; Games Competition (Table 8.1)
+                Sports &amp; Games Competition (Table 8.1 &amp; 8.2)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
-                3 Credits &bull; Table 8.1 Thresholds
+                3 Credits &bull; Table 8.1 Medal Matrix
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                  Sport / Discipline Name *
+                  Sport / Game Name *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Athletics 400m, Badminton, Cricket"
+                  placeholder="e.g. Cricket, Badminton, Athletics, Volleyball"
                   value={sportName}
                   onChange={(e) => setSportName(e.target.value)}
                   disabled={isSubmitting}
@@ -1525,7 +1587,24 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                  Competition Level *
+                  Competition / Tournament Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Anna University Zonal Championship 2024"
+                  value={sportCompetitionName}
+                  onChange={(e) => setSportCompetitionName(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  Competition Level (Table 8.1) *
                 </label>
                 <select
                   value={sportLevel}
@@ -1534,56 +1613,96 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
                 >
                   <option value="Sports Day (Intra-College)">Sports Day (Intra-College)</option>
-                  <option value="Zonal Level">Zonal Level</option>
-                  <option value="State Level">State Level</option>
-                  <option value="National Level">National Level</option>
-                  <option value="International Level">International Level</option>
+                  <option value="AU Zonal / District Level">AU Zonal / District Level</option>
+                  <option value="AU International / State Level">AU International / State Level</option>
+                  <option value="National / South University Level">National / South University Level</option>
+                  <option value="All India Level (Pending HOD Confirmation)">All India Level (Pending HOD Confirmation)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  Position / Achievement (Table 8.1) *
+                </label>
+                <select
+                  value={sportPosition}
+                  onChange={(e) => setSportPosition(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                >
+                  <option value="Gold / 1st Place">Gold / 1st Place</option>
+                  <option value="Silver / 2nd Place">Silver / 2nd Place</option>
+                  <option value="Bronze / 3rd Place">Bronze / 3rd Place</option>
+                  <option value="Participation">Participation</option>
                 </select>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                  Sports Points Earned (Table 8.1) *
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  placeholder="e.g. 100"
-                  value={sportPoints}
-                  onChange={(e) => setSportPoints(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                  Event Date *
-                </label>
-                <input
-                  type="date"
-                  value={sportDate}
-                  onChange={(e) => setSportDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                Event Date *
+              </label>
+              <input
+                type="date"
+                value={sportDate}
+                onChange={(e) => setSportDate(e.target.value)}
+                disabled={isSubmitting}
+                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+              />
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer pt-1">
-              <input
-                type="checkbox"
-                checked={sportIsInternational}
-                onChange={(e) => setSportIsInternational(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-xs font-semibold text-slate-700 dark:text-[#A0ACBC]">
-                International Participant / Record Maker (Auto-awarded &apos;O&apos; Grade)
-              </span>
-            </label>
+            {/* Live Table 8.1 Calculated Points Preview */}
+            <div className="p-3.5 rounded-xl bg-white dark:bg-[#1C2531] border border-blue-200/80 dark:border-[#2B3543] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C] block">
+                  Table 8.1 Awarded Points Preview
+                </span>
+                {sportsCalculatedResult.criteriaPending ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                      <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                      Pending HOD Confirmation
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-[#7E8B9C]">
+                      All India medal breakdown requires department review
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xl font-extrabold text-blue-600 dark:text-[#4C83E6]">
+                      {sportsCalculatedResult.points} Points
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-[#7E8B9C]">
+                      ({sportPosition} at {sportLevel})
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {!sportsCalculatedResult.criteriaPending && (
+                <div className="text-right sm:border-l sm:border-slate-200 dark:sm:border-[#2B3543] sm:pl-4">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C] block">
+                    Table 8.2 Grade
+                  </span>
+                  <span className="text-base font-bold text-slate-800 dark:text-[#E8EDF4]">
+                    {sportsCalculatedResult.points > 699
+                      ? "Grade O (10 GP)"
+                      : sportsCalculatedResult.points >= 401
+                      ? "Grade A+ (9 GP)"
+                      : sportsCalculatedResult.points >= 250
+                      ? "Grade A (7 GP)"
+                      : sportsCalculatedResult.points >= 91
+                      ? "Grade B+ (5 GP)"
+                      : sportsCalculatedResult.points >= 21
+                      ? "Grade B (3 GP)"
+                      : "Grade C (1 GP)"}
+                  </span>
+                </div>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C]">
+              ℹ️ Sports points are strictly evaluated from official Table 8.1 guidelines. Manual modification of point values is disabled.
+            </p>
           </div>
         )}
 

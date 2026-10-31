@@ -475,3 +475,107 @@ def test_clubs_and_cells_workflow_with_rejection_and_resubmission(client: TestCl
     final_item = next(a for a in final_student_res.json() if a["id"] == ach_id)
     assert final_item["status"] == "approved"
     assert final_item["evaluated_points"] == 500.0
+
+
+def test_sports_and_games_workflow_table_8_1(client: TestClient, db: Session):
+    """
+    Test Sports & Games workflow with Table 8.1 Medal Matrix:
+    - Student submits Gold medal at AU Zonal Level (Table 8.1 = 65 points).
+    - Auto-calculation generates 65 points.
+    - Mentor reviews and approves.
+    - Resulting grade in StudentComponentResult is Grade B (Table 8.2: 21-90 -> B).
+    """
+    mentor_user = User(
+        id=uuid.uuid4(),
+        email=f"sports.mentor.{uuid.uuid4().hex[:6]}@sairam.edu.in",
+        full_name="Sports Mentor",
+        password_hash="testpass",
+        role=UserRole.MENTOR,
+        is_active=True,
+    )
+    db.add(mentor_user)
+    db.flush()
+    db.track_user(mentor_user.id)
+
+    student_user = User(
+        id=uuid.uuid4(),
+        email=f"sports.student.{uuid.uuid4().hex[:6]}@sairam.edu.in",
+        full_name="Sports Student",
+        password_hash="testpass",
+        role=UserRole.STUDENT,
+        is_active=True,
+    )
+    db.add(student_user)
+    db.flush()
+    db.track_user(student_user.id)
+
+    student_profile = StudentProfile(
+        user_id=student_user.id,
+        register_number=f"2126{uuid.uuid4().hex[:8]}",
+        department="CCE",
+        year=2,
+        semester="3",
+        section="A",
+    )
+    db.add(student_profile)
+
+    assignment = MentorAssignment(
+        student_id=student_user.id,
+        mentor_id=mentor_user.id,
+    )
+    db.add(assignment)
+    db.commit()
+
+    sports_comp = db.scalars(select(PGPAComponent).where(PGPAComponent.slug == "sports-and-games")).first()
+    assert sports_comp is not None
+
+    enabled_sem = db.scalars(select(Semester).where(Semester.is_enabled.is_(True))).first()
+    assert enabled_sem is not None
+
+    student_token = create_access_token(subject=student_user.id, role="student")
+    mentor_token = create_access_token(subject=mentor_user.id, role="mentor")
+
+    # 1. Student creates draft: Gold at AU Zonal / District Level
+    create_res = client.post(
+        "/api/v1/students/me/achievements",
+        headers={"Authorization": f"Bearer {student_token}"},
+        json={
+            "component_id": str(sports_comp.id),
+            "semester_id": str(enabled_sem.id),
+            "title": "Anna University Zonal Badminton",
+            "component_metadata": {
+                "sport_name": "Badminton",
+                "competition_name": "Anna University Zonal Championship",
+                "competition_level": "AU Zonal / District Level",
+                "position": "Gold / 1st Place",
+            },
+        },
+    )
+    assert create_res.status_code == 201, create_res.text
+    ach_id = create_res.json()["id"]
+    db.track_achievement(uuid.UUID(ach_id))
+    assert create_res.json()["component_metadata"]["calculated_points"] == 65
+    assert create_res.json()["component_metadata"]["points"] == 65
+
+    # 2. Student submits
+    sub_res = client.post(
+        f"/api/v1/students/me/achievements/{ach_id}/submit",
+        headers={"Authorization": f"Bearer {student_token}"},
+    )
+    assert sub_res.status_code == 200
+    assert sub_res.json()["status"] == "pending"
+
+    # 3. Mentor approves
+    approve_res = client.post(
+        f"/api/v1/mentor/achievements/{ach_id}/review",
+        headers={"Authorization": f"Bearer {mentor_token}"},
+        json={
+            "action": "approved",
+            "remarks": "Zonal Gold verified against official scoresheet.",
+        },
+    )
+    assert approve_res.status_code == 200
+    assert approve_res.json()["status"] == "approved"
+    assert approve_res.json()["evaluated_points"] == 65.0
+    assert approve_res.json()["evaluated_grade"] == "B"
+

@@ -85,7 +85,7 @@ def upload_achievement_file(
             detail="Google Drive storage is not configured. Please contact the system administrator.",
         )
 
-    if getattr(ds, "is_token_revoked", False):
+    if getattr(ds, "is_token_revoked", False) is True:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Google Drive OAuth authorization expired or was revoked. Please ask the System Administrator to reconnect Google Drive from the Admin Console.",

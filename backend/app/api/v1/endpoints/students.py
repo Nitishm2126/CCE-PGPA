@@ -36,6 +36,7 @@ from app.services.grading_engine import (
     calculate_clubs_and_cells_points,
     calculate_component_grade,
     calculate_overall_pgpa,
+    calculate_sports_points,
 )
 
 router = APIRouter()
@@ -575,6 +576,20 @@ def create_achievement(
         activity_type = comp_type
         outcome = comp_type
 
+    elif component.slug == "sports-and-games":
+        sport = meta.get("sport_name") or organizer or "Sports Activity"
+        comp_name = meta.get("competition_name") or title or "Sports Competition"
+        comp_lvl = meta.get("competition_level") or meta.get("event_level") or "Sports Day (Intra-College)"
+        pos = meta.get("position") or "Participation"
+        pts, pending = calculate_sports_points(pos, comp_lvl)
+        meta["points"] = float(pts)
+        meta["calculated_points"] = float(pts)
+        meta["criteria_pending"] = pending
+        title = title or f"{sport} — {pos} ({comp_lvl})"
+        activity_type = f"{pos} ({comp_lvl})"
+        organizer = sport
+        outcome = f"{pts:g} Points ({pos})" if not pending else "Criteria Pending HOD Confirmation"
+
     elif not title:
         title = f"{component.name} Achievement"
 
@@ -697,6 +712,14 @@ def update_achievement(
             merged_meta["points"] = float(calc_pts)
             merged_meta["calculated_points"] = float(calc_pts)
             achievement.outcome = f"{calc_pts:g} Points ({rc})"
+        elif achievement.component and achievement.component.slug == "sports-and-games":
+            pos = merged_meta.get("position") or "Participation"
+            comp_lvl = merged_meta.get("competition_level") or merged_meta.get("event_level") or "Sports Day (Intra-College)"
+            pts, pending = calculate_sports_points(pos, comp_lvl)
+            merged_meta["points"] = float(pts)
+            merged_meta["calculated_points"] = float(pts)
+            merged_meta["criteria_pending"] = pending
+            achievement.outcome = f"{pts:g} Points ({pos})" if not pending else "Criteria Pending HOD Confirmation"
 
     if data.title is not None:
         achievement.title = data.title.strip()

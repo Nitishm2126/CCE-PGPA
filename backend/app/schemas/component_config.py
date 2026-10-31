@@ -187,3 +187,31 @@ class HODCorrectionRequest(BaseModel):
     grade: Optional[str] = None
     notes: Optional[str] = None
     reason: str
+
+
+class StudentPGPAComponentScore(BaseModel):
+    grade: Optional[str] = None
+    grade_points: Optional[int] = None
+    raw_score: Optional[float] = None
+    credit_value: int = 3
+    is_verified: bool = False
+    source: Optional[str] = None
+    notes: Optional[str] = None
+    criteria_pending: bool = False
+    calculated_at: Optional[datetime] = None
+
+
+class StudentPGPAGradeRow(BaseModel):
+    student_id: uuid.UUID
+    register_number: Optional[str] = None
+    student_name: str
+    email: str
+    department: str = "CCE"
+    year: int = 2
+    section: Optional[str] = None
+    mentor_id: Optional[uuid.UUID] = None
+    mentor_name: Optional[str] = None
+    components: Dict[str, Optional[StudentPGPAComponentScore]] = {}
+    total_points: float = 0.0
+    total_grade_points: int = 0
+

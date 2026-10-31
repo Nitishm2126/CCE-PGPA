@@ -276,3 +276,34 @@ export interface StudentPGPAResponse {
   results: StudentComponentResultItem[];
   formula_explanation: string;
 }
+
+export interface StudentPGPAComponentScore {
+  grade?: string | null;
+  grade_points?: number | null;
+  grade_point?: number | null;
+  raw_score?: number | null;
+  points?: number | null;
+  credit_value: number;
+  is_verified: boolean;
+  status?: "verified" | "in_review" | "pending_criteria" | "none" | string;
+  source?: string | null;
+  notes?: string | null;
+  criteria_pending?: boolean;
+  calculated_at?: string | null;
+}
+
+export interface StudentPGPAGradeRow {
+  student_id: string;
+  register_number?: string | null;
+  student_name: string;
+  email: string;
+  department: string;
+  year: number;
+  section?: string | null;
+  mentor_id?: string | null;
+  mentor_name?: string | null;
+  components: Record<string, StudentPGPAComponentScore | null>;
+  total_points: number;
+  total_grade_points: number;
+}
+

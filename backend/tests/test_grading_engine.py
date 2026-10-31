@@ -9,6 +9,11 @@ from app.services.grading_engine import (
     grade_sail,
     grade_nptel,
     grade_gate,
+    grade_sports_and_games,
+    grade_clubs_and_cells,
+    calculate_sports_points,
+    SPORTS_POINTS_TABLE,
+    CLUBS_CUMULATIVE_THRESHOLDS,
     GRADE_POINTS_MAP,
 )
 
@@ -90,3 +95,120 @@ def test_overall_pgpa_formula():
     assert round(res["a1_score"], 2) == 9.43
     assert res["pgpa"] == 9.06
     assert res["total_credits_attempted"] == 7
+
+
+def test_sports_points_table_8_1():
+    """Verify Table 8.1 medal × level point matrix."""
+    # Gold
+    assert calculate_sports_points("Gold", "Sports Day") == (20, False)
+    assert calculate_sports_points("1st Place", "AU Zonal / District") == (65, False)
+    assert calculate_sports_points("Gold", "AU International / State Level") == (100, False)
+    assert calculate_sports_points("First", "National / South University Level") == (115, False)
+
+    # Silver
+    assert calculate_sports_points("Silver", "Sports Day (Intra-College)") == (15, False)
+    assert calculate_sports_points("2nd Place", "AU Zonal / District Level") == (50, False)
+    assert calculate_sports_points("Silver", "State Level") == (80, False)
+    assert calculate_sports_points("Second", "National Level") == (95, False)
+
+    # Bronze
+    assert calculate_sports_points("Bronze", "Sports Day") == (10, False)
+    assert calculate_sports_points("3rd Place", "Zonal Level") == (35, False)
+    assert calculate_sports_points("Bronze", "AU International / State Level") == (40, False)
+    assert calculate_sports_points("Third", "South University Level") == (60, False)
+
+    # Participation
+    assert calculate_sports_points("Participation", "Sports Day") == (5, False)
+    assert calculate_sports_points("Participation", "AU Zonal / District") == (25, False)
+    assert calculate_sports_points("Participation", "AU International / State Level") == (30, False)
+    assert calculate_sports_points("Participation", "National / South University Level") == (30, False)
+
+    # All India level - requires HOD confirmation
+    pts, pending = calculate_sports_points("Gold", "All India Level")
+    assert pending is True
+    assert pts == 0
+
+
+def test_sports_grading_table_8_2():
+    """Verify Table 8.2 Sports Grade thresholds."""
+    assert grade_sports_and_games(750) == ("O", 10)
+    assert grade_sports_and_games(700) == ("O", 10)
+    assert grade_sports_and_games(699) == ("A+", 9)
+    assert grade_sports_and_games(401) == ("A+", 9)
+    assert grade_sports_and_games(400) == ("A", 7)
+    assert grade_sports_and_games(250) == ("A", 7)
+    assert grade_sports_and_games(249) == ("B+", 5)
+    assert grade_sports_and_games(91) == ("B+", 5)
+    assert grade_sports_and_games(90) == ("B", 3)
+    assert grade_sports_and_games(21) == ("B", 3)
+    assert grade_sports_and_games(20) == ("C", 1)
+    assert grade_sports_and_games(0) == ("C", 1)
+    # International participant / record maker
+    assert grade_sports_and_games(10, is_international_or_record=True) == ("O", 10)
+
+
+def test_clubs_cumulative_grading_table_7_2():
+    """Verify Table 7.2 Cumulative Clubs & Cells thresholds."""
+    # Semester 1
+    assert grade_clubs_and_cells(600, 1) == ("O", 10)
+    assert grade_clubs_and_cells(500, 1) == ("A+", 9)
+    assert grade_clubs_and_cells(400, 1) == ("A", 7)
+    assert grade_clubs_and_cells(300, 1) == ("B+", 5)
+    assert grade_clubs_and_cells(200, 1) == ("B", 3)
+    assert grade_clubs_and_cells(150, 1) == ("C", 1)
+
+    # Semester 3
+    assert grade_clubs_and_cells(1800, 3) == ("O", 10)
+    assert grade_clubs_and_cells(1500, 3) == ("A+", 9)
+    assert grade_clubs_and_cells(1200, 3) == ("A", 7)
+    assert grade_clubs_and_cells(900, 3) == ("B+", 5)
+    assert grade_clubs_and_cells(600, 3) == ("B", 3)
+    assert grade_clubs_and_cells(500, 3) == ("C", 1)
+
+    # Semester 8
+    assert grade_clubs_and_cells(4800, 8) == ("O", 10)
+    assert grade_clubs_and_cells(4000, 8) == ("A+", 9)
+    assert grade_clubs_and_cells(3200, 8) == ("A", 7)
+    assert grade_clubs_and_cells(2400, 8) == ("B+", 5)
+    assert grade_clubs_and_cells(1600, 8) == ("B", 3)
+    assert grade_clubs_and_cells(1000, 8) == ("C", 1)
+
+
+def test_sports_dispatcher_in_calculate_component_grade():
+    """Verify calculate_component_grade sports-and-games evaluation."""
+    res = calculate_component_grade(
+        "sports-and-games",
+        3,
+        {"position": "Gold / 1st Place", "competition_level": "AU Zonal / District Level"}
+    )
+    assert res["raw_score"] == 65
+    assert res["grade"] == "B"
+    assert res["grade_points"] == 3
+
+    # All India level raises ValueError unless HOD confirmation / points provided
+    with pytest.raises(ValueError) as exc:
+        calculate_component_grade(
+            "sports-and-games",
+            3,
+            {"position": "Gold / 1st Place", "competition_level": "All India Level"}
+        )
+    assert "require HOD confirmation" in str(exc.value)
+
+
+def test_sports_points_edge_cases():
+    """Verify edge cases: None values, unknown mappings, All India with collision words."""
+    # None inputs must return (0, True) without crashing
+    assert calculate_sports_points(None, "Sports Day") == (0, True)
+    assert calculate_sports_points("Gold", None) == (0, True)
+    assert calculate_sports_points(None, None) == (0, True)
+
+    # All India competition containing 'national' must still be flagged as pending
+    pts, pending = calculate_sports_points("Gold", "All India Inter-University National Championship")
+    assert pending is True
+    assert pts == 0
+
+    # Semester boundary clamping in clubs
+    assert grade_clubs_and_cells(500, 0) == ("A+", 9)  # clamped to sem 1
+    assert grade_clubs_and_cells(6000, 15) == ("O", 10)  # clamped to sem 10
+
+

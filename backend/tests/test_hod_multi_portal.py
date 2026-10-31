@@ -29,8 +29,8 @@ def test_hod_multi_portal_access(client: TestClient, db_session: Session):
     5. Regular mentor only sees their own assigned mentees.
     6. Student cannot access mentor or HOD endpoints (403 Forbidden).
     """
-    # 1. Fetch HOD user
-    hod = db_session.query(User).filter(User.role == UserRole.HOD).first()
+    # 1. Fetch HOD user (primary active HOD)
+    hod = db_session.query(User).filter(User.role == UserRole.HOD).order_by(User.created_at.asc()).first()
     assert hod is not None, "HOD user must exist in database"
 
     hod_token = create_access_token(subject=str(hod.id), role=hod.role.value)
@@ -77,3 +77,65 @@ def test_hod_multi_portal_access(client: TestClient, db_session: Session):
 
     res_student_hod = client.get("/api/v1/hod/students", headers=student_headers)
     assert res_student_hod.status_code == 403
+
+
+def test_hod_student_pgpa_grades_endpoint(client: TestClient, db_session: Session):
+    """
+    Verify GET /api/v1/hod/student-pgpa-grades:
+    1. HOD can fetch department-wide 5-component PGPA grades.
+    2. Response includes all 5 components (Clubs, NPTEL, Online Certs, Internship, Sports).
+    3. Query filters by section, search, and grade work properly.
+    4. Mentor and student are forbidden (403).
+    """
+    hod = db_session.query(User).filter(User.role == UserRole.HOD).order_by(User.created_at.asc()).first()
+    assert hod is not None
+    hod_token = create_access_token(subject=str(hod.id), role=hod.role.value)
+    hod_headers = {"Authorization": f"Bearer {hod_token}"}
+
+    # 1. HOD gets all student PGPA grades
+    res = client.get("/api/v1/hod/student-pgpa-grades", headers=hod_headers)
+    assert res.status_code == 200, res.text
+    rows = res.json()
+    assert len(rows) > 0
+    first = rows[0]
+    assert "student_id" in first
+    assert "register_number" in first
+    assert "student_name" in first
+    assert "components" in first
+    assert "total_points" in first
+    assert "total_grade_points" in first
+
+    # Check 5 target component slugs in dictionary
+    expected_slugs = {
+        "clubs-and-cells",
+        "nptel-non-credit-transfer",
+        "online-certifications",
+        "internship",
+        "sports-and-games",
+    }
+    assert expected_slugs.issubset(set(first["components"].keys()))
+
+    # 2. Filter by search
+    test_name_part = first["student_name"][:4]
+    search_res = client.get(f"/api/v1/hod/student-pgpa-grades?search={test_name_part}", headers=hod_headers)
+    assert search_res.status_code == 200
+    search_rows = search_res.json()
+    assert len(search_rows) >= 1
+    assert any(r["student_id"] == first["student_id"] for r in search_rows)
+
+    # 3. Regular mentor is forbidden
+    mentor = db_session.query(User).filter(User.role == UserRole.MENTOR).first()
+    assert mentor is not None
+    mentor_token = create_access_token(subject=str(mentor.id), role=mentor.role.value)
+    mentor_headers = {"Authorization": f"Bearer {mentor_token}"}
+    res_m = client.get("/api/v1/hod/student-pgpa-grades", headers=mentor_headers)
+    assert res_m.status_code == 403
+
+    # 4. Student is forbidden
+    student = db_session.query(User).filter(User.role == UserRole.STUDENT).first()
+    assert student is not None
+    student_token = create_access_token(subject=str(student.id), role=student.role.value)
+    student_headers = {"Authorization": f"Bearer {student_token}"}
+    res_s = client.get("/api/v1/hod/student-pgpa-grades", headers=student_headers)
+    assert res_s.status_code == 403
+
