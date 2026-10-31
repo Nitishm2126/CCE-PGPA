@@ -143,24 +143,32 @@ export async function checkElementsFullyInViewport(
 export async function checkLogoAspectRatio(page: Page) {
   const images = await page.evaluate(() => {
     const rawElements = Array.from(document.querySelectorAll('header img, main img'));
-    const imageElements = rawElements.filter(
-      (el): el is HTMLImageElement => el instanceof HTMLImageElement
-    );
+    const results: Array<{
+      src: string;
+      alt: string;
+      naturalWidth: number;
+      naturalHeight: number;
+      clientWidth: number;
+      clientHeight: number;
+      visible: boolean;
+    }> = [];
 
-    return imageElements.map((img) => {
-      const isHtmlElement = img instanceof HTMLElement;
-      const offsetParent = isHtmlElement ? img.offsetParent : null;
+    for (const el of rawElements) {
+      if (el instanceof HTMLImageElement) {
+        const offsetParent = el instanceof HTMLElement ? el.offsetParent : null;
+        results.push({
+          src: el.src,
+          alt: el.alt,
+          naturalWidth: el.naturalWidth,
+          naturalHeight: el.naturalHeight,
+          clientWidth: el.clientWidth,
+          clientHeight: el.clientHeight,
+          visible: offsetParent !== null && el.clientWidth > 0 && el.clientHeight > 0,
+        });
+      }
+    }
 
-      return {
-        src: img.src,
-        alt: img.alt,
-        naturalWidth: img.naturalWidth,
-        naturalHeight: img.naturalHeight,
-        clientWidth: img.clientWidth,
-        clientHeight: img.clientHeight,
-        visible: offsetParent !== null && img.clientWidth > 0 && img.clientHeight > 0,
-      };
-    });
+    return results;
   });
 
   return images;
