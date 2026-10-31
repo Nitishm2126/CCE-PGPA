@@ -30,8 +30,11 @@ export interface AuthContextType {
 
   login: (email: string, password: string, portalRole?: UserRole) => Promise<UserResponse | null>;
   logout: () => Promise<void>;
+  updateUser: (updated: UserResponse) => void;
+  refreshUser: () => Promise<UserResponse | null>;
   clearError: () => void;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -386,6 +389,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
+  const updateUser = useCallback((updated: UserResponse) => {
+    setUser(updated);
+  }, []);
+
+  const refreshUser = useCallback(async (): Promise<UserResponse | null> => {
+    const activeToken = token || getStoredToken();
+    if (!activeToken) return null;
+    try {
+      const updated = await api.getMe(activeToken);
+      setUser(updated);
+      return updated;
+    } catch {
+      return null;
+    }
+  }, [token]);
+
   const logout = async (): Promise<void> => {
     isLoggingOutRef.current = true;
     setIsLoading(true);
@@ -394,14 +413,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearStoredToken();
     clearApiCache();
 
-    // 2. Synchronously nullify user state to prevent any stale reads
+    // 2. Clear browser client storage & cookies
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.clear();
+        localStorage.removeItem("cce_achieve_token");
+        document.cookie.split(";").forEach((c) => {
+          document.cookie = c
+            .replace(/^ +/, "")
+            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+      } catch {
+        // Ignore storage access errors in sandboxed contexts
+      }
+    }
+
+    // 3. Synchronously nullify user state to prevent any stale reads
     setFirebaseUser(null);
     setUser(null);
     setToken(null);
     setIsProvisioned(false);
     setError(null);
 
-    // 3. Perform asynchronous sign-outs
+    // 4. Perform asynchronous remote sign-outs
     try {
       const activeAuth = getFirebaseAuth() || firebaseAuth;
       if (activeAuth && activeAuth.currentUser) {
@@ -413,7 +447,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Best-effort remote session revocation
     } finally {
-      // 4. Guarantee state and storage are completely clear
+      // 5. Guarantee state and storage are completely clear
       clearStoredToken();
       clearApiCache();
       setFirebaseUser(null);
@@ -442,6 +476,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         reloadFirebaseUser,
         login,
         logout,
+        updateUser,
+        refreshUser,
         clearError,
       }}
     >
@@ -449,6 +485,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);

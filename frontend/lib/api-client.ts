@@ -41,7 +41,11 @@ import {
   AdminVerificationStatusResponse,
   AdminResetUserPasswordRequest,
   AdminResetUserPasswordResponse,
+  MessageResponse,
+  EmailVerificationStatusResponse,
+  SendEmailVerificationResponse,
 } from "@/types/auth";
+
 import {
   PGPAComponentResponse,
   AchievementResponse,
@@ -308,6 +312,59 @@ export const api = {
 
   getMe: async (token?: string | null): Promise<UserResponse> => {
     return request<UserResponse>("/auth/me", { method: "GET" }, token);
+  },
+
+  changePassword: async (
+    data: { current_password?: string; new_password: string } | ChangePasswordRequest,
+    token?: string | null
+  ): Promise<UserResponse> => {
+    return request<UserResponse>(
+      "/auth/change-password",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  logout: async (token?: string | null): Promise<MessageResponse> => {
+    try {
+      return await request<MessageResponse>(
+        "/auth/logout",
+        {
+          method: "POST",
+        },
+        token
+      );
+    } finally {
+      clearStoredToken();
+      clearApiCache();
+    }
+  },
+
+  getVerificationStatus: async (
+    token?: string | null
+  ): Promise<EmailVerificationStatusResponse> => {
+    return request<EmailVerificationStatusResponse>(
+      "/auth/verification-status",
+      {
+        method: "GET",
+      },
+      token
+    );
+  },
+
+  sendVerificationEmail: async (
+    token?: string | null
+  ): Promise<SendEmailVerificationResponse> => {
+    return request<SendEmailVerificationResponse>(
+      "/auth/send-verification-email",
+      {
+        method: "POST",
+      },
+      token
+    );
   },
 
   getStudentDetail: async (token?: string | null): Promise<StudentDetailResponse> => {
@@ -673,15 +730,6 @@ export const api = {
     return request<GoogleDriveAuthResponse>("/auth/google/authorize", { method: "GET" }, token);
   },
 
-  logout: async (token?: string | null): Promise<{ message: string }> => {
-    try {
-      return await request<{ message: string }>("/auth/logout", { method: "POST" }, token);
-    } finally {
-      clearStoredToken();
-      clearApiCache();
-    }
-  },
-
   health: async (): Promise<HealthResponse> => {
     return request<HealthResponse>("/health", { method: "GET" });
   },
@@ -905,14 +953,6 @@ export const api = {
   adminRetryDriveCleanup: async (driveFileId: string, token?: string | null): Promise<AdminOperationResult> => {
     return request<AdminOperationResult>(`/admin/cleanup/drive-file/${driveFileId}`, {
       method: "POST",
-    }, token);
-  },
-
-  // Password Management
-  changePassword: async (data: ChangePasswordRequest, token?: string | null): Promise<UserResponse> => {
-    return request<UserResponse>("/auth/change-password", {
-      method: "POST",
-      body: JSON.stringify(data),
     }, token);
   },
 

@@ -172,10 +172,21 @@ const STAGGER_CLASSES = ["stagger-1", "stagger-2", "stagger-3", "stagger-4"];
 
 export function PortalSelection() {
   const { user, logout, isLoading } = useAuth();
+  const [justSignedOut, setJustSignedOut] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("signedOut") === "true") {
+        setJustSignedOut(true);
+      }
+    }
+  }, []);
 
   // Display the 3 public institutional portals (Student, Mentor, HOD)
   // Admin is accessed discreetly via the footer text and hidden from the public cards
   const publicPortals: UserRole[] = ["student", "mentor", "hod"];
+
 
   return (
     <div className="w-full min-h-[100dvh] flex flex-col justify-between bg-[#fbfbfc] dark:bg-[#0c1117] text-slate-900 dark:text-slate-100 overflow-x-hidden selection:bg-sky-100 selection:text-sky-900 dark:selection:bg-sky-900/40 dark:selection:text-sky-200">
@@ -287,6 +298,31 @@ export function PortalSelection() {
           </p>
         </section>
 
+        {/* Signed Out Confirmation Notice */}
+        {justSignedOut && !user && (
+          <div
+            id="signed-out-success-alert"
+            role="status"
+            className="w-full max-w-2xl mx-auto mt-4 shrink-0 rounded-xl border border-emerald-200 bg-emerald-50/95 dark:border-emerald-800/60 dark:bg-emerald-950/40 p-3 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2 shadow-2xs animate-apple-fade"
+          >
+            <div className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+              <span className="font-medium">Signed out successfully. Your session and device credentials have been cleared.</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setJustSignedOut(false)}
+              className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-emerald-100 text-xs font-semibold p-1"
+              aria-label="Dismiss message"
+            >
+              &times;
+            </button>
+          </div>
+        )}
+
         {/* Discreet Active Session Status Bar (if already signed in) */}
         {user && !isLoading && (
           <div aria-label="Current Session" className="w-full max-w-2xl mx-auto mt-4 shrink-0 animate-apple-fade">
@@ -296,35 +332,17 @@ export function PortalSelection() {
                 <span className="font-medium text-[11px] sm:text-xs">
                   Active Session: <strong className="font-semibold text-slate-900 dark:text-white">{user.full_name}</strong>{" "}
                   <span className="text-sky-800 dark:text-sky-300">
-                    ({user.role === "hod" ? "Department HOD & Mentor" : ROLE_CONFIGS[user.role]?.shortTitle})
+                    ({ROLE_CONFIGS[user.role]?.shortTitle})
                   </span>
                 </span>
               </div>
               <div className="flex items-center gap-2 text-xs">
-                {user.role === "hod" ? (
-                  <>
-                    <Link
-                      href="/hod"
-                      className="font-semibold text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 hover:underline inline-flex items-center gap-1"
-                    >
-                      HOD Dashboard &rarr;
-                    </Link>
-                    <span className="text-sky-300 dark:text-sky-700" aria-hidden="true">&bull;</span>
-                    <Link
-                      href="/mentor"
-                      className="font-semibold text-indigo-700 dark:text-indigo-300 hover:text-indigo-900 dark:hover:text-indigo-100 hover:underline inline-flex items-center gap-1"
-                    >
-                      Mentor Dashboard &rarr;
-                    </Link>
-                  </>
-                ) : (
-                  <Link
-                    href={ROLE_CONFIGS[user.role]?.dashboardPath || `/${user.role}`}
-                    className="font-semibold text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-sky-100 hover:underline inline-flex items-center gap-1"
-                  >
-                    Open Dashboard &rarr;
-                  </Link>
-                )}
+                <Link
+                  href={ROLE_CONFIGS[user.role]?.dashboardPath || `/${user.role}`}
+                  className="font-semibold text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-sky-100 hover:underline inline-flex items-center gap-1"
+                >
+                  Open Dashboard &rarr;
+                </Link>
                 <span className="text-sky-300 dark:text-sky-700" aria-hidden="true">&bull;</span>
                 <button
                   type="button"

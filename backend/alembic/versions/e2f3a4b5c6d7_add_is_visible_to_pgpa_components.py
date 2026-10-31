@@ -35,3 +35,4 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_index('ix_pgpa_components_is_visible', table_name='pgpa_components')
     op.drop_column('pgpa_components', 'is_visible')
+

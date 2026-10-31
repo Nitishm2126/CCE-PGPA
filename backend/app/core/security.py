@@ -65,3 +65,21 @@ def decode_access_token(token: str) -> Dict[str, Any]:
         settings.JWT_SECRET_KEY,
         algorithms=[settings.JWT_ALGORITHM],
     )
+
+
+# In-memory revocation cache for active sessions / tokens
+_revoked_tokens: set[str] = set()
+
+
+def revoke_token(token: str) -> None:
+    """Mark a token as revoked on the server."""
+    if token:
+        _revoked_tokens.add(token.strip())
+
+
+def is_token_revoked(token: str) -> bool:
+    """Check whether a token has been revoked."""
+    if not token:
+        return True
+    return token.strip() in _revoked_tokens
+

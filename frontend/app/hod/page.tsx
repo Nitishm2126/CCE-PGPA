@@ -14,6 +14,8 @@ import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { HODExcelImportConsole } from "@/components/hod/HODExcelImportConsole";
 import { HODPGPAGradesTab } from "@/components/hod/HODPGPAGradesTab";
 import { ExportDataModal } from "@/components/export/ExportDataModal";
+import { SettingsModal } from "@/components/shared/SettingsModal";
+
 
 export default function HODDashboardPage() {
   const router = useRouter();
@@ -67,6 +69,8 @@ export default function HODDashboardPage() {
   const [isMessageDrawerOpen, setIsMessageDrawerOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [exportStudentId, setExportStudentId] = useState<string>("all");
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+
 
   // Auth Guard
   useEffect(() => {
@@ -297,7 +301,7 @@ export default function HODDashboardPage() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    router.push("/login?signedOut=true");
   };
 
   const formatDate = (dateStr?: string | null) => {
@@ -349,7 +353,7 @@ export default function HODDashboardPage() {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || !user || user.role !== "hod") {
     return (
       <div className="flex-1 flex items-center justify-center p-8 min-h-[60vh] bg-[#fafbfc]">
         <div className="flex flex-col items-center gap-3">
@@ -359,6 +363,7 @@ export default function HODDashboardPage() {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-[#fafbfc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 transition-colors">
@@ -395,13 +400,6 @@ export default function HODDashboardPage() {
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">{user?.email}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => router.push("/mentor")}
-                className="rounded-lg border border-indigo-300 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/50 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
-              >
-                <span>Faculty Mentor Portal (11 Mentees) &rarr;</span>
-              </button>
               <RoleBadge role="hod" />
               <button
                 type="button"
@@ -421,11 +419,25 @@ export default function HODDashboardPage() {
               <ThemeToggle size="sm" />
               <button
                 type="button"
+                onClick={() => setIsSettingsOpen(true)}
+                id="btn-hod-settings"
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                title="Account Settings & Email Verification"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Settings</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => router.push("/change-password")}
                 className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
               >
                 Change Password
               </button>
+
               <button
                 type="button"
                 onClick={handleLogout}
@@ -1299,6 +1311,15 @@ export default function HODDashboardPage() {
         token={token}
         initialStudentId={exportStudentId}
       />
+
+      {/* Account Settings & Email Verification Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        user={user}
+        token={token}
+      />
     </div>
   );
 }
+

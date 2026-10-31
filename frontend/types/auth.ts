@@ -571,3 +571,22 @@ export interface AdminResetUserPasswordResponse {
   firebase_updated: boolean;
   password_reset_link?: string | null;
 }
+
+export interface MessageResponse {
+  message: string;
+}
+
+export interface EmailVerificationStatusResponse {
+  email: string;
+  email_verified: boolean;
+  firebase_linked: boolean;
+  message: string;
+}
+
+export interface SendEmailVerificationResponse {
+  success: boolean;
+  message: string;
+  email: string;
+  verification_link?: string | null;
+}
+

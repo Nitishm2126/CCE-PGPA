@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.firebase import verify_firebase_id_token
-from app.core.security import decode_access_token
+from app.core.security import decode_access_token, is_token_revoked
 from app.db.session import get_db
 from app.models.user import User, UserRole
 from app.services.auth_service import get_or_link_user_by_firebase_token
@@ -41,6 +41,14 @@ def get_current_user(
             detail="Not authenticated. Bearer token is missing.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    if is_token_revoked(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session has been terminated. Please log in again.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
 
     # Determine token type by inspecting unverified header
     is_firebase_token = False

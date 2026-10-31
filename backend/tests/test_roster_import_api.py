@@ -57,6 +57,10 @@ def db_session():
 
 
 def cleanup_users(emails: list):
+    # Protect persistent primary HOD account from deletion
+    emails = [e for e in emails if e != "hod.cce@sairam.edu.in"]
+    if not emails:
+        return
     session = SessionLocal()
     try:
         users = session.scalars(select(User).where(User.email.in_(emails))).all()

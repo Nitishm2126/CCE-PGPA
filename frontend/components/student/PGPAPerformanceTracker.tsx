@@ -421,19 +421,6 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {onSubmitActivity && (
-            <button
-              type="button"
-              onClick={onSubmitActivity}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer min-h-[34px]"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              <span>Submit Activity</span>
-            </button>
-          )}
-
           {onNavigateComponents && (
             <button
               type="button"
@@ -447,6 +434,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
             </button>
           )}
         </div>
+
       </div>
 
       {/* Main 2-Column Responsive Layout: Left Time-Series Chart | Right 5 Component Cards */}
@@ -531,16 +519,8 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
               <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] max-w-sm">
                 As soon as your faculty mentor audits and approves your submissions, your cumulative points and grade trajectory will appear here.
               </p>
-              {onSubmitActivity && (
-                <button
-                  type="button"
-                  onClick={onSubmitActivity}
-                  className="mt-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-2xs cursor-pointer"
-                >
-                  Submit Activity Now
-                </button>
-              )}
             </div>
+
           ) : (
             /* Pure Responsive SVG Chart */
             <div className="relative">

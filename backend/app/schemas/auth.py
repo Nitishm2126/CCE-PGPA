@@ -145,3 +145,24 @@ class MessageResponse(BaseModel):
     Generic message response.
     """
     message: str
+
+
+class EmailVerificationStatusResponse(BaseModel):
+    """
+    Status of user email verification via Firebase Authentication.
+    """
+    email: str
+    email_verified: bool
+    firebase_linked: bool
+    message: str
+
+
+class SendEmailVerificationResponse(BaseModel):
+    """
+    Result of sending Firebase email verification link.
+    """
+    success: bool
+    message: str
+    email: str
+    verification_link: Optional[str] = None
+

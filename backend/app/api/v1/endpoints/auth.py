@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import html
 import logging
 import urllib.parse
@@ -6,6 +7,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.security import HTTPAuthorizationCredentials
 import httpx
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -17,8 +19,8 @@ from app.core.oauth_crypto import (
     generate_oauth_state,
     verify_oauth_state,
 )
-from app.core.permissions import get_current_user, require_admin
-from app.core.security import create_access_token, get_password_hash, verify_password
+from app.core.permissions import get_current_user, http_bearer, require_admin
+from app.core.security import create_access_token, get_password_hash, revoke_token, verify_password
 from app.core.firebase import get_firebase_app
 from firebase_admin import auth as fb_auth
 from app.db.session import get_db
@@ -26,15 +28,19 @@ from app.models.oauth import OAuthCredential
 from app.models.user import User, UserRole
 from app.schemas.auth import (
     ChangePasswordRequest,
+    EmailVerificationStatusResponse,
     LoginRequest,
     MessageResponse,
+    SendEmailVerificationResponse,
     TokenResponse,
     UserResponse,
 )
+from app.services.admin_service import record_audit_log
 from app.services.auth_service import authenticate_user
 from app.services.drive_service import GoogleDriveService, set_drive_service
 
 logger = logging.getLogger(__name__)
+
 
 router = APIRouter()
 
@@ -90,8 +96,6 @@ def login(
 
 def get_user_accessible_portals(user: User) -> List[str]:
     """Derive list of portal keys the authenticated user is authorized to access."""
-    if user.role == UserRole.HOD:
-        return ["hod", "mentor"]
     return [user.role.value]
 
 
@@ -112,14 +116,26 @@ def get_me(
 @router.post(
     "/logout",
     response_model=MessageResponse,
-    summary="Client token invalidation guidance",
-    description="Guidance for client-side token discard and session termination.",
+    summary="Client token invalidation and session termination",
+    description="Terminates active session, revokes access token on the server, and clears Firebase refresh tokens.",
 )
 def logout(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer),
     current_user: User = Depends(get_current_user),
 ) -> MessageResponse:
+    if credentials and credentials.credentials:
+        revoke_token(credentials.credentials.strip())
+
+    if current_user.firebase_uid:
+        try:
+            app = get_firebase_app()
+            if app:
+                fb_auth.revoke_refresh_tokens(current_user.firebase_uid, app=app)
+        except Exception as exc:
+            logger.warning("Failed to revoke Firebase refresh tokens for %s: %s", current_user.email, exc)
+
     return MessageResponse(
-        message="Successfully logged out. Please discard the access token on the client application."
+        message="Signed out successfully."
     )
 
 
@@ -140,13 +156,31 @@ def change_password(
             detail="New password must be at least 6 characters.",
         )
 
-    # If current_password is provided and user has a password hash, verify it
-    if payload.current_password and current_user.password_hash:
-        if not verify_password(payload.current_password, current_user.password_hash):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Current password verification failed.",
-            )
+    # Current password verification (supporting initial cce@123 / register number fallback if must_change_password is true)
+    clean_cur = (payload.current_password or "").strip()
+    is_valid_cur = False
+    if clean_cur and current_user.password_hash:
+        is_valid_cur = verify_password(clean_cur, current_user.password_hash)
+        if not is_valid_cur and current_user.must_change_password:
+            # Fallback for temporary / institutional default password
+            if clean_cur.lower() == "cce@123":
+                is_valid_cur = True
+            elif current_user.role == UserRole.STUDENT and current_user.student_profile and current_user.student_profile.register_number:
+                if clean_cur.lower() == current_user.student_profile.register_number.strip().lower():
+                    is_valid_cur = True
+    elif not clean_cur and not current_user.must_change_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is required to change password.",
+        )
+    elif clean_cur and not current_user.password_hash:
+        is_valid_cur = True
+
+    if clean_cur and not is_valid_cur:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password verification failed. Please check your current or temporary password.",
+        )
 
     # 1. Update in Firebase Auth if account is linked
     if current_user.firebase_uid:
@@ -164,7 +198,116 @@ def change_password(
     db.commit()
     db.refresh(current_user)
 
-    return UserResponse.model_validate(current_user)
+    res = UserResponse.model_validate(current_user)
+    res.accessible_portals = get_user_accessible_portals(current_user)
+    return res
+
+
+# In-memory rate limiting map for verification emails: user_id -> timestamp
+_last_verification_email_sent: dict[uuid.UUID, datetime] = {}
+
+
+@router.get(
+    "/verification-status",
+    response_model=EmailVerificationStatusResponse,
+    summary="Get live email verification status for current authenticated user",
+    description="Inspects whether current authenticated user's email is verified in Firebase Authentication.",
+)
+def get_my_verification_status(
+    current_user: User = Depends(get_current_user),
+) -> EmailVerificationStatusResponse:
+    is_verified = False
+    fb_linked = bool(current_user.firebase_uid)
+
+    try:
+        fb_app = get_firebase_app()
+    except Exception:
+        fb_app = None
+
+    if fb_app:
+        if current_user.firebase_uid:
+            try:
+                fb_user = fb_auth.get_user(current_user.firebase_uid, app=fb_app)
+                is_verified = bool(fb_user.email_verified)
+            except Exception as e:
+                logger.warning("Could not fetch Firebase user verification for %s: %s", current_user.id, e)
+        elif current_user.email:
+            try:
+                fb_user = fb_auth.get_user_by_email(current_user.email.strip().lower(), app=fb_app)
+                is_verified = bool(fb_user.email_verified)
+                fb_linked = True
+            except Exception:
+                pass
+
+    return EmailVerificationStatusResponse(
+        email=current_user.email,
+        email_verified=is_verified,
+        firebase_linked=fb_linked,
+        message="Email Verified" if is_verified else "Verification Pending",
+    )
+
+
+@router.post(
+    "/send-verification-email",
+    response_model=SendEmailVerificationResponse,
+    summary="Generate or resend email verification link for current user",
+    description="Sends email verification link via Firebase with 60-second rate limiting.",
+)
+def send_my_verification_email(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> SendEmailVerificationResponse:
+    now = datetime.now(timezone.utc)
+    last_sent = _last_verification_email_sent.get(current_user.id)
+    if last_sent and (now - last_sent).total_seconds() < 60:
+        remaining = int(60 - (now - last_sent).total_seconds())
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Please wait {remaining} seconds before requesting another verification email.",
+        )
+
+    clean_email = current_user.email.strip().lower()
+    verification_link = None
+    try:
+        fb_app = get_firebase_app()
+        if not fb_app:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Firebase authentication service is currently unavailable.",
+            )
+        verification_link = fb_auth.generate_email_verification_link(clean_email, app=fb_app)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to generate Firebase verification link for %s: %s", clean_email, e)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Failed to generate Firebase email verification link: {e}",
+        )
+
+    _last_verification_email_sent[current_user.id] = now
+
+    record_audit_log(
+        db,
+        actor_id=current_user.id,
+        action="user_request_verification_email",
+        target_type=current_user.role.value,
+        target_id=str(current_user.id),
+        metadata={
+            "email": clean_email,
+            "outcome": "completed",
+            "timestamp": now.isoformat(),
+        },
+    )
+    db.commit()
+
+    return SendEmailVerificationResponse(
+        success=True,
+        message=f"Verification email successfully sent to '{clean_email}'. Please check your inbox.",
+        email=clean_email,
+        verification_link=verification_link,
+    )
+
 
 
 # ==============================================================================

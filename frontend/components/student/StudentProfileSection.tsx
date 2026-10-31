@@ -198,7 +198,7 @@ export const StudentProfileSection: React.FC<StudentProfileSectionProps> = ({
                 {hodSupervisor?.full_name || "Dr. Pachaiammal Alias Priya"}
               </p>
               <p className="text-xs text-indigo-700 dark:text-[#93C5FD] font-medium">
-                {hodSupervisor?.email || "sundatplus4@gmail.com"}
+                {hodSupervisor?.email || "hod.cce@sairam.edu.in"}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-1">
                 Head of Department &bull; Supervisory Authority (Mentor 3)

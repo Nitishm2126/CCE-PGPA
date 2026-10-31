@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.security import verify_password
-from app.models.user import StudentProfile, User, UserRole
+from app.models.user import MentorProfile, StudentProfile, User, UserRole
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,34 @@ def authenticate_user(
                 .where(func.lower(StudentProfile.register_number) == candidate_reg)
             )
             user = db.scalars(stmt_reg).first()
+
+    # Step 2b: Fallback lookup for staff / faculty mentors (by staff_id, or name match)
+    if user is None:
+        local_part = (
+            normalized_identifier.split("@")[0].strip()
+            if "@" in normalized_identifier
+            else normalized_identifier
+        )
+        if local_part:
+            stmt_staff = (
+                select(User)
+                .join(MentorProfile, MentorProfile.user_id == User.id)
+                .where(func.lower(MentorProfile.staff_id) == local_part)
+            )
+            user = db.scalars(stmt_staff).first()
+
+            if user is None:
+                # Strip departmental suffix like .cce (e.g. lekha.cce -> lekha)
+                name_part = local_part.split(".")[0].strip()
+                if len(name_part) >= 4:
+                    stmt_mentor_name = (
+                        select(User)
+                        .where(
+                            User.role == UserRole.MENTOR,
+                            func.lower(User.full_name).contains(name_part),
+                        )
+                    )
+                    user = db.scalars(stmt_mentor_name).first()
 
     if user is None:
         logger.warning(

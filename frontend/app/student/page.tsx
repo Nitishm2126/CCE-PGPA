@@ -369,11 +369,11 @@ export default function StudentDashboardPage() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    router.push("/login?signedOut=true");
   };
 
   // Global Auth loading state
-  if (authLoading || (isLoadingProfile && !studentData && !profileError)) {
+  if (authLoading || !user || user.role !== "student" || (isLoadingProfile && !studentData && !profileError)) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[60vh] p-6 bg-slate-50 dark:bg-[#0F141B]">
         <div className="flex flex-col items-center gap-3 text-center bg-white dark:bg-[#1C2531] p-8 rounded-2xl border border-slate-200 dark:border-[#2B3543] shadow-xs max-w-sm w-full">
@@ -497,19 +497,6 @@ export default function StudentDashboardPage() {
             <p className="text-xs text-slate-500 dark:text-[#7E8B9C] font-normal">
               Academic Year {profile?.year || 2} &bull; Section {profile?.section || "A"} &bull; {profile?.semester || "III SEM"} &bull; Batch {profile?.batch || "2025-2029"}
             </p>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={() => handleOpenSubmitModal(null)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 shadow-2xs transition-colors cursor-pointer min-h-[44px]"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Submit Activity</span>
-            </button>
           </div>
         </div>
 

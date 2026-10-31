@@ -262,7 +262,7 @@ export default function AdminDashboardPage() {
   // Handle Logout
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    router.push("/login?signedOut=true");
   };
 
   // Handle File View / Download
@@ -331,7 +331,7 @@ export default function AdminDashboardPage() {
     });
   }, [allocations, allocationSearch, allocationMentorFilter]);
 
-  if (authLoading) {
+  if (authLoading || !user || user.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex flex-col items-center gap-4">

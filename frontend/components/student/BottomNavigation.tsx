@@ -194,18 +194,8 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
               );
             })}
         </div>
-
-        <button
-          type="button"
-          onClick={onSubmitClick}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-[#4c83e6] dark:hover:bg-[#3b72d4] px-3.5 py-2 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Submit Activity</span>
-        </button>
       </div>
     </>
   );
 };
+

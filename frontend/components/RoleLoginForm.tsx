@@ -56,13 +56,23 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [justSignedOut, setJustSignedOut] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [roleMismatch, setRoleMismatch] = useState<{
     actualRole: UserRole;
     attemptedRole: UserRole;
   } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("signedOut") === "true") {
+        setJustSignedOut(true);
+      }
+    }
+  }, []);
+
 
   // If already authenticated and the user role matches this portal, offer direct dashboard access
   useEffect(() => {
@@ -274,9 +284,30 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           )}
         </div>
 
+        {/* Signed Out Notification */}
+        {justSignedOut && !user && (
+          <div
+            id="signed-out-success-alert"
+            role="status"
+            className="w-full mb-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3 text-xs text-emerald-900 dark:text-emerald-200 shadow-2xs flex items-center justify-between gap-2 animate-apple-fade"
+          >
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="font-semibold">Signed out successfully.</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setJustSignedOut(false)}
+              className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 font-bold cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Existing Session Alert / Role Mismatch Protection */}
         {user && !authLoading && (
-          user.role === role || (user.role === "hod" && role === "mentor") ? (
+          user.role === role ? (
             <div
               role="status"
               className="w-full mb-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/80 dark:bg-emerald-950/50 p-3.5 text-xs text-emerald-950 dark:text-emerald-200 shadow-xs flex flex-wrap items-center justify-between gap-3 animate-apple-fade"
@@ -286,38 +317,16 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 <span>
                   Active Session: <strong>{user.full_name}</strong> (
                   {ROLE_CONFIGS[user.role]?.shortTitle})
-                  {user.role === "hod" && role === "mentor" && (
-                    <span className="ml-1.5 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
-                      Dual Mentor Access
-                    </span>
-                  )}
                 </span>
               </div>
 
               <div className="flex items-center gap-2.5 flex-wrap">
-                {user.role === role ? (
-                  <Link
-                    href={`/${user.role}`}
-                    className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
-                  >
-                    Open Dashboard &rarr;
-                  </Link>
-                ) : (
-                  <>
-                    <Link
-                      href="/mentor"
-                      className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
-                    >
-                      Open Mentor Dashboard &rarr;
-                    </Link>
-                    <Link
-                      href="/hod"
-                      className="font-semibold text-purple-600 dark:text-purple-400 hover:underline text-xs"
-                    >
-                      Go to HOD Dashboard &rarr;
-                    </Link>
-                  </>
-                )}
+                <Link
+                  href={`/${user.role}`}
+                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
+                >
+                  Open Dashboard &rarr;
+                </Link>
                 <span className="text-slate-300 dark:text-slate-700">&bull;</span>
                 <button
                   type="button"
@@ -330,9 +339,11 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
             </div>
           ) : (
             <div
+              id="role-mismatch-alert"
               role="alert"
               className="w-full mb-5 rounded-2xl border border-amber-300 dark:border-amber-700/80 bg-amber-50/95 dark:bg-amber-950/60 p-3.5 text-xs text-amber-950 dark:text-amber-200 shadow-xs animate-apple-fade"
             >
+
               <div className="flex items-start gap-2.5">
                 <span className="h-5 w-5 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5" aria-hidden="true">
                   !
@@ -614,23 +625,9 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
               </div>
             </div>
 
-            {/* Remember Me Option */}
-            <div className="flex items-center gap-2 pt-0.5">
-              <input
-                id="remember-me-checkbox"
-                name="rememberMe"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-3.5 w-3.5 rounded border-slate-300 dark:border-slate-700 text-sky-600 focus:ring-sky-500 cursor-pointer"
-              />
-              <label htmlFor="remember-me-checkbox" className="text-[11px] text-slate-600 dark:text-slate-400 cursor-pointer select-none">
-                Remember this device for seamless access
-              </label>
-            </div>
-
             {/* Role-Specific Login Button */}
             <div className="pt-1">
+
               <button
                 type="submit"
                 id="login-submit-button"

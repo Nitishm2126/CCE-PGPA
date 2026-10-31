@@ -4,7 +4,7 @@
       "C:\\Program Files\\nodejs\\node.exe",
       "E:\\Projects\\pgpa web-app\\frontend\\node_modules\\@playwright\\test\\cli.js",
       "test",
-      "tests/desktop-noscroll.spec.ts"
+      "tests/auth-workflow-verification.spec.ts"
     ],
     "configFile": "E:\\Projects\\pgpa web-app\\frontend\\playwright.config.ts",
     "rootDir": "E:/Projects/pgpa web-app/frontend/tests",
@@ -104,1120 +104,273 @@
   },
   "suites": [
     {
-      "title": "desktop-noscroll.spec.ts",
-      "file": "desktop-noscroll.spec.ts",
+      "title": "auth-workflow-verification.spec.ts",
+      "file": "auth-workflow-verification.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Tier 3: Desktop Viewport No-Scroll Containment (R3, F9-F14)",
-          "file": "desktop-noscroll.spec.ts",
-          "line": 5,
+          "title": "Auth, Role Mapping & Dashboard Workflow Fixes Suite",
+          "file": "auth-workflow-verification.spec.ts",
+          "line": 3,
           "column": 6,
-          "specs": [],
-          "suites": [
+          "specs": [
             {
-              "title": "TC-DESK-01: desktop-1920x1080 (1920x1080)",
-              "file": "desktop-noscroll.spec.ts",
-              "line": 12,
-              "column": 10,
-              "specs": [
+              "title": "TC-AUTH-01: HOD Identity, Separation & Optional Email Verification",
+              "ok": false,
+              "tags": [],
+              "tests": [
                 {
-                  "title": "Page Landing Page (/) fits without scrollbars and elements unclipped",
-                  "ok": true,
-                  "tags": [],
-                  "tests": [
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
                     {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 16759,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts:16:16",
+                        "location": {
+                          "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                          "column": 16,
+                          "line": 16
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 14 |\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[90m// 3. Wait for redirect to /hod or /change-password\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL((url) \u001b[33m=>\u001b[39m url\u001b[33m.\u001b[39mpathname \u001b[33m===\u001b[39m \u001b[32m'/change-password'\u001b[39m \u001b[33m||\u001b[39m url\u001b[33m.\u001b[39mpathname \u001b[33m===\u001b[39m \u001b[32m'/hod'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m15000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m\n \u001b[90m 18 |\u001b[39m     \u001b[36mif\u001b[39m (page\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/change-password'\u001b[39m)) {\n \u001b[90m 19 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'#current-password'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'cce@123'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
                         {
-                          "workerIndex": 0,
-                          "parallelIndex": 0,
-                          "status": "passed",
-                          "duration": 1957,
-                          "errors": [],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:10.088Z",
-                          "annotations": [],
-                          "attachments": []
+                          "location": {
+                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                            "column": 16,
+                            "line": 16
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n  14 |\n  15 |     // 3. Wait for redirect to /hod or /change-password\n> 16 |     await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/hod', { timeout: 15000 });\n     |                ^\n  17 |\n  18 |     if (page.url().includes('/change-password')) {\n  19 |       await page.fill('#current-password', 'cce@123');\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts:16:16"
                         }
                       ],
-                      "status": "expected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-f56e3a89192b41a50dbf",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Student Login (/login/student) fits without scrollbars and elements unclipped",
-                  "ok": true,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T18:16:14.468Z",
                       "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
+                      "attachments": [
                         {
-                          "workerIndex": 0,
-                          "parallelIndex": 0,
-                          "status": "passed",
-                          "duration": 1592,
-                          "errors": [],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:12.302Z",
-                          "annotations": [],
-                          "attachments": []
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\auth-workflow-verification-01434-Optional-Email-Verification\\error-context.md"
                         }
                       ],
-                      "status": "expected"
+                      "errorLocation": {
+                        "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                        "column": 16,
+                        "line": 16
+                      }
                     }
                   ],
-                  "id": "653d408ebdd8f120d1d0-7b90e14f9187ff1ed449",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Faculty Mentor Login (/login/mentor) fits without scrollbars and elements unclipped",
-                  "ok": true,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 0,
-                          "parallelIndex": 0,
-                          "status": "passed",
-                          "duration": 2317,
-                          "errors": [],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:13.919Z",
-                          "annotations": [],
-                          "attachments": []
-                        }
-                      ],
-                      "status": "expected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-f925b63d5b04d90266b2",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page HOD Login (/login/hod) fits without scrollbars and elements unclipped",
-                  "ok": true,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 0,
-                          "parallelIndex": 0,
-                          "status": "passed",
-                          "duration": 2032,
-                          "errors": [],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:16.268Z",
-                          "annotations": [],
-                          "attachments": []
-                        }
-                      ],
-                      "status": "expected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-240c344c4a9bc4ca19d5",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Admin Login (/login/admin) fits without scrollbars and elements unclipped",
-                  "ok": true,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 0,
-                          "parallelIndex": 0,
-                          "status": "passed",
-                          "duration": 2647,
-                          "errors": [],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:18.325Z",
-                          "annotations": [],
-                          "attachments": []
-                        }
-                      ],
-                      "status": "expected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-3dc6ca6e65c22210b9d8",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
+                  "status": "unexpected"
                 }
-              ]
+              ],
+              "id": "eb634721b76eb9e9bf40-70afeb7a67ac296c6fcd",
+              "file": "auth-workflow-verification.spec.ts",
+              "line": 5,
+              "column": 7
             },
             {
-              "title": "TC-DESK-02: desktop-1440x900 (1440x900)",
-              "file": "desktop-noscroll.spec.ts",
-              "line": 12,
-              "column": 10,
-              "specs": [
+              "title": "TC-AUTH-02: Student Dashboard — Exactly ONE Primary Submit Activity Button",
+              "ok": false,
+              "tags": [],
+              "tests": [
                 {
-                  "title": "Page Landing Page (/) fits without scrollbars and elements unclipped",
-                  "ok": true,
-                  "tags": [],
-                  "tests": [
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
                     {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 16736,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts:78:16",
+                        "location": {
+                          "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                          "column": 16,
+                          "line": 78
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 76 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'#login-submit-button'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 77 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 78 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL((url) \u001b[33m=>\u001b[39m url\u001b[33m.\u001b[39mpathname \u001b[33m===\u001b[39m \u001b[32m'/change-password'\u001b[39m \u001b[33m||\u001b[39m url\u001b[33m.\u001b[39mpathname \u001b[33m===\u001b[39m \u001b[32m'/student'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m15000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 79 |\u001b[39m\n \u001b[90m 80 |\u001b[39m     \u001b[36mif\u001b[39m (page\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/change-password'\u001b[39m)) {\n \u001b[90m 81 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'#current-password'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'cce@123'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
                         {
-                          "workerIndex": 0,
-                          "parallelIndex": 0,
-                          "status": "passed",
-                          "duration": 2623,
-                          "errors": [],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:20.996Z",
-                          "annotations": [],
-                          "attachments": []
-                        }
-                      ],
-                      "status": "expected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-d58e4b522b988830d024",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Student Login (/login/student) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 0,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 1756,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on Student Login at 1440x900: scrollHeight=978px exceeds innerHeight=900px by +78px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m978\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on Student Login at 1440x900: scrollHeight=978px exceeds innerHeight=900px by +78px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
+                          "location": {
+                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                            "column": 16,
+                            "line": 78
                           },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on Student Login at 1440x900: scrollHeight=978px exceeds innerHeight=900px by +78px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:23.639Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-b1a14-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
+                          "message": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n  76 |     await page.click('#login-submit-button');\n  77 |\n> 78 |     await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/student', { timeout: 15000 });\n     |                ^\n  79 |\n  80 |     if (page.url().includes('/change-password')) {\n  81 |       await page.fill('#current-password', 'cce@123');\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts:78:16"
                         }
                       ],
-                      "status": "unexpected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-3763ded67a994d72217e",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Faculty Mentor Login (/login/mentor) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T18:16:32.480Z",
                       "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
+                      "attachments": [
                         {
-                          "workerIndex": 1,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 1986,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on Faculty Mentor Login at 1440x900: scrollHeight=978px exceeds innerHeight=900px by +78px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m978\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on Faculty Mentor Login at 1440x900: scrollHeight=978px exceeds innerHeight=900px by +78px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on Faculty Mentor Login at 1440x900: scrollHeight=978px exceeds innerHeight=900px by +78px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:27.032Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-81659-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\auth-workflow-verification-b437b-mary-Submit-Activity-Button\\error-context.md"
                         }
                       ],
-                      "status": "unexpected"
+                      "errorLocation": {
+                        "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                        "column": 16,
+                        "line": 78
+                      }
                     }
                   ],
-                  "id": "653d408ebdd8f120d1d0-8873197dda8446c358bb",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page HOD Login (/login/hod) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 2,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 1822,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on HOD Login at 1440x900: scrollHeight=978px exceeds innerHeight=900px by +78px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m978\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on HOD Login at 1440x900: scrollHeight=978px exceeds innerHeight=900px by +78px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on HOD Login at 1440x900: scrollHeight=978px exceeds innerHeight=900px by +78px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:30.634Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-a87c3-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
-                        }
-                      ],
-                      "status": "unexpected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-37a402fda9b9549188b8",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Admin Login (/login/admin) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 3,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 1935,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on Admin Login at 1440x900: scrollHeight=1006px exceeds innerHeight=900px by +106px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m1006\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on Admin Login at 1440x900: scrollHeight=1006px exceeds innerHeight=900px by +106px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m1006\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on Admin Login at 1440x900: scrollHeight=1006px exceeds innerHeight=900px by +106px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m900\u001b[39m\nReceived:    \u001b[31m1006\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:34.451Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-9766b-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
-                        }
-                      ],
-                      "status": "unexpected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-def795cb96666abeef9a",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
+                  "status": "unexpected"
                 }
-              ]
+              ],
+              "id": "eb634721b76eb9e9bf40-7565eb54f3e2313a67a3",
+              "file": "auth-workflow-verification.spec.ts",
+              "line": 71,
+              "column": 7
             },
             {
-              "title": "TC-DESK-03: desktop-1366x768 (1366x768)",
-              "file": "desktop-noscroll.spec.ts",
-              "line": 12,
-              "column": 10,
-              "specs": [
+              "title": "TC-AUTH-03: Faculty Mentor Optional Email Verification & Settings Modal",
+              "ok": false,
+              "tags": [],
+              "tests": [
                 {
-                  "title": "Page Landing Page (/) fits without scrollbars and elements unclipped",
-                  "ok": true,
-                  "tags": [],
-                  "tests": [
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
                     {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 16931,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts:131:16",
+                        "location": {
+                          "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                          "column": 16,
+                          "line": 131
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 129 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'#login-submit-button'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 130 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 131 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL((url) \u001b[33m=>\u001b[39m url\u001b[33m.\u001b[39mpathname \u001b[33m===\u001b[39m \u001b[32m'/change-password'\u001b[39m \u001b[33m||\u001b[39m url\u001b[33m.\u001b[39mpathname \u001b[33m===\u001b[39m \u001b[32m'/mentor'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m15000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 132 |\u001b[39m\n \u001b[90m 133 |\u001b[39m     \u001b[36mif\u001b[39m (page\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m'/change-password'\u001b[39m)) {\n \u001b[90m 134 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'#current-password'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'cce@123'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
                         {
-                          "workerIndex": 4,
-                          "parallelIndex": 0,
-                          "status": "passed",
-                          "duration": 1395,
-                          "errors": [],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:37.959Z",
-                          "annotations": [],
-                          "attachments": []
-                        }
-                      ],
-                      "status": "expected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-75e1448adb08868941ea",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Student Login (/login/student) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 4,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 1887,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on Student Login at 1366x768: scrollHeight=978px exceeds innerHeight=768px by +210px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m978\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on Student Login at 1366x768: scrollHeight=978px exceeds innerHeight=768px by +210px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
+                          "location": {
+                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                            "column": 16,
+                            "line": 131
                           },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on Student Login at 1366x768: scrollHeight=978px exceeds innerHeight=768px by +210px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:39.517Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-55a06-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
+                          "message": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n  129 |     await page.click('#login-submit-button');\n  130 |\n> 131 |     await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/mentor', { timeout: 15000 });\n      |                ^\n  132 |\n  133 |     if (page.url().includes('/change-password')) {\n  134 |       await page.fill('#current-password', 'cce@123');\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts:131:16"
                         }
                       ],
-                      "status": "unexpected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-5a88e5a43f582a7f7e98",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Faculty Mentor Login (/login/mentor) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T18:16:50.554Z",
                       "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
+                      "attachments": [
                         {
-                          "workerIndex": 5,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 2061,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on Faculty Mentor Login at 1366x768: scrollHeight=978px exceeds innerHeight=768px by +210px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m978\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on Faculty Mentor Login at 1366x768: scrollHeight=978px exceeds innerHeight=768px by +210px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on Faculty Mentor Login at 1366x768: scrollHeight=978px exceeds innerHeight=768px by +210px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:42.985Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-9dd43-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\auth-workflow-verification-faaa4-Verification-Settings-Modal\\error-context.md"
                         }
                       ],
-                      "status": "unexpected"
+                      "errorLocation": {
+                        "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                        "column": 16,
+                        "line": 131
+                      }
                     }
                   ],
-                  "id": "653d408ebdd8f120d1d0-bcdd26521ac76478910d",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page HOD Login (/login/hod) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 6,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 1685,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on HOD Login at 1366x768: scrollHeight=978px exceeds innerHeight=768px by +210px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m978\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on HOD Login at 1366x768: scrollHeight=978px exceeds innerHeight=768px by +210px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on HOD Login at 1366x768: scrollHeight=978px exceeds innerHeight=768px by +210px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:49.464Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-56be2-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
-                        }
-                      ],
-                      "status": "unexpected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-118ce89d61ab9a8a4490",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Admin Login (/login/admin) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 7,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 1914,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on Admin Login at 1366x768: scrollHeight=1006px exceeds innerHeight=768px by +238px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m1006\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on Admin Login at 1366x768: scrollHeight=1006px exceeds innerHeight=768px by +238px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m1006\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on Admin Login at 1366x768: scrollHeight=1006px exceeds innerHeight=768px by +238px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m768\u001b[39m\nReceived:    \u001b[31m1006\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:53.158Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-632d4-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
-                        }
-                      ],
-                      "status": "unexpected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-c2430fe0e35c791c198e",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
+                  "status": "unexpected"
                 }
-              ]
+              ],
+              "id": "eb634721b76eb9e9bf40-f1894f3c198c571f0881",
+              "file": "auth-workflow-verification.spec.ts",
+              "line": 124,
+              "column": 7
             },
             {
-              "title": "TC-DESK-04: desktop-1280x720 (1280x720)",
-              "file": "desktop-noscroll.spec.ts",
-              "line": 12,
-              "column": 10,
-              "specs": [
+              "title": "TC-AUTH-04: Password Change Page Form Validation & Error Handling",
+              "ok": false,
+              "tags": [],
+              "tests": [
                 {
-                  "title": "Page Landing Page (/) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
                     {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 14578,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#signed-out-success-alert')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#signed-out-success-alert') with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('#signed-out-success-alert')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#signed-out-success-alert')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#signed-out-success-alert') with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('#signed-out-success-alert')\u001b[22m\n\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts:205:61",
+                        "location": {
+                          "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                          "column": 61,
+                          "line": 205
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 203 |\u001b[39m     \u001b[36mawait\u001b[39m signoutBtn\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 204 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[35m/\\/login/\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 205 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'#signed-out-success-alert'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 206 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 207 |\u001b[39m\n \u001b[90m 208 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
                         {
-                          "workerIndex": 8,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 2140,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on Landing Page at 1280x720: scrollHeight=732px exceeds innerHeight=720px by +12px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m732\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on Landing Page at 1280x720: scrollHeight=732px exceeds innerHeight=720px by +12px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m732\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
+                          "location": {
+                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                            "column": 61,
+                            "line": 205
                           },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on Landing Page at 1280x720: scrollHeight=732px exceeds innerHeight=720px by +12px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m732\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:30:56.912Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-695f7-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#signed-out-success-alert')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('#signed-out-success-alert') with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('#signed-out-success-alert')\u001b[22m\n\n\n  203 |     await signoutBtn.click();\n  204 |     await page.waitForURL(/\\/login/, { timeout: 10000 });\n> 205 |     await expect(page.locator('#signed-out-success-alert')).toBeVisible();\n      |                                                             ^\n  206 |   });\n  207 |\n  208 | });\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts:205:61"
                         }
                       ],
-                      "status": "unexpected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-2928fc3d7cd8e6e04b51",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Student Login (/login/student) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-31T18:17:08.548Z",
                       "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
+                      "attachments": [
                         {
-                          "workerIndex": 9,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 1582,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on Student Login at 1280x720: scrollHeight=978px exceeds innerHeight=720px by +258px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m978\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on Student Login at 1280x720: scrollHeight=978px exceeds innerHeight=720px by +258px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on Student Login at 1280x720: scrollHeight=978px exceeds innerHeight=720px by +258px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:31:00.256Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-dc18e-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\auth-workflow-verification-1f147-m-Validation-Error-Handling\\error-context.md"
                         }
                       ],
-                      "status": "unexpected"
+                      "errorLocation": {
+                        "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\auth-workflow-verification.spec.ts",
+                        "column": 61,
+                        "line": 205
+                      }
                     }
                   ],
-                  "id": "653d408ebdd8f120d1d0-60fff44cb0379e3f72e3",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Faculty Mentor Login (/login/mentor) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 10,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 1985,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on Faculty Mentor Login at 1280x720: scrollHeight=978px exceeds innerHeight=720px by +258px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m978\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on Faculty Mentor Login at 1280x720: scrollHeight=978px exceeds innerHeight=720px by +258px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on Faculty Mentor Login at 1280x720: scrollHeight=978px exceeds innerHeight=720px by +258px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:31:03.135Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-16fd2-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
-                        }
-                      ],
-                      "status": "unexpected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-a304f4b7d59dad42523b",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page HOD Login (/login/hod) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 11,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 1705,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on HOD Login at 1280x720: scrollHeight=978px exceeds innerHeight=720px by +258px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m978\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on HOD Login at 1280x720: scrollHeight=978px exceeds innerHeight=720px by +258px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on HOD Login at 1280x720: scrollHeight=978px exceeds innerHeight=720px by +258px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m978\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:31:06.369Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-ffae6-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
-                        }
-                      ],
-                      "status": "unexpected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-ed8abb91f2feae246780",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
-                },
-                {
-                  "title": "Page Admin Login (/login/admin) fits without scrollbars and elements unclipped",
-                  "ok": false,
-                  "tags": [],
-                  "tests": [
-                    {
-                      "timeout": 45000,
-                      "annotations": [],
-                      "expectedStatus": "passed",
-                      "projectId": "",
-                      "projectName": "",
-                      "results": [
-                        {
-                          "workerIndex": 12,
-                          "parallelIndex": 0,
-                          "status": "failed",
-                          "duration": 2361,
-                          "error": {
-                            "message": "Error: Vertical overflow detected on Admin Login at 1280x720: scrollHeight=1006px exceeds innerHeight=720px by +286px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m1006\u001b[39m",
-                            "stack": "Error: Vertical overflow detected on Admin Login at 1280x720: scrollHeight=1006px exceeds innerHeight=720px by +286px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m1006\u001b[39m\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13",
-                            "location": {
-                              "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                              "column": 13,
-                              "line": 24
-                            },
-                            "snippet": "\u001b[0m \u001b[90m 22 |\u001b[39m             verticalMetrics\u001b[33m.\u001b[39mscrollHeight\u001b[33m,\u001b[39m\n \u001b[90m 23 |\u001b[39m             \u001b[32m`Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 24 |\u001b[39m           )\u001b[33m.\u001b[39mtoBeLessThanOrEqual(verticalMetrics\u001b[33m.\u001b[39minnerHeight)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m           \u001b[90m// 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\u001b[39m\n \u001b[90m 27 |\u001b[39m           \u001b[36mconst\u001b[39m horizontalMetrics \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m checkHorizontalOverflow(page)\u001b[33m;\u001b[39m\u001b[0m"
-                          },
-                          "errors": [
-                            {
-                              "location": {
-                                "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                                "column": 13,
-                                "line": 24
-                              },
-                              "message": "Error: Vertical overflow detected on Admin Login at 1280x720: scrollHeight=1006px exceeds innerHeight=720px by +286px\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m720\u001b[39m\nReceived:    \u001b[31m1006\u001b[39m\n\n  22 |             verticalMetrics.scrollHeight,\n  23 |             `Vertical overflow detected on ${pageDef.title} at ${vp.width}x${vp.height}: scrollHeight=${verticalMetrics.scrollHeight}px exceeds innerHeight=${verticalMetrics.innerHeight}px by +${verticalMetrics.overflowPx}px`\n> 24 |           ).toBeLessThanOrEqual(verticalMetrics.innerHeight);\n     |             ^\n  25 |\n  26 |           // 2. Horizontal Containment Assertion: doc.scrollWidth <= window.innerWidth\n  27 |           const horizontalMetrics = await checkHorizontalOverflow(page);\n    at E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts:24:13"
-                            }
-                          ],
-                          "stdout": [],
-                          "stderr": [],
-                          "retry": 0,
-                          "startTime": "2026-10-31T08:31:09.558Z",
-                          "annotations": [],
-                          "attachments": [
-                            {
-                              "name": "error-context",
-                              "contentType": "text/markdown",
-                              "path": "E:\\Projects\\pgpa web-app\\frontend\\test-results\\artifacts\\desktop-noscroll-Tier-3-De-b9773-bars-and-elements-unclipped\\error-context.md"
-                            }
-                          ],
-                          "errorLocation": {
-                            "file": "E:\\Projects\\pgpa web-app\\frontend\\tests\\desktop-noscroll.spec.ts",
-                            "column": 13,
-                            "line": 24
-                          }
-                        }
-                      ],
-                      "status": "unexpected"
-                    }
-                  ],
-                  "id": "653d408ebdd8f120d1d0-c73e48eb927e445c492e",
-                  "file": "desktop-noscroll.spec.ts",
-                  "line": 14,
-                  "column": 13
+                  "status": "unexpected"
                 }
-              ]
+              ],
+              "id": "eb634721b76eb9e9bf40-a3f639a15117c74b8785",
+              "file": "auth-workflow-verification.spec.ts",
+              "line": 168,
+              "column": 7
             }
           ]
         }
@@ -1226,11 +379,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-31T08:30:08.474Z",
-    "duration": 63858.164,
-    "expected": 7,
+    "startTime": "2026-10-31T18:16:13.243Z",
+    "duration": 70387.25600000001,
+    "expected": 0,
     "skipped": 0,
-    "unexpected": 13,
+    "unexpected": 4,
     "flaky": 0
   }
 }

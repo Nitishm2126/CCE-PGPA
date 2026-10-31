@@ -142,6 +142,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
           {/* Quick Submit Activity Button */}
           <button
             type="button"
+            id="student-header-submit-btn"
             onClick={onSubmitClick}
             className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-[#4c83e6] dark:hover:bg-[#3b72d4] text-white text-xs sm:text-xs font-semibold px-2.5 sm:px-3.5 py-1.5 sm:py-2 shadow-2xs transition-colors cursor-pointer"
           >

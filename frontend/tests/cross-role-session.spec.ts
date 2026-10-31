@@ -24,7 +24,7 @@ test.describe('Cross-Role Session Persistence & Isolation Suite', () => {
     await page.click('#login-submit-button');
 
     // Student has mandatory first-time password change requirement, routing to /change-password
-    await page.waitForURL(/(\/change-password|\/student)/, { timeout: 15000 });
+    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/student', { timeout: 15000 });
     const currentUrl = page.url();
 
     // Verify token exists in localStorage
@@ -76,7 +76,7 @@ test.describe('Cross-Role Session Persistence & Isolation Suite', () => {
     await page.click('#login-submit-button');
 
     // Route to /change-password or /mentor
-    await page.waitForURL(/(\/change-password|\/mentor)/, { timeout: 15000 });
+    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/mentor', { timeout: 15000 });
 
     // Verify new token exists in localStorage
     const mentorToken = await page.evaluate(() => localStorage.getItem('cce_achieve_token'));
@@ -114,7 +114,7 @@ test.describe('Cross-Role Session Persistence & Isolation Suite', () => {
     await page.click('#login-submit-button');
 
     // Route to /change-password or /hod
-    await page.waitForURL(/(\/change-password|\/hod)/, { timeout: 15000 });
+    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/hod', { timeout: 15000 });
 
     // Verify new token exists in localStorage
     const hodToken = await page.evaluate(() => localStorage.getItem('cce_achieve_token'));
@@ -143,14 +143,14 @@ test.describe('Cross-Role Session Persistence & Isolation Suite', () => {
     await page.fill('#login-email-input', 'sec25co031@sairamtap.edu.in');
     await page.fill('#login-password-input', 'cce@123');
     await page.click('#login-submit-button');
-    await page.waitForURL(/(\/change-password|\/student)/, { timeout: 15000 });
+    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/student', { timeout: 15000 });
 
     // 2. Open /login/mentor directly while student session is active
     await page.goto('/login/mentor');
     await page.waitForURL(/\/login\/mentor/);
 
     // Verify Role Mismatch Alert is visible with explicit details
-    const mismatchAlert = page.locator('div[role="alert"]');
+    const mismatchAlert = page.locator('#role-mismatch-alert');
     await expect(mismatchAlert).toBeVisible();
     await expect(mismatchAlert).toContainText(/Active Student Session Detected/i);
     await expect(mismatchAlert).toContainText(/NITISH M/i);
@@ -180,7 +180,7 @@ test.describe('Cross-Role Session Persistence & Isolation Suite', () => {
     await page.fill('#login-email-input', 'sec25co031@sairamtap.edu.in');
     await page.fill('#login-password-input', 'cce@123');
     await page.click('#login-submit-button');
-    await page.waitForURL(/(\/change-password|\/student)/, { timeout: 15000 });
+    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/student', { timeout: 15000 });
 
     // 2. Attempt to navigate directly to /mentor dashboard
     await page.goto('/mentor');
@@ -205,7 +205,7 @@ test.describe('Cross-Role Session Persistence & Isolation Suite', () => {
     await page.fill('#login-email-input', 'sec25co031@sairamtap.edu.in');
     await page.fill('#login-password-input', 'cce@123');
     await page.click('#login-submit-button');
-    await page.waitForURL(/(\/change-password|\/student)/, { timeout: 15000 });
+    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/student', { timeout: 15000 });
 
     // Navigate to change-password
     await page.goto('/change-password');
@@ -232,7 +232,7 @@ test.describe('Cross-Role Session Persistence & Isolation Suite', () => {
     await page.fill('#login-email-input', 'sec25co031@sairamtap.edu.in');
     await page.fill('#login-password-input', 'cce@123');
     await page.click('#login-submit-button');
-    await page.waitForURL(/(\/change-password|\/student)/, { timeout: 15000 });
+    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/student', { timeout: 15000 });
 
     // 2. Refresh page while logged in — session remains active
     await page.reload();

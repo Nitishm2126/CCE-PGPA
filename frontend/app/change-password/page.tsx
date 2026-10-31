@@ -11,7 +11,7 @@ import { ROLE_CONFIGS } from "@/lib/role-config";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
-  const { user, token: authToken, isLoading: authLoading, logout } = useAuth();
+  const { user, token: authToken, isLoading: authLoading, logout, updateUser, refreshUser } = useAuth();
   const token = authToken || getStoredToken();
 
   // Form states
@@ -38,7 +38,7 @@ export default function ChangePasswordPage() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    router.push("/login?signedOut=true");
   };
 
   const isMandatoryChange = Boolean(user?.must_change_password);
@@ -49,6 +49,11 @@ export default function ChangePasswordPage() {
     setSuccessMessage(null);
 
     // Validations
+    if (!currentPassword.trim()) {
+      setErrorMessage("Please enter your current or temporary password.");
+      return;
+    }
+
     if (!newPassword) {
       setErrorMessage("Please enter a new confidential password.");
       return;
@@ -59,8 +64,8 @@ export default function ChangePasswordPage() {
       return;
     }
 
-    if (newPassword === "cce@123") {
-      setErrorMessage("New password cannot be the default institutional password ('cce@123'). Please select a secure custom password.");
+    if (newPassword === currentPassword.trim()) {
+      setErrorMessage("New password must be different from your current or temporary password.");
       return;
     }
 
@@ -71,27 +76,30 @@ export default function ChangePasswordPage() {
 
     try {
       setIsSubmitting(true);
-      await api.changePassword(
+      const updatedUser = await api.changePassword(
         {
-          current_password: currentPassword || undefined,
+          current_password: currentPassword.trim(),
           new_password: newPassword,
         },
         token
       );
 
-      // Successfully updated!
+      // Successfully updated! Update local auth state immediately to unblock dashboard guards
+      if (updatedUser) {
+        updateUser(updatedUser);
+      }
+      await refreshUser();
+
       setSuccessMessage(
-        "Your password has been updated securely. Redirecting to your dashboard..."
+        "Your password has been updated securely. Entering dashboard..."
       );
 
-      // Redirect after 1.5s
-      setTimeout(() => {
-        if (user) {
-          router.push(`/${user.role}`);
-        } else {
-          router.push("/login");
-        }
-      }, 1500);
+      const targetRole = updatedUser?.role || user?.role;
+      if (targetRole) {
+        router.push(`/${targetRole}`);
+      } else {
+        router.push("/login");
+      }
     } catch (err: unknown) {
       const msg =
         err instanceof Error
@@ -102,6 +110,7 @@ export default function ChangePasswordPage() {
       setIsSubmitting(false);
     }
   };
+
 
   if (authLoading || !user) {
     return (
@@ -185,7 +194,7 @@ export default function ChangePasswordPage() {
                 </h3>
               </div>
               <p className="leading-relaxed text-amber-800">
-                Your account was provisioned with the temporary institutional password (<code className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-amber-300 text-amber-950">cce@123</code>). In compliance with cybersecurity guidelines, you must set a new confidential password before entering the {roleConfig.portalName}.
+                Your account was provisioned with a temporary initial password. In compliance with cybersecurity guidelines, you must set a new confidential password before entering the {roleConfig.portalName}.
               </p>
             </div>
           ) : (
@@ -247,7 +256,7 @@ export default function ChangePasswordPage() {
                 </label>
                 {isMandatoryChange && (
                   <span className="text-[10px] text-amber-700 font-medium">
-                    (Initial: cce@123)
+                    (Required for verification)
                   </span>
                 )}
               </div>
@@ -257,7 +266,7 @@ export default function ChangePasswordPage() {
                   type={showCurrentPassword ? "text" : "password"}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder={isMandatoryChange ? "Enter cce@123" : "Enter current password"}
+                  placeholder="Enter current or temporary password"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
                 <button
@@ -297,8 +306,9 @@ export default function ChangePasswordPage() {
                 </button>
               </div>
               <p className="mt-1 text-[11px] text-slate-400">
-                Must be at least 6 characters and different from &apos;cce@123&apos;.
+                Must be at least 6 characters and different from temporary password.
               </p>
+
             </div>
 
             {/* Confirm New Password Field */}
@@ -333,6 +343,7 @@ export default function ChangePasswordPage() {
             <div className="pt-2">
               <button
                 type="submit"
+                id="change-password-submit-btn"
                 disabled={isSubmitting || Boolean(successMessage)}
                 className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold py-3 shadow-md shadow-blue-500/20 transition disabled:opacity-50 cursor-pointer"
               >
