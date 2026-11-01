@@ -403,6 +403,18 @@ export default function HODDashboardPage() {
               <RoleBadge role="hod" />
               <button
                 type="button"
+                onClick={() => router.push("/mentor")}
+                id="btn-goto-mentor-portal"
+                className="rounded-lg border border-blue-500 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                title="Navigate directly to Faculty Mentor portal to manage assigned mentees"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <span>Go to Mentor Portal</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   setExportStudentId("all");
                   setIsExportModalOpen(true);
@@ -421,7 +433,7 @@ export default function HODDashboardPage() {
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
                 id="btn-hod-settings"
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                className="rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer inline-flex items-center gap-1.5"
                 title="Account Settings & Email Verification"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -433,7 +445,7 @@ export default function HODDashboardPage() {
               <button
                 type="button"
                 onClick={() => router.push("/change-password")}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
+                className="rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
               >
                 Change Password
               </button>
@@ -442,7 +454,7 @@ export default function HODDashboardPage() {
                 type="button"
                 id="hod-signout-btn"
                 onClick={handleLogout}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+                className="rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
               >
                 Sign out
               </button>
@@ -454,59 +466,73 @@ export default function HODDashboardPage() {
       {/* Main Container */}
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
         {/* Department Overview Banner & Key Metrics */}
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
+        <div className="rounded-2xl border border-slate-200/90 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700 border border-purple-200 mb-2">
+              <div className="inline-flex items-center gap-2 rounded-full bg-purple-50 dark:bg-purple-950/40 px-3 py-1 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 mb-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-purple-600" />
                 Department-Wide View-Only Access
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-[#E8EDF4]">
                 Department Submissions & Audit Oversight
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7E8B9C] mt-1 max-w-2xl">
                 Oversight authority for CCE Second-Year student cohort (61 students).
                 Activities and supporting evidence submitted by students are recorded directly without requiring approval.
               </p>
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => router.push("/mentor")}
+                  id="btn-goto-mentor-portal-banner"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition cursor-pointer"
+                  title="Switch to Faculty Mentor portal to manage assigned mentees"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  <span>Go to Mentor Portal &rarr;</span>
+                </button>
+              </div>
             </div>
 
             {/* Metrics Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center min-w-[100px]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Students</p>
-                <p className="text-xl font-extrabold text-slate-900 mt-0.5">{overview?.total_students || students.length || 61}</p>
-                <p className="text-[10px] text-slate-400">II Year Sec A</p>
+              <div className="rounded-xl border border-slate-200/80 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] p-3 text-center min-w-[100px]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C]">Students</p>
+                <p className="text-xl font-extrabold text-slate-900 dark:text-[#E8EDF4] mt-0.5">{overview?.total_students || students.length || 61}</p>
+                <p className="text-[10px] text-slate-400 dark:text-[#7E8B9C]">II Year Sec A</p>
               </div>
 
-              <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center min-w-[100px]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Mentors</p>
-                <p className="text-xl font-extrabold text-slate-900 mt-0.5">{overview?.total_mentors || uniqueMentors.length || 3}</p>
-                <p className="text-[10px] text-slate-400">Allocated</p>
+              <div className="rounded-xl border border-slate-200/80 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] p-3 text-center min-w-[100px]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C]">Mentors</p>
+                <p className="text-xl font-extrabold text-slate-900 dark:text-[#E8EDF4] mt-0.5">{overview?.total_mentors || uniqueMentors.length || 3}</p>
+                <p className="text-[10px] text-slate-400 dark:text-[#7E8B9C]">Allocated</p>
               </div>
 
-              <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center min-w-[100px]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-purple-700">Submissions</p>
-                <p className="text-xl font-extrabold text-slate-900 mt-0.5">{submissions.length}</p>
-                <p className="text-[10px] text-purple-600 font-medium">Recorded</p>
+              <div className="rounded-xl border border-slate-200/80 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] p-3 text-center min-w-[100px]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-400">Submissions</p>
+                <p className="text-xl font-extrabold text-slate-900 dark:text-[#E8EDF4] mt-0.5">{submissions.length}</p>
+                <p className="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Recorded</p>
               </div>
 
-              <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center min-w-[100px]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Components</p>
-                <p className="text-xl font-extrabold text-slate-900 mt-0.5">{components.length || 13}</p>
-                <p className="text-[10px] text-slate-400">Catalogue</p>
+              <div className="rounded-xl border border-slate-200/80 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] p-3 text-center min-w-[100px]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C]">Components</p>
+                <p className="text-xl font-extrabold text-slate-900 dark:text-[#E8EDF4] mt-0.5">{components.length || 13}</p>
+                <p className="text-[10px] text-slate-400 dark:text-[#7E8B9C]">Catalogue</p>
               </div>
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="mt-6 flex items-center gap-2 border-t border-slate-100 pt-4">
+          <div className="mt-6 flex items-center gap-2 border-t border-slate-100 dark:border-[#2B3543] pt-4 flex-wrap">
             <button
               type="button"
               onClick={() => setActiveTab("submissions")}
               className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === "submissions"
                   ? "bg-purple-700 text-white shadow-2xs"
-                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+                  : "bg-white dark:bg-[#1C2531] text-slate-600 dark:text-[#A0ACBC] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#232D3B] border border-slate-200 dark:border-[#2B3543]"
               }`}
             >
               Department Submissions ({submissions.length})
@@ -517,7 +543,7 @@ export default function HODDashboardPage() {
               className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === "students"
                   ? "bg-purple-700 text-white shadow-2xs"
-                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+                  : "bg-white dark:bg-[#1C2531] text-slate-600 dark:text-[#A0ACBC] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#232D3B] border border-slate-200 dark:border-[#2B3543]"
               }`}
             >
               Cohort Student Directory ({students.length})
@@ -528,7 +554,7 @@ export default function HODDashboardPage() {
               className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === "overview"
                   ? "bg-purple-700 text-white shadow-2xs"
-                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+                  : "bg-white dark:bg-[#1C2531] text-slate-600 dark:text-[#A0ACBC] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#232D3B] border border-slate-200 dark:border-[#2B3543]"
               }`}
             >
               Mentorship Allocations
@@ -539,7 +565,7 @@ export default function HODDashboardPage() {
               className={`relative rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === "messages"
                   ? "bg-purple-700 text-white shadow-2xs"
-                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+                  : "bg-white dark:bg-[#1C2531] text-slate-600 dark:text-[#A0ACBC] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#232D3B] border border-slate-200 dark:border-[#2B3543]"
               }`}
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -558,7 +584,7 @@ export default function HODDashboardPage() {
               className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === "excel-import"
                   ? "bg-purple-700 text-white shadow-2xs"
-                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+                  : "bg-white dark:bg-[#1C2531] text-slate-600 dark:text-[#A0ACBC] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#232D3B] border border-slate-200 dark:border-[#2B3543]"
               }`}
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -572,7 +598,7 @@ export default function HODDashboardPage() {
               className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === "pgpa-grades"
                   ? "bg-purple-700 text-white shadow-2xs"
-                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+                  : "bg-white dark:bg-[#1C2531] text-slate-600 dark:text-[#A0ACBC] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#232D3B] border border-slate-200 dark:border-[#2B3543]"
               }`}
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -604,9 +630,9 @@ export default function HODDashboardPage() {
 
         {/* Tab 1: Submissions Explorer */}
         {activeTab === "submissions" && (
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-5">
+          <div className="rounded-2xl border border-slate-200/90 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-6 shadow-xs space-y-5">
             {/* Search and Multi-filter Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pb-4 border-b border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pb-4 border-b border-slate-100 dark:border-[#2B3543]">
               {/* Search text */}
               <div className="relative">
                 <input
@@ -614,10 +640,10 @@ export default function HODDashboardPage() {
                   placeholder="Search student, reg no, or title..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 pl-9 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531] px-3.5 py-2 pl-9 text-xs text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:bg-white dark:focus:bg-[#1C2531] focus:border-purple-500 focus:ring-1 focus:ring-purple-500 shadow-2xs"
                 />
                 <svg
-                  className="absolute left-3 top-2.5 h-4 w-4 text-slate-400"
+                  className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-[#7E8B9C]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -632,7 +658,7 @@ export default function HODDashboardPage() {
                 <select
                   value={selectedComponentId}
                   onChange={(e) => setSelectedComponentId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-purple-500 shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] focus:border-purple-500 shadow-2xs"
                 >
                   <option value="all">All PGPA Components ({components.length})</option>
                   {components.map((c) => (
@@ -648,7 +674,7 @@ export default function HODDashboardPage() {
                 <select
                   value={selectedMentorName}
                   onChange={(e) => setSelectedMentorName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-purple-500 shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] focus:border-purple-500 shadow-2xs"
                 >
                   <option value="all">All Faculty Mentors</option>
                   {uniqueMentors.map((m) => (
@@ -665,7 +691,7 @@ export default function HODDashboardPage() {
                   value={selectedSemester}
                   onChange={(e) => setSelectedSemester(e.target.value)}
                   aria-label="Filter submissions by semester"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-purple-500 shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] focus:border-purple-500 shadow-2xs"
                 >
                   <option value="all">All Semesters</option>
                   <option value="1">Semester 1</option>
@@ -685,7 +711,7 @@ export default function HODDashboardPage() {
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-purple-500 shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] focus:border-purple-500 shadow-2xs"
                 >
                   <option value="all">All Statuses</option>
                   <option value="pending">Submitted</option>
@@ -699,12 +725,12 @@ export default function HODDashboardPage() {
             {loadingSubmissions ? (
               <div className="space-y-3 py-6">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 bg-slate-100 rounded-xl animate-pulse" />
+                  <div key={i} className="h-20 bg-slate-100 dark:bg-[#1C2531] rounded-xl animate-pulse" />
                 ))}
               </div>
             ) : submissionsError ? (
-              <div className="py-12 text-center rounded-xl border border-rose-200 bg-rose-50/50 p-6 space-y-3">
-                <p className="text-xs font-semibold text-rose-700">{submissionsError}</p>
+              <div className="py-12 text-center rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/30 p-6 space-y-3">
+                <p className="text-xs font-semibold text-rose-700 dark:text-rose-300">{submissionsError}</p>
                 <button
                   type="button"
                   onClick={() => loadSubmissions(token)}
@@ -715,13 +741,13 @@ export default function HODDashboardPage() {
               </div>
             ) : filteredSubmissions.length === 0 ? (
               <div className="py-14 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-3">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-[#1C2531] text-slate-400 dark:text-[#7E8B9C] mb-3">
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 className="text-sm font-bold text-slate-900">No submissions found</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-[#E8EDF4]">No submissions found</h3>
+                <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-1 max-w-sm mx-auto">
                   {submissions.length === 0
                     ? "No student submissions have been recorded across the department yet. As students upload activities and certificates, they will be listed here automatically."
                     : "No submissions matched the selected filters. Try broadening your search or resetting filters."}
@@ -731,7 +757,7 @@ export default function HODDashboardPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/50">
+                    <tr className="border-b border-slate-200/80 dark:border-[#2B3543] text-[11px] font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider bg-slate-50/50 dark:bg-[#1C2531]">
                       <th className="py-3 px-4">Student & Reg No</th>
                       <th className="py-3 px-4">Assigned Mentor</th>
                       <th className="py-3 px-4">Component</th>
@@ -743,7 +769,7 @@ export default function HODDashboardPage() {
                       <th className="py-3 px-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-[#2B3543]">
                     {filteredSubmissions.map((sub) => {
                       const mentorName = studentMentorMap.get(sub.student_id) || "—";
                       const hasFiles = sub.files && sub.files.length > 0;
@@ -751,36 +777,36 @@ export default function HODDashboardPage() {
                       return (
                         <tr
                           key={sub.id}
-                          className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
+                          className="hover:bg-slate-50/70 dark:hover:bg-[#232D3B]/70 transition-colors group cursor-pointer"
                           onClick={() => setSelectedSubmission(sub)}
                         >
                           {/* Student Details */}
                           <td className="py-3 px-4">
-                            <p className="font-bold text-slate-900 group-hover:text-purple-700 transition-colors">
+                            <p className="font-bold text-slate-900 dark:text-[#E8EDF4] group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors">
                               {sub.student_name || "Student"}
                             </p>
-                            <p className="font-mono text-[11px] text-slate-500">
+                            <p className="font-mono text-[11px] text-slate-500 dark:text-[#7E8B9C]">
                               {sub.student_register_number || "—"}
                             </p>
                           </td>
 
                           {/* Mentor */}
-                          <td className="py-3 px-4 text-slate-600 font-medium">
+                          <td className="py-3 px-4 text-slate-600 dark:text-[#A0ACBC] font-medium">
                             {mentorName}
                           </td>
 
                           {/* Component & Semester */}
                           <td className="py-3 px-4">
                             <div className="flex flex-col gap-1 items-start">
-                              <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-[11px] font-semibold text-purple-700 border border-purple-200">
+                              <span className="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 text-[11px] font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                                 {sub.component_name || "PGPA Component"}
                               </span>
                               {sub.semester ? (
-                                <span className="inline-flex items-center rounded-md bg-cyan-50 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 border border-cyan-200">
+                                <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                                   {sub.semester.display_name}
                                 </span>
                               ) : sub.semester_id ? (
-                                <span className="inline-flex items-center rounded-md bg-cyan-50 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 border border-cyan-200">
+                                <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                                   Semester {sub.semester_id}
                                 </span>
                               ) : null}
@@ -789,16 +815,16 @@ export default function HODDashboardPage() {
 
                           {/* Title */}
                           <td className="py-3 px-4 max-w-xs">
-                            <p className="font-semibold text-slate-900 truncate" title={sub.title}>
+                            <p className="font-semibold text-slate-900 dark:text-[#E8EDF4] truncate" title={sub.title}>
                               {sub.title}
                             </p>
                             {sub.organizer && (
-                              <p className="text-[11px] text-slate-500 truncate">{sub.organizer}</p>
+                              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] truncate">{sub.organizer}</p>
                             )}
                           </td>
 
                           {/* Submitted Date */}
-                          <td className="py-3 px-4 text-slate-500">
+                          <td className="py-3 px-4 text-slate-500 dark:text-[#7E8B9C]">
                             {formatDate(sub.submitted_at || sub.created_at)}
                           </td>
 
@@ -814,7 +840,7 @@ export default function HODDashboardPage() {
                                 type="button"
                                 onClick={() => handleViewEvidence(sub.files[0].id)}
                                 disabled={isOpeningFile === sub.files[0].id}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50/70 px-2.5 py-1 text-[11px] font-semibold text-purple-700 hover:bg-purple-100 transition-colors cursor-pointer disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/70 dark:bg-purple-950/40 px-2.5 py-1 text-[11px] font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer disabled:opacity-50"
                               >
                                 {isOpeningFile === sub.files[0].id ? (
                                   <span className="h-3 w-3 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
@@ -827,7 +853,7 @@ export default function HODDashboardPage() {
                                 <span>View File</span>
                               </button>
                             ) : (
-                              <span className="text-[11px] text-slate-400">None</span>
+                              <span className="text-[11px] text-slate-400 dark:text-[#7E8B9C]">None</span>
                             )}
                           </td>
 
@@ -844,10 +870,10 @@ export default function HODDashboardPage() {
                                 });
                                 setIsMessageDrawerOpen(true);
                               }}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 hover:text-purple-700 transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer"
                               title="Send remarks, congratulations, or view message history"
                             >
-                              <svg className="h-3.5 w-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <svg className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                               </svg>
                               <span>Remarks</span>
@@ -867,7 +893,7 @@ export default function HODDashboardPage() {
                                 e.stopPropagation();
                                 setSelectedSubmission(sub);
                               }}
-                              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                              className="rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] transition-colors cursor-pointer"
                             >
                               Inspect
                             </button>
@@ -884,17 +910,17 @@ export default function HODDashboardPage() {
 
         {/* Tab 2: Cohort Student Directory */}
         {activeTab === "students" && (
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="rounded-2xl border border-slate-200/90 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#2B3543]">
               <div>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-slate-900 dark:text-[#E8EDF4]">
                   CCE II Year Student Directory ({loadingStudents ? "…" : `${students.length} Records`})
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-0.5">
                   Complete official cohort roster with verified mentor allocations
                 </p>
               </div>
-              <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700 border border-purple-200">
+              <span className="rounded-full bg-purple-50 dark:bg-purple-950/40 px-3 py-1 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                 Department Isolated: CCE
               </span>
             </div>
@@ -902,12 +928,12 @@ export default function HODDashboardPage() {
             {loadingStudents ? (
               <div className="space-y-3 py-6">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-12 bg-slate-100 rounded-xl animate-pulse" />
+                  <div key={i} className="h-12 bg-slate-100 dark:bg-[#1C2531] rounded-xl animate-pulse" />
                 ))}
               </div>
             ) : studentsError ? (
-              <div className="py-12 text-center rounded-xl border border-rose-200 bg-rose-50/50 p-6 space-y-3">
-                <p className="text-xs font-semibold text-rose-700">{studentsError}</p>
+              <div className="py-12 text-center rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/30 p-6 space-y-3">
+                <p className="text-xs font-semibold text-rose-700 dark:text-rose-300">{studentsError}</p>
                 <button
                   type="button"
                   onClick={() => loadStudents(token)}
@@ -918,8 +944,8 @@ export default function HODDashboardPage() {
               </div>
             ) : students.length === 0 ? (
               <div className="py-14 text-center">
-                <h3 className="text-sm font-bold text-slate-900">No students found</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-[#E8EDF4]">No students found</h3>
+                <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-1 max-w-sm mx-auto">
                   No cohort students have been loaded into the CCE department directory.
                 </p>
               </div>
@@ -927,7 +953,7 @@ export default function HODDashboardPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/50">
+                    <tr className="border-b border-slate-200/80 dark:border-[#2B3543] text-[11px] font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider bg-slate-50/50 dark:bg-[#1C2531]">
                       <th className="py-3 px-4">#</th>
                       <th className="py-3 px-4">Student Name</th>
                       <th className="py-3 px-4">Register Number</th>
@@ -937,17 +963,17 @@ export default function HODDashboardPage() {
                       <th className="py-3 px-4 text-right">Submissions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-[#2B3543]">
                     {students.map((st, idx) => {
                       const studentSubmissions = submissions.filter((s) => s.student_id === st.student_id);
                       return (
-                        <tr key={st.student_id} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-2.5 px-4 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
-                          <td className="py-2.5 px-4 font-bold text-slate-900">{st.full_name}</td>
-                          <td className="py-2.5 px-4 font-mono text-purple-700 font-semibold">{st.register_number || "—"}</td>
-                          <td className="py-2.5 px-4 text-slate-500">{st.email}</td>
-                          <td className="py-2.5 px-4 text-slate-600 font-medium">{st.section || "A"}</td>
-                          <td className="py-2.5 px-4 text-slate-800 font-medium">{st.mentor_name || "Unassigned"}</td>
+                        <tr key={st.student_id} className="hover:bg-slate-50/70 dark:hover:bg-[#232D3B]/70 transition-colors">
+                          <td className="py-2.5 px-4 text-slate-400 dark:text-[#7E8B9C] font-mono text-[11px]">{idx + 1}</td>
+                          <td className="py-2.5 px-4 font-bold text-slate-900 dark:text-[#E8EDF4]">{st.full_name}</td>
+                          <td className="py-2.5 px-4 font-mono text-purple-700 dark:text-purple-400 font-semibold">{st.register_number || "—"}</td>
+                          <td className="py-2.5 px-4 text-slate-500 dark:text-[#7E8B9C]">{st.email}</td>
+                          <td className="py-2.5 px-4 text-slate-600 dark:text-[#A0ACBC] font-medium">{st.section || "A"}</td>
+                          <td className="py-2.5 px-4 text-slate-800 dark:text-[#E8EDF4] font-medium">{st.mentor_name || "Unassigned"}</td>
                           <td className="py-2.5 px-4 text-right flex items-center justify-end gap-1.5">
                             <button
                               type="button"
@@ -955,7 +981,7 @@ export default function HODDashboardPage() {
                                 setSearchQuery(st.register_number || st.full_name);
                                 setActiveTab("submissions");
                               }}
-                              className="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-950/40 px-2 py-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 transition-colors cursor-pointer"
+                              className="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-950/40 px-2 py-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors cursor-pointer"
                               title="Filter submissions for this student"
                             >
                               {studentSubmissions.length} &rarr;
@@ -966,7 +992,7 @@ export default function HODDashboardPage() {
                                 setExportStudentId(st.student_id);
                                 setIsExportModalOpen(true);
                               }}
-                              className="inline-flex items-center gap-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1 rounded-md border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer"
                               title="Export individual student report"
                             >
                               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -987,12 +1013,12 @@ export default function HODDashboardPage() {
 
         {/* Tab 3: Mentorship Allocations Breakdown */}
         {activeTab === "overview" && (
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-6">
-            <div className="pb-4 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900">
+          <div className="rounded-2xl border border-slate-200/90 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-6 shadow-xs space-y-6">
+            <div className="pb-4 border-b border-slate-100 dark:border-[#2B3543]">
+              <h3 className="text-base font-bold text-slate-900 dark:text-[#E8EDF4]">
                 CCE Department Faculty Mentorship Allocation Matrix
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-0.5">
                 Official distribution of cohort students among department mentors
               </p>
             </div>
@@ -1000,12 +1026,12 @@ export default function HODDashboardPage() {
             {loadingStudents ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-44 bg-slate-100 rounded-xl animate-pulse" />
+                  <div key={i} className="h-44 bg-slate-100 dark:bg-[#1C2531] rounded-xl animate-pulse" />
                 ))}
               </div>
             ) : uniqueMentors.length === 0 ? (
               <div className="py-14 text-center">
-                <p className="text-xs text-slate-500">No faculty mentors found with active mentee allocations.</p>
+                <p className="text-xs text-slate-500 dark:text-[#7E8B9C]">No faculty mentors found with active mentee allocations.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1017,24 +1043,24 @@ export default function HODDashboardPage() {
                 return (
                   <div
                     key={mentorName}
-                    className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-5 space-y-4 hover:border-purple-300 hover:bg-white transition-all shadow-2xs"
+                    className="rounded-xl border border-slate-200/80 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531] p-5 space-y-4 hover:border-purple-300 dark:hover:border-purple-500 hover:bg-white dark:hover:bg-[#232D3B] transition-all shadow-2xs"
                   >
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">
                         Faculty Mentor
                       </span>
-                      <h4 className="text-base font-bold text-slate-900 mt-0.5">{mentorName}</h4>
-                      <p className="text-xs text-slate-500">Department of CCE</p>
+                      <h4 className="text-base font-bold text-slate-900 dark:text-[#E8EDF4] mt-0.5">{mentorName}</h4>
+                      <p className="text-xs text-slate-500 dark:text-[#7E8B9C]">Department of CCE</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 text-center">
-                      <div className="p-2 bg-white rounded-lg border border-slate-200/60">
-                        <span className="block text-[10px] uppercase text-slate-400 font-semibold">Mentees</span>
-                        <span className="text-lg font-bold text-slate-900">{mentees.length}</span>
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 dark:border-[#2B3543] text-center">
+                      <div className="p-2 bg-white dark:bg-[#171E28] rounded-lg border border-slate-200/60 dark:border-[#2B3543]">
+                        <span className="block text-[10px] uppercase text-slate-400 dark:text-[#7E8B9C] font-semibold">Mentees</span>
+                        <span className="text-lg font-bold text-slate-900 dark:text-[#E8EDF4]">{mentees.length}</span>
                       </div>
-                      <div className="p-2 bg-white rounded-lg border border-slate-200/60">
-                        <span className="block text-[10px] uppercase text-purple-700 font-semibold">Submissions</span>
-                        <span className="text-lg font-bold text-purple-700">{mentorSubmissions.length}</span>
+                      <div className="p-2 bg-white dark:bg-[#171E28] rounded-lg border border-slate-200/60 dark:border-[#2B3543]">
+                        <span className="block text-[10px] uppercase text-purple-700 dark:text-purple-400 font-semibold">Submissions</span>
+                        <span className="text-lg font-bold text-purple-700 dark:text-purple-400">{mentorSubmissions.length}</span>
                       </div>
                     </div>
 
@@ -1044,7 +1070,7 @@ export default function HODDashboardPage() {
                         setSelectedMentorName(mentorName);
                         setActiveTab("submissions");
                       }}
-                      className="w-full text-center py-2 text-xs font-semibold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors cursor-pointer"
+                      className="w-full text-center py-2 text-xs font-semibold text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/40 rounded-lg transition-colors cursor-pointer"
                     >
                       Inspect Submissions &rarr;
                     </button>
@@ -1086,26 +1112,26 @@ export default function HODDashboardPage() {
           />
 
           <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
-            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200/90 my-auto">
+            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#171E28] p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200/90 dark:border-[#2B3543] my-auto">
               {/* Modal Header */}
-              <div className="flex items-start justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-[#2B3543]">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="rounded-md bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-700 border border-purple-200">
+                    <span className="rounded-md bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                       {selectedSubmission.component_name || "PGPA Component"}
                     </span>
                     {selectedSubmission.semester ? (
-                      <span className="rounded-md bg-cyan-50 px-2 py-0.5 text-xs font-bold text-cyan-700 border border-cyan-200">
+                      <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                         {selectedSubmission.semester.display_name}
                       </span>
                     ) : selectedSubmission.semester_id ? (
-                      <span className="rounded-md bg-cyan-50 px-2 py-0.5 text-xs font-bold text-cyan-700 border border-cyan-200">
+                      <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                         Semester {selectedSubmission.semester_id}
                       </span>
                     ) : null}
                     {renderStatusBadge(selectedSubmission.status)}
                   </div>
-                  <h3 className="mt-2 text-lg font-bold text-slate-900 leading-snug">
+                  <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-[#E8EDF4] leading-snug">
                     {selectedSubmission.title}
                   </h3>
                 </div>
@@ -1113,7 +1139,7 @@ export default function HODDashboardPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedSubmission(null)}
-                  className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1C2531] transition-colors cursor-pointer"
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1124,63 +1150,63 @@ export default function HODDashboardPage() {
               {/* Modal Content */}
               <div className="mt-4 space-y-4 text-xs">
                 {/* Student Identity Card */}
-                <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 flex items-center justify-between">
+                <div className="rounded-xl border border-slate-100 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] p-3.5 flex items-center justify-between">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C]">
                       Submitting Student
                     </p>
-                    <p className="text-sm font-bold text-slate-900 mt-0.5">
+                    <p className="text-sm font-bold text-slate-900 dark:text-[#E8EDF4] mt-0.5">
                       {selectedSubmission.student_name || "Student"}
                     </p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-0.5">
                       Assigned Mentor: {studentMentorMap.get(selectedSubmission.student_id) || "—"}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono text-xs font-semibold text-purple-700">
+                    <p className="font-mono text-xs font-semibold text-purple-700 dark:text-purple-400">
                       {selectedSubmission.student_register_number || "—"}
                     </p>
-                    <p className="text-[11px] text-slate-400">Department of CCE</p>
+                    <p className="text-[11px] text-slate-400 dark:text-[#7E8B9C]">Department of CCE</p>
                   </div>
                 </div>
 
                 {/* Event Details Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Activity Type</span>
-                    <span className="font-semibold text-slate-800">{selectedSubmission.activity_type || "Standard"}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Activity Type</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4]">{selectedSubmission.activity_type || "Standard"}</span>
                   </div>
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Organizer / Host</span>
-                    <span className="font-semibold text-slate-800 truncate block">{selectedSubmission.organizer || "—"}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Organizer / Host</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4] truncate block">{selectedSubmission.organizer || "—"}</span>
                   </div>
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Event Date</span>
-                    <span className="font-semibold text-slate-800">{formatDate(selectedSubmission.event_date)}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Event Date</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4]">{formatDate(selectedSubmission.event_date)}</span>
                   </div>
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Outcome / Score</span>
-                    <span className="font-semibold text-slate-800">{selectedSubmission.outcome || "Completed"}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Outcome / Score</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4]">{selectedSubmission.outcome || "Completed"}</span>
                   </div>
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Date Submitted</span>
-                    <span className="font-semibold text-slate-800">{formatDate(selectedSubmission.submitted_at || selectedSubmission.created_at)}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Date Submitted</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4]">{formatDate(selectedSubmission.submitted_at || selectedSubmission.created_at)}</span>
                   </div>
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Submission State</span>
-                    <span className="font-semibold text-slate-800 capitalize">{selectedSubmission.status}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Submission State</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4] capitalize">{selectedSubmission.status}</span>
                   </div>
                 </div>
 
                 {/* Certificate Status Banner */}
                 {selectedSubmission.certificate_status === "yet_to_receive" && (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900 flex items-start gap-2.5">
-                    <svg className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+                    <svg className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
                       <p className="font-bold">Certificate Pending Issuance</p>
-                      <p className="mt-0.5 text-[11px] text-amber-800">
+                      <p className="mt-0.5 text-[11px] text-amber-800 dark:text-amber-300">
                         Student completed this activity; the organizer has not yet issued the official certificate. Student can upload it later once received.
                       </p>
                     </div>
@@ -1188,13 +1214,13 @@ export default function HODDashboardPage() {
                 )}
 
                 {selectedSubmission.certificate_status === "not_provided" && (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 flex items-start gap-2.5">
-                    <svg className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] p-3 text-xs text-slate-700 dark:text-[#A0ACBC] flex items-start gap-2.5">
+                    <svg className="h-4 w-4 text-slate-500 dark:text-[#7E8B9C] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                      <p className="font-bold text-slate-900">No Certificate Provided</p>
-                      <p className="mt-0.5 text-[11px] text-slate-600">
+                      <p className="font-bold text-slate-900 dark:text-[#E8EDF4]">No Certificate Provided</p>
+                      <p className="mt-0.5 text-[11px] text-slate-600 dark:text-[#7E8B9C]">
                         No certificate is issued for this activity. Verify participation based on the event details and student remarks.
                       </p>
                     </div>
@@ -1204,10 +1230,10 @@ export default function HODDashboardPage() {
                 {/* Student Remarks */}
                 {selectedSubmission.remarks && (
                   <div>
-                    <p className="font-semibold uppercase tracking-wider text-slate-500 text-[11px] mb-1">
+                    <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C] text-[11px] mb-1">
                       Student Remarks
                     </p>
-                    <div className="rounded-xl border border-purple-200/80 p-3 bg-purple-50/40 text-slate-800 leading-relaxed font-medium text-xs">
+                    <div className="rounded-xl border border-purple-200/80 dark:border-purple-800 p-3 bg-purple-50/40 dark:bg-purple-950/30 text-slate-800 dark:text-[#E8EDF4] leading-relaxed font-medium text-xs">
                       {selectedSubmission.remarks}
                     </div>
                   </div>
@@ -1216,10 +1242,10 @@ export default function HODDashboardPage() {
                 {/* Description */}
                 {selectedSubmission.description && (
                   <div>
-                    <p className="font-semibold uppercase tracking-wider text-slate-500 text-[11px] mb-1">
+                    <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C] text-[11px] mb-1">
                       Summary & Description
                     </p>
-                    <div className="rounded-xl border border-slate-200/80 p-3 bg-slate-50/50 text-slate-700 leading-relaxed">
+                    <div className="rounded-xl border border-slate-200/80 dark:border-[#2B3543] p-3 bg-slate-50/50 dark:bg-[#1C2531] text-slate-700 dark:text-[#A0ACBC] leading-relaxed">
                       {selectedSubmission.description}
                     </div>
                   </div>
@@ -1227,7 +1253,7 @@ export default function HODDashboardPage() {
 
                 {/* Evidence Files */}
                 <div>
-                  <p className="font-semibold uppercase tracking-wider text-slate-500 text-[11px] mb-1.5">
+                  <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C] text-[11px] mb-1.5">
                     Supporting Evidence ({selectedSubmission.files?.length || 0})
                   </p>
                   {selectedSubmission.files && selectedSubmission.files.length > 0 ? (
@@ -1235,17 +1261,17 @@ export default function HODDashboardPage() {
                       {selectedSubmission.files.map((file) => (
                         <div
                           key={file.id}
-                          className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-2xs"
+                          className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] shadow-2xs"
                         >
                           <div className="flex items-center gap-2.5 truncate">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-purple-600 shrink-0">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 shrink-0">
                               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                               </svg>
                             </div>
                             <div className="truncate">
-                              <p className="font-semibold text-slate-900 truncate">{file.original_filename}</p>
-                              <p className="text-[11px] text-slate-400">
+                              <p className="font-semibold text-slate-900 dark:text-[#E8EDF4] truncate">{file.original_filename}</p>
+                              <p className="text-[11px] text-slate-400 dark:text-[#7E8B9C]">
                                 {(file.size_bytes / 1024).toFixed(1)} KB &bull; {file.mime_type}
                               </p>
                             </div>
@@ -1270,7 +1296,7 @@ export default function HODDashboardPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-400 italic">No evidence files were attached to this submission.</p>
+                    <p className="text-slate-400 dark:text-[#7E8B9C] italic">No evidence files were attached to this submission.</p>
                   )}
 
                   {fileError && (
@@ -1279,8 +1305,8 @@ export default function HODDashboardPage() {
                 </div>
 
                 {/* Audit & Workflow Notice */}
-                <div className="rounded-xl border border-purple-200/70 bg-purple-50/50 p-3.5 text-slate-600 leading-relaxed text-[11px]">
-                  <p className="font-bold text-purple-900 mb-0.5">Department Head Oversight Access</p>
+                <div className="rounded-xl border border-purple-200/70 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30 p-3.5 text-slate-600 dark:text-[#A0ACBC] leading-relaxed text-[11px]">
+                  <p className="font-bold text-purple-900 dark:text-purple-300 mb-0.5">Department Head Oversight Access</p>
                   <p>
                     Student submissions are directly recorded upon submission and made viewable to faculty mentors and the Head of Department. No approval action is required.
                   </p>
@@ -1288,7 +1314,7 @@ export default function HODDashboardPage() {
               </div>
 
               {/* Modal Footer */}
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-[#2B3543] flex items-center justify-between gap-3 flex-wrap">
                 <button
                   type="button"
                   onClick={() => {
@@ -1313,7 +1339,7 @@ export default function HODDashboardPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedSubmission(null)}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] transition-colors cursor-pointer"
                 >
                   Close Inspection
                 </button>

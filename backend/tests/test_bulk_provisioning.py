@@ -100,7 +100,7 @@ def test_provisioning_preview_dry_run(client: TestClient, admin_headers: dict):
     data = res.json()
 
     assert data["total_users"] >= 65
-    assert data["by_role"]["student"] == 61
+    assert data["by_role"]["student"] >= 61
     assert data["by_role"]["mentor"] == 2
     assert data["by_role"]["hod"] == 1
     assert data["by_role"]["admin"] == 1

@@ -412,7 +412,7 @@ export default function MentorDashboardPage() {
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
                 id="btn-mentor-settings"
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                className="rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer inline-flex items-center gap-1.5"
                 title="Account Settings & Email Verification"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -424,7 +424,7 @@ export default function MentorDashboardPage() {
               <button
                 type="button"
                 onClick={() => router.push("/change-password")}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                className="rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
               >
                 Change Password
               </button>
@@ -433,7 +433,7 @@ export default function MentorDashboardPage() {
                 type="button"
                 id="mentor-signout-btn"
                 onClick={handleLogout}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                className="rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#E8EDF4] hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
               >
                 Sign out
               </button>
@@ -445,7 +445,7 @@ export default function MentorDashboardPage() {
       {/* Main Container */}
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
         {/* Mentor Overview Banner */}
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
+        <div className="rounded-2xl border border-slate-200/90 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               {user?.role === "hod" ? (
@@ -459,10 +459,10 @@ export default function MentorDashboardPage() {
                   Faculty Mentorship Portal &bull; Active Evaluation
                 </div>
               )}
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-[#E8EDF4]">
                 Welcome, {user?.full_name}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7E8B9C] mt-1 max-w-2xl">
                 {user?.role === "hod"
                   ? "You are managing your personal assigned mentees. Inspect submissions, evaluate certificates, and record verification decisions. Use the Go to HOD Dashboard button to return to department-wide oversight."
                   : "Review, evaluate, and verify supporting evidence submitted by your assigned cohort mentees. Provide remarks and track performance grade points."}
@@ -483,37 +483,37 @@ export default function MentorDashboardPage() {
 
             {/* Quick Metrics */}
             <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-              <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-center min-w-[110px]">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <div className="rounded-xl border border-slate-200/80 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] p-3.5 text-center min-w-[110px]">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C]">
                   Assigned Mentees
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-0.5">
+                <p className="text-2xl font-bold text-slate-900 dark:text-[#E8EDF4] mt-0.5">
                   {students.length}
                 </p>
-                <p className="text-[10px] text-slate-400">CCE II Year Section A</p>
+                <p className="text-[10px] text-slate-400 dark:text-[#7E8B9C]">CCE II Year Section A</p>
               </div>
 
-              <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-center min-w-[110px]">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-700">
+              <div className="rounded-xl border border-slate-200/80 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] p-3.5 text-center min-w-[110px]">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-400">
                   Submissions
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-0.5">
+                <p className="text-2xl font-bold text-slate-900 dark:text-[#E8EDF4] mt-0.5">
                   {submissions.length}
                 </p>
-                <p className="text-[10px] text-blue-600 font-medium">Recorded activities</p>
+                <p className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Recorded activities</p>
               </div>
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="mt-6 flex items-center gap-2 border-t border-slate-100 pt-4 flex-wrap">
+          <div className="mt-6 flex items-center gap-2 border-t border-slate-100 dark:border-[#2B3543] pt-4 flex-wrap">
             <button
               type="button"
               onClick={() => setActiveTab("submissions")}
               className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === "submissions"
                   ? "bg-blue-600 text-white shadow-2xs"
-                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+                  : "bg-white dark:bg-[#1C2531] text-slate-600 dark:text-[#A0ACBC] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#232D3B] border border-slate-200 dark:border-[#2B3543]"
               }`}
             >
               Mentee Submissions ({submissions.length})
@@ -524,7 +524,7 @@ export default function MentorDashboardPage() {
               className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === "roster"
                   ? "bg-blue-600 text-white shadow-2xs"
-                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+                  : "bg-white dark:bg-[#1C2531] text-slate-600 dark:text-[#A0ACBC] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#232D3B] border border-slate-200 dark:border-[#2B3543]"
               }`}
             >
               Assigned Mentee Cohort ({students.length})
@@ -535,7 +535,7 @@ export default function MentorDashboardPage() {
               className={`relative rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === "messages"
                   ? "bg-blue-600 text-white shadow-2xs"
-                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200"
+                  : "bg-white dark:bg-[#1C2531] text-slate-600 dark:text-[#A0ACBC] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#232D3B] border border-slate-200 dark:border-[#2B3543]"
               }`}
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -567,19 +567,19 @@ export default function MentorDashboardPage() {
 
         {/* Tab 1: Submissions Explorer */}
         {activeTab === "submissions" && (
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-5">
+          <div className="rounded-2xl border border-slate-200/90 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-6 shadow-xs space-y-5">
             {/* Filter and Search Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-[#2B3543]">
               <div className="relative flex-1 max-w-md">
                 <input
                   type="text"
                   placeholder="Search by student, register number, or activity title..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 pl-9 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531] px-3.5 py-2 pl-9 text-xs text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:bg-white dark:focus:bg-[#1C2531] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
                 />
                 <svg
-                  className="absolute left-3 top-2.5 h-4 w-4 text-slate-400"
+                  className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-[#7E8B9C]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -594,7 +594,7 @@ export default function MentorDashboardPage() {
                 <select
                   value={selectedMenteeId}
                   onChange={(e) => setSelectedMenteeId(e.target.value)}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-blue-500 shadow-2xs"
+                  className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] focus:border-blue-500 shadow-2xs"
                 >
                   <option value="all">All Assigned Mentees ({students.length})</option>
                   {students.map((st) => (
@@ -608,7 +608,7 @@ export default function MentorDashboardPage() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-blue-500 shadow-2xs"
+                  className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] focus:border-blue-500 shadow-2xs"
                 >
                   <option value="all">All Statuses</option>
                   <option value="pending">Submitted</option>
@@ -621,7 +621,7 @@ export default function MentorDashboardPage() {
                   value={semesterFilter}
                   onChange={(e) => setSemesterFilter(e.target.value)}
                   aria-label="Filter submissions by semester"
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:border-blue-500 shadow-2xs"
+                  className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] focus:border-blue-500 shadow-2xs"
                 >
                   <option value="all">All Semesters</option>
                   <option value="1">Semester 1</option>
@@ -641,18 +641,18 @@ export default function MentorDashboardPage() {
             {isLoadingData ? (
               <div className="space-y-3 py-6">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 bg-slate-100 rounded-xl animate-pulse" />
+                  <div key={i} className="h-20 bg-slate-100 dark:bg-[#1C2531] rounded-xl animate-pulse" />
                 ))}
               </div>
             ) : filteredSubmissions.length === 0 ? (
               <div className="py-14 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-3">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-[#1C2531] text-slate-400 dark:text-[#7E8B9C] mb-3">
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 className="text-sm font-bold text-slate-900">No submissions found</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-[#E8EDF4]">No submissions found</h3>
+                <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-1 max-w-sm mx-auto">
                   {submissions.length === 0
                     ? "Your assigned mentees have not submitted any PGPA activities yet. When they record activities and evidence, they will appear here automatically."
                     : "No submissions matched your search or filter criteria. Try clearing the filters."}
@@ -662,7 +662,7 @@ export default function MentorDashboardPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/50">
+                    <tr className="border-b border-slate-200/80 dark:border-[#2B3543] text-[11px] font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider bg-slate-50/50 dark:bg-[#1C2531]">
                       <th className="py-3 px-4">Student</th>
                       <th className="py-3 px-4">Component</th>
                       <th className="py-3 px-4">Activity Title</th>
@@ -674,22 +674,22 @@ export default function MentorDashboardPage() {
                       <th className="py-3 px-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-[#2B3543]">
                     {filteredSubmissions.map((sub) => {
                       const hasFiles = sub.files && sub.files.length > 0;
                       const unreadCount = unreadCountsByAchievement[sub.id] || 0;
                       return (
                         <tr
                           key={sub.id}
-                          className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
+                          className="hover:bg-slate-50/70 dark:hover:bg-[#232D3B]/70 transition-colors group cursor-pointer"
                           onClick={() => handleOpenSubmission(sub)}
                         >
                           {/* Student Details */}
                           <td className="py-3 px-4">
-                            <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                            <p className="font-bold text-slate-900 dark:text-[#E8EDF4] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                               {sub.student_name || "Assigned Student"}
                             </p>
-                            <p className="font-mono text-[11px] text-slate-500">
+                            <p className="font-mono text-[11px] text-slate-500 dark:text-[#7E8B9C]">
                               {sub.student_register_number || "—"}
                             </p>
                           </td>
@@ -697,15 +697,15 @@ export default function MentorDashboardPage() {
                           {/* Component & Semester */}
                           <td className="py-3 px-4">
                             <div className="flex flex-col gap-1 items-start">
-                              <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+                              <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-[#1C2531] px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-[#E8EDF4]">
                                 {sub.component_name || "PGPA Component"}
                               </span>
                               {sub.semester ? (
-                                <span className="inline-flex items-center rounded-md bg-cyan-50 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 border border-cyan-200">
+                                <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                                   {sub.semester.display_name}
                                 </span>
                               ) : sub.semester_id ? (
-                                <span className="inline-flex items-center rounded-md bg-cyan-50 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 border border-cyan-200">
+                                <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                                   Semester {sub.semester_id}
                                 </span>
                               ) : null}
@@ -714,21 +714,21 @@ export default function MentorDashboardPage() {
 
                           {/* Title & Organizer */}
                           <td className="py-3 px-4 max-w-xs">
-                            <p className="font-semibold text-slate-900 truncate" title={sub.title}>
+                            <p className="font-semibold text-slate-900 dark:text-[#E8EDF4] truncate" title={sub.title}>
                               {sub.title}
                             </p>
                             {sub.organizer && (
-                              <p className="text-[11px] text-slate-500 truncate">{sub.organizer}</p>
+                              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] truncate">{sub.organizer}</p>
                             )}
                           </td>
 
                           {/* Event Date */}
-                          <td className="py-3 px-4 text-slate-600 font-medium">
+                          <td className="py-3 px-4 text-slate-600 dark:text-[#A0ACBC] font-medium">
                             {formatDate(sub.event_date)}
                           </td>
 
                           {/* Submitted Date */}
-                          <td className="py-3 px-4 text-slate-500">
+                          <td className="py-3 px-4 text-slate-500 dark:text-[#7E8B9C]">
                             {formatDate(sub.submitted_at || sub.created_at)}
                           </td>
 
@@ -744,7 +744,7 @@ export default function MentorDashboardPage() {
                                 type="button"
                                 onClick={() => handleViewEvidence(sub.files[0].id)}
                                 disabled={isOpeningFile === sub.files[0].id}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/70 px-2.5 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-100 transition-colors cursor-pointer disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/70 dark:bg-blue-950/40 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer disabled:opacity-50"
                               >
                                 {isOpeningFile === sub.files[0].id ? (
                                   <span className="h-3 w-3 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
@@ -757,7 +757,7 @@ export default function MentorDashboardPage() {
                                 <span>View File</span>
                               </button>
                             ) : (
-                              <span className="text-[11px] text-slate-400">None</span>
+                              <span className="text-[11px] text-slate-400 dark:text-[#7E8B9C]">None</span>
                             )}
                           </td>
 
@@ -774,10 +774,10 @@ export default function MentorDashboardPage() {
                                 });
                                 setIsMessageDrawerOpen(true);
                               }}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                               title="Send remarks, congratulations, or view message history"
                             >
-                              <svg className="h-3.5 w-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <svg className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                               </svg>
                               <span>Remarks</span>
@@ -797,7 +797,7 @@ export default function MentorDashboardPage() {
                                 e.stopPropagation();
                                 handleOpenSubmission(sub);
                               }}
-                              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                              className="rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] transition-colors cursor-pointer"
                             >
                               Inspect
                             </button>
@@ -814,17 +814,17 @@ export default function MentorDashboardPage() {
 
         {/* Tab 2: Assigned Mentee Roster */}
         {activeTab === "roster" && (
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="rounded-2xl border border-slate-200/90 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#2B3543]">
               <div>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-slate-900 dark:text-[#E8EDF4]">
                   Assigned Mentee Cohort ({students.length} Students)
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-0.5">
                   Authoritative student assignments in PostgreSQL for CCE II Year Section A
                 </p>
               </div>
-              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-200">
+              <span className="rounded-full bg-blue-50 dark:bg-blue-950/40 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                 Department Isolated: CCE
               </span>
             </div>
@@ -832,18 +832,18 @@ export default function MentorDashboardPage() {
             {isLoadingData ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="h-36 bg-slate-100 rounded-xl animate-pulse" />
+                  <div key={i} className="h-36 bg-slate-100 dark:bg-[#1C2531] rounded-xl animate-pulse" />
                 ))}
               </div>
             ) : students.length === 0 ? (
               <div className="py-14 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-3">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-[#1C2531] text-slate-400 dark:text-[#7E8B9C] mb-3">
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                   </svg>
                 </div>
-                <h3 className="text-sm font-bold text-slate-900">No assigned mentees found</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-[#E8EDF4]">No assigned mentees found</h3>
+                <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-1 max-w-sm mx-auto">
                   You currently have no students assigned to your cohort. If you have been newly designated as a faculty mentor, please verify your mentee allocation with the Head of Department or System Administrator.
                 </p>
               </div>
@@ -855,29 +855,29 @@ export default function MentorDashboardPage() {
                   return (
                     <div
                       key={st.student_id}
-                      className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 hover:border-blue-300 hover:bg-white transition-all shadow-2xs space-y-3"
+                      className="rounded-xl border border-slate-200/80 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531] p-4 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-white dark:hover:bg-[#232D3B] transition-all shadow-2xs space-y-3"
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm font-bold text-slate-900 leading-snug">
+                          <p className="text-sm font-bold text-slate-900 dark:text-[#E8EDF4] leading-snug">
                             {st.full_name}
                           </p>
-                          <p className="font-mono text-xs font-semibold text-blue-600 mt-0.5">
+                          <p className="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
                             {st.register_number || "Registration Pending"}
                           </p>
                         </div>
-                        <span className="inline-flex items-center rounded-md bg-white px-2 py-0.5 text-[10px] font-bold text-slate-600 border border-slate-200">
+                        <span className="inline-flex items-center rounded-md bg-white dark:bg-[#171E28] px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-[#A0ACBC] border border-slate-200 dark:border-[#2B3543]">
                           Sec {st.section || "A"}
                         </span>
                       </div>
 
-                      <div className="text-[11px] text-slate-500 space-y-0.5">
+                      <div className="text-[11px] text-slate-500 dark:text-[#7E8B9C] space-y-0.5">
                         <p className="truncate">{st.email}</p>
                         <p>Year {st.year} &bull; {st.department}</p>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
-                        <span className="font-medium text-slate-600">
+                      <div className="pt-2 border-t border-slate-200/60 dark:border-[#2B3543] flex items-center justify-between text-xs">
+                        <span className="font-medium text-slate-600 dark:text-[#A0ACBC]">
                           {displayCount} submissions
                         </span>
                         <div className="flex items-center gap-3">
@@ -901,7 +901,7 @@ export default function MentorDashboardPage() {
                               setSelectedMenteeId(st.student_id);
                               setActiveTab("submissions");
                             }}
-                            className="font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                            className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors cursor-pointer"
                           >
                             Filter Activities &rarr;
                           </button>
@@ -936,26 +936,26 @@ export default function MentorDashboardPage() {
           />
 
           <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
-            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200/90 my-auto">
+            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#171E28] p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200/90 dark:border-[#2B3543] my-auto">
               {/* Modal Header */}
-              <div className="flex items-start justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-[#2B3543]">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200">
+                    <span className="rounded-md bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                       {selectedSubmission.component_name || "PGPA Component"}
                     </span>
                     {selectedSubmission.semester ? (
-                      <span className="rounded-md bg-cyan-50 px-2 py-0.5 text-xs font-bold text-cyan-700 border border-cyan-200">
+                      <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                         {selectedSubmission.semester.display_name}
                       </span>
                     ) : selectedSubmission.semester_id ? (
-                      <span className="rounded-md bg-cyan-50 px-2 py-0.5 text-xs font-bold text-cyan-700 border border-cyan-200">
+                      <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                         Semester {selectedSubmission.semester_id}
                       </span>
                     ) : null}
                     {renderStatusBadge(selectedSubmission.status)}
                   </div>
-                  <h3 className="mt-2 text-lg font-bold text-slate-900 leading-snug">
+                  <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-[#E8EDF4] leading-snug">
                     {selectedSubmission.title}
                   </h3>
                 </div>
@@ -963,7 +963,7 @@ export default function MentorDashboardPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedSubmission(null)}
-                  className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1C2531] transition-colors cursor-pointer"
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -974,20 +974,20 @@ export default function MentorDashboardPage() {
               {/* Modal Content */}
               <div className="mt-4 space-y-4 text-xs">
                 {/* Student Identity Card */}
-                <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 flex items-center justify-between">
+                <div className="rounded-xl border border-slate-100 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] p-3.5 flex items-center justify-between">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C]">
                       Submitting Student
                     </p>
-                    <p className="text-sm font-bold text-slate-900 mt-0.5">
+                    <p className="text-sm font-bold text-slate-900 dark:text-[#E8EDF4] mt-0.5">
                       {selectedSubmission.student_name || "Assigned Student"}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono text-xs font-semibold text-blue-700">
+                    <p className="font-mono text-xs font-semibold text-blue-700 dark:text-blue-400">
                       {selectedSubmission.student_register_number || "—"}
                     </p>
-                    <p className="text-[11px] text-slate-400">Department of CCE</p>
+                    <p className="text-[11px] text-slate-400 dark:text-[#7E8B9C]">Department of CCE</p>
                   </div>
                 </div>
 
@@ -1006,51 +1006,51 @@ export default function MentorDashboardPage() {
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
                       {selectedSubmission.component_metadata.gpa !== undefined && (
-                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
-                          <span className="text-[10px] uppercase font-semibold text-slate-400">Anna Univ GPA</span>
-                          <p className="font-bold text-slate-900 dark:text-white text-sm">{selectedSubmission.component_metadata.gpa} / 10.00</p>
+                        <div className="rounded-lg bg-white dark:bg-[#1C2531] p-2 border border-indigo-200/60 dark:border-[#2B3543]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Anna Univ GPA</span>
+                          <p className="font-bold text-slate-900 dark:text-[#E8EDF4] text-sm">{selectedSubmission.component_metadata.gpa} / 10.00</p>
                         </div>
                       )}
                       {selectedSubmission.component_metadata.club_name && (
-                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
-                          <span className="text-[10px] uppercase font-semibold text-slate-400">Club / Cell</span>
-                          <p className="font-bold text-slate-900 dark:text-white truncate">{selectedSubmission.component_metadata.club_name}</p>
+                        <div className="rounded-lg bg-white dark:bg-[#1C2531] p-2 border border-indigo-200/60 dark:border-[#2B3543]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Club / Cell</span>
+                          <p className="font-bold text-slate-900 dark:text-[#E8EDF4] truncate">{selectedSubmission.component_metadata.club_name}</p>
                         </div>
                       )}
                       {selectedSubmission.component_metadata.role_category && (
-                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
-                          <span className="text-[10px] uppercase font-semibold text-slate-400">Role Category</span>
-                          <p className="font-bold text-slate-900 dark:text-white truncate">{selectedSubmission.component_metadata.role_category}</p>
+                        <div className="rounded-lg bg-white dark:bg-[#1C2531] p-2 border border-indigo-200/60 dark:border-[#2B3543]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Role Category</span>
+                          <p className="font-bold text-slate-900 dark:text-[#E8EDF4] truncate">{selectedSubmission.component_metadata.role_category}</p>
                         </div>
                       )}
                       {selectedSubmission.component_metadata.event_level && (
-                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
-                          <span className="text-[10px] uppercase font-semibold text-slate-400">Event Level</span>
-                          <p className="font-bold text-slate-900 dark:text-white truncate">{selectedSubmission.component_metadata.event_level}</p>
+                        <div className="rounded-lg bg-white dark:bg-[#1C2531] p-2 border border-indigo-200/60 dark:border-[#2B3543]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Event Level</span>
+                          <p className="font-bold text-slate-900 dark:text-[#E8EDF4] truncate">{selectedSubmission.component_metadata.event_level}</p>
                         </div>
                       )}
                       {selectedSubmission.component_metadata.calculated_points !== undefined && (
-                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
-                          <span className="text-[10px] uppercase font-semibold text-slate-400">Table 7.1 Points</span>
+                        <div className="rounded-lg bg-white dark:bg-[#1C2531] p-2 border border-indigo-200/60 dark:border-[#2B3543]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Table 7.1 Points</span>
                           <p className="font-bold text-indigo-700 dark:text-indigo-400 text-sm">{selectedSubmission.component_metadata.calculated_points} Points</p>
                         </div>
                       )}
                       {selectedSubmission.component_metadata.points !== undefined && (
-                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
-                          <span className="text-[10px] uppercase font-semibold text-slate-400">Calculated Points</span>
-                          <p className="font-bold text-slate-900 dark:text-white text-sm">{selectedSubmission.component_metadata.points} pts</p>
+                        <div className="rounded-lg bg-white dark:bg-[#1C2531] p-2 border border-indigo-200/60 dark:border-[#2B3543]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Calculated Points</span>
+                          <p className="font-bold text-slate-900 dark:text-[#E8EDF4] text-sm">{selectedSubmission.component_metadata.points} pts</p>
                         </div>
                       )}
                       {selectedSubmission.component_metadata.stage_tier && (
-                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
-                          <span className="text-[10px] uppercase font-semibold text-slate-400">Stage / Award</span>
-                          <p className="font-bold text-slate-900 dark:text-white truncate">{selectedSubmission.component_metadata.stage_tier}</p>
+                        <div className="rounded-lg bg-white dark:bg-[#1C2531] p-2 border border-indigo-200/60 dark:border-[#2B3543]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Stage / Award</span>
+                          <p className="font-bold text-slate-900 dark:text-[#E8EDF4] truncate">{selectedSubmission.component_metadata.stage_tier}</p>
                         </div>
                       )}
                       {selectedSubmission.component_metadata.certificate_type && (
-                        <div className="rounded-lg bg-white dark:bg-slate-900 p-2 border border-indigo-200/60 dark:border-indigo-800">
-                          <span className="text-[10px] uppercase font-semibold text-slate-400">Certificate Type</span>
-                          <p className="font-bold text-slate-900 dark:text-white truncate">{selectedSubmission.component_metadata.certificate_type}</p>
+                        <div className="rounded-lg bg-white dark:bg-[#1C2531] p-2 border border-indigo-200/60 dark:border-[#2B3543]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Certificate Type</span>
+                          <p className="font-bold text-slate-900 dark:text-[#E8EDF4] truncate">{selectedSubmission.component_metadata.certificate_type}</p>
                         </div>
                       )}
                     </div>
@@ -1059,41 +1059,41 @@ export default function MentorDashboardPage() {
 
                 {/* Event Details Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Activity Type</span>
-                    <span className="font-semibold text-slate-800">{selectedSubmission.activity_type || "Standard"}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Activity Type</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4]">{selectedSubmission.activity_type || "Standard"}</span>
                   </div>
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Organizer / Host</span>
-                    <span className="font-semibold text-slate-800 truncate block">{selectedSubmission.organizer || "—"}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Organizer / Host</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4] truncate block">{selectedSubmission.organizer || "—"}</span>
                   </div>
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Event Date</span>
-                    <span className="font-semibold text-slate-800">{formatDate(selectedSubmission.event_date)}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Event Date</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4]">{formatDate(selectedSubmission.event_date)}</span>
                   </div>
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Outcome / Score</span>
-                    <span className="font-semibold text-slate-800">{selectedSubmission.outcome || "Completed"}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Outcome / Score</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4]">{selectedSubmission.outcome || "Completed"}</span>
                   </div>
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Date Submitted</span>
-                    <span className="font-semibold text-slate-800">{formatDate(selectedSubmission.submitted_at || selectedSubmission.created_at)}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Date Submitted</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4]">{formatDate(selectedSubmission.submitted_at || selectedSubmission.created_at)}</span>
                   </div>
-                  <div className="rounded-lg border border-slate-200/70 p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400">Submission State</span>
-                    <span className="font-semibold text-slate-800 capitalize">{selectedSubmission.status}</span>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#2B3543] bg-slate-50/40 dark:bg-[#1C2531] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#7E8B9C]">Submission State</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#E8EDF4] capitalize">{selectedSubmission.status}</span>
                   </div>
                 </div>
 
                 {/* Certificate Status Banner */}
                 {selectedSubmission.certificate_status === "yet_to_receive" && (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900 flex items-start gap-2.5">
-                    <svg className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+                    <svg className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
                       <p className="font-bold">Certificate Pending Issuance</p>
-                      <p className="mt-0.5 text-[11px] text-amber-800">
+                      <p className="mt-0.5 text-[11px] text-amber-800 dark:text-amber-300">
                         Student completed this activity; the organizer has not yet issued the official certificate. Student can upload it later once received.
                       </p>
                     </div>
@@ -1101,13 +1101,13 @@ export default function MentorDashboardPage() {
                 )}
 
                 {selectedSubmission.certificate_status === "not_provided" && (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 flex items-start gap-2.5">
-                    <svg className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] p-3 text-xs text-slate-700 dark:text-[#A0ACBC] flex items-start gap-2.5">
+                    <svg className="h-4 w-4 text-slate-500 dark:text-[#7E8B9C] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                      <p className="font-bold text-slate-900">No Certificate Provided</p>
-                      <p className="mt-0.5 text-[11px] text-slate-600">
+                      <p className="font-bold text-slate-900 dark:text-[#E8EDF4]">No Certificate Provided</p>
+                      <p className="mt-0.5 text-[11px] text-slate-600 dark:text-[#7E8B9C]">
                         No certificate is issued for this activity. Verify participation based on the event details and student remarks.
                       </p>
                     </div>
@@ -1117,10 +1117,10 @@ export default function MentorDashboardPage() {
                 {/* Student Remarks */}
                 {selectedSubmission.remarks && (
                   <div>
-                    <p className="font-semibold uppercase tracking-wider text-slate-500 text-[11px] mb-1">
+                    <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C] text-[11px] mb-1">
                       Student Remarks
                     </p>
-                    <div className="rounded-xl border border-blue-200/80 p-3 bg-blue-50/40 text-slate-800 leading-relaxed font-medium text-xs">
+                    <div className="rounded-xl border border-blue-200/80 dark:border-blue-900/60 p-3 bg-blue-50/40 dark:bg-blue-950/30 text-slate-800 dark:text-[#E8EDF4] leading-relaxed font-medium text-xs">
                       {selectedSubmission.remarks}
                     </div>
                   </div>
@@ -1129,10 +1129,10 @@ export default function MentorDashboardPage() {
                 {/* Description */}
                 {selectedSubmission.description && (
                   <div>
-                    <p className="font-semibold uppercase tracking-wider text-slate-500 text-[11px] mb-1">
+                    <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C] text-[11px] mb-1">
                       Summary & Description
                     </p>
-                    <div className="rounded-xl border border-slate-200/80 p-3 bg-slate-50/50 text-slate-700 leading-relaxed">
+                    <div className="rounded-xl border border-slate-200/80 dark:border-[#2B3543] p-3 bg-slate-50/50 dark:bg-[#1C2531] text-slate-700 dark:text-[#A0ACBC] leading-relaxed">
                       {selectedSubmission.description}
                     </div>
                   </div>
@@ -1140,7 +1140,7 @@ export default function MentorDashboardPage() {
 
                 {/* Evidence Files */}
                 <div>
-                  <p className="font-semibold uppercase tracking-wider text-slate-500 text-[11px] mb-1.5">
+                  <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C] text-[11px] mb-1.5">
                     Supporting Evidence ({selectedSubmission.files?.length || 0})
                   </p>
                   {selectedSubmission.files && selectedSubmission.files.length > 0 ? (
@@ -1148,17 +1148,17 @@ export default function MentorDashboardPage() {
                       {selectedSubmission.files.map((file) => (
                         <div
                           key={file.id}
-                          className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-2xs"
+                          className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] shadow-2xs"
                         >
                           <div className="flex items-center gap-2.5 truncate">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shrink-0">
                               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                               </svg>
                             </div>
                             <div className="truncate">
-                              <p className="font-semibold text-slate-900 truncate">{file.original_filename}</p>
-                              <p className="text-[11px] text-slate-400">
+                              <p className="font-semibold text-slate-900 dark:text-[#E8EDF4] truncate">{file.original_filename}</p>
+                              <p className="text-[11px] text-slate-400 dark:text-[#7E8B9C]">
                                 {(file.size_bytes / 1024).toFixed(1)} KB &bull; {file.mime_type}
                               </p>
                             </div>
@@ -1183,23 +1183,23 @@ export default function MentorDashboardPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-400 italic">No evidence files were attached to this submission.</p>
+                    <p className="text-slate-400 dark:text-[#7E8B9C] italic">No evidence files were attached to this submission.</p>
                   )}
 
                   {fileError && (
-                    <p className="mt-2 text-xs text-rose-600 font-medium">{fileError}</p>
+                    <p className="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium">{fileError}</p>
                   )}
                 </div>
 
                 {/* Mentor Review & Verification Decision Box */}
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
+                <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531]/70 p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-blue-600" />
+                      <p className="font-bold text-slate-900 dark:text-[#E8EDF4] text-xs flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />
                         Faculty Evaluation &amp; Verification Action
                       </p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-0.5">
                         Inspect evidence and record formal decision with authoritative rubric evaluation.
                       </p>
                     </div>
@@ -1221,9 +1221,9 @@ export default function MentorDashboardPage() {
                   {selectedSubmission.status === "pending" ? (
                     <div className="space-y-3 pt-1">
                       {/* Rubric Points & Grade Confirmation */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-white dark:bg-[#171E28] border border-slate-200 dark:border-[#2B3543]">
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
                             Awarded Points (Table 7.1 / Rubric)
                           </label>
                           <input
@@ -1233,11 +1233,11 @@ export default function MentorDashboardPage() {
                             onChange={(e) => setAwardedPoints(e.target.value)}
                             placeholder="e.g. 100, 200, 500"
                             disabled={isSubmittingReview}
-                            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                            className="w-full rounded-lg border border-slate-300 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] px-3 py-1.5 text-xs text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-1 focus:ring-blue-500"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
                             Awarded Grade (O, A+, A, B+, B, C)
                           </label>
                           <input
@@ -1246,13 +1246,13 @@ export default function MentorDashboardPage() {
                             onChange={(e) => setAwardedGrade(e.target.value)}
                             placeholder="e.g. O, A+, A"
                             disabled={isSubmittingReview}
-                            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                            className="w-full rounded-lg border border-slate-300 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] px-3 py-1.5 text-xs text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-1 focus:ring-blue-500"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
                           Review Remarks / Feedback (Required for Rejection or Changes)
                         </label>
                         <textarea
@@ -1261,7 +1261,7 @@ export default function MentorDashboardPage() {
                           onChange={(e) => setReviewRemarks(e.target.value)}
                           placeholder="e.g., Verified against Anna University mark sheet. Grade O approved."
                           disabled={isSubmittingReview}
-                          className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-2.5 text-xs text-slate-900 dark:text-[#E8EDF4] placeholder-slate-400 dark:placeholder-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
@@ -1307,10 +1307,10 @@ export default function MentorDashboardPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between">
-                      <span>This activity has already been evaluated and is currently marked as <strong className="capitalize text-slate-800 dark:text-slate-200">{selectedSubmission.status}</strong>.</span>
+                    <div className="p-3 bg-white dark:bg-[#171E28] rounded-xl border border-slate-200/80 dark:border-[#2B3543] text-[11px] text-slate-600 dark:text-[#A0ACBC] flex items-center justify-between">
+                      <span>This activity has already been evaluated and is currently marked as <strong className="capitalize text-slate-800 dark:text-[#E8EDF4]">{selectedSubmission.status}</strong>.</span>
                       {selectedSubmission.updated_at && (
-                        <span className="text-slate-400 font-mono text-[10px]">Updated: {formatDate(selectedSubmission.updated_at)}</span>
+                        <span className="text-slate-400 dark:text-[#7E8B9C] font-mono text-[10px]">Updated: {formatDate(selectedSubmission.updated_at)}</span>
                       )}
                     </div>
                   )}
@@ -1318,7 +1318,7 @@ export default function MentorDashboardPage() {
               </div>
 
               {/* Modal Footer */}
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-[#2B3543] flex items-center justify-between gap-3 flex-wrap">
                 <button
                   type="button"
                   onClick={() => {
@@ -1343,7 +1343,7 @@ export default function MentorDashboardPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedSubmission(null)}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232D3B] transition-colors cursor-pointer"
                 >
                   Close Inspection
                 </button>

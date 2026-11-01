@@ -67,11 +67,16 @@ def authenticate_user(
                     stmt_mentor_name = (
                         select(User)
                         .where(
-                            User.role == UserRole.MENTOR,
+                            User.role.in_([UserRole.MENTOR, UserRole.HOD]),
                             func.lower(User.full_name).contains(name_part),
                         )
                     )
                     user = db.scalars(stmt_mentor_name).first()
+
+    # Special handling for Mentor 2 institutional email alias (pachaiammal.cce@sairam.edu.in)
+    if user is None and "pachaiammal" in normalized_identifier:
+        stmt_pachai = select(User).where(func.lower(User.full_name).contains("pachaiammal"))
+        user = db.scalars(stmt_pachai).first()
 
     if user is None:
         logger.warning(

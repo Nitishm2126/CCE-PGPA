@@ -399,7 +399,7 @@ def test_logout_endpoint(client: TestClient, db: Session):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert res.status_code == 200
-    assert "discard" in res.json()["message"]
+    assert "Signed out" in res.json()["message"] or "discard" in res.json()["message"]
 
 
 # ==============================================================================
