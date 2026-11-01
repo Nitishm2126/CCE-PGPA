@@ -28,6 +28,7 @@ import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { DesignationBadge } from "@/components/DesignationBadge";
 import { RoleBadge } from "@/components/RoleBadge";
 import { PGPAPerformanceTracker } from "@/components/student/PGPAPerformanceTracker";
+import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
@@ -375,17 +376,11 @@ export default function StudentDashboardPage() {
   // Global Auth loading state
   if (authLoading || !user || user.role !== "student" || (isLoadingProfile && !studentData && !profileError)) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[60vh] p-6 bg-slate-50 dark:bg-[#0F141B]">
-        <div className="flex flex-col items-center gap-3 text-center bg-white dark:bg-[#1C2531] p-8 rounded-2xl border border-slate-200 dark:border-[#2B3543] shadow-xs max-w-sm w-full animate-apple-fade">
-          <div className="h-9 w-9 animate-spin rounded-full border-3 border-blue-600 border-t-transparent shadow-2xs" />
-          <p className="text-xs font-semibold text-slate-800 dark:text-[#E8EDF4]">
-            Preparing your dashboard...
-          </p>
-          <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C]">
-            Securing your workspace and syncing records
-          </p>
-        </div>
-      </div>
+      <AppleLoadingScreen
+        message="Preparing your dashboard..."
+        submessage="Securing your workspace and syncing records"
+        fullScreen={true}
+      />
     );
   }
 

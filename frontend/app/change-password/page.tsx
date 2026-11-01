@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { RoleBadge } from "@/components/RoleBadge";
 import { api, getStoredToken } from "@/lib/api-client";
 import { ROLE_CONFIGS } from "@/lib/role-config";
+import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -114,12 +115,11 @@ export default function ChangePasswordPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-white text-slate-900">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-9 w-9 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs font-semibold text-slate-500">Checking session credentials...</p>
-        </div>
-      </div>
+      <AppleLoadingScreen
+        message="Checking session..."
+        submessage="Securing your workspace"
+        fullScreen={true}
+      />
     );
   }
 

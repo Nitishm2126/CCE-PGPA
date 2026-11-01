@@ -15,6 +15,7 @@ import { HODExcelImportConsole } from "@/components/hod/HODExcelImportConsole";
 import { HODPGPAGradesTab } from "@/components/hod/HODPGPAGradesTab";
 import { ExportDataModal } from "@/components/export/ExportDataModal";
 import { SettingsModal } from "@/components/shared/SettingsModal";
+import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 
 
 export default function HODDashboardPage() {
@@ -355,12 +356,11 @@ export default function HODDashboardPage() {
 
   if (authLoading || !user || user.role !== "hod") {
     return (
-      <div className="flex-1 flex items-center justify-center p-8 min-h-[60vh] bg-[#fafbfc]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-3 border-purple-600 border-t-transparent" />
-          <p className="text-xs font-semibold text-slate-700">Loading department head portal...</p>
-        </div>
-      </div>
+      <AppleLoadingScreen
+        message="Loading Department Portal..."
+        submessage="Securing your workspace"
+        fullScreen={true}
+      />
     );
   }
 

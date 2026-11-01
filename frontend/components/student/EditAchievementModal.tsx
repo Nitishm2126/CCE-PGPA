@@ -349,32 +349,31 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
             </div>
           ) : isClubsAndCells ? (
             <div className="space-y-4">
-              {/* Table 7.1 Badge */}
-              <div className="rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/60 dark:bg-purple-950/40 p-3.5 flex items-center justify-between">
+              {/* Clubs & Organizations Participation Header */}
+              <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/60 dark:bg-blue-950/40 p-3.5 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-purple-900 dark:text-purple-200">
-                    Table 7.1 Point Allocation
+                  <p className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                    Clubs &amp; Organizations Participation
                   </p>
-                  <p className="text-[11px] text-purple-700 dark:text-purple-300">
+                  <p className="text-[11px] text-blue-700 dark:text-blue-300">
                     {roleCategory} {roleCategory === "Event Participation" || roleCategory === "Winner" ? `(${eventLevel})` : ""}
                   </p>
                 </div>
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-purple-600 text-white font-bold text-xs shadow-xs">
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-600 text-white font-bold text-xs shadow-xs">
                   {calculatedClubsPointsPreview} Points
                 </span>
               </div>
 
-              {/* Club / Cell */}
+              {/* Club / Organization Name */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                  Club or Professional Cell <span className="text-rose-500">*</span>
+                  Organization / Club Name (Optional)
                 </label>
                 <input
                   type="text"
-                  required
                   value={clubName}
                   onChange={(e) => setClubName(e.target.value)}
-                  placeholder="e.g. Coding Club, IEEE Student Branch, Robotics Club"
+                  placeholder="e.g. Rotary Club, CSI, GDSC, Music Club or any external org"
                   className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                 />
               </div>
@@ -382,7 +381,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
               {/* Role Category */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                  Participation / Role Category <span className="text-rose-500">*</span>
+                  Participation Category
                 </label>
                 <select
                   value={roleCategory}
@@ -402,7 +401,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
               {(roleCategory === "Event Participation" || roleCategory === "Winner") && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                    Event Level <span className="text-rose-500">*</span>
+                    Event Level
                   </label>
                   <select
                     value={eventLevel}
@@ -422,11 +421,10 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                    Activity / Event Name <span className="text-rose-500">*</span>
+                    Activity / Event Name (Optional)
                   </label>
                   <input
                     type="text"
-                    required
                     value={activityName}
                     onChange={(e) => setActivityName(e.target.value)}
                     placeholder="e.g. Annual Hackathon 2026"

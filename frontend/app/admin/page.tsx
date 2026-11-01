@@ -27,6 +27,7 @@ import {
 import { ReassignStudentsModal } from "@/components/admin/MentorModals";
 import { SemesterManagementConsole } from "@/components/admin/SemesterManagementConsole";
 import { ComponentManagementConsole } from "@/components/admin/ComponentManagementConsole";
+import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 
 type AdminNavigationSection =
   | "overview"
@@ -333,15 +334,11 @@ export default function AdminDashboardPage() {
 
   if (authLoading || !user || user.role !== "admin") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
-          <div className="text-center">
-            <p className="text-sm font-semibold tracking-wide">Sri Sairam Engineering College</p>
-            <p className="text-xs text-slate-400 mt-1">Authenticating CCE-PGPA System Administrator...</p>
-          </div>
-        </div>
-      </div>
+      <AppleLoadingScreen
+        message="Authenticating Administrator..."
+        submessage="Securing institutional management console"
+        fullScreen={true}
+      />
     );
   }
 

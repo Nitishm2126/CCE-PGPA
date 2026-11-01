@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/lib/theme-context";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
+import { SignOutOverlay } from "@/components/shared/SignOutOverlay";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,6 +45,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans transition-colors duration-150">
         <ThemeProvider>
           <AuthProvider>
+            <SignOutOverlay />
             <Navbar />
             <EmailVerificationBanner />
             <main className="flex-1 flex flex-col">{children}</main>

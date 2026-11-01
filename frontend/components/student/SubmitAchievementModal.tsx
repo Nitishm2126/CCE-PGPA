@@ -1934,6 +1934,138 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         )}
 
         {/* ==================================================================== */}
+        {/* Clubs & Organizations Participation (Positioned above certificate)   */}
+        {/* ==================================================================== */}
+        {currentSlug === "clubs-and-cells" && (
+          <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-4 space-y-3.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">
+                Clubs &amp; Organizations Participation
+              </span>
+              <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-400">
+                Optional Extracurricular Details
+              </span>
+            </div>
+
+            {/* Club Name (Manual text input, completely optional) */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                Organization / Club Name (Optional)
+              </label>
+              <input
+                type="text"
+                maxLength={150}
+                placeholder="e.g. Rotary Club, CSI, GDSC, Music Club or any external org"
+                value={clubName}
+                onChange={(e) => setClubName(e.target.value)}
+                disabled={isSubmitting}
+                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+              />
+            </div>
+
+            {/* Role / Participation Category */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  Participation Category
+                </label>
+                <select
+                  value={clubRoleCategory}
+                  onChange={(e) => setClubRoleCategory(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                >
+                  <option value="Member">Member (100 pts)</option>
+                  <option value="Event Participation">Event Participation (100–500 pts)</option>
+                  <option value="Winner">Winner (200–700 pts)</option>
+                  <option value="MAGIC">MAGIC (200 pts)</option>
+                  <option value="Event Coordinator">Event Coordinator (200 pts)</option>
+                  <option value="Volunteer">Volunteer (100 pts)</option>
+                </select>
+              </div>
+
+              {/* Event Level (conditionally displayed for Event Participation or Winner) */}
+              {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") ? (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Event Level
+                  </label>
+                  <select
+                    value={clubEventLevel}
+                    onChange={(e) => setClubEventLevel(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                  >
+                    <option value="Within College">Within College ({clubRoleCategory === "Winner" ? "200" : "100"} pts)</option>
+                    <option value="Within State (Other College)">Within State / Other College ({clubRoleCategory === "Winner" ? "300" : "200"} pts)</option>
+                    <option value="National Level (Other State)">National Level / Other State ({clubRoleCategory === "Winner" ? "500" : "300"} pts)</option>
+                    <option value="International Level (In College / Others)">International Level / In College ({clubRoleCategory === "Winner" ? "600" : "400"} pts)</option>
+                    <option value="International Level (Other Country)">International Level / Other Country ({clubRoleCategory === "Winner" ? "700" : "500"} pts)</option>
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Completion / Activity Date
+                  </label>
+                  <input
+                    type="date"
+                    value={clubDate}
+                    onChange={(e) => setClubDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Event Title and Date for Participation / Winner */}
+            {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Event / Activity Title (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Inter-College Hackathon / Quiz"
+                    value={clubActivityTitle}
+                    onChange={(e) => setClubActivityTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Event Date
+                  </label>
+                  <input
+                    type="date"
+                    value={clubDate}
+                    onChange={(e) => setClubDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Simple Credit Points Indicator */}
+            <div className="p-3 rounded-lg bg-white dark:bg-[#1C2531] border border-blue-200/80 dark:border-blue-900/40 flex items-center justify-between">
+              <div>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Credit Points:</span>
+                <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                  {clubsCalculatedPoints} Points
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 text-right">
+                Mentor will verify details before final award
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
         {/* Supporting Evidence / Certificate Submission (Three Clear Options)   */}
         {/* ==================================================================== */}
         <div className="space-y-3">
@@ -2198,136 +2330,6 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             </div>
           )}
         </div>
-
-        {/* Clubs & Cells Section (Positioned at bottom, immediately below certificate section) */}
-        {currentSlug === "clubs-and-cells" && (
-          <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">
-                Clubs &amp; Organizations Participation
-              </span>
-              <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-400">
-                Optional Extracurricular Details
-              </span>
-            </div>
-
-            {/* Club Name (Manual text input, completely optional) */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                Organization / Club Name (Optional)
-              </label>
-              <input
-                type="text"
-                maxLength={150}
-                placeholder="e.g. Rotary Club, CSI, GDSC, Music Club or any external org"
-                value={clubName}
-                onChange={(e) => setClubName(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
-              />
-            </div>
-
-            {/* Role / Participation Category */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                  Participation Category
-                </label>
-                <select
-                  value={clubRoleCategory}
-                  onChange={(e) => setClubRoleCategory(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
-                >
-                  <option value="Member">Member (100 pts)</option>
-                  <option value="Event Participation">Event Participation (100–500 pts)</option>
-                  <option value="Winner">Winner (200–700 pts)</option>
-                  <option value="MAGIC">MAGIC (200 pts)</option>
-                  <option value="Event Coordinator">Event Coordinator (200 pts)</option>
-                  <option value="Volunteer">Volunteer (100 pts)</option>
-                </select>
-              </div>
-
-              {/* Event Level (conditionally displayed for Event Participation or Winner) */}
-              {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") ? (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                    Event Level
-                  </label>
-                  <select
-                    value={clubEventLevel}
-                    onChange={(e) => setClubEventLevel(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
-                  >
-                    <option value="Within College">Within College ({clubRoleCategory === "Winner" ? "200" : "100"} pts)</option>
-                    <option value="Within State (Other College)">Within State / Other College ({clubRoleCategory === "Winner" ? "300" : "200"} pts)</option>
-                    <option value="National Level (Other State)">National Level / Other State ({clubRoleCategory === "Winner" ? "500" : "300"} pts)</option>
-                    <option value="International Level (In College / Others)">International Level / In College ({clubRoleCategory === "Winner" ? "600" : "400"} pts)</option>
-                    <option value="International Level (Other Country)">International Level / Other Country ({clubRoleCategory === "Winner" ? "700" : "500"} pts)</option>
-                  </select>
-                </div>
-              ) : (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                    Completion / Activity Date
-                  </label>
-                  <input
-                    type="date"
-                    value={clubDate}
-                    onChange={(e) => setClubDate(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Event Title and Date for Participation / Winner */}
-            {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                    Event / Activity Title (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Inter-College Hackathon / Quiz"
-                    value={clubActivityTitle}
-                    onChange={(e) => setClubActivityTitle(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                    Event Date
-                  </label>
-                  <input
-                    type="date"
-                    value={clubDate}
-                    onChange={(e) => setClubDate(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Simple Credit Points Indicator */}
-            <div className="p-3 rounded-lg bg-white dark:bg-[#1C2531] border border-blue-200/80 dark:border-blue-900/40 flex items-center justify-between">
-              <div>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Credit Points:</span>
-                <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
-                  {clubsCalculatedPoints} Points
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 text-right">
-                Mentor will verify details before final award
-              </span>
-            </div>
-          </div>
-        )}
 
         {/* Additional Remarks (Optional multiline textarea) */}
         <div>

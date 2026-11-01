@@ -175,11 +175,43 @@ html {
   transform: scale(0.98);
 }
 
+@keyframes appleHalo {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.65;
+  }
+}
+
+@keyframes appleSpinSmooth {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-apple-halo {
+  animation: appleHalo 2.4s ease-in-out infinite;
+}
+
+.animate-apple-spin {
+  animation: appleSpinSmooth 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 /* Respect prefers-reduced-motion per apple-design & emil-design-eng */
 @media (prefers-reduced-motion: reduce) {
   .animate-apple-slide-up {
     animation: appleFadeIn 0.2s ease forwards !important;
     transform: none !important;
+  }
+  .animate-apple-halo,
+  .animate-apple-spin {
+    animation: none !important;
   }
   .apple-pressable:active {
     transform: none !important;
