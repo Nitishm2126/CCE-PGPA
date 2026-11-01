@@ -28,6 +28,8 @@ import { ReassignStudentsModal } from "@/components/admin/MentorModals";
 import { SemesterManagementConsole } from "@/components/admin/SemesterManagementConsole";
 import { ComponentManagementConsole } from "@/components/admin/ComponentManagementConsole";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
+import { AdminBottomNav } from "@/components/admin/AdminBottomNav";
+import { useBodyLock } from "@/lib/use-body-lock";
 
 type AdminNavigationSection =
   | "overview"
@@ -50,6 +52,9 @@ export default function AdminDashboardPage() {
   const [activeSection, setActiveSection] = useState<AdminNavigationSection>("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Lock background scroll when mobile menu is open
+  useBodyLock(mobileMenuOpen);
 
   // Data States
   const [overviewData, setOverviewData] = useState<AdminOverviewResponse | null>(null);
@@ -781,11 +786,11 @@ export default function AdminDashboardPage() {
           {/* Mobile Drawer (When menu open on small screens) */}
           {mobileMenuOpen && (
             <div
-              className="fixed inset-0 z-50 lg:hidden bg-slate-900/60 backdrop-blur-xs flex"
+              className="fixed inset-0 z-50 lg:hidden bg-slate-900/60 dark:bg-black/70 backdrop-blur-xs flex animate-apple-sheet-backdrop"
               onClick={() => setMobileMenuOpen(false)}
             >
               <div
-                className="w-72 bg-white dark:bg-slate-900 h-full p-4 flex flex-col shadow-2xl border-r border-slate-200 dark:border-slate-800"
+                className="w-72 bg-white dark:bg-slate-900 h-full p-4 flex flex-col shadow-2xl border-r border-slate-200 dark:border-slate-800 animate-apple-slide-up safe-pb"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
@@ -799,7 +804,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
                   >
                     &times;
                   </button>
@@ -825,10 +830,10 @@ export default function AdminDashboardPage() {
                         setActiveSection(item.id as AdminNavigationSection);
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold ${
+                      className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold cursor-pointer active:scale-98 transition-all ${
                         activeSection === item.id
                           ? "bg-[#0a192f] text-white"
-                          : "text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                          : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                       }`}
                     >
                       {item.label}
@@ -846,7 +851,7 @@ export default function AdminDashboardPage() {
           )}
 
           {/* B. Main Content View Area */}
-          <main className="flex-1 min-w-0 space-y-6">
+          <main className="flex-1 min-w-0 space-y-6 pb-28 lg:pb-8">
             {/* Contextual Institutional View Banner */}
             <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -2216,6 +2221,13 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Mobile Fixed Bottom Navigation Bar (< lg) */}
+      <AdminBottomNav
+        activeSection={activeSection}
+        onSelectSection={setActiveSection}
+        onOpenMenu={() => setMobileMenuOpen(true)}
+      />
     </div>
   );
 }

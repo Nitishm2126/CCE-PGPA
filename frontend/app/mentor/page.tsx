@@ -15,6 +15,8 @@ import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { ExportDataModal } from "@/components/export/ExportDataModal";
 import { SettingsModal } from "@/components/shared/SettingsModal";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
+import { MentorBottomNav } from "@/components/mentor/MentorBottomNav";
+import { MentorMobileActionsDrawer } from "@/components/mentor/MentorMobileActionsDrawer";
 
 
 export default function MentorDashboardPage() {
@@ -26,6 +28,7 @@ export default function MentorDashboardPage() {
   const [submissions, setSubmissions] = useState<AchievementResponse[]>([]);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
   const [dataError, setDataError] = useState<string | null>(null);
+  const [isMobileActionsOpen, setIsMobileActionsOpen] = useState(false);
 
   // Filters & State
   const [activeTab, setActiveTab] = useState<"submissions" | "roster" | "messages">("submissions");
@@ -347,8 +350,56 @@ export default function MentorDashboardPage() {
     <div className="min-h-screen bg-[#fafbfc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 transition-colors">
       {/* Sairam Institutional Header */}
       <header className="border-b border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs transition-colors">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="mx-auto max-w-7xl px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
+          {/* Mobile Header Bar (< md) */}
+          <div className="flex md:hidden items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-700 via-indigo-700 to-slate-900 text-white font-extrabold text-xs shadow-xs">
+                CCE
+              </div>
+              <div className="min-w-0">
+                <span className="font-bold text-slate-900 dark:text-white text-sm leading-tight truncate block">
+                  Mentor Portal
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate">
+                  {user?.full_name}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={loadData}
+                disabled={isLoadingData}
+                className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
+                title="Refresh mentor submissions"
+                aria-label="Refresh submissions"
+              >
+                <svg className={`w-4 h-4 ${isLoadingData ? "animate-spin text-blue-600" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+              <ThemeToggle size="sm" />
+              <button
+                type="button"
+                onClick={() => setIsMobileActionsOpen(true)}
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-bold text-xs active:scale-95 transition-all cursor-pointer"
+                aria-label="Open mentor menu"
+                title="Open menu & actions"
+              >
+                {user?.full_name
+                  ?.split(" ")
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((p) => p[0]?.toUpperCase())
+                  .join("") || "FM"}
+              </button>
+            </div>
+          </div>
+
+          {/* Desktop Header Bar (>= md) */}
+          <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-700 via-indigo-700 to-slate-900 text-white font-extrabold text-sm shadow-xs">
                 CCE
@@ -444,7 +495,7 @@ export default function MentorDashboardPage() {
       </header>
 
       {/* Main Container */}
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6 pb-28 md:pb-12">
         {/* Mentor Overview Banner */}
         <div className="rounded-2xl border border-slate-200/90 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -660,8 +711,131 @@ export default function MentorDashboardPage() {
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
+              <>
+                {/* Mobile Responsive Cards (< md) */}
+                <div className="block md:hidden space-y-3">
+                  {filteredSubmissions.map((sub) => {
+                    const hasFiles = sub.files && sub.files.length > 0;
+                    const unreadCount = unreadCountsByAchievement[sub.id] || 0;
+                    return (
+                      <div
+                        key={sub.id}
+                        onClick={() => handleOpenSubmission(sub)}
+                        className="rounded-xl border border-slate-200/90 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531] p-4 shadow-2xs space-y-3 active:scale-[0.99] transition-all cursor-pointer"
+                      >
+                        {/* Student Name & Status */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-bold text-slate-900 dark:text-[#E8EDF4] text-sm leading-snug truncate">
+                              {sub.student_name || "Assigned Student"}
+                            </p>
+                            <p className="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
+                              {sub.student_register_number || "—"}
+                            </p>
+                          </div>
+                          <div className="shrink-0">{renderStatusBadge(sub.status)}</div>
+                        </div>
+
+                        {/* Component & Semester */}
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                          <span className="inline-flex items-center rounded-md bg-white dark:bg-[#171E28] px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-[#E8EDF4] border border-slate-200 dark:border-[#2B3543]">
+                            {sub.component_name || "PGPA Component"}
+                          </span>
+                          {sub.semester ? (
+                            <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.5 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
+                              {sub.semester.display_name}
+                            </span>
+                          ) : sub.semester_id ? (
+                            <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.5 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
+                              Semester {sub.semester_id}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        {/* Title & Organizer */}
+                        <div>
+                          <p className="font-semibold text-slate-900 dark:text-[#E8EDF4] text-xs">
+                            {sub.title}
+                          </p>
+                          {sub.organizer && (
+                            <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-0.5">
+                              {sub.organizer}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Dates */}
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#7E8B9C] pt-2 border-t border-slate-200/60 dark:border-[#2B3543]">
+                          <span>Event: <strong className="text-slate-700 dark:text-slate-300">{formatDate(sub.event_date)}</strong></span>
+                          <span>Submitted: <strong className="text-slate-700 dark:text-slate-300">{formatDate(sub.submitted_at || sub.created_at)}</strong></span>
+                        </div>
+
+                        {/* Actions Row */}
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60 dark:border-[#2B3543]" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-2">
+                            {hasFiles && (
+                              <button
+                                type="button"
+                                onClick={() => handleViewEvidence(sub.files[0].id)}
+                                disabled={isOpeningFile === sub.files[0].id}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/70 dark:bg-blue-950/40 text-[11px] font-semibold text-blue-700 dark:text-blue-300 active:scale-95 transition-all cursor-pointer"
+                              >
+                                {isOpeningFile === sub.files[0].id ? (
+                                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                                ) : (
+                                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                )}
+                                <span>Evidence</span>
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDrawerAchievement(sub);
+                                setDrawerStudent({
+                                  id: sub.student_id,
+                                  name: sub.student_name || "Mentee",
+                                  register_number: sub.student_register_number || undefined,
+                                });
+                                setIsMessageDrawerOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-[11px] font-semibold text-slate-700 dark:text-[#E8EDF4] active:scale-95 transition-all cursor-pointer"
+                            >
+                              <svg className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                              </svg>
+                              <span>Remarks</span>
+                              {unreadCount > 0 && (
+                                <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-600 px-1 text-[8px] font-bold text-white">
+                                  {unreadCount}
+                                </span>
+                              )}
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenSubmission(sub)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs active:scale-95 transition-all cursor-pointer shadow-2xs"
+                          >
+                            <span>Inspect</span>
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop Table View (>= md) */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-slate-200/80 dark:border-[#2B3543] text-[11px] font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider bg-slate-50/50 dark:bg-[#1C2531]">
                       <th className="py-3 px-4">Student</th>
@@ -809,7 +983,8 @@ export default function MentorDashboardPage() {
                   </tbody>
                 </table>
               </div>
-            )}
+            </>
+          )}
           </div>
         )}
 
@@ -1392,6 +1567,33 @@ export default function MentorDashboardPage() {
         onClose={() => setIsSettingsOpen(false)}
         user={user}
         token={token}
+      />
+
+      {/* Mobile Fixed Bottom Navigation Bar (< md) */}
+      <MentorBottomNav
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        onOpenActions={() => setIsMobileActionsOpen(true)}
+        unreadMessagesCount={unreadMessagesCount}
+        menteeCount={students.length}
+      />
+
+      {/* Mobile Actions Drawer (< md) */}
+      <MentorMobileActionsDrawer
+        isOpen={isMobileActionsOpen}
+        onClose={() => setIsMobileActionsOpen(false)}
+        mentorName={user?.full_name || "Faculty Mentor"}
+        mentorEmail={user?.email || "hod.cce@sairam.edu.in"}
+        department="CCE"
+        menteeCount={students.length}
+        canSwitchToHOD={user?.role === "hod" || Boolean(user?.accessible_portals?.includes("hod"))}
+        onSwitchToHOD={() => router.push("/hod")}
+        onExportClick={() => {
+          setExportStudentId("all");
+          setIsExportModalOpen(true);
+        }}
+        onRefreshClick={() => { void loadData(); }}
+        onLogout={handleLogout}
       />
     </div>
   );

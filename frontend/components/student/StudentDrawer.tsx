@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { StudentDetailResponse } from "@/types/auth";
 import { DesignationBadge } from "@/components/DesignationBadge";
+import { useBodyLock } from "@/lib/use-body-lock";
 
 interface StudentDrawerProps {
   isOpen: boolean;
@@ -28,6 +29,9 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
 }) => {
   const profile = studentData?.profile;
   const mentor = studentData?.assigned_mentor;
+
+  // Lock body scroll when drawer is open
+  useBodyLock(isOpen);
 
   // Handle ESC key to close drawer
   useEffect(() => {

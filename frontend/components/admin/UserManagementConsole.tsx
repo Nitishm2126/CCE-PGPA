@@ -774,8 +774,116 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <>
+              {/* Mobile Responsive Cards (< md) */}
+              <div className="block md:hidden space-y-3">
+                {filteredStudents.map((s) => {
+                  const mentorDisplayName = s.assigned_mentor?.full_name || s.original_mentor_name;
+                  return (
+                    <div
+                      key={s.id}
+                      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-2xs space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-slate-900 dark:text-white text-sm">
+                              {s.full_name}
+                            </span>
+                            {!s.register_number || s.email.includes("@test.edu") ? (
+                              <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 rounded border border-amber-300 dark:border-amber-800">
+                                TEST FIXTURE
+                              </span>
+                            ) : (
+                              <DesignationBadge designation="Change Maker" size="sm" />
+                            )}
+                          </div>
+                          <p className="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
+                            {s.register_number || "No Register No"}
+                          </p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                            {s.email}
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => handleToggleStudentStatus(s)}
+                          title="Click to toggle active status"
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition shrink-0 ${
+                            s.is_active
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 hover:bg-emerald-200"
+                              : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              s.is_active ? "bg-emerald-500" : "bg-slate-400"
+                            }`}
+                          />
+                          {s.is_active ? "Active" : "Inactive"}
+                        </button>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-600 dark:text-slate-400">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {s.department} (Yr {s.year} {s.section ? `• Sec ${s.section}` : ""})
+                        </span>
+                        <span>&bull;</span>
+                        <span>
+                          Mentor: <strong className="text-slate-800 dark:text-slate-200">{mentorDisplayName || "Unassigned"}</strong>
+                        </span>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                        <span className="font-mono text-[11px] text-slate-500">
+                          <strong>{s.submission_count}</strong> subms ({s.approved_count} app / {s.pending_count} pend)
+                        </span>
+
+                        <div className="flex items-center gap-1 flex-wrap justify-end">
+                          <button
+                            onClick={() => handleViewStudent(s.id)}
+                            className="px-2 py-1 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded font-medium text-[11px]"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => setStudentToEdit(s)}
+                            className="px-2 py-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded font-medium text-[11px]"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() =>
+                              setUserToResetPassword({
+                                id: s.id,
+                                full_name: s.full_name,
+                                email: s.email,
+                                role: s.role,
+                                staff_id: s.register_number,
+                                department: s.department,
+                              })
+                            }
+                            className="px-2 py-1 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded font-medium text-[11px]"
+                            title="Reset password"
+                          >
+                            Reset
+                          </button>
+                          <button
+                            onClick={() => setStudentToDelete(s)}
+                            className="px-2 py-1 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded font-medium text-[11px]"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View (>= md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-medium">
                   <tr>
                     <th className="px-4 py-3">Register No</th>
@@ -918,7 +1026,8 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                 </tbody>
               </table>
             </div>
-          )
+          </>
+        )
         ) : activeTab === "mentors" ? (
           /* ========================================== */
           /* MENTORS TABLE & 3-TIER HIERARCHY */

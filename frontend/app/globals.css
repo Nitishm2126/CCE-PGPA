@@ -203,17 +203,89 @@ html {
   animation: appleSpinSmooth 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* Safe area padding utilities */
+.safe-pb {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.safe-pb-nav {
+  padding-bottom: max(0.6rem, env(safe-area-inset-bottom));
+}
+
+.safe-pt {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+
+/* Apple Fluid Sheet and Modal Transitions */
+@keyframes appleSheetSlideUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes appleSheetFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-apple-sheet-up {
+  animation: appleSheetSlideUp 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-apple-sheet-backdrop {
+  animation: appleSheetFadeIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Apple touch manipulation & tap feedback */
+.apple-tap-feedback {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 140ms ease;
+}
+
+.apple-tap-feedback:active {
+  transform: scale(0.96);
+  opacity: 0.85;
+}
+
+/* Apple Card Hover & Press */
+.apple-card-interactive {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease, border-color 200ms ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-card-interactive:active {
+  transform: scale(0.985);
+}
+
 /* Respect prefers-reduced-motion per apple-design & emil-design-eng */
 @media (prefers-reduced-motion: reduce) {
-  .animate-apple-slide-up {
+  .animate-apple-slide-up,
+  .animate-apple-sheet-up {
     animation: appleFadeIn 0.2s ease forwards !important;
     transform: none !important;
+  }
+  .animate-apple-sheet-backdrop {
+    animation: none !important;
+    opacity: 1 !important;
   }
   .animate-apple-halo,
   .animate-apple-spin {
     animation: none !important;
   }
-  .apple-pressable:active {
+  .apple-pressable:active,
+  .apple-tap-feedback:active,
+  .apple-card-interactive:active {
     transform: none !important;
   }
 }
