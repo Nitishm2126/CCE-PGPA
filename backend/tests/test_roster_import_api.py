@@ -43,7 +43,6 @@ DEFAULT_ROSTER_STAFF_EMAILS = [
     "hod.cce@sairam.edu.in",
     "lekha.cce@sairam.edu.in",
     "lurdhumary.cce@sairam.edu.in",
-    "pachaiammal.cce@sairam.edu.in",
 ]
 
 

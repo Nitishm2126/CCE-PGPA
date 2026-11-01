@@ -1246,7 +1246,7 @@ def create_student(
     mentor_user: Optional[User] = None
     if payload.assigned_mentor_id:
         mentor_user = db.get(User, payload.assigned_mentor_id)
-        if not mentor_user or mentor_user.role != UserRole.MENTOR:
+        if not mentor_user or (mentor_user.role not in (UserRole.MENTOR, UserRole.HOD) and not mentor_user.mentor_profile):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Selected assigned mentor does not exist or does not have MENTOR role.",
@@ -1438,7 +1438,7 @@ def update_student(
     now = datetime.now(timezone.utc)
     if payload.assigned_mentor_id is not None:
         new_mentor = db.get(User, payload.assigned_mentor_id)
-        if not new_mentor or new_mentor.role != UserRole.MENTOR:
+        if not new_mentor or (new_mentor.role not in (UserRole.MENTOR, UserRole.HOD) and not new_mentor.mentor_profile):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Assigned mentor not found or invalid role.",
@@ -1776,7 +1776,12 @@ def list_mentors(
     stmt = (
         select(User)
         .outerjoin(MentorProfile, User.id == MentorProfile.user_id)
-        .where(User.role == UserRole.MENTOR)
+        .where(
+            or_(
+                User.role == UserRole.MENTOR,
+                MentorProfile.id.isnot(None),
+            )
+        )
     )
 
     if is_active is not None:
@@ -1829,8 +1834,12 @@ def list_mentors(
     results: List[AdminMentorItem] = []
     for m in mentors:
         p = m.mentor_profile
+        h = m.hod_profile
         assigned_students = assignments_by_mentor.get(m.id, [])
         rev_count = reviews_map.get(m.id, 0)
+        staff_id = p.staff_id if p and p.staff_id else (h.staff_id if h else None)
+        dept = p.department if p else (h.department if h else "CCE")
+        desig = p.designation if p else (h.designation if h else ("Professor & Head" if m.role == UserRole.HOD else "Faculty Mentor"))
 
         results.append(
             AdminMentorItem(
@@ -1841,9 +1850,9 @@ def list_mentors(
                 is_active=m.is_active,
                 firebase_uid=m.firebase_uid,
                 created_at=m.created_at,
-                staff_id=p.staff_id if p else None,
-                department=p.department if p else "CCE",
-                designation=p.designation if p else "Assistant Professor",
+                staff_id=staff_id,
+                department=dept,
+                designation=desig,
                 assigned_student_count=len(assigned_students),
                 assigned_students=assigned_students,
                 reviews_count=rev_count,
@@ -1865,10 +1874,14 @@ def get_mentor_details(
     db: Session = Depends(get_db),
 ) -> AdminMentorDetailResponse:
     mentor = db.get(User, mentor_id)
-    if not mentor or mentor.role != UserRole.MENTOR:
+    if not mentor or (mentor.role not in (UserRole.MENTOR, UserRole.HOD) and not mentor.mentor_profile):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Faculty mentor not found.")
 
     p = mentor.mentor_profile
+    h = mentor.hod_profile
+    staff_id = p.staff_id if p and p.staff_id else (h.staff_id if h else None)
+    dept = p.department if p else (h.department if h else "CCE")
+    desig = p.designation if p else (h.designation if h else ("Professor & Head" if mentor.role == UserRole.HOD else "Assistant Professor"))
     active_assignments = db.scalars(
         select(MentorAssignment).where(
             MentorAssignment.mentor_id == mentor_id,
@@ -1905,9 +1918,9 @@ def get_mentor_details(
         is_active=mentor.is_active,
         firebase_uid=mentor.firebase_uid,
         created_at=mentor.created_at,
-        staff_id=p.staff_id if p else None,
-        department=p.department if p else "CCE",
-        designation=p.designation if p else "Assistant Professor",
+        staff_id=staff_id,
+        department=dept,
+        designation=desig,
         assigned_student_count=len(assigned_students),
         assigned_students=assigned_students,
         reviews_count=reviews_count,
@@ -2024,7 +2037,7 @@ def update_mentor(
     db: Session = Depends(get_db),
 ) -> AdminMentorItem:
     mentor = db.get(User, mentor_id)
-    if not mentor or mentor.role != UserRole.MENTOR:
+    if not mentor or (mentor.role not in (UserRole.MENTOR, UserRole.HOD) and not mentor.mentor_profile):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Mentor not found.")
 
     profile = mentor.mentor_profile
@@ -2150,7 +2163,7 @@ def update_mentor_status(
     db: Session = Depends(get_db),
 ) -> AdminOperationResult:
     mentor = db.get(User, mentor_id)
-    if not mentor or mentor.role != UserRole.MENTOR:
+    if not mentor or (mentor.role not in (UserRole.MENTOR, UserRole.HOD) and not mentor.mentor_profile):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Mentor not found.")
 
     mentor.is_active = payload.is_active

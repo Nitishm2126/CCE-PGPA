@@ -80,7 +80,7 @@ export default function HODDashboardPage() {
       router.push("/login/hod");
       return;
     }
-    if (!authLoading && user && user.role !== "hod") {
+    if (!authLoading && user && user.role !== "hod" && !user.accessible_portals?.includes("hod")) {
       router.push("/login/hod");
       return;
     }

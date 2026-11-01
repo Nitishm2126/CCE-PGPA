@@ -19,6 +19,7 @@ import {
   AdminHODUpdate,
   AdminHODDeleteRequest,
   AdminOperationResult,
+  UserRole,
 } from "@/types/auth";
 import { api } from "@/lib/api-client";
 import { DesignationBadge } from "@/components/DesignationBadge";
@@ -935,81 +936,125 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                     3-Tier Mentorship &amp; Supervisory Academic Hierarchy
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                    Students are directly assigned to Faculty Mentors 1 &amp; 2, with the Department HOD serving as the institutional 3rd Supervisory Mentor across all department mentees.
+                    Students are directly assigned across Mentor 1 (25), Dr. Pachaiammal / Mentor 2 (11), and Mentor 3 (25), with full department supervisory oversight across all 61 students.
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                {/* Mentor 1 */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between gap-1 mb-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300">
-                        Mentor 1 (Primary)
-                      </span>
-                      <DesignationBadge designation="Torch Bearer" size="sm" />
-                    </div>
-                    <div className="font-bold text-sm text-slate-900 dark:text-white">
-                      {mentors[0]?.full_name || "P. LEKHA"}
-                    </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                      {mentors[0]?.department || "CCE"} • {mentors[0]?.email || "lekha.cce@sairam.edu.in"}
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
-                    <span>Direct Cohort</span>
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">{mentors[0]?.assigned_student_count ?? 30} Mentees</span>
-                  </div>
-                </div>
+              {(() => {
+                const drPachaiammal =
+                  mentors.find(
+                    (m) =>
+                      m.email.toLowerCase() === "hod.cce@sairam.edu.in" ||
+                      m.full_name.toLowerCase().includes("pachaiammal")
+                  ) ||
+                  (hods[0]
+                    ? {
+                        id: hods[0].id,
+                        full_name: hods[0].full_name,
+                        email: "hod.cce@sairam.edu.in",
+                        role: "mentor" as UserRole,
+                        is_active: hods[0].is_active,
+                        created_at: hods[0].created_at,
+                        department: hods[0].department,
+                        designation: "Professor & Head",
+                        assigned_student_count: 11,
+                        assigned_students: [],
+                        reviews_count: hods[0].reviews_count,
+                      }
+                    : null);
 
-                {/* Mentor 2 */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between gap-1 mb-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300">
-                        Mentor 2 (Co-Mentor)
-                      </span>
-                      <DesignationBadge designation="Torch Bearer" size="sm" />
-                    </div>
-                    <div className="font-bold text-sm text-slate-900 dark:text-white">
-                      {mentors[1]?.full_name || "LURDHUMARY J"}
-                    </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                      {mentors[1]?.department || "CCE"} • {mentors[1]?.email || "lurdhumary.cce@sairam.edu.in"}
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
-                    <span>Direct Cohort</span>
-                    <span className="font-semibold text-indigo-600 dark:text-indigo-400">{mentors[1]?.assigned_student_count ?? 31} Mentees</span>
-                  </div>
-                </div>
+                const mentor1 =
+                  mentors.find(
+                    (m) =>
+                      m.full_name.toLowerCase().includes("lurdhumary") ||
+                      m.email.toLowerCase().includes("lurdhumary")
+                  ) ||
+                  mentors.find((m) => m.id !== drPachaiammal?.id) ||
+                  mentors[0];
 
-                {/* Mentor 3 / HOD Supervisory */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-xl p-3.5 border border-purple-200/80 dark:border-purple-800/50 shadow-xs flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between gap-1 mb-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300">
-                        Mentor 3 (Supervisory HOD)
-                      </span>
-                      <DesignationBadge designation="Torch Bearer" size="sm" />
+                const mentor3 =
+                  mentors.find(
+                    (m) =>
+                      m.full_name.toLowerCase().includes("lekha") ||
+                      m.email.toLowerCase().includes("lekha")
+                  ) ||
+                  mentors.find((m) => m.id !== drPachaiammal?.id && m.id !== mentor1?.id) ||
+                  mentors[1];
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                    {/* Mentor 1 */}
+                    <div className="bg-white dark:bg-slate-800/90 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300">
+                            Mentor 1 (Primary)
+                          </span>
+                          <DesignationBadge designation="Torch Bearer" size="sm" />
+                        </div>
+                        <div className="font-bold text-sm text-slate-900 dark:text-white">
+                          {mentor1?.full_name || "LURDHUMARY J"}
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          {mentor1?.department || "CCE"} • {mentor1?.email || "lurdhumary.cce@sairam.edu.in"}
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                        <span>Direct Cohort</span>
+                        <span className="font-semibold text-blue-600 dark:text-blue-400">{mentor1?.assigned_student_count ?? 25} Mentees</span>
+                      </div>
                     </div>
-                    <div className="font-bold text-sm text-slate-900 dark:text-white">
-                      {hods[0]?.full_name || "Dr. Pachaiammal Alias Priya"}
+
+                    {/* Mentor 2: Dr. Pachaiammal */}
+                    <div className="bg-white dark:bg-slate-800/90 rounded-xl p-3.5 border border-purple-200/80 dark:border-purple-800/50 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300">
+                            Dr. Pachaiammal (Mentor 2)
+                          </span>
+                          <DesignationBadge designation="Torch Bearer" size="sm" />
+                        </div>
+                        <div className="font-bold text-sm text-slate-900 dark:text-white">
+                          {drPachaiammal?.full_name || "Dr. Pachaiammal Alias Priya"}
+                        </div>
+                        <div className="text-[11px] text-purple-700 dark:text-purple-400 font-medium">
+                          Head of Department • Supervisory Mentor
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          CCE • {drPachaiammal?.email || "hod.cce@sairam.edu.in"}
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                        <span>Direct Cohort &amp; Scope</span>
+                        <span className="font-semibold text-purple-600 dark:text-purple-400">{drPachaiammal?.assigned_student_count ?? 11} Mentees (61 Dept Scope)</span>
+                      </div>
                     </div>
-                    <div className="text-[11px] text-purple-700 dark:text-purple-400 font-medium">
-                      Head of Department • Department Supervisory Authority
-                    </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                      CCE • {hods[0]?.email || "hod.cce@sairam.edu.in"}
+
+                    {/* Mentor 3 */}
+                    <div className="bg-white dark:bg-slate-800/90 rounded-xl p-3.5 border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300">
+                            Mentor 3 (Co-Mentor)
+                          </span>
+                          <DesignationBadge designation="Torch Bearer" size="sm" />
+                        </div>
+                        <div className="font-bold text-sm text-slate-900 dark:text-white">
+                          {mentor3?.full_name || "P. LEKHA"}
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          {mentor3?.department || "CCE"} • {mentor3?.email || "lekha.cce@sairam.edu.in"}
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                        <span>Direct Cohort</span>
+                        <span className="font-semibold text-indigo-600 dark:text-indigo-400">{mentor3?.assigned_student_count ?? 25} Mentees</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
-                    <span>Department Scope</span>
-                    <span className="font-semibold text-purple-600 dark:text-purple-400">All 61 Department Students</span>
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
             </div>
 
             {filteredMentors.length === 0 ? (

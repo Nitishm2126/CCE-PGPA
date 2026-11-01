@@ -180,4 +180,59 @@ def test_hod_single_official_email_dual_portal_access(client: TestClient, db_ses
     # Verify supervisory mentor mentee list
     mentees_res = client.get("/api/v1/mentor/students", headers={"Authorization": f"Bearer {mentor_token}"})
     assert mentees_res.status_code == 200
-    assert len(mentees_res.json()) == 11
+    mentees = mentees_res.json()
+    assert len(mentees) == 11
+    expected_11_regs = {
+        "SEC25CO001", "SEC25CO007", "SEC25CO016", "SEC25CO034", "SEC25CO039",
+        "SEC25CO041", "SEC25CO044", "SEC25CO045", "SEC25CO048", "SEC25CO057", "SEC25CO063"
+    }
+    actual_regs = {m["register_number"] for m in mentees}
+    assert actual_regs == expected_11_regs
+
+
+def test_admin_mentors_list_unified_pachaiammal_active_11_mentees(client: TestClient, db_session: Session):
+    """
+    Verify that GET /api/v1/admin/mentors includes Dr. Pachaiammal with:
+    - email: 'hod.cce@sairam.edu.in'
+    - is_active: True
+    - assigned_student_count: 11
+    - Total students across all mentors = 61 (25 + 11 + 25)
+    - Old pachaiammal.cce or .archived email does NOT exist in active mentor list
+    """
+    from sqlalchemy import select
+    admin_user = db_session.scalars(select(User).where(User.role == UserRole.ADMIN)).first()
+    if not admin_user:
+        admin_user = User(
+            id=uuid.uuid4(),
+            full_name="System Admin",
+            email="test_admin@sairam.edu.in",
+            password_hash=get_password_hash("adminpass"),
+            role=UserRole.ADMIN,
+            is_active=True,
+        )
+        db_session.add(admin_user)
+        db_session.commit()
+
+    admin_token = create_access_token(subject=str(admin_user.id), role=admin_user.role.value)
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    res = client.get("/api/v1/admin/mentors", headers=headers)
+    assert res.status_code == 200, f"Failed to list mentors: {res.text}"
+    mentors = res.json()
+    assert len(mentors) >= 3
+
+    # Check for legacy emails
+    for m in mentors:
+        assert "pachaiammal.cce" not in m["email"]
+        assert ".archived" not in m["email"]
+
+    # Locate Dr. Pachaiammal
+    pachai_mentor = next((m for m in mentors if m["email"] == "hod.cce@sairam.edu.in"), None)
+    assert pachai_mentor is not None, "Dr. Pachaiammal (hod.cce@sairam.edu.in) missing from /admin/mentors"
+    assert pachai_mentor["is_active"] is True
+    assert pachai_mentor["assigned_student_count"] == 11
+
+    # Check student counts sum to 61
+    total_assigned = sum(m["assigned_student_count"] for m in mentors)
+    assert total_assigned == 61
+

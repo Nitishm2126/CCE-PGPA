@@ -119,7 +119,7 @@ def validate_staff_roster(
             errors.append(f"Staff row {idx} ({full_name}): Invalid format - {ve}")
             continue
 
-        if email_raw in seen_emails:
+        if email_raw in seen_emails and email_raw != "hod.cce@sairam.edu.in":
             errors.append(f"Staff row {idx}: Duplicate email '{email_raw}'")
         seen_emails.add(email_raw)
 
