@@ -303,10 +303,10 @@ export const clearApiCache = (): void => {
 };
 
 export const api = {
-  login: async (email: string, password: string): Promise<TokenResponse> => {
+  login: async (email: string, password: string, role?: string): Promise<TokenResponse> => {
     return request<TokenResponse>("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, role }),
     });
   },
 

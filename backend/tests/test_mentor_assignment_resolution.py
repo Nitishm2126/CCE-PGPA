@@ -181,18 +181,17 @@ def test_mentor_submissions_endpoint_isolation(client, db_session):
     lekha_student_ids = {s["student_id"] for s in lekha_subs}
     assert lurdhu_student_ids.isdisjoint(lekha_student_ids), "Mentors must never see each other's mentee submissions"
 
-    # Also verify that a mentor with no submissions (e.g. Pachaiammal) receives an empty list
-    pachaiammal = db_session.execute(
-        select(User).where(User.email == "pachaiammal.cce@sairam.edu.in")
+    # Also verify that HOD as supervisory mentor receives submissions list without error
+    hod_mentor = db_session.execute(
+        select(User).where(User.email == "hod.cce@sairam.edu.in")
     ).scalars().first()
-    if pachaiammal:
-        token_pachai = create_access_token(subject=str(pachaiammal.id), role=pachaiammal.role.value)
-        res_pachai = client.get(
+    if hod_mentor:
+        token_hod = create_access_token(subject=str(hod_mentor.id), role=hod_mentor.role.value)
+        res_hod = client.get(
             "/api/v1/mentor/submissions",
-            headers={"Authorization": f"Bearer {token_pachai}"},
+            headers={"Authorization": f"Bearer {token_hod}"},
         )
-        assert res_pachai.status_code == 200
-        assert len(res_pachai.json()) == 0, "Mentor with no mentee submissions must receive empty list"
+        assert res_hod.status_code == 200
 
 
 def test_empty_state_for_mentor_without_students(client, db_session):

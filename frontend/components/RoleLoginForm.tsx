@@ -120,7 +120,8 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         // MANDATORY SECURITY RULE: Verify database role matches requested portal
         const isAuthorizedForRole =
           authenticatedUser.role === role ||
-          (authenticatedUser.role === "hod" && role === "mentor");
+          (authenticatedUser.role === "hod" && role === "mentor") ||
+          (authenticatedUser.accessible_portals && authenticatedUser.accessible_portals.includes(role));
 
         if (!isAuthorizedForRole) {
           // Immediately revoke session so unauthorized role credentials are not persisted
@@ -307,7 +308,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
         {/* Existing Session Alert / Role Mismatch Protection */}
         {user && !authLoading && (
-          user.role === role ? (
+          (user.role === role || (user.role === "hod" && role === "mentor") || (user.accessible_portals && user.accessible_portals.includes(role))) ? (
             <div
               role="status"
               className="w-full mb-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/80 dark:bg-emerald-950/50 p-3.5 text-xs text-emerald-950 dark:text-emerald-200 shadow-xs flex flex-wrap items-center justify-between gap-3 animate-apple-fade"
@@ -316,17 +317,36 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 <span className="h-2 w-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                 <span>
                   Active Session: <strong>{user.full_name}</strong> (
-                  {ROLE_CONFIGS[user.role]?.shortTitle})
+                  {user.role === "hod" ? "Department HOD & Supervisory Mentor" : ROLE_CONFIGS[user.role]?.shortTitle})
                 </span>
               </div>
 
               <div className="flex items-center gap-2.5 flex-wrap">
-                <Link
-                  href={`/${user.role}`}
-                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
-                >
-                  Open Dashboard &rarr;
-                </Link>
+                {user.role === "hod" && role === "mentor" ? (
+                  <>
+                    <Link
+                      href="/mentor"
+                      id="btn-active-session-open-mentor"
+                      className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
+                    >
+                      Open Mentor Portal &rarr;
+                    </Link>
+                    <Link
+                      href="/hod"
+                      id="btn-active-session-open-hod"
+                      className="rounded-lg border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 font-semibold px-3 py-1 text-xs transition"
+                    >
+                      Open HOD Dashboard &rarr;
+                    </Link>
+                  </>
+                ) : (
+                  <Link
+                    href={`/${user.role}`}
+                    className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
+                  >
+                    Open Dashboard &rarr;
+                  </Link>
+                )}
                 <span className="text-slate-300 dark:text-slate-700">&bull;</span>
                 <button
                   type="button"

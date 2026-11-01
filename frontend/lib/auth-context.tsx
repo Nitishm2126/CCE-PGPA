@@ -284,7 +284,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // 2. Non-admin roles (Students, Mentors, HOD): Authenticate directly via FastAPI / PostgreSQL
     try {
-      const tokenResponse = await api.login(email, password);
+      const tokenResponse = await api.login(email, password, portalRole);
       setStoredToken(tokenResponse.access_token);
       setToken(tokenResponse.access_token);
 

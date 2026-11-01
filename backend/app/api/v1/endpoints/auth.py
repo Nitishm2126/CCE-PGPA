@@ -81,9 +81,14 @@ def login(
             detail="Account is deactivated. Please contact an administrator.",
         )
 
+    # Support role context for multi-portal authorized users (e.g. HOD accessing mentor portal)
+    token_role = user.role.value
+    if user.role == UserRole.HOD and login_data.role in ("mentor", "hod"):
+        token_role = login_data.role
+
     access_token = create_access_token(
         subject=user.id,
-        role=user.role.value,
+        role=token_role,
     )
 
     return TokenResponse(
@@ -96,6 +101,8 @@ def login(
 
 def get_user_accessible_portals(user: User) -> List[str]:
     """Derive list of portal keys the authenticated user is authorized to access."""
+    if user.role == UserRole.HOD:
+        return ["hod", "mentor"]
     return [user.role.value]
 
 

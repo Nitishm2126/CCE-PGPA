@@ -1000,6 +1000,9 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                     <div className="text-[11px] text-purple-700 dark:text-purple-400 font-medium">
                       Head of Department • Department Supervisory Authority
                     </div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                      CCE • {hods[0]?.email || "hod.cce@sairam.edu.in"}
+                    </div>
                   </div>
                   <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
                     <span>Department Scope</span>

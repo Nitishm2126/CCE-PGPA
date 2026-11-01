@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { RoleBadge } from "@/components/RoleBadge";
@@ -69,7 +70,7 @@ export default function MentorDashboardPage() {
       router.push("/login/mentor");
       return;
     }
-    if (!authLoading && user && user.role !== "mentor" && user.role !== "hod") {
+    if (!authLoading && user && user.role !== "mentor" && user.role !== "hod" && !user.accessible_portals?.includes("mentor")) {
       router.push("/login/mentor");
       return;
     }
@@ -377,11 +378,11 @@ export default function MentorDashboardPage() {
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">{user?.email}</p>
               </div>
-              {user?.role === "hod" && (
-                <button
-                  type="button"
-                  onClick={() => router.push("/hod")}
+              {(user?.role === "hod" || user?.accessible_portals?.includes("hod")) && (
+                <Link
+                  href="/hod"
                   id="btn-goto-hod-dashboard"
+                  prefetch={true}
                   className="rounded-lg border border-purple-500 bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                   title="Navigate directly to department-wide Head of Department dashboard"
                 >
@@ -389,7 +390,7 @@ export default function MentorDashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                   <span>Go to HOD Dashboard</span>
-                </button>
+                </Link>
               )}
               <RoleBadge role={user?.role === "hod" ? "hod" : "mentor"} />
               <button
@@ -467,16 +468,16 @@ export default function MentorDashboardPage() {
                   ? "You are managing your personal assigned mentees. Inspect submissions, evaluate certificates, and record verification decisions. Use the Go to HOD Dashboard button to return to department-wide oversight."
                   : "Review, evaluate, and verify supporting evidence submitted by your assigned cohort mentees. Provide remarks and track performance grade points."}
               </p>
-              {user?.role === "hod" && (
+              {(user?.role === "hod" || user?.accessible_portals?.includes("hod")) && (
                 <div className="mt-3">
-                  <button
-                    type="button"
-                    onClick={() => router.push("/hod")}
+                  <Link
+                    href="/hod"
                     id="btn-goto-hod-dashboard-banner"
+                    prefetch={true}
                     className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-sm transition cursor-pointer"
                   >
                     <span>Go to HOD Dashboard &rarr;</span>
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>

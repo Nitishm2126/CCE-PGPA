@@ -12,6 +12,7 @@ class LoginRequest(BaseModel):
     """
     email: str = Field(..., min_length=3, max_length=255, description="College email address or register number")
     password: str = Field(..., min_length=1, description="Account password")
+    role: Optional[str] = Field(default=None, description="Optional target portal role for multi-portal accounts")
 
 
 class ChangePasswordRequest(BaseModel):

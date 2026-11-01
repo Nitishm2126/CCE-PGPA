@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { RoleBadge } from "@/components/RoleBadge";
@@ -401,10 +402,10 @@ export default function HODDashboardPage() {
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">{user?.email}</p>
               </div>
               <RoleBadge role="hod" />
-              <button
-                type="button"
-                onClick={() => router.push("/mentor")}
+              <Link
+                href="/mentor"
                 id="btn-goto-mentor-portal"
+                prefetch={true}
                 className="rounded-lg border border-blue-500 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                 title="Navigate directly to Faculty Mentor portal to manage assigned mentees"
               >
@@ -412,7 +413,7 @@ export default function HODDashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
                 <span>Go to Mentor Portal</span>
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => {
@@ -481,10 +482,10 @@ export default function HODDashboardPage() {
                 Activities and supporting evidence submitted by students are recorded directly without requiring approval.
               </p>
               <div className="mt-3 flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => router.push("/mentor")}
+                <Link
+                  href="/mentor"
                   id="btn-goto-mentor-portal-banner"
+                  prefetch={true}
                   className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition cursor-pointer"
                   title="Switch to Faculty Mentor portal to manage assigned mentees"
                 >
@@ -492,7 +493,7 @@ export default function HODDashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                   <span>Go to Mentor Portal &rarr;</span>
-                </button>
+                </Link>
               </div>
             </div>
 

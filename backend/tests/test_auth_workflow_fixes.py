@@ -136,3 +136,48 @@ def test_email_verification_status_and_rate_limit(client: TestClient, db_session
     # Cleanup
     db_session.delete(test_user)
     db_session.commit()
+
+
+def test_hod_single_official_email_dual_portal_access(client: TestClient, db_session: Session):
+    """
+    Verify that the single official email 'hod.cce@sairam.edu.in' authenticates successfully
+    for both HOD and Mentor portals:
+    - HOD login opens /hod with department-wide scope across all 61 students.
+    - Mentor login opens /mentor with supervisory mentor access to assigned mentees.
+    - /api/v1/auth/me returns accessible_portals = ['hod', 'mentor'].
+    """
+    # 1. Authenticate with role="hod"
+    hod_login_res = client.post(
+        "/api/v1/auth/login",
+        json={"email": "hod.cce@sairam.edu.in", "password": "cce@123", "role": "hod"},
+    )
+    assert hod_login_res.status_code == 200, f"HOD login failed: {hod_login_res.text}"
+    hod_token = hod_login_res.json()["access_token"]
+    assert hod_token
+
+    # Verify /me profile
+    hod_me_res = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {hod_token}"})
+    assert hod_me_res.status_code == 200
+    hod_me = hod_me_res.json()
+    assert hod_me["email"] == "hod.cce@sairam.edu.in"
+    assert "hod" in hod_me["accessible_portals"]
+    assert "mentor" in hod_me["accessible_portals"]
+
+    # Verify department-wide scope (all 61 department students)
+    dept_res = client.get("/api/v1/hod/students", headers={"Authorization": f"Bearer {hod_token}"})
+    assert dept_res.status_code == 200
+    assert len(dept_res.json()) >= 61
+
+    # 2. Authenticate with role="mentor" using SAME email hod.cce@sairam.edu.in
+    mentor_login_res = client.post(
+        "/api/v1/auth/login",
+        json={"email": "hod.cce@sairam.edu.in", "password": "cce@123", "role": "mentor"},
+    )
+    assert mentor_login_res.status_code == 200, f"Mentor login failed: {mentor_login_res.text}"
+    mentor_token = mentor_login_res.json()["access_token"]
+    assert mentor_token
+
+    # Verify supervisory mentor mentee list
+    mentees_res = client.get("/api/v1/mentor/students", headers={"Authorization": f"Bearer {mentor_token}"})
+    assert mentees_res.status_code == 200
+    assert len(mentees_res.json()) == 11
