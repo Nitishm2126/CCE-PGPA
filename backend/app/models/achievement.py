@@ -64,6 +64,14 @@ class Achievement(Base):
     event_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     outcome: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    certificate_status: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        nullable=True,
+        default="uploaded",
+        server_default="uploaded",
+        index=True,
+    )
+    remarks: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     component_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
     status: Mapped[AchievementStatus] = mapped_column(
         sa.Enum(

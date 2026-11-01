@@ -31,7 +31,7 @@ import { PGPAPerformanceTracker } from "@/components/student/PGPAPerformanceTrac
 
 export default function StudentDashboardPage() {
   const router = useRouter();
-  const { user, token, logout, isLoading: authLoading } = useAuth();
+  const { user, token, logout, isLoading: authLoading, isLoggingOut } = useAuth();
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<string>("dashboard");
@@ -72,7 +72,7 @@ export default function StudentDashboardPage() {
 
   // Authentication & Role Guard
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !user && !isLoggingOut) {
       router.push("/login/student");
       return;
     }
@@ -376,13 +376,13 @@ export default function StudentDashboardPage() {
   if (authLoading || !user || user.role !== "student" || (isLoadingProfile && !studentData && !profileError)) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[60vh] p-6 bg-slate-50 dark:bg-[#0F141B]">
-        <div className="flex flex-col items-center gap-3 text-center bg-white dark:bg-[#1C2531] p-8 rounded-2xl border border-slate-200 dark:border-[#2B3543] shadow-xs max-w-sm w-full">
+        <div className="flex flex-col items-center gap-3 text-center bg-white dark:bg-[#1C2531] p-8 rounded-2xl border border-slate-200 dark:border-[#2B3543] shadow-xs max-w-sm w-full animate-apple-fade">
           <div className="h-9 w-9 animate-spin rounded-full border-3 border-blue-600 border-t-transparent shadow-2xs" />
           <p className="text-xs font-semibold text-slate-800 dark:text-[#E8EDF4]">
-            Connecting to PostgreSQL CCE Student Records...
+            Preparing your dashboard...
           </p>
           <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C]">
-            Verifying cohort authentication and academic profile
+            Securing your workspace and syncing records
           </p>
         </div>
       </div>

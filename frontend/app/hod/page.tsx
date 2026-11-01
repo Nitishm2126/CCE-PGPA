@@ -19,7 +19,7 @@ import { SettingsModal } from "@/components/shared/SettingsModal";
 
 export default function HODDashboardPage() {
   const router = useRouter();
-  const { user, token: authToken, isLoading: authLoading, logout } = useAuth();
+  const { user, token: authToken, isLoading: authLoading, isLoggingOut, logout } = useAuth();
   const token = authToken || (typeof window !== "undefined" ? getStoredToken() : null);
 
   // Independent Data States
@@ -74,7 +74,7 @@ export default function HODDashboardPage() {
 
   // Auth Guard
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !user && !isLoggingOut) {
       router.push("/login/hod");
       return;
     }
@@ -440,6 +440,7 @@ export default function HODDashboardPage() {
 
               <button
                 type="button"
+                id="hod-signout-btn"
                 onClick={handleLogout}
                 className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
               >
@@ -1170,6 +1171,47 @@ export default function HODDashboardPage() {
                     <span className="font-semibold text-slate-800 capitalize">{selectedSubmission.status}</span>
                   </div>
                 </div>
+
+                {/* Certificate Status Banner */}
+                {selectedSubmission.certificate_status === "yet_to_receive" && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900 flex items-start gap-2.5">
+                    <svg className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="font-bold">Certificate Pending Issuance</p>
+                      <p className="mt-0.5 text-[11px] text-amber-800">
+                        Student completed this activity; the organizer has not yet issued the official certificate. Student can upload it later once received.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedSubmission.certificate_status === "not_provided" && (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 flex items-start gap-2.5">
+                    <svg className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="font-bold text-slate-900">No Certificate Provided</p>
+                      <p className="mt-0.5 text-[11px] text-slate-600">
+                        No certificate is issued for this activity. Verify participation based on the event details and student remarks.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Student Remarks */}
+                {selectedSubmission.remarks && (
+                  <div>
+                    <p className="font-semibold uppercase tracking-wider text-slate-500 text-[11px] mb-1">
+                      Student Remarks
+                    </p>
+                    <div className="rounded-xl border border-purple-200/80 p-3 bg-purple-50/40 text-slate-800 leading-relaxed font-medium text-xs">
+                      {selectedSubmission.remarks}
+                    </div>
+                  </div>
+                )}
 
                 {/* Description */}
                 {selectedSubmission.description && (

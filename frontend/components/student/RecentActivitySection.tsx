@@ -374,6 +374,30 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
 
                     {/* Status Badge & Official Approved Grade/Points */}
                     <div className="self-start shrink-0 flex items-center gap-1.5 flex-wrap">
+                      {/* Certificate Status Badge */}
+                      {item.certificate_status === "yet_to_receive" ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Yet to Receive</span>
+                        </span>
+                      ) : item.certificate_status === "not_provided" ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-[#1E293B] px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>No Certificate</span>
+                        </span>
+                      ) : (item.files && item.files.length > 0) || item.certificate_status === "uploaded" ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Certificate Uploaded</span>
+                        </span>
+                      ) : null}
+
                       {renderStatusBadge(item.status)}
                       {item.status === "approved" && item.evaluated_grade && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
@@ -474,6 +498,14 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                       </button>
                     )}
                   </div>
+
+                  {/* Student Remarks note if provided */}
+                  {item.remarks && (
+                    <div className="mt-2 text-xs rounded-xl p-2.5 bg-slate-50 dark:bg-[#131922] border border-slate-200 dark:border-[#2B3543] text-slate-700 dark:text-[#A0ACBC]">
+                      <span className="font-semibold text-slate-900 dark:text-[#E8EDF4]">Student Remarks: </span>
+                      <span className="leading-relaxed">{item.remarks}</span>
+                    </div>
+                  )}
 
                   {/* Mentor Remarks note if reviewed, rejected, or changes requested */}
                   {(item.status === "rejected" || latestLog?.remarks || item.mentor_remarks) && (

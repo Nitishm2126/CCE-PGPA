@@ -43,7 +43,7 @@ type AdminNavigationSection =
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { user, token, isLoading: authLoading, logout } = useAuth();
+  const { user, token, isLoading: authLoading, isLoggingOut, logout } = useAuth();
 
   // Navigation State
   const [activeSection, setActiveSection] = useState<AdminNavigationSection>("overview");
@@ -103,7 +103,7 @@ export default function AdminDashboardPage() {
   // Security & Role Guard
   // ============================================================================
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !user && !isLoggingOut) {
       router.push("/login/admin");
       return;
     }

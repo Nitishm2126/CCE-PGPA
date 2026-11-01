@@ -89,7 +89,7 @@ test.describe('Cross-Role Session Persistence & Isolation Suite', () => {
     if (page.url().includes('/change-password')) {
       await page.click('#change-password-header-signout');
     } else {
-      await page.getByRole('button', { name: /Sign out/i }).click();
+      await page.getByRole('button', { name: /Sign out/i }).first().click();
     }
 
     await page.waitForURL(/\/login/, { timeout: 10000 });
@@ -127,7 +127,7 @@ test.describe('Cross-Role Session Persistence & Isolation Suite', () => {
     if (page.url().includes('/change-password')) {
       await page.click('#change-password-header-signout');
     } else {
-      await page.getByRole('button', { name: /Sign out/i }).click();
+      await page.getByRole('button', { name: /Sign out/i }).first().click();
     }
 
     await page.waitForURL(/\/login/, { timeout: 10000 });

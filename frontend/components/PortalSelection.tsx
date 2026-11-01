@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { UserRole } from "@/types/auth";
 import { ROLE_CONFIGS } from "@/lib/role-config";
@@ -170,18 +171,11 @@ const PORTAL_CARD_METADATA: Record<
 
 const STAGGER_CLASSES = ["stagger-1", "stagger-2", "stagger-3", "stagger-4"];
 
-export function PortalSelection() {
+function PortalSelectionContent() {
   const { user, logout, isLoading } = useAuth();
-  const [justSignedOut, setJustSignedOut] = React.useState(false);
-
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("signedOut") === "true") {
-        setJustSignedOut(true);
-      }
-    }
-  }, []);
+  const searchParams = useSearchParams();
+  const [dismissed, setDismissed] = React.useState(false);
+  const justSignedOut = searchParams?.get("signedOut") === "true" && !dismissed;
 
   // Display the 3 public institutional portals (Student, Mentor, HOD)
   // Admin is accessed discreetly via the footer text and hidden from the public cards
@@ -310,11 +304,11 @@ export function PortalSelection() {
                 <circle cx="12" cy="12" r="10" />
                 <path d="m9 12 2 2 4-4" />
               </svg>
-              <span className="font-medium">Signed out successfully. Your session and device credentials have been cleared.</span>
+              <span className="font-medium">Signed out safely. Your session and credentials have been secured. See you again!</span>
             </div>
             <button
               type="button"
-              onClick={() => setJustSignedOut(false)}
+              onClick={() => setDismissed(true)}
               className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-emerald-100 text-xs font-semibold p-1"
               aria-label="Dismiss message"
             >
@@ -602,5 +596,13 @@ export function PortalSelection() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export function PortalSelection() {
+  return (
+    <React.Suspense fallback={null}>
+      <PortalSelectionContent />
+    </React.Suspense>
   );
 }

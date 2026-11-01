@@ -45,6 +45,10 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
   const [eventLevel, setEventLevel] = useState("Within College");
   const [activityName, setActivityName] = useState("");
 
+  // Certificate Status and Remarks
+  const [certificateStatus, setCertificateStatus] = useState<"uploaded" | "yet_to_receive" | "not_provided">("uploaded");
+  const [remarks, setRemarks] = useState("");
+
   const [attachedFiles, setAttachedFiles] = useState<AchievementFileResponse[]>([]);
   const [newEvidenceFile, setNewEvidenceFile] = useState<File | null>(null);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
@@ -64,6 +68,11 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
       );
       setOutcome(achievement.outcome || "");
       setDescription(achievement.description || "");
+
+      // Certificate Status & Remarks
+      const cStatus = (achievement.certificate_status || meta.certificate_status || "uploaded") as "uploaded" | "yet_to_receive" | "not_provided";
+      setCertificateStatus(cStatus === "yet_to_receive" || cStatus === "not_provided" ? cStatus : "uploaded");
+      setRemarks(achievement.remarks || meta.remarks || "");
 
       // Academics
       if (meta.gpa !== undefined) {
@@ -174,32 +183,27 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           title: `${semDisplay} GPA: ${gpaNum.toFixed(2)}`,
           activity_type: "Academic GPA",
           outcome: gpaNum.toFixed(2),
+          certificate_status: certificateStatus,
+          remarks: remarks.trim() || undefined,
           component_metadata: {
             gpa: gpaNum,
             scale: "10.00",
           },
         });
       } else if (isClubsAndCells) {
-        if (!clubName.trim()) {
-          setError("Please select or enter the Club/Cell name.");
-          setIsSubmitting(false);
-          return;
-        }
-        if (!activityName.trim()) {
-          setError("Please specify the activity or event name.");
-          setIsSubmitting(false);
-          return;
-        }
-
+        const effectiveClub = clubName.trim();
+        const finalTitle = activityName.trim() || (effectiveClub ? `${effectiveClub} (${roleCategory})` : `Clubs & Cells (${roleCategory})`);
         const finalLevel = (roleCategory === "Event Participation" || roleCategory === "Winner") ? eventLevel : undefined;
         await onSave(achievement.id, {
-          title: activityName.trim(),
-          organizer: clubName.trim(),
+          title: finalTitle,
+          organizer: effectiveClub || undefined,
           activity_type: roleCategory,
           event_date: eventDate || undefined,
           outcome: `${roleCategory}${finalLevel ? ` (${finalLevel})` : ""} - ${calculatedClubsPointsPreview} Points`,
+          certificate_status: certificateStatus,
+          remarks: remarks.trim() || undefined,
           component_metadata: {
-            club_name: clubName.trim(),
+            club_name: effectiveClub,
             role_category: roleCategory,
             event_level: finalLevel,
             calculated_points: calculatedClubsPointsPreview,
@@ -219,6 +223,8 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           event_date: eventDate || undefined,
           outcome: outcome.trim() || undefined,
           description: description.trim() || undefined,
+          certificate_status: certificateStatus,
+          remarks: remarks.trim() || undefined,
           component_metadata: achievement.component_metadata || undefined,
         });
       }
@@ -535,77 +541,180 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
             </>
           )}
 
-          {/* Attached Evidence Files & Replacement */}
+          {/* Certificate / Supporting Evidence Options */}
           <div className="pt-2 border-t border-slate-200 dark:border-[#2B3543] space-y-3">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold text-slate-800 dark:text-[#E8EDF4]">
-                Supporting Evidence Files (PDF)
+                Certificate / Evidence Status
               </label>
-              <span className="text-[11px] text-slate-400 dark:text-[#7E8B9C]">
-                {attachedFiles.length} file(s) attached
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
+                  certificateStatus === "uploaded"
+                    ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
+                    : certificateStatus === "yet_to_receive"
+                    ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
+                    : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                }`}
+              >
+                {certificateStatus === "uploaded"
+                  ? "Certificate Uploaded"
+                  : certificateStatus === "yet_to_receive"
+                  ? "Pending Issuance"
+                  : "No Certificate"}
               </span>
             </div>
 
-            {attachedFiles.length > 0 && (
-              <div className="space-y-2">
-                {attachedFiles.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] text-xs"
-                  >
-                    <div className="flex items-center gap-2 truncate pr-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded bg-rose-600 text-[9px] font-bold text-white shrink-0">
-                        PDF
-                      </span>
-                      <span className="font-medium text-slate-900 dark:text-[#E8EDF4] truncate" title={file.original_filename}>
-                        {file.original_filename}
-                      </span>
-                      <span className="text-[11px] text-slate-400 dark:text-[#7E8B9C] shrink-0">
-                        ({(file.size_bytes / 1024).toFixed(0)} KB)
-                      </span>
-                    </div>
+            {/* Three Clear Options */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setCertificateStatus("uploaded")}
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  certificateStatus === "uploaded"
+                    ? "border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 dark:border-blue-500 shadow-2xs ring-1 ring-blue-500"
+                    : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531]"
+                }`}
+              >
+                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] block">
+                  Upload Certificate
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-[#7E8B9C] block mt-0.5">
+                  Attach or update PDF file
+                </span>
+              </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteEvidence(file.id)}
-                      disabled={deletingFileId === file.id}
-                      title="Remove this evidence file"
-                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer disabled:opacity-50 min-h-[32px]"
-                    >
-                      {deletingFileId === file.id ? (
-                        <span className="h-3 w-3 animate-spin rounded-full border border-rose-600 border-t-transparent" />
-                      ) : (
-                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      )}
-                      <span>Remove</span>
-                    </button>
+              <button
+                type="button"
+                onClick={() => setCertificateStatus("yet_to_receive")}
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  certificateStatus === "yet_to_receive"
+                    ? "border-amber-600 bg-amber-50/70 dark:bg-amber-950/40 dark:border-amber-500 shadow-2xs ring-1 ring-amber-500"
+                    : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531]"
+                }`}
+              >
+                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] block">
+                  Yet to Receive
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-[#7E8B9C] block mt-0.5">
+                  Awaiting issuance
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCertificateStatus("not_provided")}
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  certificateStatus === "not_provided"
+                    ? "border-slate-700 bg-slate-100 dark:bg-[#232E3E] dark:border-slate-500 shadow-2xs ring-1 ring-slate-500"
+                    : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531]"
+                }`}
+              >
+                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] block">
+                  No Certificate
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-[#7E8B9C] block mt-0.5">
+                  Verified by activity
+                </span>
+              </button>
+            </div>
+
+            {certificateStatus === "uploaded" && (
+              <div className="space-y-3">
+                {attachedFiles.length > 0 && (
+                  <div className="space-y-2">
+                    {attachedFiles.map((file) => (
+                      <div
+                        key={file.id}
+                        className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] text-xs"
+                      >
+                        <div className="flex items-center gap-2 truncate pr-2">
+                          <span className="flex h-5 w-5 items-center justify-center rounded bg-rose-600 text-[9px] font-bold text-white shrink-0">
+                            PDF
+                          </span>
+                          <span className="font-medium text-slate-900 dark:text-[#E8EDF4] truncate" title={file.original_filename}>
+                            {file.original_filename}
+                          </span>
+                          <span className="text-[11px] text-slate-400 dark:text-[#7E8B9C] shrink-0">
+                            ({(file.size_bytes / 1024).toFixed(0)} KB)
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteEvidence(file.id)}
+                          disabled={deletingFileId === file.id}
+                          title="Remove this evidence file"
+                          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer disabled:opacity-50 min-h-[32px]"
+                        >
+                          {deletingFileId === file.id ? (
+                            <span className="h-3 w-3 animate-spin rounded-full border border-rose-600 border-t-transparent" />
+                          ) : (
+                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          )}
+                          <span>Remove</span>
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+
+                {/* Upload Replacement / Additional PDF */}
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-[#A0ACBC] mb-1">
+                    {attachedFiles.length > 0 ? "Replace or Add Evidence File (PDF)" : "Upload PDF Evidence"}
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] || null;
+                      setNewEvidenceFile(f);
+                    }}
+                    className="w-full text-xs text-slate-500 dark:text-[#A0ACBC] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 dark:file:bg-[#1C2531] file:text-blue-700 dark:file:text-[#4C83E6] hover:file:bg-blue-100 cursor-pointer"
+                  />
+                  {newEvidenceFile && (
+                    <p className="mt-1 text-[11px] text-emerald-600 dark:text-[#5EEAD4] font-medium">
+                      ✓ Selected: {newEvidenceFile.name} ({(newEvidenceFile.size / 1024).toFixed(0)} KB)
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* Upload Replacement / Additional PDF */}
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-600 dark:text-[#A0ACBC] mb-1">
-                {attachedFiles.length > 0 ? "Replace or Add Evidence File (PDF)" : "Upload PDF Evidence"}
+            {certificateStatus === "yet_to_receive" && (
+              <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/30 p-3 text-xs text-amber-800 dark:text-amber-300">
+                Awaiting certificate issuance from organizer. You can upload it later once received.
+              </div>
+            )}
+
+            {certificateStatus === "not_provided" && (
+              <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531]/70 p-3 text-xs text-slate-600 dark:text-[#CBD5E1]">
+                No certificate provided. Mentor will verify participation based on activity details.
+              </div>
+            )}
+          </div>
+
+          {/* Student Remarks */}
+          <div className="pt-2 border-t border-slate-200 dark:border-[#2B3543]">
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="edit-remarks" className="block text-xs font-bold text-slate-800 dark:text-[#E8EDF4]">
+                Additional Remarks (Optional)
               </label>
-              <input
-                type="file"
-                accept=".pdf,application/pdf"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] || null;
-                  setNewEvidenceFile(f);
-                }}
-                className="w-full text-xs text-slate-500 dark:text-[#A0ACBC] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 dark:file:bg-[#1C2531] file:text-blue-700 dark:file:text-[#4C83E6] hover:file:bg-blue-100 cursor-pointer"
-              />
-              {newEvidenceFile && (
-                <p className="mt-1 text-[11px] text-emerald-600 dark:text-[#5EEAD4] font-medium">
-                  ✓ Selected: {newEvidenceFile.name} ({(newEvidenceFile.size / 1024).toFixed(0)} KB)
-                </p>
-              )}
+              <span className="text-[10px] text-slate-400 dark:text-[#7E8B9C]">
+                {remarks.length} / 500
+              </span>
             </div>
+            <textarea
+              id="edit-remarks"
+              rows={2}
+              maxLength={500}
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              placeholder="Add any additional details about your activity, organization or participation..."
+              className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            />
           </div>
 
           {/* Modal Actions */}

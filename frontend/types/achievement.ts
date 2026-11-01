@@ -85,6 +85,8 @@ export interface AchievementResponse {
   event_date?: string | null;
   description?: string | null;
   outcome?: string | null;
+  certificate_status?: "uploaded" | "yet_to_receive" | "not_provided" | string;
+  remarks?: string | null;
   component_metadata?: Record<string, any> | null;
   evaluated_grade?: string | null;
   evaluated_grade_points?: number | null;
@@ -107,6 +109,21 @@ export interface AchievementCreate {
   event_date?: string;
   description?: string;
   outcome?: string;
+  certificate_status?: "uploaded" | "yet_to_receive" | "not_provided" | string;
+  remarks?: string;
+  component_metadata?: Record<string, any>;
+}
+
+export interface AchievementUpdate {
+  title?: string;
+  semester_id?: string;
+  activity_type?: string;
+  organizer?: string;
+  event_date?: string;
+  description?: string;
+  outcome?: string;
+  certificate_status?: "uploaded" | "yet_to_receive" | "not_provided" | string;
+  remarks?: string;
   component_metadata?: Record<string, any>;
 }
 

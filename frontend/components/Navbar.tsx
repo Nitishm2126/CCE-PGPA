@@ -24,7 +24,7 @@ export const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    router.push("/login?signedOut=true");
   };
 
   return (
@@ -76,6 +76,7 @@ export const Navbar: React.FC = () => {
 
               <button
                 type="button"
+                id="navbar-signout-btn"
                 onClick={handleLogout}
                 className="inline-flex items-center justify-center rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-950/30 dark:hover:text-rose-400 transition-colors"
               >

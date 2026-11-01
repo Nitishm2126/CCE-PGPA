@@ -12,27 +12,19 @@ test.describe('Auth, Role Mapping & Dashboard Workflow Fixes Suite', () => {
     await page.fill('#login-password-input', 'cce@123');
     await page.click('#login-submit-button');
 
-    // 3. Wait for redirect to /hod or /change-password
-    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/hod', { timeout: 15000 });
-
-    if (page.url().includes('/change-password')) {
-      await page.fill('#current-password', 'cce@123');
-      await page.fill('#new-password', 'cce@hod_2026');
-      await page.fill('#confirm-password', 'cce@hod_2026');
-      await page.click('#change-password-submit-btn');
-      await page.waitForURL(/\/hod/, { timeout: 15000 });
-    }
+    // 3. Wait for redirect to /hod
+    await page.waitForURL(/\/hod/, { timeout: 15000 });
 
     // 4. Verify HOD dashboard identity and elements
     await expect(page).toHaveURL(/\/hod/);
-    await expect(page.locator('header').getByText('Dr. Pachaiammal Alias Priya')).toBeVisible();
-    await expect(page.locator('header').getByText('hod.cce@sairam.edu.in')).toBeVisible();
+    await expect(page.locator('header').getByText('Dr. Pachaiammal Alias Priya').first()).toBeVisible();
+    await expect(page.locator('header').getByText('hod.cce@sairam.edu.in').first()).toBeVisible();
 
     // 5. Verify NO Faculty Mentor Portal button exists in HOD header
     await expect(page.getByText(/Faculty Mentor Portal/i)).toHaveCount(0);
 
     // 6. Test Settings & Email Verification modal
-    const settingsBtn = page.locator('#hod-settings-button');
+    const settingsBtn = page.locator('#btn-hod-settings');
     await expect(settingsBtn).toBeVisible();
     await settingsBtn.click();
 
@@ -46,10 +38,10 @@ test.describe('Auth, Role Mapping & Dashboard Workflow Fixes Suite', () => {
     await expect(page.locator('#settings-modal-title')).toHaveCount(0);
 
     // Verify HOD dashboard remains fully functional and accessible
-    await expect(page.getByRole('tab', { name: /Mentees/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Department Submissions/i })).toBeVisible();
 
     // 7. Test Proper Sign Out
-    await page.getByRole('button', { name: /Sign out/i }).click();
+    await page.locator('#hod-signout-btn').click();
     await page.waitForURL(/\/login/, { timeout: 10000 });
 
     // Verify signed out alert is displayed
@@ -75,15 +67,7 @@ test.describe('Auth, Role Mapping & Dashboard Workflow Fixes Suite', () => {
     await page.fill('#login-password-input', 'cce@123');
     await page.click('#login-submit-button');
 
-    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/student', { timeout: 15000 });
-
-    if (page.url().includes('/change-password')) {
-      await page.fill('#current-password', 'cce@123');
-      await page.fill('#new-password', 'cce@stud_2026');
-      await page.fill('#confirm-password', 'cce@stud_2026');
-      await page.click('#change-password-submit-btn');
-      await page.waitForURL(/\/student/, { timeout: 15000 });
-    }
+    await page.waitForURL(/\/student/, { timeout: 15000 });
 
     // 2. Verify on student dashboard
     await expect(page).toHaveURL(/\/student/);
@@ -98,7 +82,7 @@ test.describe('Auth, Role Mapping & Dashboard Workflow Fixes Suite', () => {
 
     // 4. Click the single Submit Activity button to ensure submission modal opens properly
     await headerSubmitBtn.click();
-    await expect(page.getByRole('heading', { name: /Submit Activity Points/i })).toBeVisible();
+    await expect(page.locator('#submit-achievement-modal-title')).toBeVisible();
 
     // Close the modal
     const closeBtn = page.getByRole('button', { name: /Cancel|Close/i }).first();
@@ -128,22 +112,14 @@ test.describe('Auth, Role Mapping & Dashboard Workflow Fixes Suite', () => {
     await page.fill('#login-password-input', 'cce@123');
     await page.click('#login-submit-button');
 
-    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/mentor', { timeout: 15000 });
-
-    if (page.url().includes('/change-password')) {
-      await page.fill('#current-password', 'cce@123');
-      await page.fill('#new-password', 'cce@mentor_2026');
-      await page.fill('#confirm-password', 'cce@mentor_2026');
-      await page.click('#change-password-submit-btn');
-      await page.waitForURL(/\/mentor/, { timeout: 15000 });
-    }
+    await page.waitForURL(/\/mentor/, { timeout: 15000 });
 
     // 2. Verify on mentor dashboard
     await expect(page).toHaveURL(/\/mentor/);
     await expect(page.getByText('P. LEKHA').first()).toBeVisible();
 
     // 3. Open Settings Modal
-    const settingsBtn = page.locator('#mentor-settings-button');
+    const settingsBtn = page.locator('#btn-mentor-settings');
     await expect(settingsBtn).toBeVisible();
     await settingsBtn.click();
 
@@ -157,27 +133,23 @@ test.describe('Auth, Role Mapping & Dashboard Workflow Fixes Suite', () => {
     await expect(page.locator('#settings-modal-title')).toHaveCount(0);
 
     // 4. Verify mentor is NOT blocked from doing reviews or accessing students
-    await expect(page.getByText(/Assigned Mentees/i).or(page.getByText(/Mentee Directory/i))).toBeVisible();
+    await expect(page.getByText(/Assigned Mentees/i).first()).toBeVisible();
 
     // 5. Sign out
-    await page.getByRole('button', { name: /Sign out/i }).click();
+    await page.locator('#mentor-signout-btn').click();
     await page.waitForURL(/\/login/, { timeout: 10000 });
     await expect(page.locator('#signed-out-success-alert')).toBeVisible();
   });
 
   test('TC-AUTH-04: Password Change Page Form Validation & Error Handling', async ({ page }) => {
-    // 1. Go to student login
+    // 1. Go to student login (sec25co032 has must_change_password=True)
     await page.goto('/login/student');
     await page.fill('#login-email-input', 'sec25co032@sairamtap.edu.in');
     await page.fill('#login-password-input', 'cce@123');
     await page.click('#login-submit-button');
 
-    await page.waitForURL((url) => url.pathname === '/change-password' || url.pathname === '/student', { timeout: 15000 });
-
-    if (!page.url().includes('/change-password')) {
-      await page.goto('/change-password');
-      await page.waitForURL(/\/change-password/);
-    }
+    // Must route directly to /change-password
+    await page.waitForURL(/\/change-password/, { timeout: 15000 });
 
     // 2. Verify no publicly visible plaintext default password hints
     await expect(page.locator('text=cce@123')).toHaveCount(0);

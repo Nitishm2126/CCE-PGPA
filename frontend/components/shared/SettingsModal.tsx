@@ -136,6 +136,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
           <button
             type="button"
+            id="settings-modal-close"
             onClick={onClose}
             className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
             aria-label="Close settings dialog"
@@ -153,7 +154,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <RoleBadge role={user?.role || "mentor"} size="sm" />
           </div>
           <p className="text-sm font-bold text-slate-900 dark:text-white">{user?.full_name}</p>
-          <p className="font-mono text-slate-600 dark:text-slate-300">{user?.email}</p>
+          <p id="settings-email-display" className="font-mono text-slate-600 dark:text-slate-300">{user?.email}</p>
         </div>
 
         {/* Email Verification Section */}
@@ -167,28 +168,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 Verify your institutional address via Firebase Authentication
               </p>
             </div>
-            {statusLoading ? (
-              <span className="text-xs text-slate-400 flex items-center gap-1.5">
-                <span className="h-3 w-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-                Checking...
-              </span>
-            ) : emailVerified ? (
-              <span
-                id="email-verified-badge"
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Email Verified
-              </span>
-            ) : (
-              <span
-                id="email-pending-badge"
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                Verification Pending
-              </span>
-            )}
+            <div id="verification-status-badge">
+              {statusLoading ? (
+                <span className="text-xs text-slate-400 flex items-center gap-1.5">
+                  <span className="h-3 w-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                  Checking...
+                </span>
+              ) : emailVerified ? (
+                <span
+                  id="email-verified-badge"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  Email Verified
+                </span>
+              ) : (
+                <span
+                  id="email-pending-badge"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  Verification Pending
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Non-mandatory Explanatory Note */}

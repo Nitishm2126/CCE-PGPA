@@ -48,6 +48,8 @@ class AchievementCreate(BaseModel):
     event_date: Optional[date] = Field(None, description="Date of the event / certificate completion")
     description: Optional[str] = Field(None, description="Detailed activity summary")
     outcome: Optional[str] = Field(None, max_length=255, description="e.g. 1st Prize, Completed with Elite, Participant")
+    certificate_status: Optional[str] = Field("uploaded", max_length=50, description="Certificate status: uploaded, yet_to_receive, not_provided")
+    remarks: Optional[str] = Field(None, max_length=2000, description="Additional student remarks")
     component_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Component-specific evaluation parameters")
 
 
@@ -62,6 +64,8 @@ class AchievementUpdate(BaseModel):
     event_date: Optional[date] = None
     description: Optional[str] = None
     outcome: Optional[str] = Field(None, max_length=255)
+    certificate_status: Optional[str] = Field(None, max_length=50)
+    remarks: Optional[str] = Field(None, max_length=2000)
     component_metadata: Optional[Dict[str, Any]] = None
 
 
@@ -104,6 +108,8 @@ class AchievementResponse(BaseModel):
     event_date: Optional[date] = None
     description: Optional[str] = None
     outcome: Optional[str] = None
+    certificate_status: Optional[str] = "uploaded"
+    remarks: Optional[str] = None
     component_metadata: Optional[Dict[str, Any]] = None
     evaluated_grade: Optional[str] = None
     evaluated_grade_points: Optional[int] = None

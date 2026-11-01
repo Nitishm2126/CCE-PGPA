@@ -11,7 +11,7 @@ import { ROLE_CONFIGS } from "@/lib/role-config";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
-  const { user, token: authToken, isLoading: authLoading, logout, updateUser, refreshUser } = useAuth();
+  const { user, token: authToken, isLoading: authLoading, isLoggingOut, logout, updateUser, refreshUser } = useAuth();
   const token = authToken || getStoredToken();
 
   // Form states
@@ -31,10 +31,10 @@ export default function ChangePasswordPage() {
 
   // Auth guard: must be authenticated
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login");
+    if (!authLoading && !user && !isLoggingOut) {
+      router.push("/login?signedOut=true");
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, isLoggingOut, router]);
 
   const handleLogout = async () => {
     await logout();

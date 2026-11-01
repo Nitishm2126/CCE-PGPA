@@ -165,6 +165,8 @@ def format_achievement_response(
         event_date=achievement.event_date,
         description=achievement.description,
         outcome=achievement.outcome,
+        certificate_status=getattr(achievement, "certificate_status", None) or (comp_metadata.get("certificate_status") if comp_metadata else "uploaded") or "uploaded",
+        remarks=getattr(achievement, "remarks", None) or (comp_metadata.get("remarks") if comp_metadata else None),
         component_metadata=comp_metadata,
         evaluated_grade=evaluated_grade,
         evaluated_grade_points=evaluated_grade_points,
@@ -514,7 +516,13 @@ def create_achievement(
     organizer = (data.organizer or "").strip() or None
     outcome = (data.outcome or "").strip() or None
     description = (data.description or "").strip() or None
+    certificate_status = (data.certificate_status or meta.get("certificate_status") or "uploaded").strip()
+    remarks = (data.remarks or meta.get("remarks") or "").strip() or None
     event_date = data.event_date
+
+    meta["certificate_status"] = certificate_status
+    if remarks:
+        meta["remarks"] = remarks
 
     # Component-specific schema handling and authoritative validation:
     if component.slug == "academics-gpa":
@@ -613,6 +621,8 @@ def create_achievement(
         event_date=event_date,
         description=description,
         outcome=outcome,
+        certificate_status=certificate_status,
+        remarks=remarks,
         component_metadata=meta,
         status=AchievementStatus.DRAFT,
     )
@@ -765,6 +775,14 @@ def update_achievement(
         achievement.description = data.description.strip() if data.description else None
     if data.outcome is not None:
         achievement.outcome = data.outcome.strip() if data.outcome else None
+    if data.certificate_status is not None:
+        achievement.certificate_status = data.certificate_status.strip()
+        if achievement.component_metadata is not None:
+            achievement.component_metadata["certificate_status"] = achievement.certificate_status
+    if data.remarks is not None:
+        achievement.remarks = data.remarks.strip() if data.remarks else None
+        if achievement.component_metadata is not None:
+            achievement.component_metadata["remarks"] = achievement.remarks
 
     # Workflow handling:
     now_utc = datetime.now(timezone.utc)
@@ -837,7 +855,13 @@ def submit_achievement(
         )
 
     # Enforce admin-controlled PDF evidence requirement
-    if achievement.component:
+    cert_status = getattr(achievement, "certificate_status", None) or (
+        achievement.component_metadata.get("certificate_status") if achievement.component_metadata else None
+    )
+    if cert_status in ("yet_to_receive", "not_provided"):
+        # No file required when student selects "Yet to Receive Certificate" or "No Certificate Provided"
+        pass
+    elif achievement.component:
         pdf_req = achievement.component.pdf_requirement or ("required" if achievement.component.pdf_required else "optional")
         if pdf_req == "required":
             has_pdf = any(

@@ -228,6 +228,11 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Certificate Status (Three clear options: uploaded, yet_to_receive, not_provided)
+  const [certificateStatus, setCertificateStatus] = useState<"uploaded" | "yet_to_receive" | "not_provided">("uploaded");
+  // Additional Remarks (Optional multiline textarea)
+  const [remarks, setRemarks] = useState<string>("");
+
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submissionStep, setSubmissionStep] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -295,6 +300,8 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   useEffect(() => {
     setError(null);
     setFileError(null);
+    setCertificateStatus("uploaded");
+    setRemarks("");
   }, [componentId]);
 
   // Sync SAP points default when SAP category changes
@@ -413,16 +420,14 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
       case "clubs-and-cells": {
         const effectiveClub = clubName.trim();
-        if (!effectiveClub) {
-          throw new Error("Please enter your Club or Cell name.");
-        }
-        const effectiveTitle = clubActivityTitle.trim() || `${effectiveClub} ${clubRoleCategory}`;
+        const clubDisplay = effectiveClub || "Extracurricular / Club Activity";
+        const effectiveTitle = clubActivityTitle.trim() || `${clubDisplay} (${clubRoleCategory})`;
         payload = {
           component_id: componentId,
           semester_id: semesterId,
           title: effectiveTitle,
           activity_type: clubRoleCategory,
-          organizer: effectiveClub,
+          organizer: effectiveClub || undefined,
           event_date: clubDate || undefined,
           outcome: `${clubsCalculatedPoints} Points (${clubRoleCategory})`,
           component_metadata: {
@@ -727,6 +732,9 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       }
     }
 
+    payload.certificate_status = certificateStatus;
+    payload.remarks = remarks.trim() || undefined;
+
     return payload;
   };
 
@@ -744,7 +752,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       setError(reason);
       return;
     }
-    if (isPdfRequired && submitImmediately && !evidenceFile) {
+    if (isPdfRequired && certificateStatus === "uploaded" && submitImmediately && !evidenceFile) {
       const evidenceName = currentSlug === "academics-gpa" ? "Semester Marksheet / Grade Sheet PDF" : "Supporting Evidence PDF";
       setError(`${evidenceName} is required by institutional policy for ${currentComponent.name}. Please attach a valid PDF document before submitting.`);
       setFileError(`${evidenceName} is required.`);
@@ -753,7 +761,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       }
       return;
     }
-    if (fileError) {
+    if (certificateStatus === "uploaded" && fileError) {
       setError(fileError);
       return;
     }
@@ -761,8 +769,9 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
     try {
       setIsSubmitting(true);
       setError(null);
+      const willUploadFile = certificateStatus === "uploaded" && Boolean(evidenceFile);
       setSubmissionStep(
-        evidenceFile
+        willUploadFile
           ? submitImmediately
             ? "Uploading evidence to Google Drive and submitting for mentor review..."
             : "Uploading evidence to Google Drive and saving draft..."
@@ -772,7 +781,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       );
 
       const payload = buildPayload();
-      await onSubmit(payload, evidenceFile, submitImmediately);
+      await onSubmit(payload, willUploadFile ? evidenceFile : null, submitImmediately);
       onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to record achievement and upload evidence.";
@@ -789,7 +798,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#2B3543]">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <h2 id="submit-achievement-modal-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#E8EDF4]">
               {currentSlug === "academics-gpa" ? "Record Semester GPA" : "Submit PGPA Achievement"}
             </h2>
             <span className="rounded-full bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
@@ -957,138 +966,6 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 </span>
               </div>
             )}
-          </div>
-        )}
-
-        {/* 2. CLUBS & CELLS (TABLE 7.1 POINT ALLOCATION) */}
-        {currentSlug === "clubs-and-cells" && (
-          <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">
-                Table 7.1 Clubs &amp; Cells Activity Evaluation
-              </span>
-              <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-400">
-                3 Credits &bull; Table 7.2 Cumulative
-              </span>
-            </div>
-
-            {/* Club Name */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                Club / Cell Name *
-              </label>
-              <input
-                type="text"
-                required
-                maxLength={150}
-                placeholder="Enter your Club or Cell name"
-                value={clubName}
-                onChange={(e) => setClubName(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
-              />
-            </div>
-
-            {/* Role / Participation Category */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                  Participation Category (Table 7.1) *
-                </label>
-                <select
-                  value={clubRoleCategory}
-                  onChange={(e) => setClubRoleCategory(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
-                >
-                  <option value="Member">Member (100 pts)</option>
-                  <option value="Event Participation">Event Participation (100–500 pts)</option>
-                  <option value="Winner">Winner (200–700 pts)</option>
-                  <option value="MAGIC">MAGIC (200 pts)</option>
-                  <option value="Event Coordinator">Event Coordinator (200 pts)</option>
-                  <option value="Volunteer">Volunteer (100 pts)</option>
-                </select>
-              </div>
-
-              {/* Event Level (conditionally displayed for Event Participation or Winner) */}
-              {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") ? (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                    Event Level *
-                  </label>
-                  <select
-                    value={clubEventLevel}
-                    onChange={(e) => setClubEventLevel(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
-                  >
-                    <option value="Within College">Within College ({clubRoleCategory === "Winner" ? "200" : "100"} pts)</option>
-                    <option value="Within State (Other College)">Within State / Other College ({clubRoleCategory === "Winner" ? "300" : "200"} pts)</option>
-                    <option value="National Level (Other State)">National Level / Other State ({clubRoleCategory === "Winner" ? "500" : "300"} pts)</option>
-                    <option value="International Level (In College / Others)">International Level / In College ({clubRoleCategory === "Winner" ? "600" : "400"} pts)</option>
-                    <option value="International Level (Other Country)">International Level / Other Country ({clubRoleCategory === "Winner" ? "700" : "500"} pts)</option>
-                  </select>
-                </div>
-              ) : (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                    Completion / Induction Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={clubDate}
-                    onChange={(e) => setClubDate(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Event Title and Date for Participation / Winner */}
-            {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                    Event / Activity Title *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Inter-College Hackathon / Quiz"
-                    value={clubActivityTitle}
-                    onChange={(e) => setClubActivityTitle(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
-                    Event Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={clubDate}
-                    onChange={(e) => setClubDate(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Live Table 7.1 Allocation Indicator */}
-            <div className="p-3 rounded-lg bg-white dark:bg-[#1C2531] border border-blue-200/80 dark:border-blue-900/40 flex items-center justify-between">
-              <div>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Authoritative Table 7.1 Points:</span>
-                <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
-                  {clubsCalculatedPoints} Points Awarded
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 text-right">
-                Mentor will verify evidence before final award
-              </span>
-            </div>
           </div>
         )}
 
@@ -2057,131 +1934,421 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         )}
 
         {/* ==================================================================== */}
-        {/* Supporting Evidence PDF Upload (Tailored Label)                      */}
+        {/* Supporting Evidence / Certificate Submission (Three Clear Options)   */}
         {/* ==================================================================== */}
-        <div>
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
               {currentSlug === "academics-gpa"
-                ? isPdfRequired
-                  ? "Semester Marksheet / Grade Sheet (PDF Required) *"
-                  : isPdfDisabled
-                    ? "Semester Marksheet / Evidence (Disabled)"
-                    : "Semester Marksheet / Grade Sheet (Optional PDF)"
-                : isPdfRequired
-                  ? "Supporting Evidence PDF (Required) *"
-                  : isPdfDisabled
-                    ? "Supporting Evidence (Disabled)"
-                    : "Supporting Evidence (Optional)"}
+                ? "Semester Marksheet / Grade Sheet"
+                : "Certificate / Supporting Evidence"}
             </label>
             <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${isPdfRequired
-                  ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
-                  : isPdfDisabled
-                    ? "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
+              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
+                certificateStatus === "uploaded"
+                  ? isPdfRequired
+                    ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
                     : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
-                }`}
+                  : certificateStatus === "yet_to_receive"
+                  ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
+                  : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+              }`}
             >
-              {isPdfRequired
-                ? "Mandatory Evidence • Up to 5 MB"
-                : isPdfDisabled
-                  ? "Evidence Disabled • Direct Submit"
-                  : "Optional Evidence • Up to 5 MB"}
+              {certificateStatus === "uploaded"
+                ? isPdfRequired
+                  ? "Mandatory PDF • Up to 5 MB"
+                  : "Optional PDF • Up to 5 MB"
+                : certificateStatus === "yet_to_receive"
+                ? "Pending Issuance • Submit Now"
+                : "No Certificate • Submit Now"}
             </span>
           </div>
 
-          <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-0.5 mb-1.5">
-            {isPdfDisabled
-              ? "System Admin policy: Evidence document upload is disabled for this component. You can proceed with submission directly."
-              : currentSlug === "academics-gpa"
-                ? isPdfRequired
-                  ? "Attach your official university marksheet or grade report PDF for faculty verification (Mandatory)."
-                  : "Attach your official university marksheet or grade report PDF if available (Optional for this component)."
-                : isPdfRequired
-                  ? "Attach official certificate, event receipt, score card, or completion record (Mandatory PDF)."
-                  : "Attach official certificate, event receipt, or completion record if available (Optional for this component)."}
-          </p>
-
-          {!isPdfDisabled && (
-            <>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={allowOtherEvidence ? ".pdf,application/pdf,image/png,image/jpeg,.png,.jpg,.jpeg" : ".pdf,application/pdf"}
-                disabled={isSubmitting}
-                onChange={(e) => {
-                  if (e.target.files && e.target.files.length > 0) {
-                    handleFileSelect(e.target.files[0]);
-                  }
-                }}
-                className="hidden"
-                id="evidence-pdf-input"
-              />
-
-              {!evidenceFile ? (
+          {/* Three Clear Options */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                setCertificateStatus("uploaded");
+                setFileError(null);
+              }}
+              disabled={isSubmitting}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                certificateStatus === "uploaded"
+                  ? "border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 dark:border-blue-500 shadow-2xs ring-1 ring-blue-500"
+                  : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] hover:border-slate-300 dark:hover:border-slate-600"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
                 <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => {
-                    if (!isSubmitting && fileInputRef.current) {
-                      fileInputRef.current.click();
-                    }
-                  }}
-                  className={`rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${isDragging
-                      ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
-                      : fileError
-                        ? "border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20"
-                        : "border-slate-300 dark:border-[#2B3543] hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/40 dark:bg-[#1C2531]/40"
-                    }`}
+                  className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
+                    certificateStatus === "uploaded"
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "border-slate-300 dark:border-slate-600"
+                  }`}
                 >
-                  <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-2">
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                  </div>
-                  <p className="text-xs font-semibold text-slate-800 dark:text-[#E8EDF4]">
-                    {isPdfRequired ? "Click to browse or drop your mandatory PDF here" : "Click to browse or drop optional PDF here"}
-                  </p>
-                  <p className="text-[11px] text-slate-400 dark:text-[#7E8B9C] mt-0.5">
-                    {allowOtherEvidence ? "PDF, PNG, JPEG format • Up to 5 MB" : "PDF format only • Up to 5 MB"}
-                  </p>
+                  {certificateStatus === "uploaded" && (
+                    <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                  )}
+                </div>
+                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4]">
+                  Upload Certificate
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] leading-snug pl-6">
+                Attach official PDF evidence document.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setCertificateStatus("yet_to_receive");
+                setFileError(null);
+                setEvidenceFile(null);
+              }}
+              disabled={isSubmitting}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                certificateStatus === "yet_to_receive"
+                  ? "border-amber-600 bg-amber-50/70 dark:bg-amber-950/40 dark:border-amber-500 shadow-2xs ring-1 ring-amber-500"
+                  : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] hover:border-slate-300 dark:hover:border-slate-600"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div
+                  className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
+                    certificateStatus === "yet_to_receive"
+                      ? "border-amber-600 bg-amber-600 text-white"
+                      : "border-slate-300 dark:border-slate-600"
+                  }`}
+                >
+                  {certificateStatus === "yet_to_receive" && (
+                    <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                  )}
+                </div>
+                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4]">
+                  Yet to Receive
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] leading-snug pl-6">
+                Certificate not yet issued by organizer.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setCertificateStatus("not_provided");
+                setFileError(null);
+                setEvidenceFile(null);
+              }}
+              disabled={isSubmitting}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                certificateStatus === "not_provided"
+                  ? "border-slate-700 bg-slate-100 dark:bg-[#232E3E] dark:border-slate-500 shadow-2xs ring-1 ring-slate-500"
+                  : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] hover:border-slate-300 dark:hover:border-slate-600"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div
+                  className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
+                    certificateStatus === "not_provided"
+                      ? "border-slate-700 bg-slate-700 text-white dark:border-slate-400 dark:bg-slate-400"
+                      : "border-slate-300 dark:border-slate-600"
+                  }`}
+                >
+                  {certificateStatus === "not_provided" && (
+                    <div className="h-1.5 w-1.5 rounded-full bg-white dark:bg-slate-900" />
+                  )}
+                </div>
+                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4]">
+                  No Certificate
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] leading-snug pl-6">
+                No certificate issued for this activity.
+              </p>
+            </button>
+          </div>
+
+          {/* Conditional file uploader / reassurance message */}
+          {certificateStatus === "uploaded" && (
+            <div>
+              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mb-1.5">
+                {isPdfDisabled
+                  ? "System Admin policy: Evidence document upload is disabled for this component. You can proceed with submission directly."
+                  : currentSlug === "academics-gpa"
+                    ? isPdfRequired
+                      ? "Attach your official university marksheet or grade report PDF for faculty verification (Mandatory)."
+                      : "Attach your official university marksheet or grade report PDF if available (Optional for this component)."
+                    : isPdfRequired
+                      ? "Attach official certificate, event receipt, score card, or completion record (Mandatory PDF)."
+                      : "Attach official certificate, event receipt, or completion record if available (Optional for this component)."}
+              </p>
+
+              {!isPdfDisabled && (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={allowOtherEvidence ? ".pdf,application/pdf,image/png,image/jpeg,.png,.jpg,.jpeg" : ".pdf,application/pdf"}
+                    disabled={isSubmitting}
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        handleFileSelect(e.target.files[0]);
+                      }
+                    }}
+                    className="hidden"
+                    id="evidence-pdf-input"
+                  />
+
+                  {!evidenceFile ? (
+                    <div
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => {
+                        if (!isSubmitting && fileInputRef.current) {
+                          fileInputRef.current.click();
+                        }
+                      }}
+                      className={`rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${
+                        isDragging
+                          ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
+                          : fileError
+                            ? "border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20"
+                            : "border-slate-300 dark:border-[#2B3543] hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/40 dark:bg-[#1C2531]/40"
+                      }`}
+                    >
+                      <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-2">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                      </div>
+                      <p className="text-xs font-semibold text-slate-800 dark:text-[#E8EDF4]">
+                        {isPdfRequired ? "Click to browse or drop your mandatory PDF here" : "Click to browse or drop optional PDF here"}
+                      </p>
+                      <p className="text-[11px] text-slate-400 dark:text-[#7E8B9C] mt-0.5">
+                        {allowOtherEvidence ? "PDF, PNG, JPEG format • Up to 5 MB" : "PDF format only • Up to 5 MB"}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-3 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30">
+                      <div className="flex items-center gap-2.5 truncate">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-[9px] shrink-0">
+                          FILE
+                        </div>
+                        <div className="truncate">
+                          <p className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] truncate">
+                            {evidenceFile.name}
+                          </p>
+                          <p className="text-[10px] text-slate-500 dark:text-[#7E8B9C]">
+                            {formatFileSize(evidenceFile.size)} &bull; Ready for upload
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleFileSelect(null)}
+                        disabled={isSubmitting}
+                        className="rounded-lg p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-[#1C2531] transition-colors cursor-pointer"
+                        title="Remove selected file"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {fileError && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1 font-medium">{fileError}</p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {certificateStatus === "yet_to_receive" && (
+            <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/30 p-3.5 flex items-start gap-2.5">
+              <svg className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="text-xs leading-relaxed text-amber-900 dark:text-amber-200">
+                <p className="font-semibold">Certificate Pending Issuance</p>
+                <p className="mt-0.5 text-[11px] text-amber-800 dark:text-amber-300/90">
+                  You can submit this activity now for mentor review. Upload the certificate later once received from the organizer.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {certificateStatus === "not_provided" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531]/70 p-3.5 flex items-start gap-2.5">
+              <svg className="h-4 w-4 text-slate-500 dark:text-[#7E8B9C] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="text-xs leading-relaxed text-slate-700 dark:text-[#CBD5E1]">
+                <p className="font-semibold text-slate-900 dark:text-[#E8EDF4]">Activity Without Certificate</p>
+                <p className="mt-0.5 text-[11px] text-slate-600 dark:text-[#94A3B8]">
+                  This activity will be submitted without a certificate. Mentor will verify participation based on details provided.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Clubs & Cells Section (Positioned at bottom, immediately below certificate section) */}
+        {currentSlug === "clubs-and-cells" && (
+          <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-4 space-y-3.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">
+                Clubs &amp; Organizations Participation
+              </span>
+              <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-400">
+                Optional Extracurricular Details
+              </span>
+            </div>
+
+            {/* Club Name (Manual text input, completely optional) */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                Organization / Club Name (Optional)
+              </label>
+              <input
+                type="text"
+                maxLength={150}
+                placeholder="e.g. Rotary Club, CSI, GDSC, Music Club or any external org"
+                value={clubName}
+                onChange={(e) => setClubName(e.target.value)}
+                disabled={isSubmitting}
+                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+              />
+            </div>
+
+            {/* Role / Participation Category */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  Participation Category
+                </label>
+                <select
+                  value={clubRoleCategory}
+                  onChange={(e) => setClubRoleCategory(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                >
+                  <option value="Member">Member (100 pts)</option>
+                  <option value="Event Participation">Event Participation (100–500 pts)</option>
+                  <option value="Winner">Winner (200–700 pts)</option>
+                  <option value="MAGIC">MAGIC (200 pts)</option>
+                  <option value="Event Coordinator">Event Coordinator (200 pts)</option>
+                  <option value="Volunteer">Volunteer (100 pts)</option>
+                </select>
+              </div>
+
+              {/* Event Level (conditionally displayed for Event Participation or Winner) */}
+              {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") ? (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Event Level
+                  </label>
+                  <select
+                    value={clubEventLevel}
+                    onChange={(e) => setClubEventLevel(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                  >
+                    <option value="Within College">Within College ({clubRoleCategory === "Winner" ? "200" : "100"} pts)</option>
+                    <option value="Within State (Other College)">Within State / Other College ({clubRoleCategory === "Winner" ? "300" : "200"} pts)</option>
+                    <option value="National Level (Other State)">National Level / Other State ({clubRoleCategory === "Winner" ? "500" : "300"} pts)</option>
+                    <option value="International Level (In College / Others)">International Level / In College ({clubRoleCategory === "Winner" ? "600" : "400"} pts)</option>
+                    <option value="International Level (Other Country)">International Level / Other Country ({clubRoleCategory === "Winner" ? "700" : "500"} pts)</option>
+                  </select>
                 </div>
               ) : (
-                <div className="flex items-center justify-between p-3 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30">
-                  <div className="flex items-center gap-2.5 truncate">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-[9px] shrink-0">
-                      FILE
-                    </div>
-                    <div className="truncate">
-                      <p className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] truncate">
-                        {evidenceFile.name}
-                      </p>
-                      <p className="text-[10px] text-slate-500 dark:text-[#7E8B9C]">
-                        {formatFileSize(evidenceFile.size)} &bull; Ready for upload
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleFileSelect(null)}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Completion / Activity Date
+                  </label>
+                  <input
+                    type="date"
+                    value={clubDate}
+                    onChange={(e) => setClubDate(e.target.value)}
                     disabled={isSubmitting}
-                    className="rounded-lg p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-[#1C2531] transition-colors cursor-pointer"
-                    title="Remove selected file"
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  />
                 </div>
               )}
+            </div>
 
-              {fileError && (
-                <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1 font-medium">{fileError}</p>
-              )}
-            </>
-          )}
+            {/* Event Title and Date for Participation / Winner */}
+            {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Event / Activity Title (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Inter-College Hackathon / Quiz"
+                    value={clubActivityTitle}
+                    onChange={(e) => setClubActivityTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                    Event Date
+                  </label>
+                  <input
+                    type="date"
+                    value={clubDate}
+                    onChange={(e) => setClubDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Simple Credit Points Indicator */}
+            <div className="p-3 rounded-lg bg-white dark:bg-[#1C2531] border border-blue-200/80 dark:border-blue-900/40 flex items-center justify-between">
+              <div>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Credit Points:</span>
+                <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                  {clubsCalculatedPoints} Points
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 text-right">
+                Mentor will verify details before final award
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Additional Remarks (Optional multiline textarea) */}
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="submission-remarks" className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              Additional Remarks (Optional)
+            </label>
+            <span className="text-[10px] text-slate-400 dark:text-[#7E8B9C]">
+              {remarks.length} / 500
+            </span>
+          </div>
+          <textarea
+            id="submission-remarks"
+            rows={3}
+            maxLength={500}
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            disabled={isSubmitting}
+            placeholder="Add any additional details about your activity, organization or participation..."
+            className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors"
+          />
         </div>
 
         {/* Progress Step while Submitting */}

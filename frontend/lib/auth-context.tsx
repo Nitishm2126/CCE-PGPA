@@ -18,6 +18,7 @@ export interface AuthContextType {
   role: UserRole | null;
   token: string | null;
   isLoading: boolean;
+  isLoggingOut: boolean;
   error: string | null;
   isFirebaseAvailable: boolean;
 
@@ -44,6 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [isProvisioned, setIsProvisioned] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = useCallback(() => setError(null), []);
@@ -406,6 +408,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token]);
 
   const logout = async (): Promise<void> => {
+    setIsLoggingOut(true);
     isLoggingOutRef.current = true;
     setIsLoading(true);
 
@@ -457,6 +460,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
       setError(null);
       isLoggingOutRef.current = false;
+      setTimeout(() => {
+        setIsLoggingOut(false);
+      }, 1500);
     }
   };
 
@@ -467,6 +473,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: user?.role ?? null,
         token,
         isLoading,
+        isLoggingOut,
         error,
         isFirebaseAvailable: isFirebaseConfigured(),
         firebaseUser,
