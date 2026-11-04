@@ -64,10 +64,37 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
+    # Frontend URL Configuration (for OAuth callback redirect & cross-app links)
+    FRONTEND_URL: str = "http://localhost:3000"
+
+    @field_validator("FRONTEND_URL", mode="before")
+    @classmethod
+    def assemble_frontend_url(cls, v: Optional[str]) -> str:
+        import os
+        if v and isinstance(v, str) and v.strip() and v != "http://localhost:3000":
+            return v.strip().rstrip("/")
+        if os.getenv("RENDER") or os.getenv("APP_ENV") == "production":
+            return "https://cce-pgpa.vercel.app"
+        return v or "http://localhost:3000"
+
     # Google Drive Storage & OAuth 2.0 Configuration
     GOOGLE_OAUTH_CLIENT_ID: Optional[str] = None
     GOOGLE_OAUTH_CLIENT_SECRET: Optional[str] = None
     GOOGLE_OAUTH_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
+
+    @field_validator("GOOGLE_OAUTH_REDIRECT_URI", mode="before")
+    @classmethod
+    def assemble_oauth_redirect_uri(cls, v: Optional[str]) -> str:
+        import os
+        # If explicitly specified in environment and differs from local default, preserve it
+        if v and isinstance(v, str) and v.strip() and v != "http://localhost:8000/api/v1/auth/google/callback":
+            return v.strip()
+        # In production or on Render, auto-align to Render external URL
+        if os.getenv("RENDER") or os.getenv("APP_ENV") == "production":
+            base = os.getenv("RENDER_EXTERNAL_URL", "https://cce-pgpa.onrender.com").rstrip("/")
+            return f"{base}/api/v1/auth/google/callback"
+        return v or "http://localhost:8000/api/v1/auth/google/callback"
+
     GOOGLE_OAUTH_SCOPES: List[str] = ["https://www.googleapis.com/auth/drive.file"]
     GOOGLE_OAUTH_TOKEN_FILE: Optional[str] = None
     OAUTH_ENCRYPTION_KEY: Optional[str] = None

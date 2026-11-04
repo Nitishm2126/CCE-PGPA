@@ -878,3 +878,105 @@ def test_health_endpoint_reports_oauth_and_storage_status(client: TestClient):
         assert "authorized_email" in storage
         assert "root_folder_id" in storage
         assert "message" in storage
+
+
+def test_oauth_dynamic_redirect_and_frontend_origin_binding(client: TestClient, db: Session):
+    admin = User(
+        id=uuid.uuid4(),
+        full_name='Admin Dynamic',
+        email=f'admin_dyn_{uuid.uuid4().hex[:6]}@sairam.edu.in',
+        password_hash='h',
+        role=UserRole.ADMIN,
+        is_active=True,
+    )
+    db.add(admin)
+    db.commit()
+    db.track_user(admin.id)
+
+    t_admin = create_access_token(subject=admin.id, role='admin')
+
+    with patch.object(settings, 'GOOGLE_OAUTH_CLIENT_ID', 'test-client-id.apps.googleusercontent.com'),          patch.object(settings, 'GOOGLE_OAUTH_CLIENT_SECRET', 'test-secret'):
+
+        res = client.get(
+            '/api/v1/auth/google/authorize?frontend_origin=https://cce-pgpa.vercel.app',
+            headers={'Authorization': f'Bearer {t_admin}'},
+        )
+        assert res.status_code == 200
+        data = res.json()
+        state = data['state']
+        state_data = verify_oauth_state(state, expected_action='google_drive_oauth')
+        assert state_data['frontend_url'] == 'https://cce-pgpa.vercel.app'
+
+        res_render = client.get(
+            '/api/v1/auth/google/authorize',
+            headers={
+                'Authorization': f'Bearer {t_admin}',
+                'X-Forwarded-Proto': 'https',
+                'X-Forwarded-Host': 'cce-pgpa.onrender.com',
+            },
+        )
+        assert res_render.status_code == 200
+        data_render = res_render.json()
+        assert data_render['redirect_uri'] == 'https://cce-pgpa.onrender.com/api/v1/auth/google/callback'
+        state_render_data = verify_oauth_state(data_render['state'], expected_action='google_drive_oauth')
+        assert state_render_data['redirect_uri'] == 'https://cce-pgpa.onrender.com/api/v1/auth/google/callback'
+
+
+def test_oauth_callback_redirects_to_dynamic_frontend_url(client: TestClient, db: Session):
+    existing_cred = db.scalars(select(OAuthCredential).where(OAuthCredential.provider == 'google_drive')).first()
+    saved_cred_data = None
+    if existing_cred:
+        saved_cred_data = {c.name: getattr(existing_cred, c.name) for c in OAuthCredential.__table__.columns}
+
+    admin = User(
+        id=uuid.uuid4(),
+        full_name='Admin Callback',
+        email=f'admin_cb_{uuid.uuid4().hex[:6]}@sairam.edu.in',
+        password_hash='h',
+        role=UserRole.ADMIN,
+        is_active=True,
+    )
+    db.add(admin)
+    db.commit()
+    db.track_user(admin.id)
+
+    custom_frontend = 'https://cce-pgpa.vercel.app'
+    custom_redirect = 'https://cce-pgpa.onrender.com/api/v1/auth/google/callback'
+    state = generate_oauth_state(
+        admin.id,
+        action='google_drive_oauth',
+        redirect_uri=custom_redirect,
+        frontend_url=custom_frontend,
+    )
+
+    mock_token_response = {
+        'access_token': 'ya29.test_access_token',
+        'refresh_token': '1//test_new_refresh_token',
+        'expires_in': 3600,
+        'token_type': 'Bearer',
+        'scope': 'https://www.googleapis.com/auth/drive.file',
+    }
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = mock_token_response
+
+    try:
+        with patch.object(settings, 'GOOGLE_OAUTH_CLIENT_ID', 'test-client-id'),              patch.object(settings, 'GOOGLE_OAUTH_CLIENT_SECRET', 'test-secret'),              patch('httpx.Client.post', return_value=mock_resp):
+
+            res = client.get(f'/api/v1/auth/google/callback?code=test_code_xyz&state={state}')
+            assert res.status_code == 200
+            assert 'Google Drive Connected' in res.text
+            assert f'{custom_frontend}/admin?drive_oauth=success' in res.text
+    finally:
+        db.expire_all()
+        current_creds = db.scalars(select(OAuthCredential).where(OAuthCredential.provider == 'google_drive')).all()
+        for c in current_creds:
+            db.delete(c)
+        db.commit()
+
+        if saved_cred_data:
+            restored = OAuthCredential(**saved_cred_data)
+            db.add(restored)
+            db.commit()
+        get_drive_service(reload=True)

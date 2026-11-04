@@ -4,7 +4,7 @@ import json
 import secrets
 import time
 import uuid
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from cryptography.fernet import Fernet
 import jwt
@@ -43,19 +43,28 @@ def decrypt_token(encrypted_token: str) -> str:
     return f.decrypt(encrypted_token.encode("utf-8")).decode("utf-8")
 
 
-def generate_oauth_state(user_id: uuid.UUID, action: str = "google_drive_oauth") -> str:
+def generate_oauth_state(
+    user_id: uuid.UUID,
+    action: str = "google_drive_oauth",
+    redirect_uri: Optional[str] = None,
+    frontend_url: Optional[str] = None,
+) -> str:
     """
     Generates a cryptographically signed CSRF state token valid for 15 minutes.
-    Binds the state to the initiating administrator user ID and action.
+    Binds the state to the initiating administrator user ID, action, and verified redirect/frontend URLs.
     """
     now = int(time.time())
-    payload = {
+    payload: Dict[str, Any] = {
         "sub": str(user_id),
         "action": action,
         "nonce": secrets.token_hex(16),
         "iat": now,
         "exp": now + 900,  # 15 minutes
     }
+    if redirect_uri:
+        payload["redirect_uri"] = redirect_uri
+    if frontend_url:
+        payload["frontend_url"] = frontend_url
     secret = settings.JWT_SECRET_KEY
     return jwt.encode(payload, secret, algorithm="HS256")
 

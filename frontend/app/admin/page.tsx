@@ -90,6 +90,7 @@ export default function AdminDashboardPage() {
   const [storageLoading, setStorageLoading] = useState(true);
   const [isConnectingDrive, setIsConnectingDrive] = useState(false);
   const [storageActionError, setStorageActionError] = useState<string | null>(null);
+  const [storageActionSuccess, setStorageActionSuccess] = useState<string | null>(null);
 
   // Student Drive Folders Audit & Provisioning State
   const [driveAuditReport, setDriveAuditReport] = useState<DriveFolderAuditReport | null>(null);
@@ -145,13 +146,49 @@ export default function AdminDashboardPage() {
   const fetchStorageHealth = useCallback(async () => {
     try {
       setStorageLoading(true);
+      setIsConnectingDrive(false);
       const res = await api.health();
       setStorageStatus(res.storage || null);
-    } catch {
-      // Offline fallback
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unable to reach backend health endpoint.";
+      setStorageActionError(msg);
     } finally {
       setStorageLoading(false);
     }
+  }, []);
+
+  // Listen for OAuth callback result from URL query parameters (e.g. ?drive_oauth=success)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const driveOAuth = params.get("drive_oauth");
+
+    if (driveOAuth === "success") {
+      setIsConnectingDrive(false);
+      setStorageActionError(null);
+      setStorageActionSuccess("Google Drive OAuth 2.0 authorization succeeded! Binary evidence storage is now active.");
+      fetchStorageHealth();
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    } else if (driveOAuth === "error") {
+      setIsConnectingDrive(false);
+      setStorageActionSuccess(null);
+      const errorMsg = params.get("message") || "Google Drive OAuth authorization was declined or failed.";
+      setStorageActionError(decodeURIComponent(errorMsg));
+      fetchStorageHealth();
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, [fetchStorageHealth]);
+
+  // Reset connecting state if restored from back-forward cache (bfcache)
+  useEffect(() => {
+    const handlePageShow = () => {
+      setIsConnectingDrive(false);
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
   }, []);
 
   useEffect(() => {
@@ -231,9 +268,17 @@ export default function AdminDashboardPage() {
 
   // Handle Google Drive OAuth Connect
   const handleConnectDrive = async () => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     try {
       setStorageActionError(null);
+      setStorageActionSuccess(null);
       setIsConnectingDrive(true);
+
+      // Safety timeout: auto-reset button if browser doesn't navigate away in 15 seconds
+      timeoutId = setTimeout(() => {
+        setIsConnectingDrive(false);
+      }, 15000);
+
       const res = await api.getGoogleDriveAuthUrl(token);
       if (res.authorization_url) {
         window.location.href = res.authorization_url;
@@ -241,6 +286,7 @@ export default function AdminDashboardPage() {
         throw new Error("No authorization URL returned from the backend.");
       }
     } catch (err: unknown) {
+      if (timeoutId) clearTimeout(timeoutId);
       setIsConnectingDrive(false);
       const message =
         err instanceof Error ? err.message : "Failed to initiate Google Drive authorization.";
@@ -1614,27 +1660,82 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={fetchStorageHealth}
+                      onClick={() => {
+                        setIsConnectingDrive(false);
+                        setStorageActionError(null);
+                        fetchStorageHealth();
+                      }}
                       disabled={storageLoading}
-                      className="px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg dark:bg-slate-800 dark:text-slate-300 transition"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg dark:bg-slate-800 dark:text-slate-300 transition cursor-pointer disabled:opacity-60"
+                      title="Re-query Google Drive connectivity status"
                     >
-                      Refresh Status
+                      <svg
+                        className={`h-3.5 w-3.5 ${storageLoading ? "animate-spin text-blue-600" : ""}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      <span>{storageLoading ? "Refreshing..." : "Refresh Status"}</span>
                     </button>
                     <button
                       type="button"
                       onClick={handleConnectDrive}
                       disabled={isConnectingDrive}
-                      className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg shadow-xs transition disabled:opacity-60"
+                      className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg shadow-xs transition disabled:opacity-60 cursor-pointer"
                     >
-                      {isConnectingDrive ? "Initiating OAuth..." : storageStatus?.connected ? "Re-authorize Drive" : "Connect Google Drive"}
+                      {isConnectingDrive ? (
+                        <>
+                          <svg className="h-3.5 w-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          <span>Initiating OAuth...</span>
+                        </>
+                      ) : storageStatus?.connected ? (
+                        "Re-authorize Drive"
+                      ) : (
+                        "Connect Google Drive"
+                      )}
                     </button>
+                    {isConnectingDrive && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsConnectingDrive(false);
+                          setStorageActionError(null);
+                        }}
+                        className="px-2 py-1 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer"
+                        title="Cancel connecting and unlock buttons"
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </div>
 
+                {/* Storage Action Success Banner */}
+                {storageActionSuccess && (
+                  <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 text-xs text-emerald-800 dark:text-emerald-200 flex justify-between items-center shadow-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="font-semibold">{storageActionSuccess}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setStorageActionSuccess(null)}
+                      className="font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 cursor-pointer p-1"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                )}
+
                 {storageActionError && (
-                  <div className="rounded-lg bg-rose-50 border border-rose-200 p-4 text-xs text-rose-800 flex justify-between">
+                  <div className="rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-4 text-xs text-rose-800 dark:text-rose-200 flex justify-between items-center">
                     <span>{storageActionError}</span>
-                    <button onClick={() => setStorageActionError(null)} className="font-bold">
+                    <button onClick={() => setStorageActionError(null)} className="font-bold cursor-pointer p-1">
                       &times;
                     </button>
                   </div>
@@ -1654,14 +1755,35 @@ export default function AdminDashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleConnectDrive}
-                      disabled={isConnectingDrive}
-                      className="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl transition shadow-xs shrink-0 cursor-pointer disabled:opacity-50"
-                    >
-                      {isConnectingDrive ? "Connecting..." : "Reconnect Google Drive Now"}
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={handleConnectDrive}
+                        disabled={isConnectingDrive}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl transition shadow-xs cursor-pointer disabled:opacity-50"
+                      >
+                        {isConnectingDrive ? (
+                          <>
+                            <svg className="h-3.5 w-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            <span>Connecting...</span>
+                          </>
+                        ) : (
+                          "Reconnect Google Drive Now"
+                        )}
+                      </button>
+                      {isConnectingDrive && (
+                        <button
+                          type="button"
+                          onClick={() => setIsConnectingDrive(false)}
+                          className="text-xs text-amber-800 dark:text-amber-300 hover:underline cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
 

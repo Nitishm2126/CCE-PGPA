@@ -727,7 +727,9 @@ export const api = {
   },
 
   getGoogleDriveAuthUrl: async (token?: string | null): Promise<GoogleDriveAuthResponse> => {
-    return request<GoogleDriveAuthResponse>("/auth/google/authorize", { method: "GET" }, token);
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const query = origin ? `?frontend_origin=${encodeURIComponent(origin)}` : "";
+    return request<GoogleDriveAuthResponse>(`/auth/google/authorize${query}`, { method: "GET" }, token);
   },
 
   health: async (): Promise<HealthResponse> => {

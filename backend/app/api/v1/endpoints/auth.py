@@ -330,7 +330,9 @@ def send_my_verification_email(
     ),
 )
 def google_authorize(
+    request: Request,
     redirect: bool = False,
+    frontend_origin: Optional[str] = Query(default=None),
     current_user: User = Depends(require_admin),
 ):
     if not settings.GOOGLE_OAUTH_CLIENT_ID or not settings.GOOGLE_OAUTH_CLIENT_SECRET:
@@ -342,13 +344,40 @@ def google_authorize(
             ),
         )
 
-    # 1. Generate cryptographically signed CSRF state
-    state = generate_oauth_state(current_user.id, action="google_drive_oauth")
+    # 1. Resolve effective redirect URI (supports production Render and local development)
+    proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "http"
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or ""
 
-    # 2. Build Google OAuth 2.0 consent URL
+    if "onrender.com" in host or (proto == "https" and "localhost" not in host and "127.0.0.1" not in host):
+        effective_redirect_uri = f"{proto}://{host}/api/v1/auth/google/callback"
+    else:
+        effective_redirect_uri = settings.GOOGLE_OAUTH_REDIRECT_URI
+
+    # 2. Resolve effective frontend origin for seamless post-auth redirection
+    effective_frontend_url = settings.FRONTEND_URL
+    candidate_origin = frontend_origin or request.headers.get("origin") or request.headers.get("referer")
+    if candidate_origin:
+        try:
+            parsed = urllib.parse.urlparse(candidate_origin)
+            candidate_base = f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
+            allowed = [o.rstrip("/") for o in settings.BACKEND_CORS_ORIGINS]
+            if candidate_base in allowed or candidate_base.endswith(".vercel.app") or "localhost" in candidate_base:
+                effective_frontend_url = candidate_base
+        except Exception:
+            pass
+
+    # 3. Generate cryptographically signed CSRF state with bound URLs
+    state = generate_oauth_state(
+        current_user.id,
+        action="google_drive_oauth",
+        redirect_uri=effective_redirect_uri,
+        frontend_url=effective_frontend_url,
+    )
+
+    # 4. Build Google OAuth 2.0 consent URL
     params = {
         "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
-        "redirect_uri": settings.GOOGLE_OAUTH_REDIRECT_URI,
+        "redirect_uri": effective_redirect_uri,
         "response_type": "code",
         "scope": " ".join(settings.GOOGLE_OAUTH_SCOPES),
         "access_type": "offline",
@@ -364,15 +393,17 @@ def google_authorize(
     return {
         "authorization_url": auth_url,
         "state": state,
-        "redirect_uri": settings.GOOGLE_OAUTH_REDIRECT_URI,
+        "redirect_uri": effective_redirect_uri,
         "scopes": settings.GOOGLE_OAUTH_SCOPES,
         "instruction": "Open the authorization_url in a browser as the administrator to authorize Google Drive access.",
     }
 
 
-def _render_oauth_error_html(detail: str, action_hint: str) -> str:
+def _render_oauth_error_html(detail: str, action_hint: str, return_url: Optional[str] = None) -> str:
     escaped_detail = html.escape(detail)
     escaped_hint = html.escape(action_hint)
+    target_url = return_url or f"{settings.FRONTEND_URL}/admin"
+    escaped_url = html.escape(target_url)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -460,17 +491,23 @@ def _render_oauth_error_html(detail: str, action_hint: str) -> str:
         <h1>Authorization Failed</h1>
         <p>{escaped_detail}</p>
         <div class="hint-box"><strong>Recommended Action:</strong> {escaped_hint}</div>
-        <a href="http://localhost:3000/admin" class="btn">Return to Admin Console</a>
+        <a href="{escaped_url}" class="btn">Return to Admin Console</a>
     </div>
 </body>
 </html>"""
 
 
-def _handle_oauth_callback_error(request: Request, status_code: int, detail: str, action_hint: str):
+def _handle_oauth_callback_error(
+    request: Request,
+    status_code: int,
+    detail: str,
+    action_hint: str,
+    return_url: Optional[str] = None,
+):
     accept = request.headers.get("accept", "")
     if "text/html" in accept and "application/json" not in accept:
         return HTMLResponse(
-            content=_render_oauth_error_html(detail, action_hint),
+            content=_render_oauth_error_html(detail, action_hint, return_url),
             status_code=status_code,
         )
     raise HTTPException(status_code=status_code, detail=detail)
@@ -521,6 +558,11 @@ def google_callback(
             action_hint="The state token may have expired (15-minute window) or was altered. Please re-initiate authorization from the Admin Console.",
         )
 
+    # Resolve bound redirect_uri and frontend_url from signed state
+    effective_redirect_uri = state_data.get("redirect_uri") or settings.GOOGLE_OAUTH_REDIRECT_URI
+    effective_frontend_url = state_data.get("frontend_url") or settings.FRONTEND_URL
+    return_error_url = f"{effective_frontend_url}/admin?drive_oauth=error"
+
     # 3. Validate authorization code
     if not code:
         return _handle_oauth_callback_error(
@@ -528,6 +570,7 @@ def google_callback(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Missing authorization code from Google.",
             action_hint="Google did not return an authorization code. Please return to the Admin Console and retry.",
+            return_url=return_error_url,
         )
 
     # 4. Exchange code for access & refresh tokens
@@ -537,7 +580,7 @@ def google_callback(
         "client_secret": settings.GOOGLE_OAUTH_CLIENT_SECRET,
         "code": code,
         "grant_type": "authorization_code",
-        "redirect_uri": settings.GOOGLE_OAUTH_REDIRECT_URI,
+        "redirect_uri": effective_redirect_uri,
     }
 
     try:
@@ -549,6 +592,7 @@ def google_callback(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Network error communicating with Google token endpoint: {e}",
             action_hint="Check backend internet connectivity to Google OAuth servers, then re-initiate authorization.",
+            return_url=return_error_url,
         )
 
     if token_resp.status_code != 200:
@@ -558,6 +602,7 @@ def google_callback(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Failed to exchange authorization code with Google token endpoint. Please re-initiate authorization.",
             action_hint="Authorization codes expire quickly and can only be exchanged once. Please initiate a new connection flow from the Admin Console.",
+            return_url=return_error_url,
         )
 
     token_data = token_resp.json()
@@ -582,6 +627,7 @@ def google_callback(
                     "https://myaccount.google.com/connections to remove 'CCE Achieve' and re-connect."
                 ),
                 action_hint="Visit https://myaccount.google.com/connections, disconnect access, then re-connect from the Admin Console.",
+                return_url=return_error_url,
             )
     else:
         # 6. Encrypt sensitive refresh token for persistence
@@ -604,6 +650,8 @@ def google_callback(
             temp_drive_service.service.about().get(fields="user(emailAddress,displayName)")
         )
         google_account_email = about_info.get("user", {}).get("emailAddress")
+        if not isinstance(google_account_email, str):
+            google_account_email = None
     except Exception as exc:
         logger.warning("Could not fetch Google account email from Drive API about.get(): %s", exc)
 
@@ -653,11 +701,15 @@ def google_callback(
         else ""
     )
 
+    return_success_url = f"{effective_frontend_url}/admin?drive_oauth=success"
+    escaped_success_url = html.escape(return_success_url)
+
     success_html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="2;url={escaped_success_url}">
     <title>Google Drive Authorized - CCE Achieve</title>
     <style>
         body {{
@@ -748,6 +800,11 @@ def google_callback(
         .btn:hover {{
             background: #1e293b;
         }}
+        .redirect-notice {{
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }}
     </style>
 </head>
 <body>
@@ -763,8 +820,14 @@ def google_callback(
             <div class="meta-item"><span class="meta-label">Storage:</span><span>Binary Evidence Files</span></div>
             <div class="meta-item"><span class="meta-label">Credential:</span><span>Encrypted at rest (PostgreSQL)</span></div>
         </div>
-        <a href="http://localhost:3000/admin" class="btn">Return to Admin Console</a>
+        <a href="{escaped_success_url}" class="btn">Return to Admin Console</a>
+        <div class="redirect-notice">Redirecting you back to the Admin Console automatically...</div>
     </div>
+    <script>
+        setTimeout(function() {{
+            window.location.href = "{return_success_url}";
+        }}, 1500);
+    </script>
 </body>
 </html>"""
 
