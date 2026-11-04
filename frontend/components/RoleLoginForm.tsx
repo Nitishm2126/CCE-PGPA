@@ -148,7 +148,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
       {/* 1. Header with FineWorks Brand & Theme Toggle */}
       <header className="w-full shrink-0 border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-40 transition-colors">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
+          <div className="flex h-13 sm:h-14 items-center justify-between gap-4">
             <FineWorksBrand role={role} showDepartment size="md" />
             <ThemeToggle size="sm" />
           </div>
@@ -156,9 +156,9 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
       </header>
 
       {/* 2. Main Login Card Container */}
-      <main className="w-full max-w-md mx-auto px-4 sm:px-6 flex-1 flex flex-col justify-center items-center py-8 sm:py-12 min-h-0">
+      <main className="w-full max-w-md mx-auto px-4 sm:px-6 flex-1 flex flex-col justify-center items-center py-4 sm:py-6 min-h-0">
         {/* Navigation Breadcrumb / Role Switch Bar */}
-        <div className="w-full flex items-center justify-between mb-4 text-xs shrink-0">
+        <div className="w-full flex items-center justify-between mb-2 sm:mb-2.5 text-xs shrink-0">
           <Link
             href="/login"
             className="inline-flex items-center gap-1.5 font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
@@ -190,12 +190,19 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           )}
         </div>
 
+        {/* Main Heading centered above the Login Card */}
+        <div className="text-center mb-2.5 sm:mb-3.5 shrink-0">
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            CCE-PGPA <span className="text-blue-600 dark:text-blue-400">Management System</span>
+          </h2>
+        </div>
+
         {/* Signed Out Notification */}
         {justSignedOut && !user && (
           <div
             id="signed-out-success-alert"
             role="status"
-            className="w-full mb-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3 text-xs text-emerald-900 dark:text-emerald-200 shadow-2xs flex items-center justify-between gap-2"
+            className="w-full mb-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-2.5 text-xs text-emerald-900 dark:text-emerald-200 shadow-2xs flex items-center justify-between gap-2 shrink-0"
           >
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -216,7 +223,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           (user.role === role || (user.role === "hod" && role === "mentor") || (user.accessible_portals && user.accessible_portals.includes(role))) ? (
             <div
               role="status"
-              className="w-full mb-4 rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/80 dark:bg-blue-950/50 p-3 text-xs text-blue-950 dark:text-blue-200 shadow-2xs flex flex-col gap-2"
+              className="w-full mb-3 rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/80 dark:bg-blue-950/50 p-2.5 text-xs text-blue-950 dark:text-blue-200 shadow-2xs flex flex-col gap-2 shrink-0"
             >
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -225,7 +232,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-0.5">
                 {user.role === "hod" && role === "mentor" ? (
                   <>
                     <Link
@@ -262,13 +269,13 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         )}
 
         {/* Login Card */}
-        <div className="w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs">
+        <div className="w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-xs">
           {/* Card Header */}
-          <div className="pb-5 mb-5 border-b border-slate-100 dark:border-slate-800">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <div className="pb-3.5 mb-3.5 border-b border-slate-100 dark:border-slate-800">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white">
               {currentConfig.portalTitle}
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Department of Computer and Communication Engineering (CCE)
             </p>
           </div>
@@ -277,13 +284,13 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           {roleMismatch && (
             <div
               role="alert"
-              className="mb-4 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/60 p-3 text-xs text-amber-900 dark:text-amber-200"
+              className="mb-3 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/60 p-2.5 text-xs text-amber-900 dark:text-amber-200"
             >
               <p className="font-semibold text-xs">Role Mismatch</p>
               <p className="mt-1 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
                 You authenticated as <strong>{ROLE_CONFIGS[roleMismatch.actualRole].shortTitle}</strong>. Please switch to your authorized portal.
               </p>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-2.5 flex gap-2">
                 <Link
                   href={ROLE_CONFIGS[roleMismatch.actualRole].dashboardPath}
                   className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-600 text-white text-xs font-semibold hover:bg-amber-700 transition"
@@ -308,7 +315,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           {!roleMismatch && displayError && (
             <div
               role="alert"
-              className="mb-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/50 p-3 text-xs text-rose-800 dark:text-rose-200"
+              className="mb-3 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/50 p-2.5 text-xs text-rose-800 dark:text-rose-200"
             >
               <p className="font-semibold text-xs">Invalid Credentials</p>
               <p className="mt-0.5 text-rose-700 dark:text-rose-300 text-[11px] leading-tight">{displayError}</p>
@@ -316,12 +323,12 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-3.5" noValidate>
             {/* Email / Identifier Field */}
             <div>
               <label
                 htmlFor="login-email-input"
-                className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
+                className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
                 {role === "student" ? "Register Number or College Email" : "Official College Email"}
               </label>
@@ -339,13 +346,13 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                     : currentConfig.placeholder
                 }
                 disabled={isSubmitting}
-                className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
+                className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 sm:py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-1">
                 <label
                   htmlFor="login-password-input"
                   className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
@@ -370,7 +377,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your account password"
                   disabled={isSubmitting}
-                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
+                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 sm:py-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
                 />
                 <button
                   type="button"
@@ -393,7 +400,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
             </div>
 
             {/* Login Button */}
-            <div className="pt-2">
+            <div className="pt-1.5">
               <button
                 type="submit"
                 id="login-submit-button"
@@ -414,11 +421,6 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
               </button>
             </div>
           </form>
-
-          {/* Authorized Access Only Notice */}
-          <p className="mt-4 text-[11px] text-center text-slate-400 dark:text-slate-500">
-            Authorized institutional cohort access only &bull; Public registration disabled
-          </p>
         </div>
       </main>
 

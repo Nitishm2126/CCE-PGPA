@@ -14,9 +14,9 @@ export const FineWorksFooter: React.FC<FineWorksFooterProps> = ({
 }) => {
   return (
     <footer
-      className={`w-full shrink-0 border-t border-slate-200/80 dark:border-slate-800 bg-white/50 dark:bg-slate-950/40 py-6 px-4 sm:px-6 lg:px-8 transition-colors ${className}`}
+      className={`w-full shrink-0 border-t border-slate-200/80 dark:border-slate-800 bg-white/50 dark:bg-slate-950/40 py-4 sm:py-5 px-4 sm:px-6 lg:px-8 transition-colors ${className}`}
     >
-      <div className="mx-auto max-w-7xl flex flex-col items-center justify-center text-center space-y-2">
+      <div className="mx-auto max-w-7xl flex flex-col items-center justify-center text-center space-y-1.5">
         {/* Creative Brand Attribution */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">

@@ -86,7 +86,7 @@ function PortalSelectionContent() {
       {/* 1. Clean Apple-Grade Header */}
       <header className="w-full shrink-0 border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-40 transition-colors">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
+          <div className="flex h-13 sm:h-14 items-center justify-between gap-4">
             {/* Left: FineWorks Branding & Department Identity */}
             <FineWorksBrand showDepartment size="md" />
 
@@ -99,15 +99,19 @@ function PortalSelectionContent() {
       </header>
 
       {/* 2. Main Portal Selection Section */}
-      <main className="w-full flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8 sm:py-12 min-h-0">
+      <main className="w-full flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-4 sm:py-6 md:py-8 min-h-0">
         {/* Department Title & Institutional Intro */}
-        <section className="text-center w-full max-w-3xl mx-auto space-y-2.5 shrink-0">
-          <div className="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-xs font-semibold text-slate-700 dark:text-slate-300">
+        <section className="text-center w-full max-w-3xl mx-auto space-y-2 shrink-0">
+          <div className="inline-flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300">
             <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
             <span>Department of Computer and Communication Engineering</span>
           </div>
 
-          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-normal">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
+            CCE PGPA <span className="text-blue-600 dark:text-blue-400">Management System</span>
+          </h1>
+
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-normal">
             Select your institutional portal to manage student achievements, evaluations, and academic audits.
           </p>
         </section>
@@ -117,7 +121,7 @@ function PortalSelectionContent() {
           <div
             id="signed-out-success-alert"
             role="status"
-            className="w-full max-w-2xl mx-auto mt-6 shrink-0 rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800/60 dark:bg-emerald-950/40 p-3 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2 shadow-2xs"
+            className="w-full max-w-2xl mx-auto mt-4 sm:mt-5 shrink-0 rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800/60 dark:bg-emerald-950/40 p-2.5 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2 shadow-2xs"
           >
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -136,8 +140,8 @@ function PortalSelectionContent() {
 
         {/* Discreet Active Session Status Bar (if already signed in) */}
         {user && !isLoading && (
-          <div aria-label="Current Session" className="w-full max-w-2xl mx-auto mt-6 shrink-0">
-            <div className="rounded-xl border border-blue-200/90 dark:border-blue-800/80 bg-blue-50/80 dark:bg-blue-950/60 py-2.5 px-4 text-xs text-blue-950 dark:text-blue-200 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+          <div aria-label="Current Session" className="w-full max-w-2xl mx-auto mt-4 sm:mt-5 shrink-0">
+            <div className="rounded-xl border border-blue-200/90 dark:border-blue-800/80 bg-blue-50/80 dark:bg-blue-950/60 py-2 px-3.5 text-xs text-blue-950 dark:text-blue-200 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                 <span className="font-medium">
@@ -168,7 +172,7 @@ function PortalSelectionContent() {
         )}
 
         {/* Portal Selection Cards */}
-        <div className="grid gap-4 sm:gap-6 w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto mt-8 sm:mt-10">
+        <div className="grid gap-3.5 sm:gap-5 w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto mt-4 sm:mt-6">
           {publicPortals.map((roleKey) => {
             const cfg = ROLE_CONFIGS[roleKey];
             const theme = PORTAL_CARD_THEMES[roleKey] || PORTAL_CARD_THEMES.student;
@@ -199,13 +203,13 @@ function PortalSelectionContent() {
                 key={roleKey}
                 href={cardHref}
                 id={`portal-card-${roleKey}`}
-                className={`group relative flex flex-col justify-between rounded-2xl border ${theme.cardBorder} ${theme.hoverBorder} bg-white dark:bg-slate-900 p-6 shadow-xs hover:shadow-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${theme.focusRing} w-full min-h-[220px] active:scale-[0.99]`}
+                className={`group relative flex flex-col justify-between rounded-2xl border ${theme.cardBorder} ${theme.hoverBorder} bg-white dark:bg-slate-900 p-5 sm:p-5.5 shadow-xs hover:shadow-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${theme.focusRing} w-full min-h-[190px] active:scale-[0.99]`}
               >
                 <div className="flex-1 flex flex-col">
                   {/* Card Header: Role Icon & Official Badge */}
-                  <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center justify-between gap-2 mb-3">
                     <div
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${theme.iconBg} ${theme.iconText} transition-colors`}
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${theme.iconBg} ${theme.iconText} transition-colors`}
                     >
                       {roleKey === "student" && (
                         <svg
@@ -262,18 +266,18 @@ function PortalSelectionContent() {
                   </div>
 
                   {/* Title & Description */}
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-snug">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug">
                     {cfg.portalTitle}
                   </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                     {descriptionText}
                   </p>
                 </div>
 
                 {/* Bottom CTA Button */}
-                <div className="pt-5 mt-auto">
+                <div className="pt-4 mt-auto">
                   <div
-                    className={`w-full py-2.5 px-4 rounded-xl font-semibold text-xs text-center flex items-center justify-center gap-2 transition-all ${theme.buttonBg} shadow-2xs group-hover:opacity-95`}
+                    className={`w-full py-2 px-3.5 rounded-xl font-semibold text-xs text-center flex items-center justify-center gap-2 transition-all ${theme.buttonBg} shadow-2xs group-hover:opacity-95`}
                   >
                     <span>{ctaLabel}</span>
                     <svg
