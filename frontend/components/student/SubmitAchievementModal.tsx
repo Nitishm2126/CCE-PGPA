@@ -2435,8 +2435,8 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* Progress Step while Submitting */}
         {isSubmitting && submissionStep && (
-          <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/60 dark:bg-blue-950/30 p-3 flex items-center gap-2.5 text-xs text-blue-800 dark:text-blue-300">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent shrink-0" />
+          <div className="rounded-xl border border-purple-200 dark:border-amber-900/60 bg-purple-50/60 dark:bg-amber-950/30 p-3 flex items-center gap-2.5 text-xs text-purple-800 dark:text-amber-300">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-purple-600 dark:border-amber-400 border-t-transparent shrink-0" />
             <span className="font-medium">{submissionStep}</span>
           </div>
         )}

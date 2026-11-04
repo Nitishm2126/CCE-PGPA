@@ -72,18 +72,18 @@ export default function MentorDashboardPage() {
   // Authentication Guard
   useEffect(() => {
     if (!authLoading && !user && !isLoggingOut) {
-      router.push("/login/mentor");
+      router.replace("/login/mentor");
       return;
     }
     if (!authLoading && user && user.role !== "mentor" && user.role !== "hod" && !user.accessible_portals?.includes("mentor")) {
-      router.push("/login/mentor");
+      router.replace("/login/mentor");
       return;
     }
     if (!authLoading && user && user.must_change_password) {
-      router.push("/change-password");
+      router.replace("/change-password");
       return;
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, isLoggingOut, router]);
 
   const loadUnreadCounts = useCallback(async () => {
     if (!token) return;
@@ -214,7 +214,7 @@ export default function MentorDashboardPage() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login?signedOut=true");
+    router.replace("/login?signedOut=true");
   };
 
   const handleOpenSubmission = (sub: AchievementResponse) => {

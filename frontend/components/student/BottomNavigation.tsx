@@ -22,7 +22,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       label: "Submit Activity",
       icon: (
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
         </svg>
       ),
     },
@@ -101,7 +105,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       label: "Submit",
       icon: (
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
         </svg>
       ),
     },
@@ -162,12 +170,12 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
 
   return (
     <>
-      {/* Mobile Fixed Bottom Navigation Bar (< md): Apple-inspired translucent glass tab bar */}
+      {/* Mobile Fixed Bottom Navigation Bar (< md): Full-width, attached to viewport edge */}
       <nav
         aria-label="Student Mobile Navigation"
-        className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/90 dark:bg-[#171e28]/90 backdrop-blur-xl border-t border-slate-200/80 dark:border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)] pb-[max(0.6rem,env(safe-area-inset-bottom))] pt-1 transition-colors"
+        className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-[#090d16]/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800/90 shadow-[0_-2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_-2px_16px_rgba(0,0,0,0.5)] pb-[env(safe-area-inset-bottom,0px)] transition-colors"
       >
-        <div className="grid grid-cols-5 items-end justify-around px-1 max-w-md mx-auto">
+        <div className="grid grid-cols-5 items-center justify-between w-full max-w-md mx-auto px-1 py-1">
           {mobileNavTabs.map((tab) => {
             const isActive = activeTab === tab.id;
 
@@ -178,19 +186,19 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 onClick={() => onSelectTab(tab.id)}
                 aria-label={tab.label}
                 aria-current={isActive ? "page" : undefined}
-                className="relative flex flex-col items-center justify-center py-1 transition-all duration-150 active:scale-95 cursor-pointer min-h-[48px] select-none apple-tap-feedback"
+                className="relative flex flex-col items-center justify-center py-1 transition-all duration-150 active:scale-95 cursor-pointer min-h-[46px] select-none apple-tap-feedback"
               >
                 {/* Fixed Icon Box for uniform baseline across all tabs */}
                 <div
-                  className={`flex h-6 w-6 items-center justify-center transition-colors relative ${
+                  className={`flex h-5 w-5 items-center justify-center transition-colors relative ${
                     isActive
-                      ? "text-blue-600 dark:text-[#4c83e6]"
-                      : "text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
+                      ? "text-purple-600 dark:text-amber-400"
+                      : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
                   }`}
                 >
                   {tab.icon}
                   {tab.badge !== undefined && tab.badge > 0 && (
-                    <span className="absolute -top-1 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white shadow-xs animate-pulse">
+                    <span className="absolute -top-1 -right-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-600 px-1 text-[8px] font-bold text-white shadow-xs animate-pulse">
                       {tab.badge}
                     </span>
                   )}
@@ -201,7 +209,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                   <span
                     className={`text-[10px] leading-none tracking-tight truncate max-w-full text-center ${
                       isActive
-                        ? "font-semibold text-blue-600 dark:text-[#4c83e6]"
+                        ? "font-semibold text-purple-700 dark:text-amber-400"
                         : "font-medium text-slate-500 dark:text-slate-400"
                     }`}
                   >
@@ -212,7 +220,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 {/* Active Indicator Dot */}
                 <div className="h-1 flex items-center justify-center mt-0.5">
                   {isActive ? (
-                    <span className="h-1 w-1 rounded-full bg-blue-600 dark:bg-[#4c83e6] animate-apple-fade" />
+                    <span className="h-1 w-1 rounded-full bg-purple-600 dark:bg-amber-400 animate-apple-fade" />
                   ) : (
                     <span className="h-1 w-1" />
                   )}
@@ -224,7 +232,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       </nav>
 
       {/* Desktop Navigation Segment Control (>= md) */}
-      <div className="hidden md:flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700 px-3 py-1.5 rounded-xl shadow-2xs mb-6 transition-colors">
+      <div className="hidden md:flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 px-3 py-1.5 rounded-xl shadow-2xs mb-6 transition-colors">
         <div className="flex items-center gap-1">
           {desktopTabs.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -235,7 +243,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 onClick={() => onSelectTab(tab.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                   isActive
-                    ? "bg-blue-50/80 dark:bg-[#1c2531] text-blue-700 dark:text-[#4c83e6] font-semibold border border-blue-200/80 dark:border-[#2b3543] shadow-2xs"
+                    ? "bg-purple-50 dark:bg-[#161e2e] text-purple-700 dark:text-amber-400 font-semibold border border-purple-200 dark:border-amber-400/30 shadow-2xs"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium"
                 }`}
               >

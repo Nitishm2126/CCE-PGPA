@@ -83,18 +83,18 @@ export default function HODDashboardPage() {
   // Auth Guard
   useEffect(() => {
     if (!authLoading && !user && !isLoggingOut) {
-      router.push("/login/hod");
+      router.replace("/login/hod");
       return;
     }
     if (!authLoading && user && user.role !== "hod" && !user.accessible_portals?.includes("hod")) {
-      router.push("/login/hod");
+      router.replace("/login/hod");
       return;
     }
     if (!authLoading && user && user.must_change_password) {
-      router.push("/change-password");
+      router.replace("/change-password");
       return;
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, isLoggingOut, router]);
 
   // Decoupled independent data loaders
   const loadOverview = useCallback(async (activeToken?: string | null) => {
@@ -309,7 +309,7 @@ export default function HODDashboardPage() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login?signedOut=true");
+    router.replace("/login?signedOut=true");
   };
 
   const formatDate = (dateStr?: string | null) => {

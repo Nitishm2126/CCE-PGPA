@@ -9,6 +9,7 @@ import { ROLE_CONFIGS } from "@/lib/role-config";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
+import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 
 // Only Student, Mentor, and HOD portals are shown in public switch navigation
 const PUBLIC_SWITCH_ROLES: UserRole[] = ["student", "mentor", "hod"];
@@ -42,7 +43,7 @@ const ROLE_THEME_DETAILS = {
 
 export function RoleLoginForm({ role }: RoleLoginFormProps) {
   const router = useRouter();
-  const { user, login, logout, isLoading: authLoading, error: authError, clearError } = useAuth();
+  const { user, login, logout, isLoading: authLoading, isLoggingOut, error: authError, clearError } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,6 +55,22 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
     actualRole: UserRole;
     attemptedRole: UserRole;
   } | null>(null);
+
+  // CRITICAL: If authenticated, automatically redirect to role-specific dashboard
+  useEffect(() => {
+    if (!authLoading && !isLoggingOut && user) {
+      const isAuthorizedForRole =
+        user.role === role ||
+        (user.role === "hod" && role === "mentor") ||
+        (user.accessible_portals && user.accessible_portals.includes(role));
+
+      if (isAuthorizedForRole) {
+        router.replace(`/${role}`);
+      } else {
+        router.replace(ROLE_CONFIGS[user.role]?.dashboardPath || `/${user.role}`);
+      }
+    }
+  }, [user, authLoading, isLoggingOut, role, router]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -121,15 +138,15 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
         // Check mandatory first-login password change requirement
         if (authenticatedUser.must_change_password) {
-          router.push("/change-password");
+          router.replace("/change-password");
           return;
         }
 
         // Role matches: proceed to authorized dashboard
-        router.push(`/${role}`);
+        router.replace(`/${role}`);
       } else {
         // Firebase authenticated, but pending PostgreSQL directory provisioning
-        router.push("/verify-email");
+        router.replace("/verify-email");
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Authentication failed.";
@@ -142,6 +159,16 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
   const currentConfig = ROLE_CONFIGS[role];
   const themeDetails = ROLE_THEME_DETAILS[role] || ROLE_THEME_DETAILS.student;
   const displayError = localError || authError;
+
+  if (authLoading || (!isLoggingOut && user)) {
+    return (
+      <AppleLoadingScreen
+        message={`Accessing ${currentConfig?.portalTitle || "portal"}...`}
+        submessage={user ? "Redirecting to your authorized dashboard..." : "Verifying credentials..."}
+        fullScreen={true}
+      />
+    );
+  }
 
   return (
     <div className="w-full min-h-[100dvh] flex flex-col justify-between bg-slate-50/50 dark:bg-[#0c1117] text-slate-900 dark:text-slate-100 overflow-x-hidden transition-colors">
@@ -161,7 +188,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         <div className="w-full flex items-center justify-between mb-2 sm:mb-2.5 text-xs shrink-0">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+            className="inline-flex items-center gap-1.5 font-semibold text-purple-600 dark:text-amber-400 hover:text-purple-800 dark:hover:text-amber-300 transition-colors"
           >
             <span>&larr;</span>
             <span>All Portals</span>
@@ -193,7 +220,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         {/* Main Heading centered above the Login Card */}
         <div className="text-center mb-2.5 sm:mb-3.5 shrink-0">
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-            CCE-PGPA <span className="text-blue-600 dark:text-blue-400">Management System</span>
+            CCE-PGPA <span className="text-purple-600 dark:text-amber-400">Management System</span>
           </h2>
         </div>
 
@@ -218,55 +245,6 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           </div>
         )}
 
-        {/* Existing Session Alert / Role Mismatch Protection */}
-        {user && !authLoading && (
-          (user.role === role || (user.role === "hod" && role === "mentor") || (user.accessible_portals && user.accessible_portals.includes(role))) ? (
-            <div
-              role="status"
-              className="w-full mb-3 rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/80 dark:bg-blue-950/50 p-2.5 text-xs text-blue-950 dark:text-blue-200 shadow-2xs flex flex-col gap-2 shrink-0"
-            >
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span>
-                  Active: <strong>{user.full_name}</strong> ({ROLE_CONFIGS[user.role]?.shortTitle})
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 pt-0.5">
-                {user.role === "hod" && role === "mentor" ? (
-                  <>
-                    <Link
-                      href="/mentor"
-                      className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1 text-xs transition"
-                    >
-                      Open Mentor Portal &rarr;
-                    </Link>
-                    <Link
-                      href="/hod"
-                      className="rounded-lg border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 font-semibold px-3 py-1 text-xs transition"
-                    >
-                      Open HOD Dashboard &rarr;
-                    </Link>
-                  </>
-                ) : (
-                  <Link
-                    href={`/${user.role}`}
-                    className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1 text-xs transition"
-                  >
-                    Open Dashboard &rarr;
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  onClick={handleSwitchAccount}
-                  className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1 text-xs text-slate-700 dark:text-slate-300 hover:text-rose-600 transition"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
-          ) : null
-        )}
 
         {/* Login Card */}
         <div className="w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-xs">

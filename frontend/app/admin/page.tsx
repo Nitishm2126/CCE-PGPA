@@ -112,18 +112,18 @@ export default function AdminDashboardPage() {
   // ============================================================================
   useEffect(() => {
     if (!authLoading && !user && !isLoggingOut) {
-      router.push("/login/admin");
+      router.replace("/login/admin");
       return;
     }
     if (!authLoading && user && user.role !== "admin") {
-      router.push("/login/admin");
+      router.replace("/login/admin");
       return;
     }
     if (!authLoading && user && user.must_change_password) {
-      router.push("/change-password");
+      router.replace("/change-password");
       return;
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, isLoggingOut, router]);
 
   // ============================================================================
   // Data Fetching: Overview & Storage
@@ -315,7 +315,7 @@ export default function AdminDashboardPage() {
   // Handle Logout
   const handleLogout = async () => {
     await logout();
-    router.push("/login?signedOut=true");
+    router.replace("/login?signedOut=true");
   };
 
   // Handle File View / Download

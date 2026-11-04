@@ -460,9 +460,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
       setError(null);
       isLoggingOutRef.current = false;
-      setTimeout(() => {
-        setIsLoggingOut(false);
-      }, 1500);
+      setIsLoggingOut(false);
     }
   };
 

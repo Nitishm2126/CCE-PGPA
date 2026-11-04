@@ -73,18 +73,18 @@ export default function StudentDashboardPage() {
   // Authentication & Role Guard
   useEffect(() => {
     if (!authLoading && !user && !isLoggingOut) {
-      router.push("/login/student");
+      router.replace("/login/student");
       return;
     }
     if (!authLoading && user && user.role !== "student") {
-      router.push("/login/student");
+      router.replace("/login/student");
       return;
     }
     if (!authLoading && user && user.must_change_password) {
-      router.push("/change-password");
+      router.replace("/change-password");
       return;
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, isLoggingOut, router]);
 
   // Data loading callbacks
   const loadProfile = useCallback(async () => {
@@ -372,7 +372,7 @@ export default function StudentDashboardPage() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login?signedOut=true");
+    router.replace("/login?signedOut=true");
   };
 
   // Global Auth loading state
@@ -454,6 +454,7 @@ export default function StudentDashboardPage() {
         onLogout={handleLogout}
         onOpenMessages={() => setActiveTab("messages")}
         unreadMessagesCount={unreadMessagesCount}
+        activeTab={activeTab}
       />
 
       {/* 2. Slide-Over Navigation Drawer */}
@@ -468,8 +469,8 @@ export default function StudentDashboardPage() {
         unreadMessagesCount={unreadMessagesCount}
       />
 
-      {/* 3. Main Dashboard Body Container with Harmonious Spacing */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 md:pb-12 space-y-6">
+      {/* 3. Main Dashboard Body Container with Harmonious Spacing and Viewport Clearance */}
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:pb-12 space-y-6">
         {/* Desktop Segment Navigation */}
         <BottomNavigation
           activeTab={activeTab}

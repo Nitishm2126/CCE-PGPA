@@ -3,37 +3,41 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
 
 :root {
-  --background: #f8fafc;
+  --background: #fbfbfc;
   --foreground: #0f172a;
   --surface: #ffffff;
   --surface-card: #ffffff;
-  --surface-elevated: #f1f5f9;
-  --surface-hover: #f8fafc;
+  --surface-elevated: #f8fafc;
+  --surface-hover: #f1f5f9;
   --border: #e2e8f0;
   --border-subtle: #edf2f7;
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #64748b;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-subtle: rgba(37, 99, 235, 0.08);
+  --accent: #7c3aed; /* Elegant purple/lavender primary */
+  --accent-hover: #6d28d9;
+  --accent-subtle: rgba(124, 58, 237, 0.08);
+  --accent-gold: #ca8a04; /* Tasteful yellow/gold accent */
+  --accent-gold-hover: #a16207;
+  --accent-gold-subtle: rgba(202, 138, 4, 0.1);
 }
 
 .dark {
-  --background: #0f141b;
-  --foreground: #e8edf4;
-  --surface: #171e28;
-  --surface-card: #1c2531;
-  --surface-elevated: #232d3b;
-  --surface-hover: #232d3b;
-  --border: #2b3543;
-  --border-subtle: #222b37;
-  --text-primary: #e8edf4;
-  --text-secondary: #a0acbc;
-  --text-muted: #7e8b9c;
-  --accent: #4c83e6;
-  --accent-hover: #3b72d4;
-  --accent-subtle: rgba(76, 131, 230, 0.12);
+  --background: #090d16; /* Premium near-black/graphite */
+  --foreground: #f8fafc;
+  --surface: #121824; /* Dark charcoal */
+  --surface-card: #161e2e;
+  --surface-elevated: #1d2638;
+  --surface-hover: #1d2638;
+  --border: #232d3d; /* Subtle dark-gray tones */
+  --border-subtle: #1a2230;
+  --text-primary: #f8fafc; /* Clean white/light gray text */
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent: #eab308; /* Yellow/gold primary accent */
+  --accent-hover: #ca8a04;
+  --accent-subtle: rgba(234, 179, 8, 0.12);
+  --accent-purple: #a78bfa;
 }
 
 @theme inline {
@@ -50,23 +54,24 @@
   --color-text-muted: var(--text-muted);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-accent-gold: var(--accent-gold);
   --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 }
 
 /* Custom dark mode charcoal theme overrides for Tailwind slate scale in dark mode */
 .dark {
-  --color-slate-950: #0f141b;
-  --color-slate-900: #171e28;
-  --color-slate-850: #1a222d;
-  --color-slate-800: #1c2531;
-  --color-slate-750: #232d3b;
-  --color-slate-700: #2b3543;
-  --color-slate-600: #424f60;
-  --color-slate-500: #7e8b9c;
-  --color-slate-400: #a0acbc;
+  --color-slate-950: #090d16;
+  --color-slate-900: #121824;
+  --color-slate-850: #141b28;
+  --color-slate-800: #161e2e;
+  --color-slate-750: #1d2638;
+  --color-slate-700: #232d3d;
+  --color-slate-600: #3b4759;
+  --color-slate-500: #64748b;
+  --color-slate-400: #94a3b8;
   --color-slate-300: #cbd5e1;
-  --color-slate-200: #e8edf4;
+  --color-slate-200: #e2e8f0;
   --color-slate-100: #f1f5f9;
 }
 
@@ -88,16 +93,16 @@ body {
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #0f141b;
+  background: #090d16;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #2b3543;
+  background: #232d3d;
   border-radius: 4px;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #424f60;
+  background: #3b4759;
 }
 
 /* Focus indicator ring */

@@ -2,13 +2,14 @@
 
 import React, { Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { UserRole } from "@/types/auth";
 import { ROLE_CONFIGS } from "@/lib/role-config";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
+import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 
 // Theme palettes for the 3 primary institutional cards
 interface PortalCardTheme {
@@ -26,36 +27,36 @@ interface PortalCardTheme {
 const PORTAL_CARD_THEMES: Record<string, PortalCardTheme> = {
   student: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
-    focusRing: "focus-visible:ring-blue-500",
-    badgeBg: "bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800",
-    badgeText: "text-blue-700 dark:text-blue-300",
-    iconBg: "bg-blue-50 dark:bg-blue-950/60",
-    iconText: "text-blue-600 dark:text-blue-400",
-    buttonBg: "bg-blue-600 hover:bg-blue-700 text-white",
-    buttonHoverBg: "hover:bg-blue-700",
+    hoverBorder: "hover:border-purple-400 dark:hover:border-amber-500",
+    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-amber-500",
+    badgeBg: "bg-purple-50 dark:bg-amber-950/40 border-purple-200 dark:border-amber-800/60",
+    badgeText: "text-purple-700 dark:text-amber-300",
+    iconBg: "bg-purple-50 dark:bg-amber-950/50",
+    iconText: "text-purple-600 dark:text-amber-400",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600 dark:text-slate-950",
+    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-amber-600",
   },
   mentor: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-sky-400 dark:hover:border-sky-600",
-    focusRing: "focus-visible:ring-sky-500",
-    badgeBg: "bg-sky-50 dark:bg-sky-950/50 border-sky-200 dark:border-sky-800",
-    badgeText: "text-sky-700 dark:text-sky-300",
-    iconBg: "bg-sky-50 dark:bg-sky-950/60",
-    iconText: "text-sky-600 dark:text-sky-400",
-    buttonBg: "bg-sky-600 hover:bg-sky-700 text-white",
-    buttonHoverBg: "hover:bg-sky-700",
+    hoverBorder: "hover:border-purple-400 dark:hover:border-amber-500",
+    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-amber-500",
+    badgeBg: "bg-purple-50/70 dark:bg-amber-950/30 border-purple-200 dark:border-amber-800/50",
+    badgeText: "text-purple-700 dark:text-amber-300",
+    iconBg: "bg-purple-50 dark:bg-amber-950/50",
+    iconText: "text-purple-600 dark:text-amber-400",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600 dark:text-slate-950",
+    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-amber-600",
   },
   hod: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-purple-400 dark:hover:border-purple-600",
-    focusRing: "focus-visible:ring-purple-500",
-    badgeBg: "bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800",
-    badgeText: "text-purple-700 dark:text-purple-300",
-    iconBg: "bg-purple-50 dark:bg-purple-950/60",
-    iconText: "text-purple-600 dark:text-purple-400",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white",
-    buttonHoverBg: "hover:bg-purple-700",
+    hoverBorder: "hover:border-purple-400 dark:hover:border-amber-500",
+    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-amber-500",
+    badgeBg: "bg-purple-50 dark:bg-amber-950/40 border-purple-200 dark:border-amber-800/60",
+    badgeText: "text-purple-700 dark:text-amber-300",
+    iconBg: "bg-purple-50 dark:bg-amber-950/50",
+    iconText: "text-purple-600 dark:text-amber-400",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600 dark:text-slate-950",
+    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-amber-600",
   },
 };
 
@@ -72,10 +73,30 @@ const PORTAL_CARD_METADATA: Record<string, { description: string }> = {
 };
 
 function PortalSelectionContent() {
-  const { user, logout, isLoading } = useAuth();
+  const router = useRouter();
+  const { user, isLoading, isLoggingOut } = useAuth();
   const searchParams = useSearchParams();
   const [dismissed, setDismissed] = React.useState(false);
   const justSignedOut = searchParams?.get("signedOut") === "true" && !dismissed;
+
+  // CRITICAL: If authenticated, automatically redirect to role-specific dashboard
+  React.useEffect(() => {
+    if (!isLoading && !isLoggingOut && user) {
+      const targetPath = ROLE_CONFIGS[user.role]?.dashboardPath || `/${user.role}`;
+      router.replace(targetPath);
+    }
+  }, [user, isLoading, isLoggingOut, router]);
+
+  // While resolving session or while redirecting authenticated user, display clean screen
+  if (isLoading || (!isLoggingOut && user)) {
+    return (
+      <AppleLoadingScreen
+        message="Accessing institutional portal..."
+        submessage={user ? `Redirecting to ${ROLE_CONFIGS[user.role]?.shortTitle || "user"} dashboard...` : "Verifying session..."}
+        fullScreen={true}
+      />
+    );
+  }
 
   // Display the 3 public institutional portals (Student, Mentor, HOD)
   // Admin is accessed discreetly via the footer
@@ -103,12 +124,12 @@ function PortalSelectionContent() {
         {/* Department Title & Institutional Intro */}
         <section className="text-center w-full max-w-3xl mx-auto space-y-2 shrink-0">
           <div className="inline-flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
+            <span className="h-1.5 w-1.5 rounded-full bg-purple-600 dark:bg-amber-400" />
             <span>Department of Computer and Communication Engineering</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-            CCE PGPA <span className="text-blue-600 dark:text-blue-400">Management System</span>
+            CCE PGPA <span className="text-purple-600 dark:text-amber-400">Management System</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-normal">
@@ -135,39 +156,6 @@ function PortalSelectionContent() {
             >
               &times;
             </button>
-          </div>
-        )}
-
-        {/* Discreet Active Session Status Bar (if already signed in) */}
-        {user && !isLoading && (
-          <div aria-label="Current Session" className="w-full max-w-2xl mx-auto mt-4 sm:mt-5 shrink-0">
-            <div className="rounded-xl border border-blue-200/90 dark:border-blue-800/80 bg-blue-50/80 dark:bg-blue-950/60 py-2 px-3.5 text-xs text-blue-950 dark:text-blue-200 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                <span className="font-medium">
-                  Active Session: <strong className="font-semibold text-slate-900 dark:text-white">{user.full_name}</strong>{" "}
-                  <span className="text-blue-800 dark:text-blue-300">
-                    ({ROLE_CONFIGS[user.role]?.shortTitle})
-                  </span>
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <Link
-                  href={ROLE_CONFIGS[user.role]?.dashboardPath || `/${user.role}`}
-                  className="font-semibold text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 hover:underline inline-flex items-center gap-1"
-                >
-                  Open Dashboard &rarr;
-                </Link>
-                <span className="text-slate-300 dark:text-slate-700">&bull;</span>
-                <button
-                  type="button"
-                  onClick={() => logout()}
-                  className="font-medium text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:underline cursor-pointer"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
           </div>
         )}
 

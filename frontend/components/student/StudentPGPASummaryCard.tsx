@@ -112,7 +112,7 @@ export const StudentPGPASummaryCard: React.FC<StudentPGPASummaryCardProps> = ({
       {/* 2. Main Score Highlights */}
       {loading ? (
         <div className="py-8 text-center text-xs text-slate-500">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-3 border-blue-600 border-t-transparent mb-2" />
+          <div className="inline-block animate-spin rounded-full h-6 w-6 border-3 border-purple-600 dark:border-amber-400 border-t-transparent mb-2" />
           <p>Calculating verified PGPA score...</p>
         </div>
       ) : error ? (

@@ -35,13 +35,13 @@ export default function ChangePasswordPage() {
   // Auth guard: must be authenticated
   useEffect(() => {
     if (!authLoading && !user && !isLoggingOut) {
-      router.push("/login?signedOut=true");
+      router.replace("/login?signedOut=true");
     }
   }, [user, authLoading, isLoggingOut, router]);
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login?signedOut=true");
+    router.replace("/login?signedOut=true");
   };
 
   const isMandatoryChange = Boolean(user?.must_change_password);
