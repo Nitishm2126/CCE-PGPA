@@ -89,18 +89,17 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
             </button>
           )}
 
-          {/* Quick Submit Activity Button */}
+          {/* Quick Submit Activity Button (Visible on sm and up; on mobile bottom bar / landing page handles submission) */}
           <button
             type="button"
             id="student-header-submit-btn"
             onClick={onSubmitClick}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 shadow-2xs active:scale-95 transition-all cursor-pointer"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0"
           >
             <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            <span className="hidden sm:inline">Submit Activity</span>
-            <span className="sm:hidden">Submit</span>
+            <span>Submit Activity</span>
           </button>
 
           {/* Sign Out Action */}

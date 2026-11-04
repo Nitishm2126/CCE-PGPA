@@ -18,7 +18,7 @@ import { RecentActivitySection } from "@/components/student/RecentActivitySectio
 import { PGPAComponentsSection } from "@/components/student/PGPAComponentsSection";
 import { ProgressAnalyticsSection } from "@/components/student/ProgressAnalyticsSection";
 import { StudentProfileSection } from "@/components/student/StudentProfileSection";
-import { SubmitAchievementModal } from "@/components/student/SubmitAchievementModal";
+import { SubmitAchievementModal, SubmitAchievementFormContent } from "@/components/student/SubmitAchievementModal";
 import { EditAchievementModal } from "@/components/student/EditAchievementModal";
 import { DeleteAchievementModal } from "@/components/student/DeleteAchievementModal";
 import { BottomNavigation } from "@/components/student/BottomNavigation";
@@ -33,8 +33,8 @@ export default function StudentDashboardPage() {
   const router = useRouter();
   const { user, token, logout, isLoading: authLoading, isLoggingOut } = useAuth();
 
-  // Navigation tab state
-  const [activeTab, setActiveTab] = useState<string>("dashboard");
+  // Navigation tab state - Initial landing page is "submit" (Submit Activity)
+  const [activeTab, setActiveTab] = useState<string>("submit");
 
   // Data states
   const [studentData, setStudentData] = useState<StudentDetailResponse | null>(null);
@@ -364,7 +364,10 @@ export default function StudentDashboardPage() {
 
   const handleOpenSubmitModal = (componentId?: string | null) => {
     setPreselectedComponentId(componentId || null);
-    setIsSubmitModalOpen(true);
+    setActiveTab("submit");
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const handleLogout = async () => {
@@ -466,7 +469,7 @@ export default function StudentDashboardPage() {
       />
 
       {/* 3. Main Dashboard Body Container with Harmonious Spacing */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12 space-y-6">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 md:pb-12 space-y-6">
         {/* Desktop Segment Navigation */}
         <BottomNavigation
           activeTab={activeTab}
@@ -475,32 +478,51 @@ export default function StudentDashboardPage() {
           unreadMessagesCount={unreadMessagesCount}
         />
 
-        {/* Simplified Student Welcome Section */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
-          <div className="space-y-1">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Welcome back, {firstName}
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              Department of Computer and Communication Engineering (CCE)
-            </p>
+        {/* TAB 0: SUBMIT ACTIVITY (Initial Landing Page & 5-Section Form) */}
+        {activeTab === "submit" && (
+          <div className="space-y-6">
+            <SubmitAchievementFormContent
+              key={preselectedComponentId || "submit-form-active"}
+              components={components}
+              initialComponentId={preselectedComponentId}
+              onSubmit={async (data, file, immediately) => {
+                await handleCreateAchievement(data, file, immediately);
+                if (immediately) {
+                  setActiveTab("activity");
+                }
+              }}
+              onClose={() => setActiveTab("dashboard")}
+              isModal={false}
+            />
           </div>
-
-          <button
-            type="button"
-            onClick={() => handleOpenSubmitModal(null)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-2xs active:scale-95 transition-all cursor-pointer self-start sm:self-auto"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Submit Activity</span>
-          </button>
-        </div>
+        )}
 
         {/* TAB 1: DASHBOARD (Balanced Spacing & Clean Overview - NO duplicate components catalogue) */}
         {activeTab === "dashboard" && (
           <div className="space-y-6">
+            {/* Simplified Student Welcome Section */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
+              <div className="space-y-1">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  Welcome back, {firstName}
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                  Department of Computer and Communication Engineering (CCE)
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleOpenSubmitModal(null)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-2xs active:scale-95 transition-all cursor-pointer self-start sm:self-auto"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Submit Activity</span>
+              </button>
+            </div>
+
             {/* Academic Summary Strip */}
             <div className="bg-white dark:bg-[#171E28] rounded-2xl border border-slate-200 dark:border-[#2B3543] p-4 sm:p-5 shadow-2xs transition-colors">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

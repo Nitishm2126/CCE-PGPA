@@ -108,7 +108,13 @@ function PortalSelectionContent() {
           </div>
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-            CCE PGPA Management System
+            <Link
+              href="/login/admin"
+              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg inline-block cursor-pointer"
+              title="CCE-PGPA Management System — System Administrator Access"
+            >
+              CCE PGPA Management System
+            </Link>
           </h1>
 
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-normal">
@@ -298,7 +304,7 @@ function PortalSelectionContent() {
       </main>
 
       {/* 3. FineWorks Minimalist Footer */}
-      <FineWorksFooter />
+      <FineWorksFooter showAdminLink={false} />
     </div>
   );
 }

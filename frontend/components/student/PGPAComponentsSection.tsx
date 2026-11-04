@@ -215,11 +215,11 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
   }, [components, selectedSemesterTab]);
 
   return (
-    <section className="rounded-2xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-7 shadow-2xs transition-colors">
+    <section className="rounded-2xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-4 sm:p-7 shadow-2xs transition-colors overflow-hidden w-full max-w-full">
       {/* Header */}
       <div className="flex flex-col gap-4 pb-6 border-b border-slate-200 dark:border-[#2B3543] lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-[#E8EDF4]">
               PGPA Components Catalogue
             </h2>
@@ -233,10 +233,10 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
         </div>
 
         {/* Filters and Semester Selector Controls */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto max-w-full">
           {/* Semester Selector */}
           {semesters.length > 0 && onSemesterChange && (
-            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-[#1C2531] border border-slate-200 dark:border-[#2B3543] rounded-xl px-2.5 py-1">
+            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-[#1C2531] border border-slate-200 dark:border-[#2B3543] rounded-xl px-2.5 py-1 shrink-0">
               <svg className="h-3.5 w-3.5 text-blue-600 dark:text-[#4C83E6] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
                 <line x1="16" x2="16" y1="2" y2="6" />
@@ -262,8 +262,8 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
             </div>
           )}
 
-          {/* Refined Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none shrink-0">
+          {/* Refined Category Filter Pills (Horizontal swipeable on mobile) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full sm:w-auto max-w-full touch-pan-x">
             {semesterTabs.map((tab) => {
               const isSelected = selectedSemesterTab === tab.id;
               return (
@@ -342,7 +342,7 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
               return (
                 <div
                   key={component.id}
-                  className={`group relative flex flex-col justify-between rounded-xl border p-5 shadow-2xs transition-all duration-200 focus-within:ring-2 focus-within:ring-blue-600 ${
+                  className={`group relative flex flex-col justify-between rounded-xl border p-4 sm:p-5 shadow-2xs transition-all duration-200 focus-within:ring-2 focus-within:ring-blue-600 min-w-0 w-full ${
                     isLocked
                       ? "border-slate-200 dark:border-[#2B3543]/80 bg-slate-50/70 dark:bg-[#161D26]/80"
                       : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] hover:border-slate-300 dark:hover:border-[#3B4758] hover:shadow-xs"

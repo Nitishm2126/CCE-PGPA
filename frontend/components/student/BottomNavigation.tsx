@@ -15,8 +15,17 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onSubmitClick,
   unreadMessagesCount = 0,
 }) => {
-  // Desktop Tabs: All 5 primary sections
+  // Desktop Tabs: All 6 primary sections
   const desktopTabs = [
+    {
+      id: "submit",
+      label: "Submit Activity",
+      icon: (
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+      ),
+    },
     {
       id: "dashboard",
       label: "Dashboard",
@@ -85,8 +94,17 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
     },
   ];
 
-  // Mobile Bottom Bar Tabs: 5 symmetrically balanced items (Dashboard, Components, + Submit, Activity, Messages)
+  // Mobile Bottom Bar Tabs: 5 symmetrically balanced items (Submit, Dashboard, Components, Activity, Messages)
   const mobileNavTabs = [
+    {
+      id: "submit",
+      label: "Submit",
+      icon: (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+      ),
+    },
     {
       id: "dashboard",
       label: "Dashboard",
@@ -110,16 +128,6 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
             strokeLinejoin="round"
             d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
           />
-        </svg>
-      ),
-    },
-    {
-      id: "submit_action",
-      label: "Submit",
-      isAction: true,
-      icon: (
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
         </svg>
       ),
     },
@@ -161,28 +169,6 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       >
         <div className="grid grid-cols-5 items-end justify-around px-1 max-w-md mx-auto">
           {mobileNavTabs.map((tab) => {
-            if (tab.isAction) {
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={onSubmitClick}
-                  aria-label="Submit new PGPA achievement"
-                  className="flex flex-col items-center justify-center -mt-3.5 group cursor-pointer active:scale-90 transition-transform duration-150 select-none apple-tap-feedback"
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-[#4c83e6] dark:to-[#3b72d4] text-white shadow-md shadow-blue-500/30 dark:shadow-blue-900/40 transition-all">
-                    {tab.icon}
-                  </div>
-                  <div className="h-3.5 flex items-center justify-center mt-1">
-                    <span className="text-[10px] font-semibold text-blue-600 dark:text-[#4c83e6] leading-none text-center">
-                      {tab.label}
-                    </span>
-                  </div>
-                  <div className="h-1 w-1 mt-0.5" />
-                </button>
-              );
-            }
-
             const isActive = activeTab === tab.id;
 
             return (

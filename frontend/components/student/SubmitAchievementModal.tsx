@@ -16,7 +16,7 @@ interface SubmitAchievementModalProps {
   ) => Promise<void>;
 }
 
-interface FormContentProps {
+export interface SubmitAchievementFormContentProps {
   components: PGPAComponentResponse[];
   initialComponentId?: string | null;
   onSubmit: (
@@ -24,8 +24,11 @@ interface FormContentProps {
     evidenceFile: File | null,
     submitImmediately: boolean
   ) => Promise<void>;
-  onClose: () => void;
+  onClose?: () => void;
+  isModal?: boolean;
 }
+
+type FormContentProps = SubmitAchievementFormContentProps;
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MiB
 
@@ -125,11 +128,12 @@ export const scoreToGradeTableB = (score: number): { grade: string; points: numb
   return { grade: "C", points: 1 };
 };
 
-const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
+export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   components,
   initialComponentId,
   onSubmit,
   onClose,
+  isModal = true,
 }) => {
   const [componentId, setComponentId] = useState<string>(
     () => initialComponentId || components[0]?.id || ""
@@ -782,7 +786,11 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
       const payload = buildPayload();
       await onSubmit(payload, willUploadFile ? evidenceFile : null, submitImmediately);
-      onClose();
+      if (onClose) {
+        onClose();
+      } else {
+        resetForm();
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to record achievement and upload evidence.";
       setError(msg);
@@ -792,8 +800,36 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
     }
   };
 
+  const resetForm = () => {
+    setEvidenceFile(null);
+    setFileError(null);
+    setError(null);
+    setRemarks("");
+    setCertificateStatus("uploaded");
+    setClubName("");
+    setClubRoleCategory("Member");
+    setSportCompetitionName("");
+    setSportName("");
+    setSkillrackPoints("");
+    setAmcatScore("");
+    setGpa("");
+  };
+
+  const handleCancel = () => {
+    resetForm();
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#171E28] p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200 dark:border-[#2B3543] custom-scrollbar">
+    <div
+      className={
+        isModal
+          ? "relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#171E28] p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200 dark:border-[#2B3543] custom-scrollbar"
+          : "w-full max-w-3xl mx-auto rounded-2xl bg-white dark:bg-[#171E28] p-5 sm:p-8 text-left shadow-xs transition-all border border-slate-200 dark:border-[#2B3543]"
+      }
+    >
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#2B3543]">
         <div>
@@ -812,17 +848,19 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={isSubmitting}
-          className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1C2531] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
-          aria-label="Close modal"
-        >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        {isModal && onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1C2531] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+            aria-label="Close modal"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Form Body */}
@@ -842,55 +880,69 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           </div>
         )}
 
-        {/* Top Selectors: Semester and Component */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Semester Selector */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider mb-1">
-              Academic Semester *
-            </label>
-            <select
-              value={semesterId}
-              onChange={(e) => setSemesterId(e.target.value)}
-              disabled={isSubmitting || semesterLoading || semesters.length === 0}
-              required
-              className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
-            >
-              {semesterLoading ? (
-                <option value="">Loading active semesters...</option>
-              ) : semesters.length === 0 ? (
-                <option value="">No semesters currently open</option>
-              ) : (
-                semesters.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.display_name} (Semester {s.semester_number})
-                  </option>
-                ))
-              )}
-            </select>
+        {/* ==================================================================== */}
+        {/* Section 1 — Basic Details                                           */}
+        {/* ==================================================================== */}
+        <div className="space-y-3 pt-1">
+          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#2B3543]/60">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
+              1
+            </span>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#E8EDF4]">
+              Section 1 — Basic Details
+            </h3>
           </div>
 
-          {/* Component Selector */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider mb-1">
-              PGPA Component *
-            </label>
-            <select
-              value={componentId}
-              onChange={(e) => setComponentId(e.target.value)}
-              disabled={isSubmitting}
-              required
-              className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
-            >
-              {activeComponents.map((c) => {
-                const isLocked = c.is_enabled_for_semester === false || c.submission_mode === "hod_excel_import";
-                return (
-                  <option key={c.id} value={c.id}>
-                    #{String(c.display_order).padStart(2, "0")} — {c.name} {isLocked ? `🔒 [Locked for ${selectedSemester?.display_name || "Semester"}]` : `(${c.credit_value ?? 3} Cr)`}
-                  </option>
-                );
-              })}
-            </select>
+          {/* Top Selectors: Semester and Component */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Semester Selector */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider mb-1">
+                Academic Semester *
+              </label>
+              <select
+                value={semesterId}
+                onChange={(e) => setSemesterId(e.target.value)}
+                disabled={isSubmitting || semesterLoading || semesters.length === 0}
+                required
+                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+              >
+                {semesterLoading ? (
+                  <option value="">Loading active semesters...</option>
+                ) : semesters.length === 0 ? (
+                  <option value="">No semesters currently open</option>
+                ) : (
+                  semesters.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.display_name} (Semester {s.semester_number})
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            {/* Component Selector */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider mb-1">
+                PGPA Component *
+              </label>
+              <select
+                value={componentId}
+                onChange={(e) => setComponentId(e.target.value)}
+                disabled={isSubmitting}
+                required
+                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+              >
+                {activeComponents.map((c) => {
+                  const isLocked = c.is_enabled_for_semester === false || c.submission_mode === "hod_excel_import";
+                  return (
+                    <option key={c.id} value={c.id}>
+                      #{String(c.display_order).padStart(2, "0")} — {c.name} {isLocked ? `🔒 [Locked for ${selectedSemester?.display_name || "Semester"}]` : `(${c.credit_value ?? 3} Cr)`}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -916,8 +968,17 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         )}
 
         {/* ==================================================================== */}
-        {/* Component-Specific Form Sections (Render ONLY Relevant Fields)     */}
+        {/* Section 2 — Activity Details (Relevant Fields Only)                 */}
         {/* ==================================================================== */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#2B3543]/60">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
+              2
+            </span>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#E8EDF4]">
+              Section 2 — Activity Details
+            </h3>
+          </div>
 
         {/* 1. ACADEMICS (GPA ONLY) */}
         {currentSlug === "academics-gpa" && (
@@ -2064,11 +2125,20 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             </div>
           </div>
         )}
+        </div>
 
         {/* ==================================================================== */}
-        {/* Supporting Evidence / Certificate Submission (Three Clear Options)   */}
+        {/* Section 3 — Supporting Evidence (Three Clear Options)               */}
         {/* ==================================================================== */}
-        <div className="space-y-3">
+        <div className="space-y-3 pt-3">
+          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#2B3543]/60">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
+              3
+            </span>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#E8EDF4]">
+              Section 3 — Supporting Evidence
+            </h3>
+          </div>
           <div className="flex items-center justify-between">
             <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
               {currentSlug === "academics-gpa"
@@ -2331,8 +2401,18 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           )}
         </div>
 
-        {/* Additional Remarks (Optional multiline textarea) */}
-        <div>
+        {/* ==================================================================== */}
+        {/* Section 4 — Additional Remarks                                      */}
+        {/* ==================================================================== */}
+        <div className="space-y-2 pt-3">
+          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#2B3543]/60">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
+              4
+            </span>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#E8EDF4]">
+              Section 4 — Additional Remarks
+            </h3>
+          </div>
           <div className="flex items-center justify-between mb-1">
             <label htmlFor="submission-remarks" className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
               Additional Remarks (Optional)
@@ -2361,16 +2441,33 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-slate-200 dark:border-[#2B3543]">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232E3E] transition-colors cursor-pointer min-h-[38px]"
-          >
-            Cancel
-          </button>
+        {/* ==================================================================== */}
+        {/* Section 5 — Actions                                                 */}
+        {/* ==================================================================== */}
+        <div className="pt-3 border-t border-slate-200 dark:border-[#2B3543]">
+          <div className="flex items-center justify-between pb-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
+                5
+              </span>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#E8EDF4]">
+                Section 5 — Actions
+              </h3>
+            </div>
+            <span className="text-[10px] text-slate-400 dark:text-[#7E8B9C]">
+              Verification Workflow
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-2.5">
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              className="rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232E3E] transition-colors cursor-pointer min-h-[38px]"
+            >
+              Cancel
+            </button>
 
           <button
             type="button"
@@ -2412,6 +2509,7 @@ const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               </>
             )}
           </button>
+        </div>
         </div>
       </form>
     </div>

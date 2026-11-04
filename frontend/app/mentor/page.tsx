@@ -349,7 +349,7 @@ export default function MentorDashboardPage() {
 
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 transition-colors">
+    <div className="min-h-screen bg-[#fafbfc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-28 md:pb-12 transition-colors">
       {/* Sairam Institutional Header */}
       <header className="border-b border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs transition-colors">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:py-4 sm:px-6 lg:px-8">

@@ -46,22 +46,18 @@ export const FineWorksBrand: React.FC<FineWorksBrandProps> = ({
   };
 
   const content = (
-    <div className={`inline-flex items-center gap-2.5 ${className}`}>
-      {/* Brand Wordmark */}
-      <div className="flex items-center gap-1.5">
+    <div className={`inline-flex items-center gap-2 shrink-0 ${className}`}>
+      {/* Compact CCE PGPA Brand Wordmark */}
+      <div className="flex items-center gap-1.5 shrink-0">
         <span className={`font-extrabold tracking-tight text-slate-900 dark:text-white ${textSizes[size]}`}>
-          Fine<span className="text-blue-600 dark:text-blue-400">Works</span>
-        </span>
-        <span className="text-slate-300 dark:text-slate-700 font-light select-none">/</span>
-        <span className="font-semibold text-xs sm:text-sm tracking-tight text-slate-700 dark:text-slate-300">
-          CCE PGPA
+          CCE <span className="text-blue-600 dark:text-blue-400">PGPA</span>
         </span>
       </div>
 
-      {/* Role Pill */}
+      {/* Role Pill - Compact on mobile */}
       {roleMeta && (
         <span
-          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${roleMeta.badgeClass}`}
+          className={`hidden xs:inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-semibold border shrink-0 ${roleMeta.badgeClass}`}
         >
           {roleMeta.label}
         </span>
@@ -70,7 +66,7 @@ export const FineWorksBrand: React.FC<FineWorksBrandProps> = ({
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-w-0">
       {href ? (
         <Link href={href} className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg">
           {content}
@@ -79,11 +75,13 @@ export const FineWorksBrand: React.FC<FineWorksBrandProps> = ({
         content
       )}
       {showDepartment && (
-        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium tracking-normal mt-0.5">
+        <span className="hidden sm:inline-block text-[11px] text-slate-500 dark:text-slate-400 font-medium tracking-normal mt-0.5 truncate">
           Department of Computer and Communication Engineering (CCE)
         </span>
       )}
     </div>
   );
 };
+
+export const AppBrand = FineWorksBrand;
 
