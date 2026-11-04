@@ -471,3 +471,137 @@ def test_excel_export_numeric_cells_and_manual_points_worksheet(db: Session):
             assert "competitive programming" in str(row[8])
             break
     assert found, "Created manual point record was not found in exported Excel sheet"
+
+
+
+def test_mentor_can_revert_approved_submission(client: TestClient, db: Session):
+    """
+    Verify:
+    1. Mentor approves submission -> status = approved, StudentComponentResult created
+    2. Mentor reverts approval -> status = pending, StudentComponentResult deleted, VerificationLog recorded
+    """
+    from app.models.grading import StudentComponentResult
+
+    mentor_user = User(
+        email=f"test.mentor.revert.{uuid.uuid4().hex[:8]}@sairam.edu.in",
+        password_hash=get_password_hash("MentorSecret123"),
+        full_name="Dr. Revert Mentor",
+        role=UserRole.MENTOR,
+        is_active=True,
+    )
+    db.add(mentor_user)
+    db.flush()
+    db.track_user(mentor_user.id)
+
+    mentor_profile = MentorProfile(user_id=mentor_user.id, department="CCE", staff_id=f"STF{uuid.uuid4().hex[:6]}")
+    db.add(mentor_profile)
+
+    student_user = User(
+        email=f"test.student.revert.{uuid.uuid4().hex[:8]}@sairam.edu.in",
+        password_hash=get_password_hash("StudentSecret123"),
+        full_name="Revert Test Student",
+        role=UserRole.STUDENT,
+        is_active=True,
+    )
+    db.add(student_user)
+    db.flush()
+    db.track_user(student_user.id)
+
+    student_profile = StudentProfile(
+        user_id=student_user.id,
+        register_number=f"9213{uuid.uuid4().hex[:6]}",
+        department="CCE",
+        batch="2023-2027",
+        semester="Semester 3",
+    )
+    db.add(student_profile)
+
+    assignment = MentorAssignment(student_id=student_user.id, mentor_id=mentor_user.id, is_active=True)
+    db.add(assignment)
+    db.commit()
+
+    mentor_token = create_access_token(mentor_user.id, mentor_user.role.value)
+
+    # Get component & semester
+    component = db.scalars(select(PGPAComponent).where(PGPAComponent.is_active.is_(True))).first()
+    assert component is not None
+    semester = db.scalars(select(Semester)).first()
+    assert semester is not None
+
+    # Create submission
+    achievement = Achievement(
+        id=uuid.uuid4(),
+        student_id=student_user.id,
+        component_id=component.id,
+        semester_id=semester.id,
+        title="Test Activity for Revert",
+        description="Activity to test reversion of approval",
+        status=AchievementStatus.PENDING,
+        outcome="100",
+    )
+    db.add(achievement)
+    db.commit()
+    db.track_achievement(achievement.id)
+
+    # Mentor approves
+    res_approve = client.post(
+        f"/api/v1/mentor/achievements/{achievement.id}/review",
+        json={"action": "approved", "awarded_points": 100, "awarded_grade": "O"},
+        headers={"Authorization": f"Bearer {mentor_token}"},
+    )
+    assert res_approve.status_code == 200, res_approve.text
+    assert res_approve.json()["status"] == "approved"
+
+    # Verify StudentComponentResult was created
+    comp_res = db.scalars(
+        select(StudentComponentResult).where(
+            StudentComponentResult.student_id == student_user.id,
+            StudentComponentResult.component_id == component.id,
+            StudentComponentResult.achievement_id == achievement.id,
+        )
+    ).first()
+    assert comp_res is not None
+
+    # Mentor reverts approval
+    res_revert = client.post(
+        f"/api/v1/mentor/achievements/{achievement.id}/review",
+        json={"action": "revert", "remarks": "Reverting due to incorrect document uploaded"},
+        headers={"Authorization": f"Bearer {mentor_token}"},
+    )
+    assert res_revert.status_code == 200, res_revert.text
+    assert res_revert.json()["status"] == "pending"
+
+    # Verify StudentComponentResult was deleted
+    comp_res_after = db.scalars(
+        select(StudentComponentResult).where(
+            StudentComponentResult.student_id == student_user.id,
+            StudentComponentResult.component_id == component.id,
+            StudentComponentResult.achievement_id == achievement.id,
+        )
+    ).first()
+    assert comp_res_after is None
+
+    # Verify verification log
+    logs = db.scalars(
+        select(VerificationLog).where(
+            VerificationLog.achievement_id == achievement.id,
+            VerificationLog.action == ReviewAction.REVERT,
+        )
+    ).all()
+    assert len(logs) >= 1
+    assert "incorrect document" in logs[-1].remarks
+
+    # Also test the dedicated /revert endpoint
+    # Re-approve
+    client.post(
+        f"/api/v1/mentor/achievements/{achievement.id}/review",
+        json={"action": "approved", "awarded_points": 100, "awarded_grade": "O"},
+        headers={"Authorization": f"Bearer {mentor_token}"},
+    )
+    # Revert via POST /revert
+    res_revert_endpoint = client.post(
+        f"/api/v1/mentor/achievements/{achievement.id}/revert?remarks=Reverting+via+dedicated+endpoint",
+        headers={"Authorization": f"Bearer {mentor_token}"},
+    )
+    assert res_revert_endpoint.status_code == 200
+    assert res_revert_endpoint.json()["status"] == "pending"

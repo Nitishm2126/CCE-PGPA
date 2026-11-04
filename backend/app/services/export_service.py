@@ -245,6 +245,10 @@ def build_report_data(
         mp_stmt = mp_stmt.where(ManualComponentPoint.component_id == component_id)
 
     manual_points_records = list(db.scalars(mp_stmt.order_by(ManualComponentPoint.created_at.desc())).all())
+    manual_points_by_student_sem: Dict[tuple[uuid.UUID, uuid.UUID], List[ManualComponentPoint]] = {}
+    for mp in manual_points_records:
+        manual_points_by_student_sem.setdefault((mp.student_id, mp.semester_id), []).append(mp)
+
     manual_points_list: List[Dict[str, Any]] = []
     for mp in manual_points_records:
         reg_num = mp.student.student_profile.register_number if (mp.student and mp.student.student_profile) else "-"
@@ -283,6 +287,9 @@ def build_report_data(
             sem_num = sem.semester_number
             rec = pgpa_records_map.get((s.id, sem.id))
 
+            manual_pts_for_sem = manual_points_by_student_sem.get((s.id, sem.id), [])
+            manual_sum = sum(float(mp.points) for mp in manual_pts_for_sem)
+
             # If no cached record, check if we can compute from component results
             if not rec and (s.id, sem.id) in comp_results_by_student_sem:
                 crs = comp_results_by_student_sem[(s.id, sem.id)]
@@ -300,12 +307,12 @@ def build_report_data(
                         "is_verified": c.is_verified,
                     })
                 calc = calculate_overall_pgpa(comp_dicts, semester_gpa=gpa_val)
-                pgpa_val = calc["pgpa"]
+                pgpa_val = calc["pgpa"] if calc.get("pgpa") is not None else calc.get("a1_score")
                 sem_attempted = calc["total_credits_attempted"]
                 sem_earned = calc["total_credits_earned"]
                 gpa_disp = calc["semester_gpa"]
             elif rec:
-                pgpa_val = rec.pgpa
+                pgpa_val = rec.pgpa if rec.pgpa is not None else rec.a1_score
                 sem_attempted = rec.total_credits_attempted
                 sem_earned = rec.total_credits_earned
                 gpa_disp = rec.gpa
@@ -314,6 +321,13 @@ def build_report_data(
                 sem_attempted = 0
                 sem_earned = 0
                 gpa_disp = None
+
+            # If manual points exist for this semester, ensure they contribute to verified points
+            if manual_sum > 0:
+                if pgpa_val is None:
+                    pgpa_val = manual_sum
+                sem_attempted = max(sem_attempted, 3)
+                sem_earned = max(sem_earned, 3)
 
             sem_scores[sem_num] = pgpa_val
             sem_gpas[sem_num] = gpa_disp
@@ -360,11 +374,16 @@ def build_report_data(
     # 8. Build Component Breakdown Items
     student_lookup = {s.id: s for s in students}
     component_breakdown_items: List[Dict[str, Any]] = []
+    seen_breakdown_keys = set()
+
     for cr in comp_results:
         st = student_lookup.get(cr.student_id)
         if not st:
             continue
         p = st.student_profile
+        seen_breakdown_keys.add((cr.student_id, cr.component_id, cr.semester_id))
+        pts = float(cr.grade_points) if cr.grade_points is not None else 0.0
+        cred = int(cr.credit_value) if cr.credit_value is not None else 0
         component_breakdown_items.append({
             "register_number": p.register_number if p else "-",
             "student_name": st.full_name,
@@ -372,13 +391,40 @@ def build_report_data(
             "component_slug": cr.component.slug if cr.component else "-",
             "semester_name": cr.semester.display_name if cr.semester else f"Sem {cr.semester_id}",
             "semester_number": cr.semester.semester_number if cr.semester else 0,
-            "raw_score": cr.raw_score if cr.raw_score is not None else "-",
-            "grade": cr.grade,
-            "grade_points": cr.grade_points,
-            "credit_value": cr.credit_value,
-            "earned_points": cr.grade_points * cr.credit_value,
+            "raw_score": cr.raw_score if cr.raw_score is not None else 0,
+            "grade": cr.grade or "-",
+            "grade_points": pts,
+            "credit_value": cred,
+            "earned_points": pts * cred,
             "is_verified": cr.is_verified,
             "source": cr.source,
+        })
+
+    # Include manual component points in Component Breakdown if not already present
+    for mp in manual_points_records:
+        b_key = (mp.student_id, mp.component_id, mp.semester_id)
+        if b_key in seen_breakdown_keys:
+            continue
+        st = student_lookup.get(mp.student_id)
+        if not st:
+            continue
+        p = st.student_profile
+        cred = int(mp.component.credit_value) if (mp.component and mp.component.credit_value) else 3
+        m_pts = float(mp.points)
+        component_breakdown_items.append({
+            "register_number": p.register_number if p else "-",
+            "student_name": st.full_name,
+            "component_name": mp.component.name if mp.component else "-",
+            "component_slug": mp.component.slug if mp.component else "-",
+            "semester_name": mp.semester.display_name if mp.semester else f"Sem {mp.semester_id}",
+            "semester_number": mp.semester.semester_number if mp.semester else 0,
+            "raw_score": m_pts,
+            "grade": "Manual",
+            "grade_points": m_pts,
+            "credit_value": cred,
+            "earned_points": m_pts * cred,
+            "is_verified": True,
+            "source": "manual_award",
         })
 
     # 9. Build Submissions Items
@@ -577,9 +623,17 @@ def generate_excel_report(report_data: Dict[str, Any]) -> bytes:
         ]
         for i in range(1, 9):
             sc = m["sem_scores"].get(i)
-            vals.append(round(float(sc), 2) if sc is not None else "-")
+            if sc is not None:
+                val_num = round(float(sc), 2)
+                vals.append(val_num if val_num != 0.0 else 0)
+            else:
+                vals.append("-")
         cum_pgpa = m["cumulative_pgpa"]
-        vals.append(round(float(cum_pgpa), 2) if cum_pgpa is not None else "N/A")
+        if cum_pgpa is not None:
+            c_num = round(float(cum_pgpa), 2)
+            vals.append(c_num if c_num != 0.0 else 0)
+        else:
+            vals.append("-")
 
         for col_idx, v in enumerate(vals, 1):
             cell = ws2.cell(row=row_num, column=col_idx, value=v)
@@ -616,16 +670,29 @@ def generate_excel_report(report_data: Dict[str, Any]) -> bytes:
     for idx, cb in enumerate(report_data["component_breakdown"], 1):
         ws3.row_dimensions[row_num].height = 20
         fill = zebra_fill if idx % 2 == 0 else white_fill
+        raw_val = cb["raw_score"]
+        if raw_val is not None and str(raw_val).strip() != "" and str(raw_val) != "-":
+            try:
+                raw_cell = float(raw_val) if "." in str(raw_val) else int(raw_val)
+            except (ValueError, TypeError):
+                raw_cell = sanitize_for_spreadsheet(str(raw_val))
+        else:
+            raw_cell = 0
+
+        pts_val = float(cb["grade_points"]) if cb["grade_points"] is not None else 0.0
+        cred_val = int(cb["credit_value"]) if cb["credit_value"] is not None else 0
+        earned_val = float(cb["earned_points"]) if cb["earned_points"] is not None else 0.0
+
         vals = [
             idx,
             sanitize_for_spreadsheet(cb["register_number"]),
             sanitize_for_spreadsheet(cb["student_name"]),
             sanitize_for_spreadsheet(cb["semester_name"]),
             sanitize_for_spreadsheet(cb["component_name"]),
-            sanitize_for_spreadsheet(str(cb["raw_score"])),
-            float(cb["grade_points"]),
-            int(cb["credit_value"]),
-            float(cb["earned_points"]),
+            raw_cell,
+            pts_val,
+            cred_val,
+            earned_val,
             "Verified" if cb["is_verified"] else "Pending",
         ]
         for col_idx, v in enumerate(vals, 1):

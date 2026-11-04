@@ -127,7 +127,7 @@ class ReviewSubmissionRequest(BaseModel):
     """
     Mentor/HOD review action payload.
     """
-    action: ReviewAction = Field(..., description="Review outcome: approved, rejected, requested_changes, under_review")
+    action: ReviewAction = Field(..., description="Review outcome: approved, rejected, requested_changes, under_review, revert")
     remarks: Optional[str] = Field(None, description="Feedback or reason for decision (mandatory on rejection)")
     awarded_points: Optional[float] = Field(None, ge=0, description="Optional confirmed points allocation by mentor")
     awarded_grade: Optional[str] = Field(None, description="Optional confirmed grade award by mentor (e.g. O, A+, A)")

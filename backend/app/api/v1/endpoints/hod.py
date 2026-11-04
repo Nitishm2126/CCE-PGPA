@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile, status
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.permissions import require_hod
@@ -301,6 +301,13 @@ def review_achievement_as_hod(
             detail=f"Achievement with ID '{achievement_id}' not found.",
         )
 
+    if review_data.action == ReviewAction.REVERT:
+        if achievement.status not in (AchievementStatus.APPROVED, AchievementStatus.REJECTED, AchievementStatus.UNDER_REVIEW):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot revert achievement in '{achievement.status.value}' status. Only approved, rejected, or under review submissions can be reverted.",
+            )
+
     if review_data.action == ReviewAction.APPROVED:
         achievement.status = AchievementStatus.APPROVED
         # Calculate grade and record verified component result
@@ -368,13 +375,33 @@ def review_achievement_as_hod(
         achievement.status = AchievementStatus.REJECTED
     elif review_data.action == ReviewAction.REQUESTED_CHANGES:
         achievement.status = AchievementStatus.DRAFT
+    elif review_data.action == ReviewAction.REVERT:
+        achievement.status = AchievementStatus.PENDING
+        results = db.scalars(
+            select(StudentComponentResult).where(
+                or_(
+                    StudentComponentResult.achievement_id == achievement.id,
+                    and_(
+                        StudentComponentResult.student_id == achievement.student_id,
+                        StudentComponentResult.component_id == achievement.component_id,
+                        StudentComponentResult.semester_id == achievement.semester_id,
+                        StudentComponentResult.source == "student_submission",
+                    ),
+                )
+            )
+        ).all()
+        for r in results:
+            db.delete(r)
+        db.flush()
+        if achievement.semester_id:
+            _recalculate_student_semester_pgpa(db, achievement.student_id, achievement.semester_id)
 
     log = VerificationLog(
         id=uuid.uuid4(),
         achievement_id=achievement.id,
         reviewer_id=current_user.id,
         action=review_data.action,
-        remarks=review_data.remarks,
+        remarks=review_data.remarks or ("Verification reverted to pending review by HOD" if review_data.action == ReviewAction.REVERT else None),
     )
     db.add(log)
     db.add(achievement)
@@ -382,6 +409,30 @@ def review_achievement_as_hod(
     db.refresh(achievement)
 
     return format_achievement_response(achievement)
+
+
+@router.post(
+    "/achievements/{achievement_id}/revert",
+    response_model=AchievementResponse,
+    summary="Revert an achievement review (HOD oversight authority)",
+    description="Allows HOD to revert verification of an approved submission, recalculating PGPA and returning it to pending review.",
+)
+def revert_achievement_as_hod(
+    achievement_id: uuid.UUID,
+    remarks: Optional[str] = Query(None, description="Reason for reverting verification"),
+    current_user: User = Depends(require_hod),
+    db: Session = Depends(get_db),
+) -> AchievementResponse:
+    review_data = ReviewSubmissionRequest(
+        action=ReviewAction.REVERT,
+        remarks=remarks or "Verification reverted to pending review by HOD",
+    )
+    return review_achievement_as_hod(
+        achievement_id=achievement_id,
+        review_data=review_data,
+        current_user=current_user,
+        db=db,
+    )
 
 
 # ==============================================================================

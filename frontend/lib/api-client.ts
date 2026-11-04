@@ -612,7 +612,7 @@ export const api = {
   reviewMenteeAchievement: async (
     achievementId: string,
     data: {
-      action: "approved" | "rejected" | "requested_changes" | "under_review";
+      action: "approved" | "rejected" | "requested_changes" | "under_review" | "revert";
       remarks?: string;
       awarded_points?: number;
       awarded_grade?: string;
@@ -624,6 +624,21 @@ export const api = {
       {
         method: "POST",
         body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  revertMenteeAchievement: async (
+    achievementId: string,
+    remarks?: string,
+    token?: string | null
+  ): Promise<AchievementResponse> => {
+    const q = remarks ? `?remarks=${encodeURIComponent(remarks)}` : "";
+    return request<AchievementResponse>(
+      `/mentor/achievements/${achievementId}/revert${q}`,
+      {
+        method: "POST",
       },
       token
     );

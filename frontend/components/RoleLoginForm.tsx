@@ -20,24 +20,24 @@ interface RoleLoginFormProps {
 
 const ROLE_THEME_DETAILS = {
   student: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-pink-500 dark:focus:ring-pink-500/20",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-pink-600 dark:hover:bg-pink-500 dark:active:bg-pink-700 dark:text-white shadow-xs",
-    dotColor: "bg-purple-600 dark:bg-pink-500",
+    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:active:bg-indigo-700 dark:text-white shadow-xs",
+    dotColor: "bg-purple-600 dark:bg-indigo-500",
   },
   mentor: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-pink-500 dark:focus:ring-pink-500/20",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-pink-600 dark:hover:bg-pink-500 dark:active:bg-pink-700 dark:text-white shadow-xs",
-    dotColor: "bg-purple-600 dark:bg-pink-500",
+    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:active:bg-indigo-700 dark:text-white shadow-xs",
+    dotColor: "bg-purple-600 dark:bg-indigo-500",
   },
   hod: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-pink-500 dark:focus:ring-pink-500/20",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-pink-600 dark:hover:bg-pink-500 dark:active:bg-pink-700 dark:text-white shadow-xs",
-    dotColor: "bg-purple-600 dark:bg-pink-500",
+    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:active:bg-indigo-700 dark:text-white shadow-xs",
+    dotColor: "bg-purple-600 dark:bg-indigo-500",
   },
   admin: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-pink-500 dark:focus:ring-pink-500/20",
-    buttonBg: "bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white dark:bg-pink-600 dark:hover:bg-pink-500 dark:active:bg-pink-700 dark:text-white shadow-xs",
-    dotColor: "bg-slate-800 dark:bg-pink-500",
+    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20",
+    buttonBg: "bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:active:bg-indigo-700 dark:text-white shadow-xs",
+    dotColor: "bg-slate-800 dark:bg-indigo-500",
   },
 };
 
@@ -101,9 +101,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail) {
       setLocalError(
-        role === "student"
-          ? "Please enter your register number or college email."
-          : "Please enter your official college email address."
+        "Please enter your college email address."
       );
       return;
     }
@@ -189,7 +187,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         <div className="w-full flex items-center justify-between mb-2 sm:mb-2.5 text-xs shrink-0">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 font-semibold text-purple-600 dark:text-pink-400 hover:text-purple-800 dark:hover:text-pink-300 transition-colors"
+            className="inline-flex items-center gap-1.5 font-semibold text-purple-600 dark:text-indigo-400 hover:text-purple-800 dark:hover:text-indigo-300 transition-colors"
           >
             <span>&larr;</span>
             <span>All Portals</span>
@@ -206,7 +204,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                     href={ROLE_CONFIGS[r].path}
                     className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors ${
                       isCurrent
-                        ? "bg-slate-200 dark:bg-pink-950/40 text-slate-900 dark:text-pink-300 border border-transparent dark:border-pink-800/40 font-semibold cursor-default"
+                        ? "bg-slate-200 dark:bg-indigo-950/40 text-slate-900 dark:text-indigo-300 border border-transparent dark:border-indigo-800/40 font-semibold cursor-default"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                     }`}
                   >
@@ -221,7 +219,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         {/* Main Heading centered above the Login Card */}
         <div className="text-center mb-2.5 sm:mb-3.5 shrink-0">
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-            CCE-PGPA <span className="text-purple-600 dark:text-pink-400">Management System</span>
+            CCE-PGPA <span className="text-purple-600 dark:text-indigo-400">Management System</span>
           </h2>
         </div>
 
@@ -309,7 +307,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 htmlFor="login-email-input"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                {role === "student" ? "Register Number or College Email" : "Official College Email"}
+                College Email
               </label>
               <input
                 id="login-email-input"
@@ -321,7 +319,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={
                   role === "student"
-                    ? "e.g. SEC25CO001 or student@sairamtap.edu.in"
+                    ? "e.g. sec25co001@sairamtap.edu.in"
                     : currentConfig.placeholder
                 }
                 disabled={isSubmitting}
@@ -340,7 +338,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs font-medium text-purple-600 dark:text-pink-400 hover:text-purple-800 dark:hover:text-pink-300 transition-colors"
+                  className="text-xs font-medium text-purple-600 dark:text-indigo-400 hover:text-purple-800 dark:hover:text-indigo-300 transition-colors"
                 >
                   Forgot password?
                 </Link>

@@ -27,36 +27,36 @@ interface PortalCardTheme {
 const PORTAL_CARD_THEMES: Record<string, PortalCardTheme> = {
   student: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-purple-400 dark:hover:border-pink-500/60",
-    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-pink-500",
-    badgeBg: "bg-purple-50 dark:bg-pink-950/40 border-purple-200 dark:border-pink-800/60",
-    badgeText: "text-purple-700 dark:text-pink-300",
-    iconBg: "bg-purple-50 dark:bg-pink-950/50",
-    iconText: "text-purple-600 dark:text-pink-400",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-pink-600 dark:hover:bg-pink-500 dark:text-white",
-    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-pink-500",
+    hoverBorder: "hover:border-purple-400 dark:hover:border-indigo-500/60",
+    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-indigo-500",
+    badgeBg: "bg-purple-50 dark:bg-indigo-950/40 border-purple-200 dark:border-indigo-800/60",
+    badgeText: "text-purple-700 dark:text-indigo-300",
+    iconBg: "bg-purple-50 dark:bg-indigo-950/50",
+    iconText: "text-purple-600 dark:text-indigo-400",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:text-white",
+    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-indigo-500",
   },
   mentor: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-purple-400 dark:hover:border-pink-500/60",
-    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-pink-500",
-    badgeBg: "bg-purple-50/70 dark:bg-pink-950/30 border-purple-200 dark:border-pink-800/50",
-    badgeText: "text-purple-700 dark:text-pink-300",
-    iconBg: "bg-purple-50 dark:bg-pink-950/50",
-    iconText: "text-purple-600 dark:text-pink-400",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-pink-600 dark:hover:bg-pink-500 dark:text-white",
-    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-pink-500",
+    hoverBorder: "hover:border-purple-400 dark:hover:border-indigo-500/60",
+    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-indigo-500",
+    badgeBg: "bg-purple-50/70 dark:bg-indigo-950/30 border-purple-200 dark:border-indigo-800/50",
+    badgeText: "text-purple-700 dark:text-indigo-300",
+    iconBg: "bg-purple-50 dark:bg-indigo-950/50",
+    iconText: "text-purple-600 dark:text-indigo-400",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:text-white",
+    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-indigo-500",
   },
   hod: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-purple-400 dark:hover:border-pink-500/60",
-    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-pink-500",
-    badgeBg: "bg-purple-50 dark:bg-pink-950/40 border-purple-200 dark:border-pink-800/60",
-    badgeText: "text-purple-700 dark:text-pink-300",
-    iconBg: "bg-purple-50 dark:bg-pink-950/50",
-    iconText: "text-purple-600 dark:text-pink-400",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-pink-600 dark:hover:bg-pink-500 dark:text-white",
-    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-pink-500",
+    hoverBorder: "hover:border-purple-400 dark:hover:border-indigo-500/60",
+    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-indigo-500",
+    badgeBg: "bg-purple-50 dark:bg-indigo-950/40 border-purple-200 dark:border-indigo-800/60",
+    badgeText: "text-purple-700 dark:text-indigo-300",
+    iconBg: "bg-purple-50 dark:bg-indigo-950/50",
+    iconText: "text-purple-600 dark:text-indigo-400",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:text-white",
+    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-indigo-500",
   },
 };
 
@@ -124,12 +124,12 @@ function PortalSelectionContent() {
         {/* Department Title & Institutional Intro */}
         <section className="text-center w-full max-w-3xl mx-auto space-y-2 shrink-0">
           <div className="inline-flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-purple-600 dark:bg-pink-500" />
+            <span className="h-1.5 w-1.5 rounded-full bg-purple-600 dark:bg-indigo-500" />
             <span>Department of Computer and Communication Engineering</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-            CCE PGPA <span className="text-purple-600 dark:text-pink-400">Management System</span>
+            CCE PGPA <span className="text-purple-600 dark:text-indigo-400">Management System</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-normal">

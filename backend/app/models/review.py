@@ -23,6 +23,7 @@ class ReviewAction(str, enum.Enum):
     REJECTED = "rejected"
     REQUESTED_CHANGES = "requested_changes"
     UNDER_REVIEW = "under_review"
+    REVERT = "revert"
 
 
 class VerificationLog(Base):

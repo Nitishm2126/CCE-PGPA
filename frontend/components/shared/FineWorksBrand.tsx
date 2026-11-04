@@ -21,19 +21,19 @@ export const FineWorksBrand: React.FC<FineWorksBrandProps> = ({
   const roleLabelMap: Record<string, { label: string; badgeClass: string }> = {
     student: {
       label: "Student",
-      badgeClass: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800",
+      badgeClass: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-[#181818] dark:text-[#F5F5F5] dark:border-[#292929]",
     },
     mentor: {
       label: "Mentor",
-      badgeClass: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800",
+      badgeClass: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-[#181818] dark:text-[#F5F5F5] dark:border-[#292929]",
     },
     hod: {
       label: "HOD",
-      badgeClass: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800",
+      badgeClass: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-[#181818] dark:text-[#FFD84D] dark:border-[#292929]",
     },
     admin: {
       label: "Admin",
-      badgeClass: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+      badgeClass: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-[#181818] dark:text-[#F5F5F5] dark:border-[#292929]",
     },
   };
 
@@ -47,10 +47,10 @@ export const FineWorksBrand: React.FC<FineWorksBrandProps> = ({
 
   const content = (
     <div className={`inline-flex items-center gap-2 shrink-0 ${className}`}>
-      {/* Compact CCE PGPA Brand Wordmark */}
+      {/* Clean CCE Wordmark */}
       <div className="flex items-center gap-1.5 shrink-0">
-        <span className={`font-extrabold tracking-tight text-slate-900 dark:text-white ${textSizes[size]}`}>
-          CCE <span className="text-blue-600 dark:text-blue-400">PGPA</span>
+        <span className={`font-extrabold tracking-tight text-slate-900 dark:text-[#F5F5F5] ${textSizes[size]}`}>
+          CCE
         </span>
       </div>
 
@@ -75,7 +75,7 @@ export const FineWorksBrand: React.FC<FineWorksBrandProps> = ({
         content
       )}
       {showDepartment && (
-        <span className="hidden sm:inline-block text-[11px] text-slate-500 dark:text-slate-400 font-medium tracking-normal mt-0.5 truncate">
+        <span className="hidden sm:inline-block text-[11px] text-slate-500 dark:text-[#A3A3A3] font-medium tracking-normal mt-0.5 truncate">
           Department of Computer and Communication Engineering (CCE)
         </span>
       )}

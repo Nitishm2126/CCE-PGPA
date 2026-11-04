@@ -67,7 +67,7 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
       <div
         className={`absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(124,58,237,0.08)_0%,transparent_65%)] ${
           isLoginVariant
-            ? "dark:bg-[radial-gradient(circle_at_center,rgba(244,114,182,0.09)_0%,transparent_65%)]"
+            ? "dark:bg-[radial-gradient(circle_at_center,rgba(129,140,248,0.12)_0%,transparent_65%)]"
             : "dark:bg-[radial-gradient(circle_at_center,rgba(255,216,77,0.08)_0%,transparent_65%)]"
         }`}
         aria-hidden="true"
@@ -76,10 +76,10 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
       <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-sm w-full animate-apple-fade">
         {/* Brand Mark with Smooth Progress Halo */}
         <div className="relative mb-6 flex items-center justify-center">
-          {/* Breathing ambient halo: subtle purple in light mode, yellow or pink in dark mode */}
+          {/* Breathing ambient halo: subtle purple in light mode, yellow or indigo in dark mode */}
           <div
             className={`absolute -inset-2 rounded-3xl bg-purple-500/15 blur-xl animate-apple-halo pointer-events-none ${
-              isLoginVariant ? "dark:bg-pink-500/20" : "dark:bg-[#FFD84D]/15"
+              isLoginVariant ? "dark:bg-indigo-500/20" : "dark:bg-[#FFD84D]/15"
             }`}
             aria-hidden="true"
           />
@@ -88,7 +88,7 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
           <div className="relative flex items-center justify-center">
             <svg
               className={`h-20 w-20 animate-apple-spin text-purple-600/20 ${
-                isLoginVariant ? "dark:text-pink-500/20" : "dark:text-[#FFD84D]/20"
+                isLoginVariant ? "dark:text-indigo-500/20" : "dark:text-[#FFD84D]/20"
               }`}
               viewBox="0 0 80 80"
               fill="none"
@@ -114,12 +114,12 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
                 strokeLinecap="round"
                 className="dark:hidden"
               />
-              {/* Dark mode: refined subtle yellow or pink progress stroke */}
+              {/* Dark mode: refined subtle yellow or indigo progress stroke */}
               <circle
                 cx="40"
                 cy="40"
                 r="36"
-                stroke={isLoginVariant ? "url(#appleProgressGradDarkPink)" : "url(#appleProgressGradDarkYellow)"}
+                stroke={isLoginVariant ? "url(#appleProgressGradDarkIndigo)" : "url(#appleProgressGradDarkYellow)"}
                 strokeWidth="2.5"
                 strokeDasharray="160 80"
                 strokeLinecap="round"
@@ -151,27 +151,25 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
                   <stop offset="1" stopColor="#fde047" stopOpacity="0.2" />
                 </linearGradient>
                 <linearGradient
-                  id="appleProgressGradDarkPink"
+                  id="appleProgressGradDarkIndigo"
                   x1="0"
                   y1="0"
                   x2="80"
                   y2="80"
                   gradientUnits="userSpaceOnUse"
                 >
-                  <stop stopColor="#F472B6" />
-                  <stop offset="0.6" stopColor="#EC4899" />
-                  <stop offset="1" stopColor="#FBCFE8" stopOpacity="0.2" />
+                  <stop stopColor="#818CF8" />
+                  <stop offset="0.6" stopColor="#6366F1" />
+                  <stop offset="1" stopColor="#A5B4FC" stopOpacity="0.2" />
                 </linearGradient>
               </defs>
             </svg>
 
-            {/* Centered Website Official Logo */}
+            {/* Centered Clean CCE Brand Monogram */}
             <div className="absolute inset-2 rounded-2xl bg-white dark:bg-[#111111] border border-purple-200/80 dark:border-[#292929] shadow-sm flex items-center justify-center p-1.5 overflow-hidden">
-              <img
-                src="/images/sec logo.png"
-                alt="Sri Sairam Engineering College Logo"
-                className="h-10 w-10 object-contain select-none pointer-events-none"
-              />
+              <span className="font-extrabold text-base tracking-wider text-purple-700 dark:text-[#F5F5F5] select-none">
+                CCE
+              </span>
             </div>
           </div>
         </div>

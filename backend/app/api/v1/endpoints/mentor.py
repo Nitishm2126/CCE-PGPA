@@ -3,7 +3,7 @@ import uuid
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.permissions import require_mentor
@@ -311,7 +311,13 @@ def review_mentee_achievement(
             detail="Access forbidden: You cannot review achievements of a student not assigned to you.",
         )
 
-    if achievement.status not in (AchievementStatus.PENDING, AchievementStatus.UNDER_REVIEW):
+    if review_data.action == ReviewAction.REVERT:
+        if achievement.status not in (AchievementStatus.APPROVED, AchievementStatus.REJECTED, AchievementStatus.UNDER_REVIEW):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot revert achievement in '{achievement.status.value}' status. Only approved, rejected, or under review submissions can be reverted.",
+            )
+    elif achievement.status not in (AchievementStatus.PENDING, AchievementStatus.UNDER_REVIEW):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Cannot review achievement in '{achievement.status.value}' status. Must be 'pending' or 'under_review'.",
@@ -403,6 +409,27 @@ def review_mentee_achievement(
         achievement.status = AchievementStatus.REJECTED
     elif review_data.action == ReviewAction.REQUESTED_CHANGES:
         achievement.status = AchievementStatus.DRAFT
+    elif review_data.action == ReviewAction.REVERT:
+        achievement.status = AchievementStatus.PENDING
+        # Reset and remove any verified StudentComponentResult for this submission
+        results = db.scalars(
+            select(StudentComponentResult).where(
+                or_(
+                    StudentComponentResult.achievement_id == achievement.id,
+                    and_(
+                        StudentComponentResult.student_id == achievement.student_id,
+                        StudentComponentResult.component_id == achievement.component_id,
+                        StudentComponentResult.semester_id == achievement.semester_id,
+                        StudentComponentResult.source == "student_submission",
+                    ),
+                )
+            )
+        ).all()
+        for r in results:
+            db.delete(r)
+        db.flush()
+        if achievement.semester_id:
+            _recalculate_student_semester_pgpa(db, achievement.student_id, achievement.semester_id)
 
     # Append immutable verification log
     log = VerificationLog(
@@ -410,7 +437,7 @@ def review_mentee_achievement(
         achievement_id=achievement.id,
         reviewer_id=current_user.id,
         action=review_data.action,
-        remarks=review_data.remarks,
+        remarks=review_data.remarks or ("Verification reverted to pending review" if review_data.action == ReviewAction.REVERT else None),
     )
     db.add(log)
     db.add(achievement)
@@ -418,6 +445,30 @@ def review_mentee_achievement(
     db.refresh(achievement)
 
     return format_achievement_response(achievement, db=db, is_reviewer=True)
+
+
+@router.post(
+    "/achievements/{achievement_id}/revert",
+    response_model=AchievementResponse,
+    summary="Revert an approved or reviewed submission back to pending",
+    description="Allows mentor to revert verification of an approved submission, recalculating PGPA and restoring it to the review queue.",
+)
+def revert_mentee_achievement(
+    achievement_id: uuid.UUID,
+    remarks: Optional[str] = Query(None, description="Reason for reverting verification"),
+    current_user: User = Depends(require_mentor),
+    db: Session = Depends(get_db),
+) -> AchievementResponse:
+    review_data = ReviewSubmissionRequest(
+        action=ReviewAction.REVERT,
+        remarks=remarks or "Verification reverted to pending review by mentor",
+    )
+    return review_mentee_achievement(
+        achievement_id=achievement_id,
+        review_data=review_data,
+        current_user=current_user,
+        db=db,
+    )
 
 
 # ==============================================================================

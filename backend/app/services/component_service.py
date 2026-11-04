@@ -1080,6 +1080,21 @@ def _recalculate_student_semester_pgpa(
     )
     results = db.scalars(results_stmt).all()
     if not results:
+        pgpa_stmt = select(StudentSemesterPGPA).where(
+            StudentSemesterPGPA.student_id == student_id,
+            StudentSemesterPGPA.semester_id == semester_id,
+        )
+        record = db.scalars(pgpa_stmt).first()
+        if record:
+            now_utc = datetime.now(timezone.utc)
+            record.a1_score = None
+            record.gpa = None
+            record.pgpa = 0.0
+            record.total_credits_attempted = 0
+            record.total_credits_earned = 0
+            record.calculated_at = now_utc
+            record.updated_at = now_utc
+            db.add(record)
         return None
 
     comp_dicts = []

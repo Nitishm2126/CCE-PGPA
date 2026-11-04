@@ -495,7 +495,7 @@ export default function HODDashboardPage() {
       </header>
 
       {/* Main Container */}
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-12">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6 pb-4 md:pb-8">
         {/* Department Overview Banner & Key Metrics */}
         <div className="rounded-2xl border border-slate-200/90 dark:border-[#292929] bg-white dark:bg-[#111111] p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -1616,7 +1616,7 @@ export default function HODDashboardPage() {
       />
 
       {/* FineWorks Footer */}
-      <FineWorksFooter className="pb-28 md:pb-8 mt-12" />
+      <FineWorksFooter className="pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))] md:pb-6 mt-8" />
 
       {/* Mobile Fixed Bottom Navigation Bar (< md) */}
       <HODBottomNav

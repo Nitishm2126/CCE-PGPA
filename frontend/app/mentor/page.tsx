@@ -62,6 +62,8 @@ export default function MentorDashboardPage() {
   const [isSubmittingReview, setIsSubmittingReview] = useState<boolean>(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [reviewSuccessMsg, setReviewSuccessMsg] = useState<string | null>(null);
+  const [showRevertConfirm, setShowRevertConfirm] = useState<boolean>(false);
+  const [revertRemarks, setRevertRemarks] = useState<string>("");
 
   // Messages & Remarks Drawer state
   const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
@@ -243,9 +245,11 @@ export default function MentorDashboardPage() {
     setAwardedGrade(sub.evaluated_grade || "");
     setReviewError(null);
     setReviewSuccessMsg(null);
+    setShowRevertConfirm(false);
+    setRevertRemarks("");
   };
 
-  const handleReviewSubmission = async (action: "approved" | "rejected" | "requested_changes" | "under_review") => {
+  const handleReviewSubmission = async (action: "approved" | "rejected" | "requested_changes" | "under_review" | "revert") => {
     if (!selectedSubmission || !token) return;
 
     if (action === "rejected" && !reviewRemarks.trim()) {
@@ -264,11 +268,12 @@ export default function MentorDashboardPage() {
 
     try {
       const parsedPoints = awardedPoints.trim() ? parseFloat(awardedPoints.trim()) : undefined;
+      const remarksToSend = action === "revert" ? (revertRemarks.trim() || reviewRemarks.trim() || undefined) : (reviewRemarks.trim() || undefined);
       const updated = await api.reviewMenteeAchievement(
         selectedSubmission.id,
         {
           action,
-          remarks: reviewRemarks.trim() || undefined,
+          remarks: remarksToSend,
           awarded_points: action === "approved" ? parsedPoints : undefined,
           awarded_grade: action === "approved" && awardedGrade.trim() ? awardedGrade.trim() : undefined,
         },
@@ -281,6 +286,8 @@ export default function MentorDashboardPage() {
       );
       setSelectedSubmission(updated);
       setReviewRemarks("");
+      setRevertRemarks("");
+      setShowRevertConfirm(false);
       setReviewSuccessMsg(
         `Submission marked as ${
           action === "approved"
@@ -289,6 +296,8 @@ export default function MentorDashboardPage() {
             ? "Rejected"
             : action === "under_review"
             ? "Under Review (Pending further evaluation)"
+            : action === "revert"
+            ? "Reverted back to Pending (Verified score reset)"
             : "Changes Requested (Returned to Draft)"
         }.`
       );
@@ -488,7 +497,7 @@ export default function MentorDashboardPage() {
       </header>
 
       {/* Main Container */}
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-12">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6 pb-4 md:pb-8">
         {/* Mentor Overview Banner */}
         <div className="rounded-2xl border border-slate-200/90 dark:border-[#292929] bg-white dark:bg-[#111111] p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -1494,10 +1503,86 @@ export default function MentorDashboardPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-3 bg-white dark:bg-[#111111] rounded-xl border border-slate-200/80 dark:border-[#292929] text-[11px] text-slate-600 dark:text-[#A3A3A3] flex items-center justify-between">
-                      <span>This activity has already been evaluated and is currently marked as <strong className="capitalize text-slate-800 dark:text-[#F5F5F5]">{selectedSubmission.status}</strong>.</span>
-                      {selectedSubmission.updated_at && (
-                        <span className="text-slate-400 dark:text-[#A3A3A3] font-mono text-[10px]">Updated: {formatDate(selectedSubmission.updated_at)}</span>
+                    <div className="space-y-3 pt-1">
+                      <div className="p-3 bg-white dark:bg-[#111111] rounded-xl border border-slate-200/80 dark:border-[#292929] text-[11px] text-slate-600 dark:text-[#A3A3A3] flex items-center justify-between">
+                        <span>This activity has already been evaluated and is currently marked as <strong className="capitalize text-slate-800 dark:text-[#F5F5F5]">{selectedSubmission.status}</strong>.</span>
+                        {selectedSubmission.updated_at && (
+                          <span className="text-slate-400 dark:text-[#A3A3A3] font-mono text-[10px]">Updated: {formatDate(selectedSubmission.updated_at)}</span>
+                        )}
+                      </div>
+
+                      {/* Revert to Pending Action */}
+                      {(selectedSubmission.status === "approved" || selectedSubmission.status === "rejected") && (
+                        <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 p-3.5 space-y-2.5">
+                          <div className="flex items-start gap-2">
+                            <svg className="h-4 w-4 text-amber-600 dark:text-[#FFD84D] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <div className="text-xs">
+                              <p className="font-bold text-amber-900 dark:text-[#FFD84D]">Revert Verification / Return to Pending</p>
+                              <p className="text-[11px] text-amber-800 dark:text-[#A3A3A3] mt-0.5">
+                                If this submission was approved or rejected by mistake, you can revert it back to Pending. This will recalculate the student's verified PGPA score and restore the submission to the pending review queue.
+                              </p>
+                            </div>
+                          </div>
+
+                          {!showRevertConfirm ? (
+                            <button
+                              type="button"
+                              onClick={() => setShowRevertConfirm(true)}
+                              disabled={isSubmittingReview}
+                              id="btn-mentor-revert-trigger"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 dark:bg-[#FFD84D] dark:hover:bg-[#FACC15] text-white dark:text-black font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[36px]"
+                            >
+                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+                              </svg>
+                              <span>Revert Verification to Pending</span>
+                            </button>
+                          ) : (
+                            <div className="p-3 bg-white dark:bg-[#111111] rounded-xl border border-amber-300 dark:border-amber-700/80 space-y-2">
+                              <p className="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5]">
+                                Are you sure you want to revert this submission back to Pending?
+                              </p>
+                              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3]">
+                                Verified points and grading results for this activity will be reset and recalculated.
+                              </p>
+                              <input
+                                type="text"
+                                value={revertRemarks}
+                                onChange={(e) => setRevertRemarks(e.target.value)}
+                                placeholder="Reason for reversion (e.g. Need re-examination of document)"
+                                className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-amber-500"
+                              />
+                              <div className="flex items-center gap-2 pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleReviewSubmission("revert")}
+                                  disabled={isSubmittingReview}
+                                  id="btn-mentor-revert-confirm"
+                                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition cursor-pointer disabled:opacity-50"
+                                >
+                                  {isSubmittingReview ? (
+                                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                  ) : (
+                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                  <span>Yes, Revert to Pending</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowRevertConfirm(false)}
+                                  disabled={isSubmittingReview}
+                                  className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-[#292929] text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] hover:bg-slate-100 dark:hover:bg-[#181818] transition cursor-pointer"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   )}
@@ -1581,7 +1666,7 @@ export default function MentorDashboardPage() {
       />
 
       {/* FineWorks Footer */}
-      <FineWorksFooter className="pb-28 md:pb-8 mt-12" />
+      <FineWorksFooter className="pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))] md:pb-6 mt-8" />
 
       {/* Mobile Fixed Bottom Navigation Bar (< md) */}
       <MentorBottomNav

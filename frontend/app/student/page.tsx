@@ -471,7 +471,7 @@ export default function StudentDashboardPage() {
       />
 
       {/* 3. Main Dashboard Body Container with Harmonious Spacing and Viewport Clearance */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:pb-12 space-y-6">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-4 md:pb-8 space-y-6">
         {/* Desktop Segment Navigation */}
         <BottomNavigation
           activeTab={activeTab}
@@ -765,7 +765,7 @@ export default function StudentDashboardPage() {
       </main>
 
       {/* 4. FineWorks Minimalist Footer */}
-      <FineWorksFooter className="pb-24 md:pb-8" />
+      <FineWorksFooter className="pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))] md:pb-6" />
 
       {/* 6. Modals Container */}
       {/* Submit Achievement Modal */}
