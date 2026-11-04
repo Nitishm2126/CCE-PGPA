@@ -1963,7 +1963,7 @@ export default function AdminDashboardPage() {
             )}
 
             {/* 4. FineWorks Minimalist Footer */}
-            <FineWorksFooter showAdminLink={false} className="mt-8 pb-24 lg:pb-8" />
+            <FineWorksFooter className="mt-8 pb-24 lg:pb-8" />
           </main>
         </div>
       </div>

@@ -100,22 +100,12 @@ function PortalSelectionContent() {
 
       {/* 2. Main Portal Selection Section */}
       <main className="w-full flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8 sm:py-12 min-h-0">
-        {/* Department Title & Institutional Heading */}
-        <section className="text-center w-full max-w-3xl mx-auto space-y-2 shrink-0">
-          <div className="inline-flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-xs font-semibold text-slate-700 dark:text-slate-300">
+        {/* Department Title & Institutional Intro */}
+        <section className="text-center w-full max-w-3xl mx-auto space-y-2.5 shrink-0">
+          <div className="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-xs font-semibold text-slate-700 dark:text-slate-300">
             <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
             <span>Department of Computer and Communication Engineering</span>
           </div>
-
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-            <Link
-              href="/login/admin"
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg inline-block cursor-pointer"
-              title="CCE-PGPA Management System — System Administrator Access"
-            >
-              CCE PGPA Management System
-            </Link>
-          </h1>
 
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-normal">
             Select your institutional portal to manage student achievements, evaluations, and academic audits.
@@ -303,8 +293,8 @@ function PortalSelectionContent() {
         </div>
       </main>
 
-      {/* 3. FineWorks Minimalist Footer */}
-      <FineWorksFooter showAdminLink={false} />
+      {/* 3. FineWorks Minimalist Footer with Centered Admin Login Entry */}
+      <FineWorksFooter enableAdminLoginEntry={true} />
     </div>
   );
 }

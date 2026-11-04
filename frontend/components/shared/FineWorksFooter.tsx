@@ -5,12 +5,12 @@ import Link from "next/link";
 
 interface FineWorksFooterProps {
   className?: string;
-  showAdminLink?: boolean;
+  enableAdminLoginEntry?: boolean;
 }
 
 export const FineWorksFooter: React.FC<FineWorksFooterProps> = ({
   className = "",
-  showAdminLink = true,
+  enableAdminLoginEntry = false,
 }) => {
   return (
     <footer
@@ -34,23 +34,21 @@ export const FineWorksFooter: React.FC<FineWorksFooterProps> = ({
 
         {/* Legal & Version Info */}
         <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-slate-400 dark:text-slate-500 pt-0.5">
-          <span>CCE-PGPA Management System</span>
+          {enableAdminLoginEntry ? (
+            <Link
+              href="/login/admin"
+              className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 rounded cursor-pointer"
+              title="CCE-PGPA Management System"
+            >
+              CCE-PGPA Management System
+            </Link>
+          ) : (
+            <span>CCE-PGPA Management System</span>
+          )}
           <span>&bull;</span>
           <span>Version 1.0.0</span>
           <span>&bull;</span>
           <span>All Rights Reserved</span>
-          {showAdminLink && (
-            <>
-              <span>&bull;</span>
-              <Link
-                href="/login/admin"
-                className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors underline-offset-2 hover:underline"
-                title="System Administrator Login"
-              >
-                Admin
-              </Link>
-            </>
-          )}
         </div>
       </div>
     </footer>

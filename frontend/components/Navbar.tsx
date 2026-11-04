@@ -13,12 +13,15 @@ export const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
 
-  // On institutional portal homepage, login pages, student portal, and admin portal, hide the global navbar so official institutional header takes precedence
+  // On institutional portal homepage, login pages, student portal, mentor portal, hod portal, and admin portal, hide the global navbar so official institutional header takes precedence
   if (
     pathname === "/" ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/student") ||
-    pathname?.startsWith("/admin")
+    pathname?.startsWith("/mentor") ||
+    pathname?.startsWith("/hod") ||
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/change-password")
   ) {
     return null;
   }
