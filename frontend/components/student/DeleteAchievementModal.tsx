@@ -37,7 +37,7 @@ export const DeleteAchievementModal: React.FC<DeleteAchievementModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#171E28] border border-slate-200 dark:border-[#2B3543] shadow-2xl overflow-hidden">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#292929] shadow-2xl overflow-hidden">
         {/* Header with warning icon */}
         <div className="p-6">
           <div className="flex items-center gap-3.5 mb-4">
@@ -47,10 +47,10 @@ export const DeleteAchievementModal: React.FC<DeleteAchievementModalProps> = ({
               </svg>
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-[#E8EDF4]">
+              <h3 className="text-base font-bold text-slate-900 dark:text-[#F5F5F5]">
                 Delete Achievement Record?
               </h3>
-              <p className="text-xs text-slate-500 dark:text-[#A0ACBC] mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
                 This action is permanent and will remove the record and attached evidence files.
               </p>
             </div>
@@ -63,14 +63,14 @@ export const DeleteAchievementModal: React.FC<DeleteAchievementModalProps> = ({
           )}
 
           {/* Record Details Summary */}
-          <div className="rounded-xl bg-slate-50 dark:bg-[#1C2531] border border-slate-200/70 dark:border-[#2B3543] p-3.5 space-y-1.5 text-xs">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-[#7E8B9C]">
+          <div className="rounded-xl bg-slate-50 dark:bg-[#181818] border border-slate-200/70 dark:border-[#292929] p-3.5 space-y-1.5 text-xs">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-[#A3A3A3]">
               Record to be deleted
             </span>
-            <p className="font-semibold text-slate-900 dark:text-[#E8EDF4] line-clamp-2">
+            <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] line-clamp-2">
               {achievement.title}
             </p>
-            <div className="flex items-center gap-2 pt-1 text-[11px] text-slate-500 dark:text-[#A0ACBC]">
+            <div className="flex items-center gap-2 pt-1 text-[11px] text-slate-500 dark:text-[#A3A3A3]">
               <span>{achievement.component_name || "PGPA Component"}</span>
               <span>&bull;</span>
               <span className="capitalize">{achievement.status}</span>
@@ -83,7 +83,7 @@ export const DeleteAchievementModal: React.FC<DeleteAchievementModalProps> = ({
             </div>
           </div>
 
-          <p className="mt-4 text-xs text-slate-500 dark:text-[#A0ACBC] leading-relaxed">
+          <p className="mt-4 text-xs text-slate-500 dark:text-[#A3A3A3] leading-relaxed">
             Note: Draft and submitted records can be safely deleted if created by mistake or requiring replacement. Approved records are preserved in the institutional archive and cannot be deleted.
           </p>
 
@@ -93,7 +93,7 @@ export const DeleteAchievementModal: React.FC<DeleteAchievementModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={isDeleting}
-              className="min-h-[38px] px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#2B3543] text-slate-700 dark:text-[#A0ACBC] hover:bg-slate-50 dark:hover:bg-[#1C2531] transition-colors cursor-pointer"
+              className="min-h-[38px] px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#292929] text-slate-700 dark:text-[#A3A3A3] hover:bg-slate-50 dark:hover:bg-[#181818] transition-colors cursor-pointer"
             >
               Cancel
             </button>

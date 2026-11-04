@@ -71,21 +71,21 @@ export const EditStudentProfileModal: React.FC<EditStudentProfileModalProps> = (
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#171E28] border border-slate-200 dark:border-[#2B3543] shadow-xl overflow-hidden">
+      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#292929] shadow-xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-[#2B3543]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-[#292929]">
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <h3 className="text-base font-bold text-slate-900 dark:text-[#F5F5F5]">
               Edit Student Profile
             </h3>
-            <p className="text-xs text-slate-500 dark:text-[#A0ACBC] mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
               Update your permitted personal details in the institutional registry
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 dark:text-[#7E8B9C] dark:hover:text-[#E8EDF4] transition-colors cursor-pointer"
+            className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 dark:text-[#A3A3A3] dark:hover:text-[#F5F5F5] transition-colors cursor-pointer"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -103,7 +103,7 @@ export const EditStudentProfileModal: React.FC<EditStudentProfileModalProps> = (
 
           {/* Editable Field: Full Name */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] mb-1">
               Full Legal Name <span className="text-rose-500">*</span>
             </label>
             <input
@@ -113,14 +113,14 @@ export const EditStudentProfileModal: React.FC<EditStudentProfileModalProps> = (
               maxLength={255}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="e.g. NITISH M"
             />
           </div>
 
           {/* Editable Field: Phone Number */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] mb-1">
               Contact Phone Number
             </label>
             <input
@@ -128,43 +128,43 @@ export const EditStudentProfileModal: React.FC<EditStudentProfileModalProps> = (
               maxLength={20}
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="e.g. +91 9876543210"
             />
           </div>
 
           {/* Institutional Protected Fields Notice */}
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-[#2B3543] space-y-2.5">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-[#A0ACBC]">
-              <svg className="h-3.5 w-3.5 text-slate-400 dark:text-[#7E8B9C]" fill="currentColor" viewBox="0 0 20 20">
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-[#292929] space-y-2.5">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-[#A3A3A3]">
+              <svg className="h-3.5 w-3.5 text-slate-400 dark:text-[#A3A3A3]" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
               </svg>
               <span>Protected Institutional Identifiers (Read-Only)</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <div className="rounded-lg bg-slate-50 dark:bg-[#1C2531] p-2.5 border border-slate-200/60 dark:border-[#2B3543]">
-                <span className="text-[10px] text-slate-400 dark:text-[#7E8B9C] font-medium uppercase tracking-wider">Register No</span>
-                <p className="font-mono font-semibold text-slate-700 dark:text-[#E8EDF4] mt-0.5">
+              <div className="rounded-lg bg-slate-50 dark:bg-[#181818] p-2.5 border border-slate-200/60 dark:border-[#292929]">
+                <span className="text-[10px] text-slate-400 dark:text-[#A3A3A3] font-medium uppercase tracking-wider">Register No</span>
+                <p className="font-mono font-semibold text-slate-700 dark:text-[#F5F5F5] mt-0.5">
                   {profile?.register_number || "—"}
                 </p>
               </div>
 
-              <div className="rounded-lg bg-slate-50 dark:bg-[#1C2531] p-2.5 border border-slate-200/60 dark:border-[#2B3543]">
-                <span className="text-[10px] text-slate-400 dark:text-[#7E8B9C] font-medium uppercase tracking-wider">Academic Batch</span>
-                <p className="font-semibold text-slate-700 dark:text-[#E8EDF4] mt-0.5">
+              <div className="rounded-lg bg-slate-50 dark:bg-[#181818] p-2.5 border border-slate-200/60 dark:border-[#292929]">
+                <span className="text-[10px] text-slate-400 dark:text-[#A3A3A3] font-medium uppercase tracking-wider">Academic Batch</span>
+                <p className="font-semibold text-slate-700 dark:text-[#F5F5F5] mt-0.5">
                   {profile?.batch || "2025-2029"}
                 </p>
               </div>
 
-              <div className="sm:col-span-2 rounded-lg bg-slate-50 dark:bg-[#1C2531] p-2.5 border border-slate-200/60 dark:border-[#2B3543]">
-                <span className="text-[10px] text-slate-400 dark:text-[#7E8B9C] font-medium uppercase tracking-wider">Official Institutional Email</span>
-                <p className="font-semibold text-slate-700 dark:text-[#E8EDF4] mt-0.5 truncate">
+              <div className="sm:col-span-2 rounded-lg bg-slate-50 dark:bg-[#181818] p-2.5 border border-slate-200/60 dark:border-[#292929]">
+                <span className="text-[10px] text-slate-400 dark:text-[#A3A3A3] font-medium uppercase tracking-wider">Official Institutional Email</span>
+                <p className="font-semibold text-slate-700 dark:text-[#F5F5F5] mt-0.5 truncate">
                   {studentData.email}
                 </p>
               </div>
             </div>
-            <p className="text-[11px] text-slate-400 dark:text-[#7E8B9C] leading-tight">
+            <p className="text-[11px] text-slate-400 dark:text-[#A3A3A3] leading-tight">
               To update your institutional register number, college email, or academic department, please contact the CCE Department Office or System Administrator.
             </p>
           </div>
@@ -175,7 +175,7 @@ export const EditStudentProfileModal: React.FC<EditStudentProfileModalProps> = (
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="min-h-[38px] px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#2B3543] text-slate-700 dark:text-[#A0ACBC] hover:bg-slate-50 dark:hover:bg-[#1C2531] transition-colors cursor-pointer"
+              className="min-h-[38px] px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#292929] text-slate-700 dark:text-[#A3A3A3] hover:bg-slate-50 dark:hover:bg-[#181818] transition-colors cursor-pointer"
             >
               Cancel
             </button>

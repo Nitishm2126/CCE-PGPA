@@ -48,86 +48,86 @@ export const ProgressAnalyticsSection: React.FC<ProgressAnalyticsSectionProps> =
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {/* Components Active */}
-        <div className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] shadow-2xs transition-colors">
-          <p className="text-xs font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider">
+        <div className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xs transition-colors">
+          <p className="text-xs font-semibold text-slate-500 dark:text-[#A3A3A3] uppercase tracking-wider">
             Active Components
           </p>
           <div className="mt-1.5 flex items-baseline gap-1">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-[#F5F5F5]">
               {stats.activeCount}
             </span>
-            <span className="text-xs text-slate-400 dark:text-[#7E8B9C] font-semibold">
+            <span className="text-xs text-slate-400 dark:text-[#A3A3A3] font-semibold">
               / {stats.totalComponents}
             </span>
           </div>
-          <div className="mt-2.5 h-1.5 w-full bg-slate-100 dark:bg-[#171E28] rounded-full overflow-hidden">
+          <div className="mt-2.5 h-1.5 w-full bg-slate-100 dark:bg-[#111111] rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-600 dark:bg-[#4C83E6] rounded-full transition-all duration-500"
+              className="h-full bg-blue-600 dark:bg-[#FFD84D] rounded-full transition-all duration-500"
               style={{ width: `${stats.engagementPercent}%` }}
             />
           </div>
-          <p className="mt-2 text-xs text-slate-500 dark:text-[#7E8B9C] font-medium">
+          <p className="mt-2 text-xs text-slate-500 dark:text-[#A3A3A3] font-medium">
             {stats.engagementPercent}% category coverage
           </p>
         </div>
 
         {/* Verified Submissions */}
-        <div className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] shadow-2xs transition-colors">
+        <div className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xs transition-colors">
           <p className="text-xs font-semibold text-emerald-700 dark:text-[#5EEAD4] uppercase tracking-wider">
             Verified Submissions
           </p>
           <div className="mt-1.5 flex items-baseline gap-1">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-[#F5F5F5]">
               {stats.approved}
             </span>
             <span className="text-xs text-emerald-600 dark:text-[#5EEAD4] font-semibold">records</span>
           </div>
-          <p className="mt-2.5 text-xs text-slate-500 dark:text-[#7E8B9C] font-medium">
+          <p className="mt-2.5 text-xs text-slate-500 dark:text-[#A3A3A3] font-medium">
             Approved by faculty mentor
           </p>
         </div>
 
         {/* Active Submissions */}
-        <div className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] shadow-2xs transition-colors">
+        <div className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xs transition-colors">
           <p className="text-xs font-semibold text-blue-700 dark:text-[#93C5FD] uppercase tracking-wider">
             Active Submissions
           </p>
           <div className="mt-1.5 flex items-baseline gap-1">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-[#F5F5F5]">
               {stats.pending}
             </span>
             <span className="text-xs text-blue-600 dark:text-[#93C5FD] font-semibold">recorded</span>
           </div>
-          <p className="mt-2.5 text-xs text-slate-500 dark:text-[#7E8B9C] font-medium">
+          <p className="mt-2.5 text-xs text-slate-500 dark:text-[#A3A3A3] font-medium">
             Recorded for faculty view
           </p>
         </div>
 
         {/* Draft Records */}
-        <div className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] shadow-2xs transition-colors">
-          <p className="text-xs font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider">
+        <div className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xs transition-colors">
+          <p className="text-xs font-semibold text-slate-500 dark:text-[#A3A3A3] uppercase tracking-wider">
             Draft Records
           </p>
           <div className="mt-1.5 flex items-baseline gap-1">
-            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-[#F5F5F5]">
               {stats.draft}
             </span>
-            <span className="text-xs text-slate-400 dark:text-[#7E8B9C] font-semibold">saved</span>
+            <span className="text-xs text-slate-400 dark:text-[#A3A3A3] font-semibold">saved</span>
           </div>
-          <p className="mt-2.5 text-xs text-slate-500 dark:text-[#7E8B9C] font-medium">
+          <p className="mt-2.5 text-xs text-slate-500 dark:text-[#A3A3A3] font-medium">
             Unsubmitted student drafts
           </p>
         </div>
       </div>
 
       {/* Component Audit Matrix */}
-      <div className="rounded-2xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-6 shadow-2xs transition-colors">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-[#2B3543] gap-3">
+      <div className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111] p-5 sm:p-6 shadow-2xs transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-[#292929] gap-3">
           <div>
-            <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-[#E8EDF4]">
+            <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-[#F5F5F5]">
               PGPA Category Audit Matrix
             </h3>
-            <p className="text-xs text-slate-500 dark:text-[#7E8B9C] font-medium mt-1">
+            <p className="text-xs text-slate-500 dark:text-[#A3A3A3] font-medium mt-1">
               Progress status across all 13 Anna University / CCE PGPA areas
             </p>
           </div>
@@ -144,7 +144,7 @@ export const ProgressAnalyticsSection: React.FC<ProgressAnalyticsSectionProps> =
           </button>
         </div>
 
-        <div className="mt-3 divide-y divide-slate-100 dark:divide-[#2B3543]/60">
+        <div className="mt-3 divide-y divide-slate-100 dark:divide-[#292929]/60">
           {components.map((comp) => {
             const compAchievements = achievements.filter((a) => a.component_id === comp.id);
             const approved = compAchievements.filter((a) => a.status === "approved").length;
@@ -153,13 +153,13 @@ export const ProgressAnalyticsSection: React.FC<ProgressAnalyticsSectionProps> =
             return (
               <div
                 key={comp.id}
-                className="py-3 flex items-center justify-between gap-3 text-xs hover:bg-slate-50 dark:hover:bg-[#1C2531] px-2.5 rounded-lg transition-colors"
+                className="py-3 flex items-center justify-between gap-3 text-xs hover:bg-slate-50 dark:hover:bg-[#181818] px-2.5 rounded-lg transition-colors"
               >
                 <div className="min-w-0 flex items-center gap-2.5">
-                  <span className="font-mono text-xs font-bold text-slate-500 dark:text-[#7E8B9C] bg-slate-100 dark:bg-[#1C2531] border border-slate-200 dark:border-[#2B3543] px-1.5 py-0.5 rounded">
+                  <span className="font-mono text-xs font-bold text-slate-500 dark:text-[#A3A3A3] bg-slate-100 dark:bg-[#181818] border border-slate-200 dark:border-[#292929] px-1.5 py-0.5 rounded">
                     #{String(comp.display_order).padStart(2, "0")}
                   </span>
-                  <span className="font-semibold text-slate-900 dark:text-[#E8EDF4] truncate">
+                  <span className="font-semibold text-slate-900 dark:text-[#F5F5F5] truncate">
                     {comp.name}
                   </span>
                 </div>
@@ -176,7 +176,7 @@ export const ProgressAnalyticsSection: React.FC<ProgressAnalyticsSectionProps> =
                       {pending} pending
                     </span>
                   ) : (
-                    <span className="text-xs text-slate-400 dark:text-[#7E8B9C] font-medium">
+                    <span className="text-xs text-slate-400 dark:text-[#A3A3A3] font-medium">
                       Not yet submitted
                     </span>
                   )}

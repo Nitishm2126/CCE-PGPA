@@ -826,22 +826,22 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
     <div
       className={
         isModal
-          ? "relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#171E28] p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200 dark:border-[#2B3543] custom-scrollbar"
-          : "w-full max-w-3xl mx-auto rounded-2xl bg-white dark:bg-[#171E28] p-5 sm:p-8 text-left shadow-xs transition-all border border-slate-200 dark:border-[#2B3543]"
+          ? "relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#111111] p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200 dark:border-[#292929] custom-scrollbar"
+          : "w-full max-w-3xl mx-auto rounded-2xl bg-white dark:bg-[#111111] p-5 sm:p-8 text-left shadow-xs transition-all border border-slate-200 dark:border-[#292929]"
       }
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#2B3543]">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#292929]">
         <div>
           <div className="flex items-center gap-2">
-            <h2 id="submit-achievement-modal-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <h2 id="submit-achievement-modal-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#F5F5F5]">
               {currentSlug === "academics-gpa" ? "Record Semester GPA" : "Submit PGPA Achievement"}
             </h2>
             <span className="rounded-full bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
               {currentComponent?.credit_value ?? 3} Credits
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
             {currentSlug === "academics-gpa"
               ? "Enter your verified university semester GPA and attach your marksheet."
               : `Component-driven evaluation form for ${currentComponent?.name || "selected activity"}.`}
@@ -853,7 +853,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1C2531] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+            className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#181818] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
             aria-label="Close modal"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -884,11 +884,11 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         {/* Section 1 — Basic Details                                           */}
         {/* ==================================================================== */}
         <div className="space-y-3 pt-1">
-          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#2B3543]/60">
+          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#292929]/60">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
               1
             </span>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#E8EDF4]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F5F5F5]">
               Section 1 — Basic Details
             </h3>
           </div>
@@ -897,7 +897,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Semester Selector */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider mb-1">
                 Academic Semester *
               </label>
               <select
@@ -905,7 +905,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 onChange={(e) => setSemesterId(e.target.value)}
                 disabled={isSubmitting || semesterLoading || semesters.length === 0}
                 required
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
               >
                 {semesterLoading ? (
                   <option value="">Loading active semesters...</option>
@@ -923,7 +923,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             {/* Component Selector */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider mb-1">
                 PGPA Component *
               </label>
               <select
@@ -931,7 +931,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 onChange={(e) => setComponentId(e.target.value)}
                 disabled={isSubmitting}
                 required
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
               >
                 {activeComponents.map((c) => {
                   const isLocked = c.is_enabled_for_semester === false || c.submission_mode === "hod_excel_import";
@@ -971,11 +971,11 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         {/* Section 2 — Activity Details (Relevant Fields Only)                 */}
         {/* ==================================================================== */}
         <div className="space-y-3 pt-2">
-          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#2B3543]/60">
+          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#292929]/60">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
               2
             </span>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#E8EDF4]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F5F5F5]">
               Section 2 — Activity Details
             </h3>
           </div>
@@ -993,7 +993,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                 Semester Grade Point Average (GPA) *
               </label>
               <input
@@ -1006,16 +1006,16 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 placeholder="e.g. 8.75"
                 value={gpa}
                 onChange={(e) => setGpa(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-sm font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 min-h-[40px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-sm font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 min-h-[40px]"
               />
-              <span className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-1 block">
+              <span className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-1 block">
                 Official university GPA on a 10.0 scale as published on your Anna University marksheet.
               </span>
             </div>
 
             {/* Live Table B Preview */}
             {gpa && !isNaN(parseFloat(gpa)) && parseFloat(gpa) >= 0 && parseFloat(gpa) <= 10 && (
-              <div className="p-3 rounded-lg bg-white dark:bg-[#1C2531] border border-indigo-200/80 dark:border-indigo-900/40 flex items-center justify-between">
+              <div className="p-3 rounded-lg bg-white dark:bg-[#181818] border border-indigo-200/80 dark:border-indigo-900/40 flex items-center justify-between">
                 <div>
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Table B Evaluation Grade:</span>
                   <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
@@ -1032,9 +1032,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 3. SKILLRACK */}
         {currentSlug === "skillrack" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Skillrack Coding Assessment (Table 1.1)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1044,7 +1044,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Cumulative Skillrack Points *
                 </label>
                 <input
@@ -1055,12 +1055,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={skillrackPoints}
                   onChange={(e) => setSkillrackPoints(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Milestone / Assessment Date *
                 </label>
                 <input
@@ -1068,13 +1068,13 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={skillrackDate}
                   onChange={(e) => setSkillrackDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                 Assessment / Track Title (Optional)
               </label>
               <input
@@ -1083,7 +1083,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 value={skillrackMilestone}
                 onChange={(e) => setSkillrackMilestone(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
               />
             </div>
           </div>
@@ -1091,9 +1091,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 4. AMCAT */}
         {currentSlug === "amcat" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 AMCAT Employability Assessment (Table 2.1)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1103,7 +1103,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   AMCAT Overall Score (0.0 – 10.0) *
                 </label>
                 <input
@@ -1116,12 +1116,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={amcatScore}
                   onChange={(e) => setAmcatScore(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Assessment Date *
                 </label>
                 <input
@@ -1129,13 +1129,13 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={amcatDate}
                   onChange={(e) => setAmcatDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                 Assessment Batch / Cycle Title
               </label>
               <input
@@ -1144,7 +1144,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 value={amcatTitle}
                 onChange={(e) => setAmcatTitle(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
               />
             </div>
           </div>
@@ -1152,9 +1152,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 5. INTERNSHIP */}
         {currentSlug === "internship" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Industrial Internship Evaluation (Table 3.3)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1164,7 +1164,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Host Company / Organization *
                 </label>
                 <input
@@ -1174,19 +1174,19 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={internCompany}
                   onChange={(e) => setInternCompany(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Company Classification *
                 </label>
                 <select
                   value={internClassification}
                   onChange={(e) => setInternClassification(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Core / with stipend">Core / with stipend (Min A+ Grade)</option>
                   <option value="Others">Others (Upto A Grade)</option>
@@ -1196,7 +1196,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Domain / Role
                 </label>
                 <input
@@ -1205,12 +1205,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={internDomain}
                   onChange={(e) => setInternDomain(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Duration
                 </label>
                 <input
@@ -1219,12 +1219,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={internDuration}
                   onChange={(e) => setInternDuration(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Completion Date *
                 </label>
                 <input
@@ -1232,7 +1232,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={internDate}
                   onChange={(e) => setInternDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
@@ -1241,9 +1241,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 6. SAIRAM SDG ACTION PROGRAMME */}
         {currentSlug === "sairam-sdg-action-programme" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Sairam SDG Action Programme (Table 4.1 &amp; 4.2)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1253,14 +1253,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   SAP Activity Category *
                 </label>
                 <select
                   value={sapCategory}
                   onChange={(e) => setSapCategory(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Member (10 pts)">Member (10 pts)</option>
                   <option value="1 Activity (15 pts)">1 Activity (15 pts)</option>
@@ -1273,7 +1273,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   SAP Points Awarded *
                 </label>
                 <input
@@ -1283,14 +1283,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={sapPoints}
                   onChange={(e) => setSapPoints(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Initiative / Project Details
                 </label>
                 <input
@@ -1299,12 +1299,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={sapTitle}
                   onChange={(e) => setSapTitle(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Date of Activity *
                 </label>
                 <input
@@ -1312,7 +1312,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={sapDate}
                   onChange={(e) => setSapDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
@@ -1321,9 +1321,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 7. SAIRAM INNOVATION ECO-SYSTEM */}
         {currentSlug === "sairam-innovation-eco-system" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Innovation Eco-System (Table 5.1)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1333,14 +1333,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Innovation Event *
                 </label>
                 <select
                   value={innovEventName}
                   onChange={(e) => setInnovEventName(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Ideathon">Ideathon</option>
                   <option value="Solvethon">Solvethon</option>
@@ -1351,14 +1351,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Achievement Outcome (Table 5.1) *
                 </label>
                 <select
                   value={innovCategory}
                   onChange={(e) => setInnovCategory(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Overall Winners 3 Teams">Overall Winners 3 Teams (Grade O, 10 GP)</option>
                   <option value="SDG wise winners 51 teams">SDG wise winners 51 teams (Grade A+, 9 GP)</option>
@@ -1372,7 +1372,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Project / Innovation Title *
                 </label>
                 <input
@@ -1382,12 +1382,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={innovTitle}
                   onChange={(e) => setInnovTitle(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Event / Presentation Date *
                 </label>
                 <input
@@ -1395,7 +1395,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={innovDate}
                   onChange={(e) => setInnovDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
@@ -1404,9 +1404,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 8. SAIL */}
         {currentSlug === "sail" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Sairam AI Learning — SAIL (Table 6.2)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1416,7 +1416,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Cumulative SAIL Points *
                 </label>
                 <input
@@ -1427,12 +1427,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={sailPoints}
                   onChange={(e) => setSailPoints(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Completion Date *
                 </label>
                 <input
@@ -1440,13 +1440,13 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={sailDate}
                   onChange={(e) => setSailDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                 AI Track / Module Name
               </label>
               <input
@@ -1455,7 +1455,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 value={sailModule}
                 onChange={(e) => setSailModule(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
               />
             </div>
           </div>
@@ -1463,9 +1463,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 9. SPORTS & GAMES */}
         {currentSlug === "sports-and-games" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Sports &amp; Games Competition (Table 8.1 &amp; 8.2)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1475,7 +1475,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Sport / Game Name *
                 </label>
                 <input
@@ -1485,12 +1485,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={sportName}
                   onChange={(e) => setSportName(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Competition / Tournament Name *
                 </label>
                 <input
@@ -1500,21 +1500,21 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={sportCompetitionName}
                   onChange={(e) => setSportCompetitionName(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Competition Level (Table 8.1) *
                 </label>
                 <select
                   value={sportLevel}
                   onChange={(e) => setSportLevel(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Sports Day (Intra-College)">Sports Day (Intra-College)</option>
                   <option value="AU Zonal / District Level">AU Zonal / District Level</option>
@@ -1525,14 +1525,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Position / Achievement (Table 8.1) *
                 </label>
                 <select
                   value={sportPosition}
                   onChange={(e) => setSportPosition(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Gold / 1st Place">Gold / 1st Place</option>
                   <option value="Silver / 2nd Place">Silver / 2nd Place</option>
@@ -1543,7 +1543,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                 Event Date *
               </label>
               <input
@@ -1551,14 +1551,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 value={sportDate}
                 onChange={(e) => setSportDate(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
               />
             </div>
 
             {/* Live Table 8.1 Calculated Points Preview */}
-            <div className="p-3.5 rounded-xl bg-white dark:bg-[#1C2531] border border-blue-200/80 dark:border-[#2B3543] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
+            <div className="p-3.5 rounded-xl bg-white dark:bg-[#181818] border border-blue-200/80 dark:border-[#292929] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C] block">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] block">
                   Table 8.1 Awarded Points Preview
                 </span>
                 {sportsCalculatedResult.criteriaPending ? (
@@ -1567,16 +1567,16 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                       <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
                       Pending HOD Confirmation
                     </span>
-                    <span className="text-xs text-slate-500 dark:text-[#7E8B9C]">
+                    <span className="text-xs text-slate-500 dark:text-[#A3A3A3]">
                       All India medal breakdown requires department review
                     </span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xl font-extrabold text-blue-600 dark:text-[#4C83E6]">
+                    <span className="text-xl font-extrabold text-blue-600 dark:text-[#FFD84D]">
                       {sportsCalculatedResult.points} Points
                     </span>
-                    <span className="text-xs text-slate-500 dark:text-[#7E8B9C]">
+                    <span className="text-xs text-slate-500 dark:text-[#A3A3A3]">
                       ({sportPosition} at {sportLevel})
                     </span>
                   </div>
@@ -1584,11 +1584,11 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               </div>
 
               {!sportsCalculatedResult.criteriaPending && (
-                <div className="text-right sm:border-l sm:border-slate-200 dark:sm:border-[#2B3543] sm:pl-4">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C] block">
+                <div className="text-right sm:border-l sm:border-slate-200 dark:sm:border-[#292929] sm:pl-4">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] block">
                     Table 8.2 Grade
                   </span>
-                  <span className="text-base font-bold text-slate-800 dark:text-[#E8EDF4]">
+                  <span className="text-base font-bold text-slate-800 dark:text-[#F5F5F5]">
                     {sportsCalculatedResult.points > 699
                       ? "Grade O (10 GP)"
                       : sportsCalculatedResult.points >= 401
@@ -1604,7 +1604,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 </div>
               )}
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C]">
+            <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3]">
               ℹ️ Sports points are strictly evaluated from official Table 8.1 guidelines. Manual modification of point values is disabled.
             </p>
           </div>
@@ -1612,9 +1612,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 10. ONLINE CERTIFICATIONS */}
         {currentSlug === "online-certifications" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Online Course Certifications (IITB Spoken Tutorials &amp; MOOCs)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1624,7 +1624,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Course Title *
                 </label>
                 <input
@@ -1634,19 +1634,19 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={onlineCourse}
                   onChange={(e) => setOnlineCourse(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Platform / Provider *
                 </label>
                 <select
                   value={onlineProvider}
                   onChange={(e) => setOnlineProvider(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="IITB Spoken Tutorials">IITB Spoken Tutorials</option>
                   <option value="Coursera">Coursera</option>
@@ -1660,14 +1660,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Certification Outcome / Result *
                 </label>
                 <select
                   value={onlineCategory}
                   onChange={(e) => setOnlineCategory(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Topper">Topper (Grade O, 10 GP)</option>
                   <option value="Elite with Gold">Elite with Gold (Grade O, 10 GP)</option>
@@ -1680,7 +1680,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Completion Date *
                 </label>
                 <input
@@ -1688,7 +1688,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={onlineDate}
                   onChange={(e) => setOnlineDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
@@ -1697,9 +1697,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 11. NPTEL */}
         {currentSlug === "nptel-non-credit-transfer" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 NPTEL Non-Credit Transfer (Table 10.1)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1709,7 +1709,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   NPTEL Course Title *
                 </label>
                 <input
@@ -1719,19 +1719,19 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={nptelCourse}
                   onChange={(e) => setNptelCourse(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Course Duration *
                 </label>
                 <select
                   value={nptelDuration}
                   onChange={(e) => setNptelDuration(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="4 Weeks">4 Weeks</option>
                   <option value="8 Weeks">8 Weeks</option>
@@ -1742,14 +1742,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Certificate Classification (Table 10.1) *
                 </label>
                 <select
                   value={nptelCategory}
                   onChange={(e) => setNptelCategory(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Topper">Topper (Grade O, 10 GP)</option>
                   <option value="Gold (>=90%)">Gold &gt;= 90% (Grade A+, 9 GP)</option>
@@ -1761,7 +1761,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Final Exam Date *
                 </label>
                 <input
@@ -1769,7 +1769,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={nptelDate}
                   onChange={(e) => setNptelDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
@@ -1778,9 +1778,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 12. GATE */}
         {currentSlug === "gate" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 GATE Examination (Table 11.1)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1790,7 +1790,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   GATE Registration / Roll Number *
                 </label>
                 <input
@@ -1800,19 +1800,19 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={gateRegNumber}
                   onChange={(e) => setGateRegNumber(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Exam Result Category (Table 11.1) *
                 </label>
                 <select
                   value={gateCategory}
                   onChange={(e) => setGateCategory(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Percentile (>90)">Percentile &gt; 90 (Grade O, 10 GP)</option>
                   <option value="Score (>400)">Score &gt; 400 (Grade A+, 9 GP)</option>
@@ -1826,7 +1826,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   GATE Score (Optional)
                 </label>
                 <input
@@ -1836,12 +1836,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={gateScore}
                   onChange={(e) => setGateScore(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Exam Date / Session *
                 </label>
                 <input
@@ -1849,7 +1849,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={gateDate}
                   onChange={(e) => setGateDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
@@ -1858,9 +1858,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 13. SCOUTS FOR SDGS */}
         {currentSlug === "scouts-for-sdgs" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Scouts for SDGs (Table 12.1)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1870,14 +1870,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Activity Classification *
                 </label>
                 <select
                   value={scoutsCategory}
                   onChange={(e) => setScoutsCategory(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Service (20 hrs)">Service (20 hrs) (Grade O, 10 GP)</option>
                   <option value="Scout Online Courses (2)">Scout Online Courses (2) (Grade A+, 9 GP)</option>
@@ -1887,7 +1887,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Service Hours Logged
                 </label>
                 <input
@@ -1897,14 +1897,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={scoutsHours}
                   onChange={(e) => setScoutsHours(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Initiative / Project Details
                 </label>
                 <input
@@ -1913,12 +1913,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={scoutsTitle}
                   onChange={(e) => setScoutsTitle(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Date of Activity *
                 </label>
                 <input
@@ -1926,7 +1926,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={scoutsDate}
                   onChange={(e) => setScoutsDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
@@ -1935,9 +1935,9 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* 14. FIT INDIA */}
         {currentSlug === "fit-india-certifications" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Fit India Initiatives (Table 13.1)
               </span>
               <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
@@ -1947,7 +1947,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Fitness Challenge / Quiz Title *
                 </label>
                 <input
@@ -1957,12 +1957,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={fitIndiaTitle}
                   onChange={(e) => setFitIndiaTitle(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   FIT INDIA Score (Table 13.1) *
                 </label>
                 <input
@@ -1974,13 +1974,13 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   value={fitIndiaScore}
                   onChange={(e) => setFitIndiaScore(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                 Event / Quiz Date *
               </label>
               <input
@@ -1988,7 +1988,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 value={fitIndiaDate}
                 onChange={(e) => setFitIndiaDate(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
               />
             </div>
           </div>
@@ -2010,7 +2010,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
             {/* Club Name (Manual text input, completely optional) */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                 Organization / Club Name (Optional)
               </label>
               <input
@@ -2020,21 +2020,21 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 value={clubName}
                 onChange={(e) => setClubName(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
               />
             </div>
 
             {/* Role / Participation Category */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Participation Category
                 </label>
                 <select
                   value={clubRoleCategory}
                   onChange={(e) => setClubRoleCategory(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
                 >
                   <option value="Member">Member (100 pts)</option>
                   <option value="Event Participation">Event Participation (100–500 pts)</option>
@@ -2048,14 +2048,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               {/* Event Level (conditionally displayed for Event Participation or Winner) */}
               {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") ? (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Event Level
                   </label>
                   <select
                     value={clubEventLevel}
                     onChange={(e) => setClubEventLevel(e.target.value)}
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#E8EDF4] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
                   >
                     <option value="Within College">Within College ({clubRoleCategory === "Winner" ? "200" : "100"} pts)</option>
                     <option value="Within State (Other College)">Within State / Other College ({clubRoleCategory === "Winner" ? "300" : "200"} pts)</option>
@@ -2066,7 +2066,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Completion / Activity Date
                   </label>
                   <input
@@ -2074,7 +2074,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                     value={clubDate}
                     onChange={(e) => setClubDate(e.target.value)}
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                   />
                 </div>
               )}
@@ -2084,7 +2084,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Event / Activity Title (Optional)
                   </label>
                   <input
@@ -2093,11 +2093,11 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                     value={clubActivityTitle}
                     onChange={(e) => setClubActivityTitle(e.target.value)}
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Event Date
                   </label>
                   <input
@@ -2105,14 +2105,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                     value={clubDate}
                     onChange={(e) => setClubDate(e.target.value)}
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] min-h-[38px]"
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                   />
                 </div>
               </div>
             )}
 
             {/* Simple Credit Points Indicator */}
-            <div className="p-3 rounded-lg bg-white dark:bg-[#1C2531] border border-blue-200/80 dark:border-blue-900/40 flex items-center justify-between">
+            <div className="p-3 rounded-lg bg-white dark:bg-[#181818] border border-blue-200/80 dark:border-blue-900/40 flex items-center justify-between">
               <div>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Credit Points:</span>
                 <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
@@ -2131,16 +2131,16 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         {/* Section 3 — Supporting Evidence (Three Clear Options)               */}
         {/* ==================================================================== */}
         <div className="space-y-3 pt-3">
-          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#2B3543]/60">
+          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#292929]/60">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
               3
             </span>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#E8EDF4]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F5F5F5]">
               Section 3 — Supporting Evidence
             </h3>
           </div>
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
               {currentSlug === "academics-gpa"
                 ? "Semester Marksheet / Grade Sheet"
                 : "Certificate / Supporting Evidence"}
@@ -2178,7 +2178,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                 certificateStatus === "uploaded"
                   ? "border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 dark:border-blue-500 shadow-2xs ring-1 ring-blue-500"
-                  : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] hover:border-slate-300 dark:hover:border-slate-600"
+                  : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-slate-600"
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -2193,11 +2193,11 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                     <div className="h-1.5 w-1.5 rounded-full bg-white" />
                   )}
                 </div>
-                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4]">
+                <span className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">
                   Upload Certificate
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] leading-snug pl-6">
+              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] leading-snug pl-6">
                 Attach official PDF evidence document.
               </p>
             </button>
@@ -2213,7 +2213,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                 certificateStatus === "yet_to_receive"
                   ? "border-amber-600 bg-amber-50/70 dark:bg-amber-950/40 dark:border-amber-500 shadow-2xs ring-1 ring-amber-500"
-                  : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] hover:border-slate-300 dark:hover:border-slate-600"
+                  : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-slate-600"
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -2228,11 +2228,11 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                     <div className="h-1.5 w-1.5 rounded-full bg-white" />
                   )}
                 </div>
-                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4]">
+                <span className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">
                   Yet to Receive
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] leading-snug pl-6">
+              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] leading-snug pl-6">
                 Certificate not yet issued by organizer.
               </p>
             </button>
@@ -2247,8 +2247,8 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               disabled={isSubmitting}
               className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                 certificateStatus === "not_provided"
-                  ? "border-slate-700 bg-slate-100 dark:bg-[#232E3E] dark:border-slate-500 shadow-2xs ring-1 ring-slate-500"
-                  : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] hover:border-slate-300 dark:hover:border-slate-600"
+                  ? "border-slate-700 bg-slate-100 dark:bg-[#181818] dark:border-slate-500 shadow-2xs ring-1 ring-slate-500"
+                  : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-slate-600"
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -2263,11 +2263,11 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                     <div className="h-1.5 w-1.5 rounded-full bg-white dark:bg-slate-900" />
                   )}
                 </div>
-                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4]">
+                <span className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">
                   No Certificate
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] leading-snug pl-6">
+              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] leading-snug pl-6">
                 No certificate issued for this activity.
               </p>
             </button>
@@ -2276,7 +2276,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           {/* Conditional file uploader / reassurance message */}
           {certificateStatus === "uploaded" && (
             <div>
-              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mb-1.5">
+              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mb-1.5">
                 {isPdfDisabled
                   ? "System Admin policy: Evidence document upload is disabled for this component. You can proceed with submission directly."
                   : currentSlug === "academics-gpa"
@@ -2319,7 +2319,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                           ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
                           : fileError
                             ? "border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20"
-                            : "border-slate-300 dark:border-[#2B3543] hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/40 dark:bg-[#1C2531]/40"
+                            : "border-slate-300 dark:border-[#292929] hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/40 dark:bg-[#181818]/40"
                       }`}
                     >
                       <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-2">
@@ -2327,10 +2327,10 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                           <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
                       </div>
-                      <p className="text-xs font-semibold text-slate-800 dark:text-[#E8EDF4]">
+                      <p className="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5]">
                         {isPdfRequired ? "Click to browse or drop your mandatory PDF here" : "Click to browse or drop optional PDF here"}
                       </p>
-                      <p className="text-[11px] text-slate-400 dark:text-[#7E8B9C] mt-0.5">
+                      <p className="text-[11px] text-slate-400 dark:text-[#A3A3A3] mt-0.5">
                         {allowOtherEvidence ? "PDF, PNG, JPEG format • Up to 5 MB" : "PDF format only • Up to 5 MB"}
                       </p>
                     </div>
@@ -2341,10 +2341,10 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                           FILE
                         </div>
                         <div className="truncate">
-                          <p className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] truncate">
+                          <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5] truncate">
                             {evidenceFile.name}
                           </p>
-                          <p className="text-[10px] text-slate-500 dark:text-[#7E8B9C]">
+                          <p className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">
                             {formatFileSize(evidenceFile.size)} &bull; Ready for upload
                           </p>
                         </div>
@@ -2354,7 +2354,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                         type="button"
                         onClick={() => handleFileSelect(null)}
                         disabled={isSubmitting}
-                        className="rounded-lg p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-[#1C2531] transition-colors cursor-pointer"
+                        className="rounded-lg p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-[#181818] transition-colors cursor-pointer"
                         title="Remove selected file"
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -2387,12 +2387,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           )}
 
           {certificateStatus === "not_provided" && (
-            <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531]/70 p-3.5 flex items-start gap-2.5">
-              <svg className="h-4 w-4 text-slate-500 dark:text-[#7E8B9C] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#181818]/70 p-3.5 flex items-start gap-2.5">
+              <svg className="h-4 w-4 text-slate-500 dark:text-[#A3A3A3] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div className="text-xs leading-relaxed text-slate-700 dark:text-[#CBD5E1]">
-                <p className="font-semibold text-slate-900 dark:text-[#E8EDF4]">Activity Without Certificate</p>
+                <p className="font-semibold text-slate-900 dark:text-[#F5F5F5]">Activity Without Certificate</p>
                 <p className="mt-0.5 text-[11px] text-slate-600 dark:text-[#94A3B8]">
                   This activity will be submitted without a certificate. Mentor will verify participation based on details provided.
                 </p>
@@ -2405,19 +2405,19 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         {/* Section 4 — Additional Remarks                                      */}
         {/* ==================================================================== */}
         <div className="space-y-2 pt-3">
-          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#2B3543]/60">
+          <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#292929]/60">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
               4
             </span>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#E8EDF4]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F5F5F5]">
               Section 4 — Additional Remarks
             </h3>
           </div>
           <div className="flex items-center justify-between mb-1">
-            <label htmlFor="submission-remarks" className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] uppercase tracking-wider">
+            <label htmlFor="submission-remarks" className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
               Additional Remarks (Optional)
             </label>
-            <span className="text-[10px] text-slate-400 dark:text-[#7E8B9C]">
+            <span className="text-[10px] text-slate-400 dark:text-[#A3A3A3]">
               {remarks.length} / 500
             </span>
           </div>
@@ -2429,7 +2429,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             onChange={(e) => setRemarks(e.target.value)}
             disabled={isSubmitting}
             placeholder="Add any additional details about your activity, organization or participation..."
-            className="w-full rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-3 py-2 text-xs text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors"
+            className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors"
           />
         </div>
 
@@ -2444,17 +2444,17 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         {/* ==================================================================== */}
         {/* Section 5 — Actions                                                 */}
         {/* ==================================================================== */}
-        <div className="pt-3 border-t border-slate-200 dark:border-[#2B3543]">
+        <div className="pt-3 border-t border-slate-200 dark:border-[#292929]">
           <div className="flex items-center justify-between pb-3">
             <div className="flex items-center gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
                 5
               </span>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#E8EDF4]">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F5F5F5]">
                 Section 5 — Actions
               </h3>
             </div>
-            <span className="text-[10px] text-slate-400 dark:text-[#7E8B9C]">
+            <span className="text-[10px] text-slate-400 dark:text-[#A3A3A3]">
               Verification Workflow
             </span>
           </div>
@@ -2464,7 +2464,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               type="button"
               onClick={handleCancel}
               disabled={isSubmitting}
-              className="rounded-xl border border-slate-300 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232E3E] transition-colors cursor-pointer min-h-[38px]"
+              className="rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#181818] transition-colors cursor-pointer min-h-[38px]"
             >
               Cancel
             </button>
@@ -2473,7 +2473,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             type="button"
             onClick={() => handleSubmit(false)}
             disabled={isSubmitting || semesterLoading || isComponentLocked}
-            className="rounded-xl border border-slate-300 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] hover:bg-slate-100 dark:hover:bg-[#232E3E] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] transition-colors cursor-pointer min-h-[38px] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-xl border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#181818] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] transition-colors cursor-pointer min-h-[38px] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Save as Draft
           </button>

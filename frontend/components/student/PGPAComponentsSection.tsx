@@ -215,19 +215,19 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
   }, [components, selectedSemesterTab]);
 
   return (
-    <section className="rounded-2xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-4 sm:p-7 shadow-2xs transition-colors overflow-hidden w-full max-w-full">
+    <section className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111] p-4 sm:p-7 shadow-2xs transition-colors overflow-hidden w-full max-w-full">
       {/* Header */}
-      <div className="flex flex-col gap-4 pb-6 border-b border-slate-200 dark:border-[#2B3543] lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 pb-6 border-b border-slate-200 dark:border-[#292929] lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-[#E8EDF4]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-[#F5F5F5]">
               PGPA Components Catalogue
             </h2>
-            <span className="rounded-full bg-slate-100 dark:bg-[#1C2531] px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] border border-slate-200 dark:border-[#2B3543]">
+            <span className="rounded-full bg-slate-100 dark:bg-[#181818] px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] border border-slate-200 dark:border-[#292929]">
               {components.length} Categories
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7E8B9C] font-normal">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#A3A3A3] font-normal">
             Component availability and submission rules configured via official PGPA Semester Matrix.
           </p>
         </div>
@@ -236,14 +236,14 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto max-w-full">
           {/* Semester Selector */}
           {semesters.length > 0 && onSemesterChange && (
-            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-[#1C2531] border border-slate-200 dark:border-[#2B3543] rounded-xl px-2.5 py-1 shrink-0">
-              <svg className="h-3.5 w-3.5 text-blue-600 dark:text-[#4C83E6] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-[#181818] border border-slate-200 dark:border-[#292929] rounded-xl px-2.5 py-1 shrink-0">
+              <svg className="h-3.5 w-3.5 text-blue-600 dark:text-[#FFD84D] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
                 <line x1="16" x2="16" y1="2" y2="6" />
                 <line x1="8" x2="8" y1="2" y2="6" />
                 <line x1="3" x2="21" y1="10" y2="10" />
               </svg>
-              <label htmlFor="comp-sem-select" className="text-[11px] font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider shrink-0">
+              <label htmlFor="comp-sem-select" className="text-[11px] font-semibold text-slate-500 dark:text-[#A3A3A3] uppercase tracking-wider shrink-0">
                 Semester:
               </label>
               <select
@@ -251,10 +251,10 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
                 value={selectedSemesterId || ""}
                 onChange={(e) => onSemesterChange(e.target.value)}
                 disabled={isLoading}
-                className="bg-transparent text-xs font-bold text-slate-800 dark:text-[#E8EDF4] border-none focus:outline-none cursor-pointer py-1"
+                className="bg-transparent text-xs font-bold text-slate-800 dark:text-[#F5F5F5] border-none focus:outline-none cursor-pointer py-1"
               >
                 {semesters.map((s) => (
-                  <option key={s.id} value={s.id} className="bg-white dark:bg-[#171E28] text-slate-900 dark:text-[#E8EDF4]">
+                  <option key={s.id} value={s.id} className="bg-white dark:bg-[#111111] text-slate-900 dark:text-[#F5F5F5]">
                     {s.display_name} (Sem {s.semester_number})
                   </option>
                 ))}
@@ -274,7 +274,7 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
                   className={`shrink-0 rounded-full px-3 py-1.5 text-xs transition-all cursor-pointer min-h-[34px] ${
                     isSelected
                       ? "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-900/70 font-semibold shadow-2xs"
-                      : "bg-white dark:bg-[#1C2531] border border-slate-200 dark:border-[#2B3543] text-slate-600 dark:text-[#A0ACBC] hover:text-slate-900 dark:hover:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232E3E] hover:border-slate-300 dark:hover:border-[#3B4758] font-medium"
+                      : "bg-white dark:bg-[#181818] border border-slate-200 dark:border-[#292929] text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900 dark:hover:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#181818] hover:border-slate-300 dark:hover:border-[#3B4758] font-medium"
                   }`}
                 >
                   {tab.label}
@@ -293,17 +293,17 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="p-5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 animate-pulse space-y-3.5"
+                className="p-5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 animate-pulse space-y-3.5"
               >
                 <div className="flex justify-between items-center">
-                  <div className="h-8 w-8 bg-slate-200 dark:bg-[#2B3543] rounded-lg" />
-                  <div className="h-5 w-20 bg-slate-200 dark:bg-[#2B3543] rounded-full" />
+                  <div className="h-8 w-8 bg-slate-200 dark:bg-[#292929] rounded-lg" />
+                  <div className="h-5 w-20 bg-slate-200 dark:bg-[#292929] rounded-full" />
                 </div>
-                <div className="h-5 w-3/4 bg-slate-200 dark:bg-[#2B3543] rounded" />
-                <div className="h-4 w-full bg-slate-200 dark:bg-[#2B3543] rounded" />
-                <div className="pt-3.5 flex justify-between items-center border-t border-slate-200/60 dark:border-[#2B3543]/60">
-                  <div className="h-4 w-14 bg-slate-200 dark:bg-[#2B3543] rounded" />
-                  <div className="h-7 w-20 bg-slate-200 dark:bg-[#2B3543] rounded-lg" />
+                <div className="h-5 w-3/4 bg-slate-200 dark:bg-[#292929] rounded" />
+                <div className="h-4 w-full bg-slate-200 dark:bg-[#292929] rounded" />
+                <div className="pt-3.5 flex justify-between items-center border-t border-slate-200/60 dark:border-[#292929]/60">
+                  <div className="h-4 w-14 bg-slate-200 dark:bg-[#292929] rounded" />
+                  <div className="h-7 w-20 bg-slate-200 dark:bg-[#292929] rounded-lg" />
                 </div>
               </div>
             ))}
@@ -344,8 +344,8 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
                   key={component.id}
                   className={`group relative flex flex-col justify-between rounded-xl border p-4 sm:p-5 shadow-2xs transition-all duration-200 focus-within:ring-2 focus-within:ring-blue-600 min-w-0 w-full ${
                     isLocked
-                      ? "border-slate-200 dark:border-[#2B3543]/80 bg-slate-50/70 dark:bg-[#161D26]/80"
-                      : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] hover:border-slate-300 dark:hover:border-[#3B4758] hover:shadow-xs"
+                      ? "border-slate-200 dark:border-[#292929]/80 bg-slate-50/70 dark:bg-[#161D26]/80"
+                      : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-[#3B4758] hover:shadow-xs"
                   }`}
                 >
                   <div>
@@ -355,12 +355,12 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
                         {/* Refined restrained icon surface */}
                         <div className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${
                           isLocked
-                            ? "bg-slate-100 dark:bg-[#1A222E] border-slate-200 dark:border-[#2B3543] text-slate-400 dark:text-[#64748B]"
-                            : "bg-slate-50 dark:bg-[#171E28] border border-slate-200 dark:border-[#2B3543] text-slate-600 dark:text-[#A0ACBC] group-hover:text-blue-600 dark:group-hover:text-[#4C83E6] group-hover:bg-blue-50/50 dark:group-hover:bg-blue-950/30 group-hover:border-blue-200/60 dark:group-hover:border-blue-800/60"
+                            ? "bg-slate-100 dark:bg-[#1A222E] border-slate-200 dark:border-[#292929] text-slate-400 dark:text-[#64748B]"
+                            : "bg-slate-50 dark:bg-[#111111] border border-slate-200 dark:border-[#292929] text-slate-600 dark:text-[#A3A3A3] group-hover:text-blue-600 dark:group-hover:text-[#FFD84D] group-hover:bg-blue-50/50 dark:group-hover:bg-blue-950/30 group-hover:border-blue-200/60 dark:group-hover:border-blue-800/60"
                         }`}>
                           {getCategoryIcon(component.slug)}
                         </div>
-                        <span className="font-mono text-xs font-semibold text-slate-400 dark:text-[#7E8B9C]">
+                        <span className="font-mono text-xs font-semibold text-slate-400 dark:text-[#A3A3A3]">
                           #{orderLabel}
                         </span>
                       </div>
@@ -388,11 +388,11 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
                             {stats.pending} submitted
                           </span>
                         ) : stats.draft > 0 ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-[#171E28] px-2.5 py-0.5 text-[11px] font-medium text-slate-600 dark:text-[#A0ACBC] border border-slate-200 dark:border-[#2B3543]">
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-[#111111] px-2.5 py-0.5 text-[11px] font-medium text-slate-600 dark:text-[#A3A3A3] border border-slate-200 dark:border-[#292929]">
                             {stats.draft} draft
                           </span>
                         ) : !isLocked ? (
-                          <span className="text-[11px] text-slate-400 dark:text-[#7E8B9C] font-medium">
+                          <span className="text-[11px] text-slate-400 dark:text-[#A3A3A3] font-medium">
                             0 submitted
                           </span>
                         ) : null}
@@ -403,7 +403,7 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
                     <h3 className={`mt-3.5 text-[15px] font-semibold transition-colors leading-snug ${
                       isLocked
                         ? "text-slate-600 dark:text-slate-400"
-                        : "text-slate-900 dark:text-[#E8EDF4] group-hover:text-blue-600 dark:group-hover:text-[#4C83E6]"
+                        : "text-slate-900 dark:text-[#F5F5F5] group-hover:text-blue-600 dark:group-hover:text-[#FFD84D]"
                     }`}>
                       {component.name}
                     </h3>
@@ -426,8 +426,8 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
                   </div>
 
                   {/* Card Footer: Semester Label & Submit Action */}
-                  <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-[#2B3543]/60 flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-slate-400 dark:text-[#7E8B9C] uppercase tracking-wider">
+                  <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-[#292929]/60 flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-slate-400 dark:text-[#A3A3A3] uppercase tracking-wider">
                       {component.semester_label || "All Sem"}
                     </span>
 
@@ -436,7 +436,7 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
                         type="button"
                         disabled
                         title={lockMessage}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#2B3543] bg-slate-100 dark:bg-[#151D26] text-slate-400 dark:text-[#5A687A] text-xs font-semibold px-3 py-1.5 cursor-not-allowed opacity-75 min-h-[36px]"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#292929] bg-slate-100 dark:bg-[#151D26] text-slate-400 dark:text-[#5A687A] text-xs font-semibold px-3 py-1.5 cursor-not-allowed opacity-75 min-h-[36px]"
                       >
                         <svg className="h-3.5 w-3.5 text-slate-400 dark:text-[#5A687A]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                           <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
@@ -448,9 +448,9 @@ export const PGPAComponentsSection: React.FC<PGPAComponentsSectionProps> = ({
                       <button
                         type="button"
                         onClick={() => onSelectComponentForSubmit(component)}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] hover:bg-blue-50 dark:hover:bg-[#232E3E] hover:border-blue-300 dark:hover:border-blue-800 hover:text-blue-700 dark:hover:text-[#4C83E6] text-slate-700 dark:text-[#E8EDF4] text-xs font-semibold px-3 py-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer min-h-[36px]"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111] hover:bg-blue-50 dark:hover:bg-[#181818] hover:border-blue-300 dark:hover:border-blue-800 hover:text-blue-700 dark:hover:text-[#FFD84D] text-slate-700 dark:text-[#F5F5F5] text-xs font-semibold px-3 py-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer min-h-[36px]"
                       >
-                        <svg className="h-3.5 w-3.5 text-blue-600 dark:text-[#4C83E6]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <svg className="h-3.5 w-3.5 text-blue-600 dark:text-[#FFD84D]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
                         <span>Submit</span>

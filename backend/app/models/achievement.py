@@ -24,6 +24,7 @@ class AchievementStatus(str, enum.Enum):
     """
     DRAFT = "draft"
     PENDING = "pending"
+    UNDER_REVIEW = "under_review"
     APPROVED = "approved"
     REJECTED = "rejected"
 

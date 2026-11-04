@@ -462,7 +462,7 @@ export default function AdminDashboardPage() {
       </header>
 
       {/* 3. Main Dashboard Body: Collapsible Sidebar + Content View */}
-      <div className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-12">
+      <div className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:pb-12">
         <div className="flex gap-6 items-start">
           {/* A. Collapsible Institutional Sidebar */}
           <aside

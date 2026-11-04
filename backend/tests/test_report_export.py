@@ -106,7 +106,8 @@ def test_hod_export_excel_and_pdf_success(client: TestClient, db_session: Sessio
     assert res_excel.status_code == 200, f"Expected 200, got {res_excel.status_code}"
     assert ".xlsx" in res_excel.headers["content-disposition"]
     wb = openpyxl.load_workbook(io.BytesIO(res_excel.content))
-    assert len(wb.sheetnames) == 4
+    assert len(wb.sheetnames) == 5
+    assert "Manual Component Points" in wb.sheetnames
 
     # 2. PDF export
     res_pdf = client.get("/api/v1/hod/export/pdf", headers=headers)

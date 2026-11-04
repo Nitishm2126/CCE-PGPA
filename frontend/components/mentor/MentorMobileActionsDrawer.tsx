@@ -60,13 +60,13 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
         role="dialog"
         aria-modal="true"
         aria-label="Mentor Actions"
-        className="relative z-10 w-full max-h-[85vh] bg-white dark:bg-[#171e28] rounded-t-3xl border-t border-slate-200/90 dark:border-white/10 shadow-2xl p-5 safe-pb flex flex-col overflow-y-auto animate-apple-sheet-up transition-colors"
+        className="relative z-10 w-full max-h-[85vh] bg-white dark:bg-[#111111] rounded-t-3xl border-t border-slate-200/90 dark:border-white/10 shadow-2xl p-5 safe-pb flex flex-col overflow-y-auto animate-apple-sheet-up transition-colors"
       >
         {/* Apple Drag Handle */}
         <div className="w-10 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mb-4" />
 
         {/* Identity Header */}
-        <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-[#2b3543]">
+        <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-[#292929]">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-base shadow-sm">
             {mentorName
               .split(" ")
@@ -76,10 +76,10 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
               .join("") || "FM"}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-slate-900 dark:text-[#e8edf4] text-base leading-snug truncate">
+            <h3 className="font-bold text-slate-900 dark:text-[#F5F5F5] text-base leading-snug truncate">
               {mentorName}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-[#a0acbc] truncate font-mono">
+            <p className="text-xs text-slate-500 dark:text-[#A3A3A3] truncate font-mono">
               {mentorEmail}
             </p>
             <div className="flex items-center gap-2 mt-1">
@@ -92,7 +92,7 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-[#232d3b] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-[#222222] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -136,7 +136,7 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
               onClose();
               onExportClick();
             }}
-            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#2b3543] bg-slate-50/60 dark:bg-[#1c2531] hover:bg-slate-100 dark:hover:bg-[#232d3b] text-slate-800 dark:text-[#e8edf4] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#222222] text-slate-800 dark:text-[#F5F5F5] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white">
@@ -145,8 +145,8 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900 dark:text-[#e8edf4] text-xs">Export Mentee PGPA Data</p>
-                <p className="text-[10px] text-slate-500 dark:text-[#a0acbc]">Official Excel &amp; PDF Department Reports</p>
+                <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] text-xs">Export Mentee PGPA Data</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">Official Excel &amp; PDF Department Reports</p>
               </div>
             </div>
             <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -161,7 +161,7 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
               onClose();
               onRefreshClick();
             }}
-            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#2b3543] bg-slate-50/60 dark:bg-[#1c2531] hover:bg-slate-100 dark:hover:bg-[#232d3b] text-slate-800 dark:text-[#e8edf4] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#222222] text-slate-800 dark:text-[#F5F5F5] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
@@ -170,8 +170,8 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900 dark:text-[#e8edf4] text-xs">Refresh Submissions</p>
-                <p className="text-[10px] text-slate-500 dark:text-[#a0acbc]">Sync authoritative records from database</p>
+                <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] text-xs">Refresh Submissions</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">Sync authoritative records from database</p>
               </div>
             </div>
           </button>
@@ -180,7 +180,7 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
           <Link
             href="/change-password"
             onClick={onClose}
-            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#2b3543] bg-slate-50/60 dark:bg-[#1c2531] hover:bg-slate-100 dark:hover:bg-[#232d3b] text-slate-800 dark:text-[#e8edf4] transition-all font-semibold text-xs active:scale-98"
+            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#222222] text-slate-800 dark:text-[#F5F5F5] transition-all font-semibold text-xs active:scale-98"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-600 text-white">
@@ -189,8 +189,8 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900 dark:text-[#e8edf4] text-xs">Security &amp; Password</p>
-                <p className="text-[10px] text-slate-500 dark:text-[#a0acbc]">Update login credentials</p>
+                <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] text-xs">Security &amp; Password</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">Update login credentials</p>
               </div>
             </div>
             <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -200,9 +200,9 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
         </div>
 
         {/* Footer: Theme toggle & Sign out */}
-        <div className="pt-3 border-t border-slate-100 dark:border-[#2b3543] flex items-center justify-between">
+        <div className="pt-3 border-t border-slate-100 dark:border-[#292929] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 dark:text-[#a0acbc] font-medium">Appearance:</span>
+            <span className="text-xs text-slate-500 dark:text-[#A3A3A3] font-medium">Appearance:</span>
             <ThemeToggle />
           </div>
 

@@ -12,6 +12,7 @@ from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
 from app.models.component import ComponentSemesterConfig, PGPAComponent
 from app.models.grading import StudentComponentResult, StudentSemesterPGPA
+from app.models.manual_point import ManualComponentPoint
 from app.models.review import ReviewAction, VerificationLog
 from app.models.semester import Semester
 from app.models.user import HodProfile, User, UserRole
@@ -30,6 +31,7 @@ from app.schemas.auth import (
 )
 from app.schemas.component_config import StudentComponentResultItem, StudentPGPAResponse
 from app.schemas.file import AchievementFileResponse
+from app.schemas.manual_point import ManualPointResponse
 from app.schemas.semester import SemesterResponse
 from app.services.component_service import get_dynamic_fields_for_component, _recalculate_student_semester_pgpa
 from app.services.grading_engine import (
@@ -125,7 +127,7 @@ def format_achievement_response(
                 evaluated_grade = res_rec.grade
                 evaluated_grade_points = res_rec.grade_points
                 evaluated_points = res_rec.raw_score
-    elif is_reviewer and achievement.status == AchievementStatus.PENDING:
+    elif is_reviewer and achievement.status in (AchievementStatus.PENDING, AchievementStatus.UNDER_REVIEW):
         # For faculty review inspection: calculate tentative rubric outcome
         if achievement.component and achievement.semester:
             try:
@@ -1088,3 +1090,54 @@ def get_my_pgpa(
         results=formatted_results,
         formula_explanation=formula_text,
     )
+
+
+@router.get(
+    "/manual-points",
+    response_model=List[ManualPointResponse],
+    summary="Retrieve manual PGPA component points awarded to the current student",
+)
+def get_my_manual_points(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_student),
+):
+    stmt = (
+        select(ManualComponentPoint)
+        .options(
+            joinedload(ManualComponentPoint.student).joinedload(User.student_profile),
+            joinedload(ManualComponentPoint.mentor),
+            joinedload(ManualComponentPoint.component),
+            joinedload(ManualComponentPoint.semester),
+        )
+        .where(
+            ManualComponentPoint.student_id == current_user.id,
+            ManualComponentPoint.is_active.is_(True),
+        )
+        .order_by(ManualComponentPoint.created_at.desc())
+    )
+    records = db.scalars(stmt).all()
+    res = []
+    for mp in records:
+        res.append(
+            ManualPointResponse(
+                id=mp.id,
+                student_id=mp.student_id,
+                student_name=mp.student.full_name if mp.student else current_user.full_name,
+                student_register_number=current_user.student_profile.register_number if current_user.student_profile else None,
+                mentor_id=mp.mentor_id,
+                mentor_name=mp.mentor.full_name if mp.mentor else "Assigned Mentor",
+                component_id=mp.component_id,
+                component_name=mp.component.name if mp.component else None,
+                component_slug=mp.component.slug if mp.component else None,
+                semester_id=mp.semester_id,
+                semester_number=mp.semester.semester_number if mp.semester else None,
+                semester_name=mp.semester.display_name if mp.semester else None,
+                points=mp.points,
+                remarks=mp.remarks,
+                is_active=mp.is_active,
+                created_at=mp.created_at,
+                updated_at=mp.updated_at,
+            )
+        )
+    return res
+

@@ -32,6 +32,7 @@ from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
 from app.models.component import PGPAComponent
 from app.models.grading import StudentComponentResult, StudentSemesterPGPA
+from app.models.manual_point import ManualComponentPoint
 from app.models.review import VerificationLog
 from app.models.semester import Semester
 from app.models.user import StudentProfile, User
@@ -224,6 +225,44 @@ def build_report_data(
 
     submissions = list(db.scalars(ach_stmt.order_by(Achievement.submitted_at.desc().nulls_last())).all())
 
+    # 6b. Fetch Manual Component Points
+    mp_stmt = (
+        select(ManualComponentPoint)
+        .options(
+            joinedload(ManualComponentPoint.student).joinedload(User.student_profile),
+            joinedload(ManualComponentPoint.mentor),
+            joinedload(ManualComponentPoint.component),
+            joinedload(ManualComponentPoint.semester),
+        )
+        .where(
+            ManualComponentPoint.student_id.in_(student_ids),
+            ManualComponentPoint.is_active.is_(True),
+        )
+    )
+    if semester_id:
+        mp_stmt = mp_stmt.where(ManualComponentPoint.semester_id == semester_id)
+    if component_id:
+        mp_stmt = mp_stmt.where(ManualComponentPoint.component_id == component_id)
+
+    manual_points_records = list(db.scalars(mp_stmt.order_by(ManualComponentPoint.created_at.desc())).all())
+    manual_points_list: List[Dict[str, Any]] = []
+    for mp in manual_points_records:
+        reg_num = mp.student.student_profile.register_number if (mp.student and mp.student.student_profile) else "-"
+        st_name = mp.student.full_name if mp.student else "-"
+        sem_label = mp.semester.display_name if mp.semester else f"Sem {mp.semester_id}"
+        comp_name = mp.component.name if mp.component else "-"
+        mentor_name = mp.mentor.full_name if mp.mentor else "-"
+        manual_points_list.append({
+            "register_number": reg_num,
+            "student_name": st_name,
+            "semester_name": sem_label,
+            "component_name": comp_name,
+            "manual_points": float(mp.points),
+            "awarded_by": mentor_name,
+            "awarded_at": mp.created_at.strftime("%Y-%m-%d %H:%M") if mp.created_at else "-",
+            "remarks": mp.remarks,
+        })
+
     # 7. Build Student Summaries & Semester Matrix
     students_summary: List[Dict[str, Any]] = []
     semester_matrix: List[Dict[str, Any]] = []
@@ -401,6 +440,7 @@ def build_report_data(
         "semester_matrix": semester_matrix,
         "component_breakdown": component_breakdown_items,
         "submissions_list": submissions_items,
+        "manual_points_list": manual_points_list,
     }
 
 
@@ -485,6 +525,7 @@ def generate_excel_report(report_data: Dict[str, Any]) -> bytes:
     for idx, s in enumerate(report_data["students_summary"], 1):
         ws1.row_dimensions[row_num].height = 20
         fill = zebra_fill if idx % 2 == 0 else white_fill
+        cum_pgpa = s["cumulative_pgpa"]
         vals = [
             idx,
             sanitize_for_spreadsheet(s["register_number"]),
@@ -492,9 +533,9 @@ def generate_excel_report(report_data: Dict[str, Any]) -> bytes:
             sanitize_for_spreadsheet(s["department"]),
             f"Year {s['year']} - {s['section']}",
             sanitize_for_spreadsheet(s["mentor_name"]),
-            s["total_attempted"],
-            s["total_earned"],
-            s["cumulative_pgpa"] if s["cumulative_pgpa"] is not None else "N/A",
+            int(s["total_attempted"]),
+            int(s["total_earned"]),
+            round(float(cum_pgpa), 2) if cum_pgpa is not None else "N/A",
         ]
         for col_idx, v in enumerate(vals, 1):
             cell = ws1.cell(row=row_num, column=col_idx, value=v)
@@ -536,8 +577,9 @@ def generate_excel_report(report_data: Dict[str, Any]) -> bytes:
         ]
         for i in range(1, 9):
             sc = m["sem_scores"].get(i)
-            vals.append(sc if sc is not None else "-")
-        vals.append(m["cumulative_pgpa"] if m["cumulative_pgpa"] is not None else "N/A")
+            vals.append(round(float(sc), 2) if sc is not None else "-")
+        cum_pgpa = m["cumulative_pgpa"]
+        vals.append(round(float(cum_pgpa), 2) if cum_pgpa is not None else "N/A")
 
         for col_idx, v in enumerate(vals, 1):
             cell = ws2.cell(row=row_num, column=col_idx, value=v)
@@ -553,12 +595,12 @@ def generate_excel_report(report_data: Dict[str, Any]) -> bytes:
         row_num += 1
 
     # --------------------------------------------------------------------------
-    # Tab 3: Component Breakdown
+    # Tab 3: Component Breakdown (Export Points, Not Grades)
     # --------------------------------------------------------------------------
     ws3 = wb.create_sheet(title="Component Breakdown")
     comp_headers = [
         "S.No", "Register Number", "Student Name", "Semester", "Component Name",
-        "Raw Score", "Letter Grade", "Grade Points", "Credits", "Earned Points", "Status"
+        "Raw Score / Input", "Component Points", "Credits", "Earned PGPA Points", "Status"
     ]
     apply_title_header(ws3, "14 Official PGPA Components Evaluation", len(comp_headers))
 
@@ -581,10 +623,9 @@ def generate_excel_report(report_data: Dict[str, Any]) -> bytes:
             sanitize_for_spreadsheet(cb["semester_name"]),
             sanitize_for_spreadsheet(cb["component_name"]),
             sanitize_for_spreadsheet(str(cb["raw_score"])),
-            sanitize_for_spreadsheet(cb["grade"]),
-            cb["grade_points"],
-            cb["credit_value"],
-            cb["earned_points"],
+            float(cb["grade_points"]),
+            int(cb["credit_value"]),
+            float(cb["earned_points"]),
             "Verified" if cb["is_verified"] else "Pending",
         ]
         for col_idx, v in enumerate(vals, 1):
@@ -592,9 +633,9 @@ def generate_excel_report(report_data: Dict[str, Any]) -> bytes:
             cell.font = Font(name="Segoe UI", size=9.5)
             cell.fill = fill
             cell.border = thin_border
-            if col_idx in (1, 2, 4, 7, 11):
+            if col_idx in (1, 2, 4, 10):
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx in (8, 9, 10):
+            elif col_idx in (7, 8, 9):
                 cell.alignment = Alignment(horizontal="right", vertical="center")
             else:
                 cell.alignment = Alignment(horizontal="left", vertical="center")
@@ -642,6 +683,52 @@ def generate_excel_report(report_data: Dict[str, Any]) -> bytes:
             cell.border = thin_border
             if col_idx in (1, 2, 6, 7, 8, 10):
                 cell.alignment = Alignment(horizontal="center", vertical="center")
+            else:
+                cell.alignment = Alignment(horizontal="left", vertical="center")
+        row_num += 1
+
+    # --------------------------------------------------------------------------
+    # Tab 5: Manual Component Points
+    # --------------------------------------------------------------------------
+    ws5 = wb.create_sheet(title="Manual Component Points")
+    manual_headers = [
+        "S.No", "Register Number", "Student Name", "Semester", "PGPA Component",
+        "Manual Points", "Awarded By", "Award Date", "Remarks"
+    ]
+    apply_title_header(ws5, "Mentor Manual Component Points Awards", len(manual_headers))
+
+    ws5.row_dimensions[5].height = 25
+    for col_idx, h in enumerate(manual_headers, 1):
+        cell = ws5.cell(row=5, column=col_idx, value=h)
+        cell.font = header_font
+        cell.fill = navy_fill
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = thin_border
+
+    row_num = 6
+    for idx, mp in enumerate(report_data.get("manual_points_list", []), 1):
+        ws5.row_dimensions[row_num].height = 20
+        fill = zebra_fill if idx % 2 == 0 else white_fill
+        vals = [
+            idx,
+            sanitize_for_spreadsheet(mp["register_number"]),
+            sanitize_for_spreadsheet(mp["student_name"]),
+            sanitize_for_spreadsheet(mp["semester_name"]),
+            sanitize_for_spreadsheet(mp["component_name"]),
+            float(mp["manual_points"]),
+            sanitize_for_spreadsheet(mp["awarded_by"]),
+            sanitize_for_spreadsheet(mp["awarded_at"]),
+            sanitize_for_spreadsheet(mp["remarks"]),
+        ]
+        for col_idx, v in enumerate(vals, 1):
+            cell = ws5.cell(row=row_num, column=col_idx, value=v)
+            cell.font = Font(name="Segoe UI", size=9.5)
+            cell.fill = fill
+            cell.border = thin_border
+            if col_idx in (1, 2, 4, 8):
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            elif col_idx == 6:
+                cell.alignment = Alignment(horizontal="right", vertical="center")
             else:
                 cell.alignment = Alignment(horizontal="left", vertical="center")
         row_num += 1

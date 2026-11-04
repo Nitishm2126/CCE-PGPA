@@ -60,13 +60,13 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label="HOD Actions & Tools"
-        className="relative z-10 w-full max-h-[85vh] bg-white dark:bg-[#171e28] rounded-t-3xl border-t border-slate-200/90 dark:border-white/10 shadow-2xl p-5 safe-pb flex flex-col overflow-y-auto animate-apple-sheet-up transition-colors"
+        className="relative z-10 w-full max-h-[85vh] bg-white dark:bg-[#111111] rounded-t-3xl border-t border-slate-200/90 dark:border-white/10 shadow-2xl p-5 safe-pb flex flex-col overflow-y-auto animate-apple-sheet-up transition-colors"
       >
         {/* Apple Drag Handle */}
         <div className="w-10 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mb-4" />
 
         {/* Identity Header */}
-        <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-[#2b3543]">
+        <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-[#292929]">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-700 text-white font-bold text-base shadow-sm">
             {hodName
               .split(" ")
@@ -76,10 +76,10 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
               .join("") || "HOD"}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-slate-900 dark:text-[#e8edf4] text-base leading-snug truncate">
+            <h3 className="font-bold text-slate-900 dark:text-[#F5F5F5] text-base leading-snug truncate">
               {hodName}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-[#a0acbc] truncate font-mono">
+            <p className="text-xs text-slate-500 dark:text-[#A3A3A3] truncate font-mono">
               {hodEmail}
             </p>
             <div className="flex items-center gap-2 mt-1">
@@ -92,7 +92,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-[#232d3b] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-[#222222] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -134,7 +134,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
               onClose();
               onSelectTab("pgpa-grades");
             }}
-            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#2b3543] bg-slate-50/60 dark:bg-[#1c2531] hover:bg-slate-100 dark:hover:bg-[#232d3b] text-slate-800 dark:text-[#e8edf4] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#222222] text-slate-800 dark:text-[#F5F5F5] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-700 text-white">
@@ -143,8 +143,8 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900 dark:text-[#e8edf4] text-xs">PGPA Grades Matrix</p>
-                <p className="text-[10px] text-slate-500 dark:text-[#a0acbc]">5-Component calculation &amp; credits breakdown</p>
+                <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] text-xs">PGPA Grades Matrix</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">5-Component calculation &amp; credits breakdown</p>
               </div>
             </div>
             <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -159,7 +159,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
               onClose();
               onSelectTab("excel-import");
             }}
-            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#2b3543] bg-slate-50/60 dark:bg-[#1c2531] hover:bg-slate-100 dark:hover:bg-[#232d3b] text-slate-800 dark:text-[#e8edf4] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#222222] text-slate-800 dark:text-[#F5F5F5] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white">
@@ -168,8 +168,8 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900 dark:text-[#e8edf4] text-xs">Excel Batch Import</p>
-                <p className="text-[10px] text-slate-500 dark:text-[#a0acbc]">Batch upload semester credits &amp; grades</p>
+                <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] text-xs">Excel Batch Import</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">Batch upload semester credits &amp; grades</p>
               </div>
             </div>
             <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -184,7 +184,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
               onClose();
               onExportClick();
             }}
-            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#2b3543] bg-slate-50/60 dark:bg-[#1c2531] hover:bg-slate-100 dark:hover:bg-[#232d3b] text-slate-800 dark:text-[#e8edf4] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#222222] text-slate-800 dark:text-[#F5F5F5] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600 text-white">
@@ -193,8 +193,8 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900 dark:text-[#e8edf4] text-xs">Export Department PGPA Report</p>
-                <p className="text-[10px] text-slate-500 dark:text-[#a0acbc]">Official CCE Excel &amp; PDF Department Reports</p>
+                <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] text-xs">Export Department PGPA Report</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">Official CCE Excel &amp; PDF Department Reports</p>
               </div>
             </div>
             <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -209,7 +209,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
               onClose();
               onRefreshClick();
             }}
-            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#2b3543] bg-slate-50/60 dark:bg-[#1c2531] hover:bg-slate-100 dark:hover:bg-[#232d3b] text-slate-800 dark:text-[#e8edf4] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#222222] text-slate-800 dark:text-[#F5F5F5] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
@@ -218,8 +218,8 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900 dark:text-[#e8edf4] text-xs">Refresh Department Data</p>
-                <p className="text-[10px] text-slate-500 dark:text-[#a0acbc]">Sync all 61 students &amp; submissions</p>
+                <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] text-xs">Refresh Department Data</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">Sync all 61 students &amp; submissions</p>
               </div>
             </div>
           </button>
@@ -228,7 +228,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
           <Link
             href="/change-password"
             onClick={onClose}
-            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#2b3543] bg-slate-50/60 dark:bg-[#1c2531] hover:bg-slate-100 dark:hover:bg-[#232d3b] text-slate-800 dark:text-[#e8edf4] transition-all font-semibold text-xs active:scale-98"
+            className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#222222] text-slate-800 dark:text-[#F5F5F5] transition-all font-semibold text-xs active:scale-98"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-600 text-white">
@@ -237,8 +237,8 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900 dark:text-[#e8edf4] text-xs">Security &amp; Password</p>
-                <p className="text-[10px] text-slate-500 dark:text-[#a0acbc]">Update credentials</p>
+                <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] text-xs">Security &amp; Password</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">Update credentials</p>
               </div>
             </div>
             <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -248,9 +248,9 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="pt-3 border-t border-slate-100 dark:border-[#2b3543] flex items-center justify-between">
+        <div className="pt-3 border-t border-slate-100 dark:border-[#292929] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 dark:text-[#a0acbc] font-medium">Appearance:</span>
+            <span className="text-xs text-slate-500 dark:text-[#A3A3A3] font-medium">Appearance:</span>
             <ThemeToggle />
           </div>
 

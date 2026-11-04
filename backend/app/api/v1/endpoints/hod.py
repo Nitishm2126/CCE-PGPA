@@ -12,11 +12,13 @@ from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
 from app.models.component import PGPAComponent
 from app.models.grading import HODImportBatch, StudentComponentResult, StudentSemesterPGPA
+from app.models.manual_point import ManualComponentPoint
 from app.models.review import ReviewAction, VerificationLog
 from app.models.semester import Semester
 from app.models.user import StudentProfile, User, UserRole
 from app.schemas.achievement import AchievementResponse, ReviewSubmissionRequest
 from app.schemas.auth import HODStudentItem
+from app.schemas.manual_point import ManualPointResponse
 from app.schemas.component_config import (
     ComponentDetailItem,
     HODCorrectionRequest,
@@ -360,6 +362,8 @@ def review_achievement_as_hod(
                     _recalculate_student_semester_pgpa(db, achievement.student_id, achievement.semester_id)
             except Exception as e:
                 print(f"Warning: Auto-grading error on HOD approval: {e}")
+    elif review_data.action == ReviewAction.UNDER_REVIEW:
+        achievement.status = AchievementStatus.UNDER_REVIEW
     elif review_data.action == ReviewAction.REJECTED:
         achievement.status = AchievementStatus.REJECTED
     elif review_data.action == ReviewAction.REQUESTED_CHANGES:
@@ -1017,5 +1021,63 @@ def get_student_pgpa_grades(
         )
 
     return rows
+
+
+@router.get(
+    "/manual-points",
+    response_model=List[ManualPointResponse],
+    summary="List all department manual component points awards",
+)
+def get_all_department_manual_points(
+    student_id: Optional[uuid.UUID] = Query(None, description="Optional filter by student UUID"),
+    semester_id: Optional[uuid.UUID] = Query(None, description="Optional filter by semester UUID"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_hod),
+):
+    stmt = (
+        select(ManualComponentPoint)
+        .options(
+            joinedload(ManualComponentPoint.student).joinedload(User.student_profile),
+            joinedload(ManualComponentPoint.mentor),
+            joinedload(ManualComponentPoint.component),
+            joinedload(ManualComponentPoint.semester),
+        )
+        .where(ManualComponentPoint.is_active.is_(True))
+    )
+    if student_id:
+        stmt = stmt.where(ManualComponentPoint.student_id == student_id)
+    if semester_id:
+        stmt = stmt.where(ManualComponentPoint.semester_id == semester_id)
+
+    stmt = stmt.order_by(ManualComponentPoint.created_at.desc())
+    records = db.scalars(stmt).all()
+    res = []
+    for mp in records:
+        student_name = mp.student.full_name if mp.student else None
+        student_reg = mp.student.student_profile.register_number if (mp.student and mp.student.student_profile) else None
+        mentor_name = mp.mentor.full_name if mp.mentor else None
+        res.append(
+            ManualPointResponse(
+                id=mp.id,
+                student_id=mp.student_id,
+                student_name=student_name,
+                student_register_number=student_reg,
+                mentor_id=mp.mentor_id,
+                mentor_name=mentor_name,
+                component_id=mp.component_id,
+                component_name=mp.component.name if mp.component else None,
+                component_slug=mp.component.slug if mp.component else None,
+                semester_id=mp.semester_id,
+                semester_number=mp.semester.semester_number if mp.semester else None,
+                semester_name=mp.semester.display_name if mp.semester else None,
+                points=mp.points,
+                remarks=mp.remarks,
+                is_active=mp.is_active,
+                created_at=mp.created_at,
+                updated_at=mp.updated_at,
+            )
+        )
+    return res
+
 
 

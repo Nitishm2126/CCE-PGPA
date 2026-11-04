@@ -173,7 +173,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       {/* Mobile Fixed Bottom Navigation Bar (< md): Full-width, attached to viewport edge */}
       <nav
         aria-label="Student Mobile Navigation"
-        className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-[#090d16]/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800/90 shadow-[0_-2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_-2px_16px_rgba(0,0,0,0.5)] pb-[env(safe-area-inset-bottom,0px)] transition-colors"
+        className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#292929] shadow-[0_-2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_-2px_16px_rgba(0,0,0,0.6)] pb-[env(safe-area-inset-bottom,0px)] transition-colors"
       >
         <div className="grid grid-cols-5 items-center justify-between w-full max-w-md mx-auto px-1 py-1">
           {mobileNavTabs.map((tab) => {
@@ -192,8 +192,8 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 <div
                   className={`flex h-5 w-5 items-center justify-center transition-colors relative ${
                     isActive
-                      ? "text-purple-600 dark:text-amber-400"
-                      : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                      ? "text-purple-600 dark:text-[#FFD84D]"
+                      : "text-slate-400 hover:text-slate-600 dark:text-[#737373] dark:hover:text-[#D4D4D4]"
                   }`}
                 >
                   {tab.icon}
@@ -209,8 +209,8 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                   <span
                     className={`text-[10px] leading-none tracking-tight truncate max-w-full text-center ${
                       isActive
-                        ? "font-semibold text-purple-700 dark:text-amber-400"
-                        : "font-medium text-slate-500 dark:text-slate-400"
+                        ? "font-semibold text-purple-700 dark:text-[#FFD84D]"
+                        : "font-medium text-slate-500 dark:text-[#A3A3A3]"
                     }`}
                   >
                     {tab.label}
@@ -220,7 +220,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 {/* Active Indicator Dot */}
                 <div className="h-1 flex items-center justify-center mt-0.5">
                   {isActive ? (
-                    <span className="h-1 w-1 rounded-full bg-purple-600 dark:bg-amber-400 animate-apple-fade" />
+                    <span className="h-1 w-1 rounded-full bg-purple-600 dark:bg-[#FFD84D] animate-apple-fade" />
                   ) : (
                     <span className="h-1 w-1" />
                   )}
@@ -232,7 +232,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       </nav>
 
       {/* Desktop Navigation Segment Control (>= md) */}
-      <div className="hidden md:flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 px-3 py-1.5 rounded-xl shadow-2xs mb-6 transition-colors">
+      <div className="hidden md:flex items-center justify-between bg-white dark:bg-[#111111] border border-slate-200/90 dark:border-[#292929] px-3 py-1.5 rounded-xl shadow-2xs mb-6 transition-colors">
         <div className="flex items-center gap-1">
           {desktopTabs.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -243,8 +243,8 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 onClick={() => onSelectTab(tab.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                   isActive
-                    ? "bg-purple-50 dark:bg-[#161e2e] text-purple-700 dark:text-amber-400 font-semibold border border-purple-200 dark:border-amber-400/30 shadow-2xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium"
+                    ? "bg-purple-50 dark:bg-[#181818] text-purple-700 dark:text-[#FFD84D] font-semibold border border-purple-200 dark:border-[#FFD84D]/40 shadow-2xs"
+                    : "text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900 dark:hover:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#181818] font-medium"
                 }`}
               >
                 <div className="relative">

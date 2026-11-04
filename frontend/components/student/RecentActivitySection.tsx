@@ -80,9 +80,16 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
         );
       case "pending":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-[#132338] px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-[#93C5FD] border border-blue-200 dark:border-blue-800/70">
-            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 dark:bg-[#181818] px-2.5 py-0.5 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-[#292929]">
+            <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
             Pending Mentor Review
+          </span>
+        );
+      case "under_review":
+        return (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-[#FFD84D] border border-amber-200 dark:border-amber-800/60">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+            Under Review
           </span>
         );
       case "rejected":
@@ -95,7 +102,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
       case "draft":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-[#1C2531] px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:text-[#A0ACBC] border border-slate-200 dark:border-[#2B3543]">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-[#181818] px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:text-[#A3A3A3] border border-slate-200 dark:border-[#292929]">
             <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
             Draft
           </span>
@@ -104,21 +111,21 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-5 sm:p-7 shadow-2xs transition-colors">
+    <section className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111] p-5 sm:p-7 shadow-2xs transition-colors">
       {/* Header */}
-      <div className="flex items-center justify-between pb-5 border-b border-slate-200 dark:border-[#2B3543]">
+      <div className="flex items-center justify-between pb-5 border-b border-slate-200 dark:border-[#292929]">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-[#E8EDF4]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-[#F5F5F5]">
               Recent Activity
             </h2>
             {!isLoading && achievements.length > 0 && (
-              <span className="rounded-full bg-slate-100 dark:bg-[#1C2531] px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] border border-slate-200 dark:border-[#2B3543]">
+              <span className="rounded-full bg-slate-100 dark:bg-[#181818] px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] border border-slate-200 dark:border-[#292929]">
                 {achievements.length} Records
               </span>
             )}
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7E8B9C] font-normal">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#A3A3A3] font-normal">
             Submitted achievements and activity records
           </p>
         </div>
@@ -129,7 +136,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
               value={selectedSemester}
               onChange={(e) => setSelectedSemester(e.target.value)}
               aria-label="Filter activities by semester"
-              className="text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531] text-slate-700 dark:text-[#E8EDF4] outline-hidden focus:ring-2 focus:ring-blue-500 font-medium"
+              className="text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] text-slate-700 dark:text-[#F5F5F5] outline-hidden focus:ring-2 focus:ring-blue-500 font-medium"
             >
               <option value="all">All Semesters</option>
               <option value="1">Semester 1</option>
@@ -148,7 +155,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
             <button
               type="button"
               onClick={onViewAll}
-              className="text-xs font-semibold text-blue-600 dark:text-[#4C83E6] hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-colors cursor-pointer min-h-[36px]"
+              className="text-xs font-semibold text-blue-600 dark:text-[#FFD84D] hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-colors cursor-pointer min-h-[36px]"
             >
               <span>View all</span>
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -167,14 +174,14 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
             {[1, 2, 3].map((key) => (
               <div
                 key={key}
-                className="flex items-center justify-between gap-3 p-4 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/50 dark:bg-[#1C2531]/40 animate-pulse"
+                className="flex items-center justify-between gap-3 p-4 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 animate-pulse"
               >
                 <div className="space-y-2 flex-1">
-                  <div className="h-3 w-28 bg-slate-200 dark:bg-[#2B3543] rounded" />
-                  <div className="h-4 w-56 bg-slate-200 dark:bg-[#2B3543] rounded" />
-                  <div className="h-3 w-36 bg-slate-200 dark:bg-[#2B3543] rounded" />
+                  <div className="h-3 w-28 bg-slate-200 dark:bg-[#292929] rounded" />
+                  <div className="h-4 w-56 bg-slate-200 dark:bg-[#292929] rounded" />
+                  <div className="h-3 w-36 bg-slate-200 dark:bg-[#292929] rounded" />
                 </div>
-                <div className="h-6 w-20 bg-slate-200 dark:bg-[#2B3543] rounded-full" />
+                <div className="h-6 w-20 bg-slate-200 dark:bg-[#292929] rounded-full" />
               </div>
             ))}
           </div>
@@ -216,7 +223,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
         {/* Empty State */}
         {!isLoading && !error && achievements.length === 0 && (
           <div className="py-10 text-center px-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 dark:bg-[#1C2531] border border-slate-200 dark:border-[#2B3543] text-slate-500 dark:text-[#7E8B9C] mb-3">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 dark:bg-[#181818] border border-slate-200 dark:border-[#292929] text-slate-500 dark:text-[#A3A3A3] mb-3">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path
                   strokeLinecap="round"
@@ -225,10 +232,10 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                 />
               </svg>
             </div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5]">
               No activity records submitted yet
             </h3>
-            <p className="mt-1 text-xs text-slate-500 dark:text-[#7E8B9C] max-w-sm mx-auto leading-relaxed">
+            <p className="mt-1 text-xs text-slate-500 dark:text-[#A3A3A3] max-w-sm mx-auto leading-relaxed">
               Every verified activity earns PGPA credits. Submit your certifications, coding challenges, or internships to build your academic score.
             </p>
             <div className="mt-4">
@@ -260,14 +267,14 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
               return (
                 <div
                   key={item.id}
-                  className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] hover:border-slate-300 dark:hover:border-[#3B4758] hover:shadow-2xs transition-all flex flex-col gap-3"
+                  className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-[#3B4758] hover:shadow-2xs transition-all flex flex-col gap-3"
                 >
                   {/* Top Row: Meta info & Status Badge */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5">
                     <div className="min-w-0 flex-1">
                       {/* Component Tag, Semester & Date */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-[#171E28] px-2 py-0.5 text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] border border-slate-200 dark:border-[#2B3543]">
+                        <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-[#111111] px-2 py-0.5 text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] border border-slate-200 dark:border-[#292929]">
                           {item.component_name || "PGPA Component"}
                         </span>
                         {item.semester ? (
@@ -279,11 +286,11 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                             Semester {item.semester_id}
                           </span>
                         ) : null}
-                        <span className="text-xs text-slate-400 dark:text-[#7E8B9C] font-medium">
+                        <span className="text-xs text-slate-400 dark:text-[#A3A3A3] font-medium">
                           {formatDate(item.event_date || item.created_at)}
                         </span>
                         {item.activity_type && (
-                          <span className="text-xs text-slate-400 dark:text-[#7E8B9C]">
+                          <span className="text-xs text-slate-400 dark:text-[#A3A3A3]">
                             &bull; {item.activity_type}
                           </span>
                         )}
@@ -291,7 +298,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
 
                       {/* Achievement Title */}
                       <p
-                        className="mt-1.5 text-sm sm:text-[15px] font-semibold text-slate-900 dark:text-[#E8EDF4] break-words"
+                        className="mt-1.5 text-sm sm:text-[15px] font-semibold text-slate-900 dark:text-[#F5F5F5] break-words"
                         title={item.title}
                       >
                         {item.title}
@@ -317,7 +324,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                             </span>
                           )}
                           {item.component_metadata.points !== undefined && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#171E28] text-slate-700 dark:text-[#A0ACBC] font-medium border border-slate-200 dark:border-[#2B3543]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#111111] text-slate-700 dark:text-[#A3A3A3] font-medium border border-slate-200 dark:border-[#292929]">
                               {item.component_metadata.points} pts
                             </span>
                           )}
@@ -332,17 +339,17 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                             </span>
                           )}
                           {item.organizer && !item.component_metadata.club_name && (
-                            <span className="text-slate-500 dark:text-[#7E8B9C]">
+                            <span className="text-slate-500 dark:text-[#A3A3A3]">
                               &bull; {item.organizer}
                             </span>
                           )}
                         </div>
                       ) : (item.organizer || item.outcome) ? (
-                        <p className="mt-0.5 text-xs text-slate-500 dark:text-[#7E8B9C] break-words">
+                        <p className="mt-0.5 text-xs text-slate-500 dark:text-[#A3A3A3] break-words">
                           {item.organizer}
                           {item.organizer && item.outcome ? " — " : ""}
                           {item.outcome && (
-                            <span className="font-medium text-slate-700 dark:text-[#A0ACBC]">
+                            <span className="font-medium text-slate-700 dark:text-[#A3A3A3]">
                               {item.outcome}
                             </span>
                           )}
@@ -355,7 +362,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                           {item.files.map((f) => (
                             <span
                               key={f.id}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#171E28] px-2.5 py-1 text-[11px] font-medium text-slate-700 dark:text-[#A0ACBC]"
+                              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#111111] px-2.5 py-1 text-[11px] font-medium text-slate-700 dark:text-[#A3A3A3]"
                             >
                               <span className="flex h-3.5 w-3.5 items-center justify-center rounded bg-rose-600 text-[8px] font-bold text-white shrink-0">
                                 PDF
@@ -363,7 +370,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                               <span className="truncate max-w-[200px]" title={f.original_filename}>
                                 {f.original_filename}
                               </span>
-                              <span className="text-slate-400 dark:text-[#7E8B9C] shrink-0 text-[10px]">
+                              <span className="text-slate-400 dark:text-[#A3A3A3] shrink-0 text-[10px]">
                                 ({(f.size_bytes / 1024).toFixed(0)} KB)
                               </span>
                             </span>
@@ -413,16 +420,16 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                   </div>
 
                   {/* Actions Bar: Full row on mobile for comfortable tap targets */}
-                  <div className="pt-2 border-t border-slate-100 dark:border-[#2B3543]/60 flex items-center gap-2 flex-wrap justify-end">
+                  <div className="pt-2 border-t border-slate-100 dark:border-[#292929]/60 flex items-center gap-2 flex-wrap justify-end">
                     {/* Messages & Remarks Button */}
                     {onOpenMessages && (
                       <button
                         type="button"
                         onClick={() => onOpenMessages(item)}
                         title="View remarks, congratulations, and messages for this achievement"
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] hover:bg-slate-50 dark:hover:bg-[#232E3E] px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] transition-colors cursor-pointer min-h-[36px]"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111] hover:bg-slate-50 dark:hover:bg-[#181818] px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] transition-colors cursor-pointer min-h-[36px]"
                       >
-                        <svg className="h-3.5 w-3.5 text-blue-600 dark:text-[#4C83E6]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <svg className="h-3.5 w-3.5 text-blue-600 dark:text-[#FFD84D]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                         </svg>
                         <span>Remarks</span>
@@ -440,9 +447,9 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                         type="button"
                         onClick={() => onEditAchievement(item)}
                         title={item.status === "pending" ? "Edit submitted achievement details or update evidence" : "Edit activity details"}
-                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] hover:bg-slate-50 dark:hover:bg-[#232E3E] px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-[#E8EDF4] transition-colors cursor-pointer min-h-[36px]"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111] hover:bg-slate-50 dark:hover:bg-[#181818] px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] transition-colors cursor-pointer min-h-[36px]"
                       >
-                        <svg className="h-3 w-3 text-slate-500 dark:text-[#7E8B9C]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <svg className="h-3 w-3 text-slate-500 dark:text-[#A3A3A3]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                         </svg>
                         <span>Edit</span>
@@ -470,7 +477,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                         type="button"
                         onClick={() => onDeleteAchievement(item)}
                         title="Delete this achievement record"
-                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900 px-2 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#A0ACBC] transition-colors cursor-pointer min-h-[36px]"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111] hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900 px-2 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#A3A3A3] transition-colors cursor-pointer min-h-[36px]"
                       >
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -501,8 +508,8 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
 
                   {/* Student Remarks note if provided */}
                   {item.remarks && (
-                    <div className="mt-2 text-xs rounded-xl p-2.5 bg-slate-50 dark:bg-[#131922] border border-slate-200 dark:border-[#2B3543] text-slate-700 dark:text-[#A0ACBC]">
-                      <span className="font-semibold text-slate-900 dark:text-[#E8EDF4]">Student Remarks: </span>
+                    <div className="mt-2 text-xs rounded-xl p-2.5 bg-slate-50 dark:bg-[#131922] border border-slate-200 dark:border-[#292929] text-slate-700 dark:text-[#A3A3A3]">
+                      <span className="font-semibold text-slate-900 dark:text-[#F5F5F5]">Student Remarks: </span>
                       <span className="leading-relaxed">{item.remarks}</span>
                     </div>
                   )}
@@ -513,12 +520,12 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                       className={`mt-1 text-xs rounded-xl p-3 border flex items-start gap-2.5 ${
                         item.status === "rejected"
                           ? "bg-rose-50/90 dark:bg-[#251417] text-rose-900 dark:text-[#FDA4AF] border-rose-200 dark:border-rose-900/60"
-                          : "bg-slate-50 dark:bg-[#131922] text-slate-700 dark:text-[#A0ACBC] border-slate-200 dark:border-[#2B3543]"
+                          : "bg-slate-50 dark:bg-[#131922] text-slate-700 dark:text-[#A3A3A3] border-slate-200 dark:border-[#292929]"
                       }`}
                     >
                       <svg
                         className={`h-4 w-4 shrink-0 mt-0.5 ${
-                          item.status === "rejected" ? "text-rose-600 dark:text-[#FDA4AF]" : "text-blue-600 dark:text-[#4C83E6]"
+                          item.status === "rejected" ? "text-rose-600 dark:text-[#FDA4AF]" : "text-blue-600 dark:text-[#FFD84D]"
                         }`}
                         fill="none"
                         viewBox="0 0 24 24"
@@ -528,7 +535,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                       </svg>
                       <div className="flex-1">
-                        <span className="font-semibold text-slate-900 dark:text-[#E8EDF4]">
+                        <span className="font-semibold text-slate-900 dark:text-[#F5F5F5]">
                           {item.status === "rejected" ? "Mentor Review Decision (Action Required):" : "Mentor Feedback:"}
                         </span>{" "}
                         <p className="mt-0.5 leading-relaxed">

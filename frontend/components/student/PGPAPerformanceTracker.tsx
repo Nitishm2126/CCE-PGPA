@@ -405,17 +405,17 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
   };
 
   return (
-    <section className="bg-white dark:bg-[#171E28] rounded-2xl border border-slate-200 dark:border-[#2B3543] p-5 sm:p-6 shadow-2xs transition-colors space-y-6">
+    <section className="bg-white dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-[#292929] p-5 sm:p-6 shadow-2xs transition-colors space-y-6">
       {/* Header & Section Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#2B3543]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#292929]">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
-            <h2 className="text-lg font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-[#F5F5F5]">
               PGPA Performance &amp; Milestone Tracker
             </h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-[#7E8B9C]">
+          <p className="text-xs text-slate-500 dark:text-[#A3A3A3]">
             Real-time trajectory of your verified PGPA achievements, official grades, and points growth
           </p>
         </div>
@@ -425,7 +425,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
             <button
               type="button"
               onClick={onNavigateComponents}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 hover:bg-slate-100 dark:bg-[#1C2531] dark:hover:bg-[#253041] text-slate-700 dark:text-[#A0ACBC] font-semibold text-xs transition-colors cursor-pointer min-h-[34px]"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50 hover:bg-slate-100 dark:bg-[#181818] dark:hover:bg-[#253041] text-slate-700 dark:text-[#A3A3A3] font-semibold text-xs transition-colors cursor-pointer min-h-[34px]"
             >
               <span>View All Rules</span>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -440,11 +440,11 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
       {/* Main 2-Column Responsive Layout: Left Time-Series Chart | Right 5 Component Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* LEFT SECTION (Col 7): Time-Series Cumulative Points Chart */}
-        <div className="lg:col-span-7 bg-slate-50/70 dark:bg-[#1C2531]/60 rounded-xl border border-slate-200/80 dark:border-[#2B3543] p-4 sm:p-5 flex flex-col justify-between space-y-4">
+        <div className="lg:col-span-7 bg-slate-50/70 dark:bg-[#181818]/60 rounded-xl border border-slate-200/80 dark:border-[#292929] p-4 sm:p-5 flex flex-col justify-between space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-800 dark:text-[#E8EDF4] uppercase tracking-wider">
+                <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5] uppercase tracking-wider">
                   Cumulative Verified Points
                 </span>
                 <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300">
@@ -456,19 +456,19 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] mt-0.5">
+              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-0.5">
                 Sum of raw verified points approved by torch bearer mentors
               </p>
             </div>
 
             {/* Filter buttons: All Time | This Semester | Last 30 Days */}
-            <div className="inline-flex rounded-lg border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#171E28] p-0.5 text-[11px]">
+            <div className="inline-flex rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111] p-0.5 text-[11px]">
               <button
                 type="button"
                 onClick={() => setTimeFilter("all")}
                 className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${timeFilter === "all"
                   ? "bg-blue-600 text-white shadow-2xs"
-                  : "text-slate-600 dark:text-[#7E8B9C] hover:text-slate-900 dark:hover:text-white"
+                  : "text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
                 All Time
@@ -478,7 +478,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
                 onClick={() => setTimeFilter("semester")}
                 className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${timeFilter === "semester"
                   ? "bg-blue-600 text-white shadow-2xs"
-                  : "text-slate-600 dark:text-[#7E8B9C] hover:text-slate-900 dark:hover:text-white"
+                  : "text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
                 Semester
@@ -488,7 +488,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
                 onClick={() => setTimeFilter("30days")}
                 className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${timeFilter === "30days"
                   ? "bg-blue-600 text-white shadow-2xs"
-                  : "text-slate-600 dark:text-[#7E8B9C] hover:text-slate-900 dark:hover:text-white"
+                  : "text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
                 Last 30 Days
@@ -507,16 +507,16 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
             </div>
           ) : chartData.points.length <= 1 && chartData.maxVerified === 0 ? (
             /* Empty State */
-            <div className="h-52 flex flex-col items-center justify-center text-center p-6 rounded-xl border border-dashed border-slate-300 dark:border-[#2B3543] bg-white/60 dark:bg-[#171E28]/60 space-y-2.5">
+            <div className="h-52 flex flex-col items-center justify-center text-center p-6 rounded-xl border border-dashed border-slate-300 dark:border-[#292929] bg-white/60 dark:bg-[#111111]/60 space-y-2.5">
               <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
                 </svg>
               </div>
-              <p className="text-xs font-semibold text-slate-700 dark:text-[#E8EDF4]">
+              <p className="text-xs font-semibold text-slate-700 dark:text-[#F5F5F5]">
                 No verified activities yet. Submit your first activity to see your progress.
               </p>
-              <p className="text-[11px] text-slate-500 dark:text-[#7E8B9C] max-w-sm">
+              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] max-w-sm">
                 As soon as your faculty mentor audits and approves your submissions, your cumulative points and grade trajectory will appear here.
               </p>
             </div>
@@ -544,7 +544,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
                       x2={svgDimensions.width - svgDimensions.paddingRight}
                       y2={tick.y}
                       stroke="currentColor"
-                      className="text-slate-200 dark:text-[#2B3543]"
+                      className="text-slate-200 dark:text-[#292929]"
                       strokeWidth="1"
                       strokeDasharray={idx === 0 ? "0" : "3 3"}
                     />
@@ -552,7 +552,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
                       x={svgDimensions.paddingLeft - 8}
                       y={tick.y + 3}
                       textAnchor="end"
-                      className="text-[9px] fill-slate-400 dark:fill-[#7E8B9C] font-mono"
+                      className="text-[9px] fill-slate-400 dark:fill-[#A3A3A3] font-mono"
                     >
                       {tick.val}
                     </text>
@@ -611,7 +611,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
                         x={c.x}
                         y={svgDimensions.height - 12}
                         textAnchor="middle"
-                        className="text-[9px] fill-slate-500 dark:fill-[#7E8B9C] font-semibold"
+                        className="text-[9px] fill-slate-500 dark:fill-[#A3A3A3] font-semibold"
                       >
                         {c.dateLabel}
                       </text>
@@ -641,20 +641,20 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
               )}
 
               {/* Legend Strip */}
-              <div className="flex items-center justify-between text-[11px] pt-2 border-t border-slate-200/60 dark:border-[#2B3543]/60 mt-1">
+              <div className="flex items-center justify-between text-[11px] pt-2 border-t border-slate-200/60 dark:border-[#292929]/60 mt-1">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1.5">
                     <span className="h-2 w-4 rounded-sm bg-blue-600" />
-                    <span className="text-slate-600 dark:text-[#A0ACBC] font-medium">Verified Points</span>
+                    <span className="text-slate-600 dark:text-[#A3A3A3] font-medium">Verified Points</span>
                   </div>
                   {chartData.hasPending && (
                     <div className="flex items-center gap-1.5">
                       <span className="h-0.5 w-4 border-b-2 border-dashed border-amber-500" />
-                      <span className="text-slate-600 dark:text-[#A0ACBC] font-medium">In-Review Projection</span>
+                      <span className="text-slate-600 dark:text-[#A3A3A3] font-medium">In-Review Projection</span>
                     </div>
                   )}
                 </div>
-                <span className="text-slate-400 dark:text-[#7E8B9C] font-mono text-[10px]">
+                <span className="text-slate-400 dark:text-[#A3A3A3] font-mono text-[10px]">
                   Official 10-Point Scale
                 </span>
               </div>
@@ -665,10 +665,10 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
         {/* RIGHT SECTION (Col 5): Five Component Cards */}
         <div className="lg:col-span-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800 dark:text-[#E8EDF4] uppercase tracking-wider">
+            <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5] uppercase tracking-wider">
               Target 5-Component Matrix
             </span>
-            <span className="text-[10px] text-slate-500 dark:text-[#7E8B9C]">
+            <span className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">
               Institutional Rubric Verified
             </span>
           </div>
@@ -681,7 +681,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
               return (
                 <div
                   key={comp.slug}
-                  className="rounded-xl border border-slate-200/90 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] p-3 shadow-2xs hover:border-blue-300 dark:hover:border-blue-700/60 transition-all flex items-center justify-between gap-3"
+                  className="rounded-xl border border-slate-200/90 dark:border-[#292929] bg-white dark:bg-[#181818] p-3 shadow-2xs hover:border-blue-300 dark:hover:border-blue-700/60 transition-all flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="p-2 rounded-lg bg-slate-50 dark:bg-[#253041] shrink-0 border border-slate-200/60 dark:border-[#334155]">
@@ -690,12 +690,12 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] truncate">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5] truncate">
                           {comp.name}
                         </h4>
                       </div>
 
-                      <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-[#7E8B9C] mt-0.5">
+                      <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-[#A3A3A3] mt-0.5">
                         {comp.criteriaPending ? (
                           <span className="text-amber-600 dark:text-amber-400 font-medium">
                             Criteria Pending HOD Configuration
@@ -703,7 +703,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
                         ) : hasResult ? (
                           <>
                             <span>
-                              Score: <strong className="text-slate-700 dark:text-[#E8EDF4] font-semibold">{res?.raw_score !== null && res?.raw_score !== undefined ? `${res.raw_score} pts` : "Evaluated"}</strong>
+                              Score: <strong className="text-slate-700 dark:text-[#F5F5F5] font-semibold">{res?.raw_score !== null && res?.raw_score !== undefined ? `${res.raw_score} pts` : "Evaluated"}</strong>
                             </span>
                             <span>&bull;</span>
                             <span>{res?.grade_points ?? 0} GP ({res?.credit_value ?? 3} Cr)</span>
@@ -719,7 +719,7 @@ export const PGPAPerformanceTracker: React.FC<PGPAPerformanceTrackerProps> = ({
 
                   {/* Right side: Grade badge & Activity Counts */}
                   <div className="flex items-center gap-2.5 shrink-0">
-                    <div className="text-right text-[10px] text-slate-400 dark:text-[#7E8B9C] hidden sm:block">
+                    <div className="text-right text-[10px] text-slate-400 dark:text-[#A3A3A3] hidden sm:block">
                       <p>
                         <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{comp.verifiedCount}</strong> verified
                       </p>

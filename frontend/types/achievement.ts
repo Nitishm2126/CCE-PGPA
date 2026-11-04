@@ -1,5 +1,5 @@
-export type AchievementStatus = "draft" | "pending" | "approved" | "rejected";
-export type ReviewAction = "approved" | "rejected" | "requested_changes";
+export type AchievementStatus = "draft" | "pending" | "under_review" | "approved" | "rejected";
+export type ReviewAction = "approved" | "rejected" | "requested_changes" | "under_review";
 
 export interface DynamicFieldDefinition {
   name: string;
@@ -335,4 +335,33 @@ export interface StudentPGPAGradeRow {
   total_points: number;
   total_grade_points: number;
 }
+
+export interface ManualComponentPointResponse {
+  id: string;
+  student_id: string;
+  student_name?: string | null;
+  student_register_number?: string | null;
+  mentor_id: string;
+  mentor_name?: string | null;
+  component_id: string;
+  component_name?: string | null;
+  component_slug?: string | null;
+  semester_id: string;
+  semester_number?: number | null;
+  semester_name?: string | null;
+  points: number;
+  remarks: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ManualPointCreatePayload {
+  student_id: string;
+  component_id: string;
+  semester_id: string;
+  points: number;
+  remarks: string;
+}
+
 

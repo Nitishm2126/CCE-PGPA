@@ -22,6 +22,7 @@ class ReviewAction(str, enum.Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     REQUESTED_CHANGES = "requested_changes"
+    UNDER_REVIEW = "under_review"
 
 
 class VerificationLog(Base):

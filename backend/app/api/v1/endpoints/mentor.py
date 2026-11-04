@@ -10,12 +10,16 @@ from app.core.permissions import require_mentor
 from app.db.session import get_db
 from app.models.achievement import Achievement, AchievementStatus
 from app.models.assignment import MentorAssignment
+from app.models.audit import AuditLog
 from app.models.component import PGPAComponent
 from app.models.grading import StudentComponentResult
+from app.models.manual_point import ManualComponentPoint
 from app.models.review import ReviewAction, VerificationLog
+from app.models.semester import Semester
 from app.models.user import StudentProfile, User
 from app.schemas.achievement import AchievementResponse, ReviewSubmissionRequest
 from app.schemas.auth import MentorStudentItem
+from app.schemas.manual_point import ManualPointCreate, ManualPointResponse
 from app.services.component_service import _recalculate_student_semester_pgpa
 from app.services.export_service import build_report_data, generate_excel_report, generate_pdf_report
 from app.services.grading_engine import calculate_component_grade
@@ -307,10 +311,10 @@ def review_mentee_achievement(
             detail="Access forbidden: You cannot review achievements of a student not assigned to you.",
         )
 
-    if achievement.status != AchievementStatus.PENDING:
+    if achievement.status not in (AchievementStatus.PENDING, AchievementStatus.UNDER_REVIEW):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot review achievement in '{achievement.status.value}' status. Must be 'pending'.",
+            detail=f"Cannot review achievement in '{achievement.status.value}' status. Must be 'pending' or 'under_review'.",
         )
 
     # Update achievement status
@@ -393,6 +397,8 @@ def review_mentee_achievement(
                     _recalculate_student_semester_pgpa(db, achievement.student_id, achievement.semester_id)
             except Exception as e:
                 print(f"Warning: Auto-grading error on mentor approval: {e}")
+    elif review_data.action == ReviewAction.UNDER_REVIEW:
+        achievement.status = AchievementStatus.UNDER_REVIEW
     elif review_data.action == ReviewAction.REJECTED:
         achievement.status = AchievementStatus.REJECTED
     elif review_data.action == ReviewAction.REQUESTED_CHANGES:
@@ -540,4 +546,238 @@ def export_mentor_pdf(
             "Access-Control-Expose-Headers": "Content-Disposition",
         },
     )
+
+
+def format_manual_point_response(mp: ManualComponentPoint) -> ManualPointResponse:
+    student_name = mp.student.full_name if mp.student else None
+    student_reg = mp.student.student_profile.register_number if (mp.student and mp.student.student_profile) else None
+    mentor_name = mp.mentor.full_name if mp.mentor else None
+    comp_name = mp.component.name if mp.component else None
+    comp_slug = mp.component.slug if mp.component else None
+    sem_number = mp.semester.semester_number if mp.semester else None
+    sem_name = mp.semester.display_name if mp.semester else None
+
+    return ManualPointResponse(
+        id=mp.id,
+        student_id=mp.student_id,
+        student_name=student_name,
+        student_register_number=student_reg,
+        mentor_id=mp.mentor_id,
+        mentor_name=mentor_name,
+        component_id=mp.component_id,
+        component_name=comp_name,
+        component_slug=comp_slug,
+        semester_id=mp.semester_id,
+        semester_number=sem_number,
+        semester_name=sem_name,
+        points=mp.points,
+        remarks=mp.remarks,
+        is_active=mp.is_active,
+        created_at=mp.created_at,
+        updated_at=mp.updated_at,
+    )
+
+
+@router.post(
+    "/manual-points",
+    response_model=ManualPointResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Award or update manual PGPA component points for an assigned mentee",
+)
+def create_or_update_manual_points(
+    payload: ManualPointCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_mentor),
+):
+    ensure_mentor_assignments(db, current_user)
+    is_assigned = db.scalar(
+        select(func.count(MentorAssignment.id)).where(
+            MentorAssignment.mentor_id == current_user.id,
+            MentorAssignment.student_id == payload.student_id,
+            MentorAssignment.is_active.is_(True),
+        )
+    )
+    if not is_assigned:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: You can only award manual points to your assigned mentees.",
+        )
+
+    comp = db.get(PGPAComponent, payload.component_id)
+    if not comp or not comp.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invalid or inactive PGPA component.",
+        )
+
+    sem = db.get(Semester, payload.semester_id)
+    if not sem:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invalid academic semester.",
+        )
+
+    if payload.points < 0.0 or payload.points > 10.0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Points must be between 0.0 and 10.0 according to official Table B evaluation guidelines.",
+        )
+
+    now_utc = datetime.now(timezone.utc)
+
+    existing = db.scalar(
+        select(ManualComponentPoint).where(
+            ManualComponentPoint.student_id == payload.student_id,
+            ManualComponentPoint.component_id == payload.component_id,
+            ManualComponentPoint.semester_id == payload.semester_id,
+            ManualComponentPoint.is_active.is_(True),
+        )
+    )
+
+    if existing:
+        old_points = existing.points
+        existing.points = payload.points
+        existing.remarks = payload.remarks
+        existing.mentor_id = current_user.id
+        existing.updated_at = now_utc
+        db.add(existing)
+
+        audit = AuditLog(
+            id=uuid.uuid4(),
+            actor_id=current_user.id,
+            action="UPDATE_MANUAL_POINTS",
+            target_type="manual_component_points",
+            target_id=str(existing.id),
+            action_metadata={
+                "old_points": old_points,
+                "new_points": payload.points,
+                "component_name": comp.name,
+                "semester_number": sem.semester_number,
+                "remarks": payload.remarks,
+            },
+        )
+        db.add(audit)
+        db.commit()
+        db.refresh(existing)
+        return format_manual_point_response(existing)
+    else:
+        new_entry = ManualComponentPoint(
+            id=uuid.uuid4(),
+            student_id=payload.student_id,
+            mentor_id=current_user.id,
+            component_id=payload.component_id,
+            semester_id=payload.semester_id,
+            points=payload.points,
+            remarks=payload.remarks,
+            is_active=True,
+            created_at=now_utc,
+            updated_at=now_utc,
+        )
+        db.add(new_entry)
+
+        audit = AuditLog(
+            id=uuid.uuid4(),
+            actor_id=current_user.id,
+            action="AWARD_MANUAL_POINTS",
+            target_type="manual_component_points",
+            target_id=str(new_entry.id),
+            action_metadata={
+                "points": payload.points,
+                "component_name": comp.name,
+                "semester_number": sem.semester_number,
+                "remarks": payload.remarks,
+            },
+        )
+        db.add(audit)
+        db.commit()
+        db.refresh(new_entry)
+        return format_manual_point_response(new_entry)
+
+
+@router.get(
+    "/manual-points/{student_id}",
+    response_model=List[ManualPointResponse],
+    summary="List manual component points awarded to an assigned mentee",
+)
+def get_mentee_manual_points(
+    student_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_mentor),
+):
+    ensure_mentor_assignments(db, current_user)
+    is_assigned = db.scalar(
+        select(func.count(MentorAssignment.id)).where(
+            MentorAssignment.mentor_id == current_user.id,
+            MentorAssignment.student_id == student_id,
+            MentorAssignment.is_active.is_(True),
+        )
+    )
+    if not is_assigned:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Student is not assigned to you.",
+        )
+
+    stmt = (
+        select(ManualComponentPoint)
+        .options(
+            joinedload(ManualComponentPoint.student).joinedload(User.student_profile),
+            joinedload(ManualComponentPoint.mentor),
+            joinedload(ManualComponentPoint.component),
+            joinedload(ManualComponentPoint.semester),
+        )
+        .where(
+            ManualComponentPoint.student_id == student_id,
+            ManualComponentPoint.is_active.is_(True),
+        )
+        .order_by(ManualComponentPoint.created_at.desc())
+    )
+    records = db.scalars(stmt).all()
+    return [format_manual_point_response(r) for r in records]
+
+
+@router.delete(
+    "/manual-points/{point_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Deactivate a manual component point award (soft delete with audit)",
+)
+def delete_manual_point(
+    point_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_mentor),
+):
+    ensure_mentor_assignments(db, current_user)
+    rec = db.get(ManualComponentPoint, point_id)
+    if not rec or not rec.is_active:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Manual point entry not found.")
+
+    is_assigned = db.scalar(
+        select(func.count(MentorAssignment.id)).where(
+            MentorAssignment.mentor_id == current_user.id,
+            MentorAssignment.student_id == rec.student_id,
+            MentorAssignment.is_active.is_(True),
+        )
+    )
+    if not is_assigned:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden: Student not assigned to you.")
+
+    rec.is_active = False
+    rec.updated_at = datetime.now(timezone.utc)
+    db.add(rec)
+
+    audit = AuditLog(
+        id=uuid.uuid4(),
+        actor_id=current_user.id,
+        action="REVOKE_MANUAL_POINTS",
+        target_type="manual_component_points",
+        target_id=str(rec.id),
+        action_metadata={
+            "points": rec.points,
+            "student_id": str(rec.student_id),
+        },
+    )
+    db.add(audit)
+    db.commit()
+    return {"message": "Manual component point entry removed successfully."}
+
 

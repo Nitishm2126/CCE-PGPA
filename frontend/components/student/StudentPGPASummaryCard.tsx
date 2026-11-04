@@ -65,9 +65,9 @@ export const StudentPGPASummaryCard: React.FC<StudentPGPASummaryCardProps> = ({
   const pgpa = pgpaData?.pgpa ?? null;
 
   return (
-    <div className="bg-white dark:bg-[#171E28] rounded-2xl border border-slate-200 dark:border-[#2B3543] p-5 sm:p-6 shadow-xs space-y-5 transition-colors">
+    <div className="bg-white dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-[#292929] p-5 sm:p-6 shadow-xs space-y-5 transition-colors">
       {/* 1. Header & Semester Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-[#2B3543]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-[#292929]">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <span className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
@@ -75,11 +75,11 @@ export const StudentPGPASummaryCard: React.FC<StudentPGPASummaryCardProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
             </span>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#F5F5F5]">
               Point-Grade Performance Audit (PGPA)
             </h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-[#7E8B9C]">
+          <p className="text-xs text-slate-500 dark:text-[#A3A3A3]">
             Official institutional evaluation based on the 14-component guidelines formula: PGPA = (A1 &times; 0.6) + (GPA &times; 0.4)
           </p>
         </div>
@@ -88,7 +88,7 @@ export const StudentPGPASummaryCard: React.FC<StudentPGPASummaryCardProps> = ({
           <select
             value={selectedSemesterId}
             onChange={(e) => setSelectedSemesterId(e.target.value)}
-            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-800 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-800 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
           >
             {semesters.map((s) => (
               <option key={s.id} value={s.id}>
@@ -224,11 +224,11 @@ export const StudentPGPASummaryCard: React.FC<StudentPGPASummaryCardProps> = ({
 
             {/* Collapsible Table of Component Results */}
             {expandedBreakdown && (
-              <div className="mt-3 rounded-xl border border-slate-200 dark:border-[#2B3543] overflow-hidden">
+              <div className="mt-3 rounded-xl border border-slate-200 dark:border-[#292929] overflow-hidden">
                 {pgpaData?.results && pgpaData.results.length > 0 ? (
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-800/70 border-b border-slate-200 dark:border-[#2B3543] font-bold text-slate-700 dark:text-slate-300">
+                      <tr className="bg-slate-50 dark:bg-slate-800/70 border-b border-slate-200 dark:border-[#292929] font-bold text-slate-700 dark:text-slate-300">
                         <th className="py-2.5 px-3">Component</th>
                         <th className="py-2.5 px-3 text-center">Credit Value</th>
                         <th className="py-2.5 px-3 text-center">Table B Grade</th>

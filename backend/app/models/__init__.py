@@ -9,6 +9,7 @@ from app.models.audit import AuditLog
 from app.models.component import ComponentSemesterConfig, PGPAComponent
 from app.models.file import AchievementFile, FileCategory
 from app.models.grading import HODImportBatch, StudentComponentResult, StudentSemesterPGPA
+from app.models.manual_point import ManualComponentPoint
 from app.models.message import Message, MessageType
 from app.models.oauth import OAuthCredential
 from app.models.review import ReviewAction, VerificationLog
@@ -41,4 +42,5 @@ __all__ = [
     "HODImportBatch",
     "StudentComponentResult",
     "StudentSemesterPGPA",
+    "ManualComponentPoint",
 ]

@@ -26,6 +26,7 @@ import { MessageDrawerModal } from "@/components/messages/MessageDrawerModal";
 import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { DesignationBadge } from "@/components/DesignationBadge";
 import { PGPAPerformanceTracker } from "@/components/student/PGPAPerformanceTracker";
+import { ManualPointsSection } from "@/components/student/ManualPointsSection";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 
@@ -411,7 +412,7 @@ export default function StudentDashboardPage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-xl border border-rose-300 dark:border-rose-800 bg-white dark:bg-[#1C2531] px-4 py-2 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 active:scale-95 transition-all cursor-pointer min-h-[44px]"
+              className="rounded-xl border border-rose-300 dark:border-rose-800 bg-white dark:bg-[#181818] px-4 py-2 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 active:scale-95 transition-all cursor-pointer min-h-[44px]"
             >
               Sign Out
             </button>
@@ -426,10 +427,10 @@ export default function StudentDashboardPage() {
   const firstName = fullName.split(" ")[0] || "Student";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0F141B] flex flex-col font-sans text-slate-900 dark:text-[#E8EDF4] transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0A0A] flex flex-col font-sans text-slate-900 dark:text-[#F5F5F5] transition-colors">
       {/* Toast Notification Banner */}
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 max-w-sm rounded-xl bg-slate-900 dark:bg-[#1C2531] text-white dark:text-[#E8EDF4] px-4 py-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-2 border border-slate-700 dark:border-[#2B3543]">
+        <div className="fixed top-4 right-4 z-50 max-w-sm rounded-xl bg-slate-900 dark:bg-[#181818] text-white dark:text-[#F5F5F5] px-4 py-3 shadow-xl flex items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-2 border border-slate-700 dark:border-[#292929]">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
             <span>{toastMessage}</span>
@@ -437,7 +438,7 @@ export default function StudentDashboardPage() {
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-slate-400 hover:text-white dark:hover:text-[#E8EDF4] cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center text-base"
+            className="text-slate-400 hover:text-white dark:hover:text-[#F5F5F5] cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center text-base"
           >
             &times;
           </button>
@@ -525,41 +526,41 @@ export default function StudentDashboardPage() {
             </div>
 
             {/* Academic Summary Strip */}
-            <div className="bg-white dark:bg-[#171E28] rounded-2xl border border-slate-200 dark:border-[#2B3543] p-4 sm:p-5 shadow-2xs transition-colors">
+            <div className="bg-white dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-[#292929] p-4 sm:p-5 shadow-2xs transition-colors">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="bg-slate-50/70 dark:bg-[#1C2531]/70 p-3.5 rounded-xl border border-slate-200/60 dark:border-[#2B3543]/60">
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider block">
+                <div className="bg-slate-50/70 dark:bg-[#181818]/70 p-3.5 rounded-xl border border-slate-200/60 dark:border-[#292929]/60">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-[#A3A3A3] uppercase tracking-wider block">
                     Register Number
                   </span>
-                  <p className="mt-1 font-mono text-sm font-bold text-slate-900 dark:text-[#E8EDF4]">
+                  <p className="mt-1 font-mono text-sm font-bold text-slate-900 dark:text-[#F5F5F5]">
                     {profile?.register_number || "SEC25CO031"}
                   </p>
                 </div>
 
-                <div className="bg-slate-50/70 dark:bg-[#1C2531]/70 p-3.5 rounded-xl border border-slate-200/60 dark:border-[#2B3543]/60">
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider block">
+                <div className="bg-slate-50/70 dark:bg-[#181818]/70 p-3.5 rounded-xl border border-slate-200/60 dark:border-[#292929]/60">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-[#A3A3A3] uppercase tracking-wider block">
                     Class Cohort
                   </span>
-                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-[#E8EDF4]">
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-[#F5F5F5]">
                     Year {profile?.year || 2} &bull; Sec {profile?.section || "A"} ({profile?.semester || "III SEM"})
                   </p>
                 </div>
 
-                <div className="bg-slate-50/70 dark:bg-[#1C2531]/70 p-3.5 rounded-xl border border-slate-200/60 dark:border-[#2B3543]/60">
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider block">
+                <div className="bg-slate-50/70 dark:bg-[#181818]/70 p-3.5 rounded-xl border border-slate-200/60 dark:border-[#292929]/60">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-[#A3A3A3] uppercase tracking-wider block">
                     Academic Batch
                   </span>
-                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-[#E8EDF4]">
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-[#F5F5F5]">
                     {profile?.batch || "2025-2029"}
                   </p>
                 </div>
 
-                <div className="bg-slate-50/70 dark:bg-[#1C2531]/70 p-3.5 rounded-xl border border-slate-200/60 dark:border-[#2B3543]/60">
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-[#7E8B9C] uppercase tracking-wider block">
+                <div className="bg-slate-50/70 dark:bg-[#181818]/70 p-3.5 rounded-xl border border-slate-200/60 dark:border-[#292929]/60">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-[#A3A3A3] uppercase tracking-wider block">
                     Assigned Mentor
                   </span>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    <p className="text-sm font-bold text-slate-900 dark:text-[#E8EDF4]">
+                    <p className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5]">
                       {studentData?.assigned_mentor?.full_name || profile?.original_mentor_name || "LURDHUMARY J"}
                     </p>
                     <DesignationBadge designation="Torch Bearer" size="sm" />
@@ -577,14 +578,17 @@ export default function StudentDashboardPage() {
               onSubmitActivity={() => handleOpenSubmitModal(null)}
             />
 
+            {/* Mentor Manual Component Points Section */}
+            <ManualPointsSection token={token} />
+
             {/* Balanced PGPA Progress Summary Metrics Card */}
-            <div className="bg-white dark:bg-[#171E28] rounded-2xl border border-slate-200 dark:border-[#2B3543] p-5 sm:p-6 shadow-2xs transition-colors">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#2B3543]">
+            <div className="bg-white dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-[#292929] p-5 sm:p-6 shadow-2xs transition-colors">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#292929]">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-[#E8EDF4]">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-[#F5F5F5]">
                     Activity Submission Status
                   </h2>
-                  <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
                     Real-time status of your student activity submissions and mentor audits
                   </p>
                 </div>
@@ -628,14 +632,14 @@ export default function StudentDashboardPage() {
                   </span>
                 </div>
 
-                <div className="rounded-xl bg-slate-50 dark:bg-[#1C2531] border border-slate-200/70 dark:border-[#2B3543] p-3.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7E8B9C]">
+                <div className="rounded-xl bg-slate-50 dark:bg-[#181818] border border-slate-200/70 dark:border-[#292929] p-3.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3]">
                     Draft Records
                   </span>
-                  <p className="text-2xl font-extrabold text-slate-900 dark:text-[#E8EDF4] mt-1">
+                  <p className="text-2xl font-extrabold text-slate-900 dark:text-[#F5F5F5] mt-1">
                     {achievementMetrics.draft}
                   </p>
-                  <span className="text-[10px] text-slate-500 dark:text-[#7E8B9C] mt-0.5 block">
+                  <span className="text-[10px] text-slate-500 dark:text-[#A3A3A3] mt-0.5 block">
                     Editable Submissions
                   </span>
                 </div>
@@ -644,7 +648,7 @@ export default function StudentDashboardPage() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-[#94A3B8]">
                     Total Tracked
                   </span>
-                  <p className="text-2xl font-extrabold text-slate-900 dark:text-[#E8EDF4] mt-1">
+                  <p className="text-2xl font-extrabold text-slate-900 dark:text-[#F5F5F5] mt-1">
                     {achievementMetrics.total}
                   </p>
                   <span className="text-[10px] text-slate-600 dark:text-[#94A3B8] mt-0.5 block">
@@ -697,6 +701,8 @@ export default function StudentDashboardPage() {
         {/* TAB 3: ACTIVITY (Full Submissions List & Review Status with Edit & Delete) */}
         {activeTab === "activity" && (
           <div className="space-y-6">
+            <ManualPointsSection token={token} />
+
             <RecentActivitySection
               achievements={achievements}
               isLoading={isLoadingAchievements}

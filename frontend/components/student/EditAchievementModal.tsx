@@ -244,21 +244,21 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#171E28] border border-slate-200 dark:border-[#2B3543] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-colors">
+      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#292929] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#2B3543] shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#292929] shrink-0">
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-[#E8EDF4]">
+            <h3 className="text-base font-bold text-slate-900 dark:text-[#F5F5F5]">
               {isApproved ? "Revise Approved Achievement" : "Edit Achievement Details"}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-[#7E8B9C] mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
               Update activity title, organizer, outcome, or replace evidence file
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1C2531] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+            className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#181818] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -292,7 +292,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           {/* Pending Submission Notice */}
           {isPending && (
             <div className="rounded-xl bg-blue-50 dark:bg-[#132338] border border-blue-200/80 dark:border-blue-800/80 p-3 text-xs text-blue-800 dark:text-[#93C5FD] flex items-start gap-2">
-              <svg className="h-4 w-4 text-blue-600 dark:text-[#4C83E6] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <svg className="h-4 w-4 text-blue-600 dark:text-[#FFD84D] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
               </svg>
               <p className="text-[11px] leading-relaxed">
@@ -302,11 +302,11 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           )}
 
           {/* Component Banner */}
-          <div className="rounded-xl bg-slate-50 dark:bg-[#1C2531] p-3 border border-slate-200 dark:border-[#2B3543] text-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#7E8B9C] tracking-wider">
+          <div className="rounded-xl bg-slate-50 dark:bg-[#181818] p-3 border border-slate-200 dark:border-[#292929] text-xs">
+            <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#A3A3A3] tracking-wider">
               PGPA Component
             </span>
-            <p className="font-semibold text-slate-900 dark:text-[#E8EDF4] mt-0.5">
+            <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] mt-0.5">
               {achievement.component_name || "PGPA Component"}
             </p>
           </div>
@@ -330,7 +330,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                 </p>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Semester GPA (0.00 – 10.00) <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -342,7 +342,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                     value={gpa}
                     onChange={(e) => setGpa(e.target.value)}
                     placeholder="e.g. 8.75"
-                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                   />
                 </div>
               </div>
@@ -366,7 +366,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
 
               {/* Club / Organization Name */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Organization / Club Name (Optional)
                 </label>
                 <input
@@ -374,19 +374,19 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                   value={clubName}
                   onChange={(e) => setClubName(e.target.value)}
                   placeholder="e.g. Rotary Club, CSI, GDSC, Music Club or any external org"
-                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                 />
               </div>
 
               {/* Role Category */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Participation Category
                 </label>
                 <select
                   value={roleCategory}
                   onChange={(e) => setRoleCategory(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                 >
                   <option value="Member">Club Member (100 Points)</option>
                   <option value="Event Participation">Event Participation (100 – 500 Points)</option>
@@ -400,13 +400,13 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
               {/* Event Level if Participation or Winner */}
               {(roleCategory === "Event Participation" || roleCategory === "Winner") && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Event Level
                   </label>
                   <select
                     value={eventLevel}
                     onChange={(e) => setEventLevel(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                   >
                     <option value="Within College">Within College</option>
                     <option value="Within State (Other College)">Within State (Other College)</option>
@@ -420,7 +420,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
               {/* Activity Name & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Activity / Event Name (Optional)
                   </label>
                   <input
@@ -428,18 +428,18 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                     value={activityName}
                     onChange={(e) => setActivityName(e.target.value)}
                     placeholder="e.g. Annual Hackathon 2026"
-                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Event Date
                   </label>
                   <input
                     type="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                   />
                 </div>
               </div>
@@ -448,7 +448,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
             <>
               {/* Title */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Activity Title <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -456,7 +456,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                   placeholder="e.g. NPTEL Elite Gold Cloud Computing"
                 />
               </div>
@@ -464,75 +464,75 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
               {/* Activity Type & Event Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Activity Type
                   </label>
                   <select
                     value={activityType}
                     onChange={(e) => setActivityType(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                   >
-                    <option value="Certification" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Online Certification</option>
-                    <option value="Hackathon" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Hackathon / Contest</option>
-                    <option value="Workshop" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Technical Workshop</option>
-                    <option value="Internship" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Industry Internship</option>
-                    <option value="Publication" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Research Publication</option>
-                    <option value="Community Service" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Social / Community</option>
-                    <option value="Club Activity" className="dark:bg-[#1C2531] dark:text-[#E8EDF4]">Student Club Activity</option>
+                    <option value="Certification" className="dark:bg-[#181818] dark:text-[#F5F5F5]">Online Certification</option>
+                    <option value="Hackathon" className="dark:bg-[#181818] dark:text-[#F5F5F5]">Hackathon / Contest</option>
+                    <option value="Workshop" className="dark:bg-[#181818] dark:text-[#F5F5F5]">Technical Workshop</option>
+                    <option value="Internship" className="dark:bg-[#181818] dark:text-[#F5F5F5]">Industry Internship</option>
+                    <option value="Publication" className="dark:bg-[#181818] dark:text-[#F5F5F5]">Research Publication</option>
+                    <option value="Community Service" className="dark:bg-[#181818] dark:text-[#F5F5F5]">Social / Community</option>
+                    <option value="Club Activity" className="dark:bg-[#181818] dark:text-[#F5F5F5]">Student Club Activity</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Event / Completion Date
                   </label>
                   <input
                     type="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                   />
                 </div>
               </div>
 
               {/* Organizer */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Organizing Body / Platform
                 </label>
                 <input
                   type="text"
                   value={organizer}
                   onChange={(e) => setOrganizer(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                   placeholder="e.g. NPTEL / IIT Madras, Coursera, LeetCode"
                 />
               </div>
 
               {/* Outcome / Score */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Outcome / Score / Grade
                 </label>
                 <input
                   type="text"
                   value={outcome}
                   onChange={(e) => setOutcome(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
                   placeholder="e.g. 92% (Top 1%), First Place, Grade A+"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Brief Description / Highlights
                 </label>
                 <textarea
                   rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   placeholder="Provide context or key learning outcomes..."
                 />
               </div>
@@ -540,9 +540,9 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           )}
 
           {/* Certificate / Supporting Evidence Options */}
-          <div className="pt-2 border-t border-slate-200 dark:border-[#2B3543] space-y-3">
+          <div className="pt-2 border-t border-slate-200 dark:border-[#292929] space-y-3">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-800 dark:text-[#E8EDF4]">
+              <label className="block text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">
                 Certificate / Evidence Status
               </label>
               <span
@@ -570,13 +570,13 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                 className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                   certificateStatus === "uploaded"
                     ? "border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 dark:border-blue-500 shadow-2xs ring-1 ring-blue-500"
-                    : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531]"
+                    : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818]"
                 }`}
               >
-                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] block">
+                <span className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5] block">
                   Upload Certificate
                 </span>
-                <span className="text-[10px] text-slate-500 dark:text-[#7E8B9C] block mt-0.5">
+                <span className="text-[10px] text-slate-500 dark:text-[#A3A3A3] block mt-0.5">
                   Attach or update PDF file
                 </span>
               </button>
@@ -587,13 +587,13 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                 className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                   certificateStatus === "yet_to_receive"
                     ? "border-amber-600 bg-amber-50/70 dark:bg-amber-950/40 dark:border-amber-500 shadow-2xs ring-1 ring-amber-500"
-                    : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531]"
+                    : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818]"
                 }`}
               >
-                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] block">
+                <span className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5] block">
                   Yet to Receive
                 </span>
-                <span className="text-[10px] text-slate-500 dark:text-[#7E8B9C] block mt-0.5">
+                <span className="text-[10px] text-slate-500 dark:text-[#A3A3A3] block mt-0.5">
                   Awaiting issuance
                 </span>
               </button>
@@ -603,14 +603,14 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                 onClick={() => setCertificateStatus("not_provided")}
                 className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                   certificateStatus === "not_provided"
-                    ? "border-slate-700 bg-slate-100 dark:bg-[#232E3E] dark:border-slate-500 shadow-2xs ring-1 ring-slate-500"
-                    : "border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531]"
+                    ? "border-slate-700 bg-slate-100 dark:bg-[#181818] dark:border-slate-500 shadow-2xs ring-1 ring-slate-500"
+                    : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818]"
                 }`}
               >
-                <span className="text-xs font-bold text-slate-900 dark:text-[#E8EDF4] block">
+                <span className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5] block">
                   No Certificate
                 </span>
-                <span className="text-[10px] text-slate-500 dark:text-[#7E8B9C] block mt-0.5">
+                <span className="text-[10px] text-slate-500 dark:text-[#A3A3A3] block mt-0.5">
                   Verified by activity
                 </span>
               </button>
@@ -623,16 +623,16 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                     {attachedFiles.map((file) => (
                       <div
                         key={file.id}
-                        className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50/70 dark:bg-[#1C2531] text-xs"
+                        className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/70 dark:bg-[#181818] text-xs"
                       >
                         <div className="flex items-center gap-2 truncate pr-2">
                           <span className="flex h-5 w-5 items-center justify-center rounded bg-rose-600 text-[9px] font-bold text-white shrink-0">
                             PDF
                           </span>
-                          <span className="font-medium text-slate-900 dark:text-[#E8EDF4] truncate" title={file.original_filename}>
+                          <span className="font-medium text-slate-900 dark:text-[#F5F5F5] truncate" title={file.original_filename}>
                             {file.original_filename}
                           </span>
-                          <span className="text-[11px] text-slate-400 dark:text-[#7E8B9C] shrink-0">
+                          <span className="text-[11px] text-slate-400 dark:text-[#A3A3A3] shrink-0">
                             ({(file.size_bytes / 1024).toFixed(0)} KB)
                           </span>
                         </div>
@@ -660,7 +660,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
 
                 {/* Upload Replacement / Additional PDF */}
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-[#A0ACBC] mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-[#A3A3A3] mb-1">
                     {attachedFiles.length > 0 ? "Replace or Add Evidence File (PDF)" : "Upload PDF Evidence"}
                   </label>
                   <input
@@ -670,7 +670,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                       const f = e.target.files?.[0] || null;
                       setNewEvidenceFile(f);
                     }}
-                    className="w-full text-xs text-slate-500 dark:text-[#A0ACBC] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 dark:file:bg-[#1C2531] file:text-blue-700 dark:file:text-[#4C83E6] hover:file:bg-blue-100 cursor-pointer"
+                    className="w-full text-xs text-slate-500 dark:text-[#A3A3A3] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 dark:file:bg-[#181818] file:text-blue-700 dark:file:text-[#FFD84D] hover:file:bg-blue-100 cursor-pointer"
                   />
                   {newEvidenceFile && (
                     <p className="mt-1 text-[11px] text-emerald-600 dark:text-[#5EEAD4] font-medium">
@@ -688,19 +688,19 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
             )}
 
             {certificateStatus === "not_provided" && (
-              <div className="rounded-xl border border-slate-200 dark:border-[#2B3543] bg-slate-50 dark:bg-[#1C2531]/70 p-3 text-xs text-slate-600 dark:text-[#CBD5E1]">
+              <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#181818]/70 p-3 text-xs text-slate-600 dark:text-[#CBD5E1]">
                 No certificate provided. Mentor will verify participation based on activity details.
               </div>
             )}
           </div>
 
           {/* Student Remarks */}
-          <div className="pt-2 border-t border-slate-200 dark:border-[#2B3543]">
+          <div className="pt-2 border-t border-slate-200 dark:border-[#292929]">
             <div className="flex items-center justify-between mb-1">
-              <label htmlFor="edit-remarks" className="block text-xs font-bold text-slate-800 dark:text-[#E8EDF4]">
+              <label htmlFor="edit-remarks" className="block text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">
                 Additional Remarks (Optional)
               </label>
-              <span className="text-[10px] text-slate-400 dark:text-[#7E8B9C]">
+              <span className="text-[10px] text-slate-400 dark:text-[#A3A3A3]">
                 {remarks.length} / 500
               </span>
             </div>
@@ -711,17 +711,17 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
               placeholder="Add any additional details about your activity, organization or participation..."
-              className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-[#2B3543] bg-white dark:bg-[#1C2531] text-slate-900 dark:text-[#E8EDF4] placeholder:text-slate-400 dark:placeholder:text-[#7E8B9C] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>
 
           {/* Modal Actions */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-[#2B3543]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-[#292929]">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#2B3543] text-slate-700 dark:text-[#E8EDF4] hover:bg-slate-50 dark:hover:bg-[#232E3E] transition-colors cursor-pointer min-h-[36px]"
+              className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#292929] text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#181818] transition-colors cursor-pointer min-h-[36px]"
             >
               Cancel
             </button>

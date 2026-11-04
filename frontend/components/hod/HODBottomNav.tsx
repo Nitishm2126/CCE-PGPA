@@ -76,7 +76,7 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
   return (
     <nav
       aria-label="HOD Mobile Navigation"
-      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/90 dark:bg-[#171e28]/90 backdrop-blur-xl border-t border-slate-200/80 dark:border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.4)] pb-[max(0.6rem,env(safe-area-inset-bottom))] pt-1 transition-colors"
+      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#292929] shadow-[0_-2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_-2px_16px_rgba(0,0,0,0.6)] pb-[env(safe-area-inset-bottom,0px)] pt-1 transition-colors"
     >
       <div className="grid grid-cols-5 items-end justify-around px-1 max-w-md mx-auto">
         {tabs.map((tab) => {
@@ -94,8 +94,8 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
               <div
                 className={`flex h-6 w-6 items-center justify-center transition-colors relative ${
                   isActive
-                    ? "text-purple-700 dark:text-purple-400"
-                    : "text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
+                    ? "text-purple-700 dark:text-[#FFD84D]"
+                    : "text-slate-400 hover:text-slate-600 dark:text-[#737373] dark:hover:text-[#D4D4D4]"
                 }`}
               >
                 {tab.icon}
@@ -111,8 +111,8 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
                 <span
                   className={`text-[10px] leading-none tracking-tight truncate max-w-full text-center ${
                     isActive
-                      ? "font-semibold text-purple-700 dark:text-purple-400"
-                      : "font-medium text-slate-500 dark:text-slate-400"
+                      ? "font-semibold text-purple-700 dark:text-[#FFD84D]"
+                      : "font-medium text-slate-500 dark:text-[#A3A3A3]"
                   }`}
                 >
                   {tab.label}
@@ -122,7 +122,7 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
               {/* Active Indicator Dot */}
               <div className="h-1 flex items-center justify-center mt-0.5">
                 {isActive ? (
-                  <span className="h-1 w-1 rounded-full bg-purple-700 dark:bg-purple-400 animate-apple-fade" />
+                  <span className="h-1 w-1 rounded-full bg-purple-700 dark:bg-[#FFD84D] animate-apple-fade" />
                 ) : (
                   <span className="h-1 w-1" />
                 )}
@@ -136,11 +136,11 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
           type="button"
           onClick={onOpenMore}
           aria-label="Open more tools and actions"
-          className="relative flex flex-col items-center justify-center py-1 transition-all duration-150 active:scale-95 cursor-pointer min-h-[48px] select-none apple-tap-feedback text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          className="relative flex flex-col items-center justify-center py-1 transition-all duration-150 active:scale-95 cursor-pointer min-h-[48px] select-none apple-tap-feedback text-slate-500 hover:text-slate-700 dark:text-[#737373] dark:hover:text-[#D4D4D4]"
         >
           <div
             className={`flex h-6 w-6 items-center justify-center transition-colors ${
-              isMoreActive ? "text-purple-700 dark:text-purple-400" : ""
+              isMoreActive ? "text-purple-700 dark:text-[#FFD84D]" : ""
             }`}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -155,8 +155,8 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
             <span
               className={`text-[10px] leading-none tracking-tight font-medium text-center ${
                 isMoreActive
-                  ? "font-semibold text-purple-700 dark:text-purple-400"
-                  : "text-slate-500 dark:text-slate-400"
+                  ? "font-semibold text-purple-700 dark:text-[#FFD84D]"
+                  : "text-slate-500 dark:text-[#A3A3A3]"
               }`}
             >
               More

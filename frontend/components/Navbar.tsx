@@ -109,7 +109,7 @@ export const Navbar: React.FC = () => {
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-[#4c83e6] dark:hover:bg-[#3b72d4] px-4 py-2 text-sm font-semibold text-white shadow-2xs transition-colors"
+                className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-amber-500 dark:hover:bg-amber-400 dark:text-black px-4 py-2 text-sm font-semibold text-white shadow-2xs transition-colors"
               >
                 Portal Login
               </Link>

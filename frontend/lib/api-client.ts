@@ -63,6 +63,8 @@ import {
   StudentComponentResultItem,
   StudentPGPAResponse,
   StudentPGPAGradeRow,
+  ManualComponentPointResponse,
+  ManualPointCreatePayload,
 } from "@/types/achievement";
 
 const API_BASE_URL =
@@ -385,6 +387,10 @@ export const api = {
     );
   },
 
+  getStudentManualPoints: async (token?: string | null): Promise<ManualComponentPointResponse[]> => {
+    return request<ManualComponentPointResponse[]>("/students/manual-points", { method: "GET" }, token);
+  },
+
 
   getComponents: async (
     param?: string | GetComponentsOptions | null,
@@ -606,7 +612,7 @@ export const api = {
   reviewMenteeAchievement: async (
     achievementId: string,
     data: {
-      action: "approved" | "rejected" | "requested_changes";
+      action: "approved" | "rejected" | "requested_changes" | "under_review";
       remarks?: string;
       awarded_points?: number;
       awarded_grade?: string;
@@ -619,6 +625,42 @@ export const api = {
         method: "POST",
         body: JSON.stringify(data),
       },
+      token
+    );
+  },
+
+  createMentorManualPoint: async (
+    data: ManualPointCreatePayload,
+    token?: string | null
+  ): Promise<ManualComponentPointResponse> => {
+    return request<ManualComponentPointResponse>(
+      "/mentor/manual-points",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  getMenteeManualPoints: async (
+    studentId: string,
+    token?: string | null
+  ): Promise<ManualComponentPointResponse[]> => {
+    return request<ManualComponentPointResponse[]>(
+      `/mentor/manual-points/${studentId}`,
+      { method: "GET" },
+      token
+    );
+  },
+
+  deleteMentorManualPoint: async (
+    pointId: string,
+    token?: string | null
+  ): Promise<{ message: string }> => {
+    return request<{ message: string }>(
+      `/mentor/manual-points/${pointId}`,
+      { method: "DELETE" },
       token
     );
   },
@@ -708,6 +750,17 @@ export const api = {
     if (filters?.status && filters.status !== "all") params.set("status", filters.status);
     const qs = params.toString() ? `?${params.toString()}` : "";
     return downloadFileWithFilename(`/hod/export/${format}${qs}`, { method: "GET" }, token);
+  },
+
+  getHODManualPoints: async (
+    params?: { student_id?: string; semester_id?: string },
+    token?: string | null
+  ): Promise<ManualComponentPointResponse[]> => {
+    const searchParams = new URLSearchParams();
+    if (params?.student_id) searchParams.set("student_id", params.student_id);
+    if (params?.semester_id) searchParams.set("semester_id", params.semester_id);
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : "";
+    return request<ManualComponentPointResponse[]>(`/hod/manual-points${qs}`, { method: "GET" }, token);
   },
 
   downloadFile: async (fileId: string, token?: string | null): Promise<{ blob: Blob; url: string }> => {
