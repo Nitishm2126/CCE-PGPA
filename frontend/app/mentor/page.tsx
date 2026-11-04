@@ -17,6 +17,8 @@ import { SettingsModal } from "@/components/shared/SettingsModal";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { MentorBottomNav } from "@/components/mentor/MentorBottomNav";
 import { MentorMobileActionsDrawer } from "@/components/mentor/MentorMobileActionsDrawer";
+import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
+import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 
 
 export default function MentorDashboardPage() {
@@ -353,26 +355,14 @@ export default function MentorDashboardPage() {
         <div className="mx-auto max-w-7xl px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
           {/* Mobile Header Bar (< md) */}
           <div className="flex md:hidden items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-700 via-indigo-700 to-slate-900 text-white font-extrabold text-xs shadow-xs">
-                CCE
-              </div>
-              <div className="min-w-0">
-                <span className="font-bold text-slate-900 dark:text-white text-sm leading-tight truncate block">
-                  Mentor Portal
-                </span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate">
-                  {user?.full_name}
-                </span>
-              </div>
-            </div>
+            <FineWorksBrand role="mentor" size="sm" />
 
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={loadData}
                 disabled={isLoadingData}
-                className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
+                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
                 title="Refresh mentor submissions"
                 aria-label="Refresh submissions"
               >
@@ -384,7 +374,7 @@ export default function MentorDashboardPage() {
               <button
                 type="button"
                 onClick={() => setIsMobileActionsOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-bold text-xs active:scale-95 transition-all cursor-pointer"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 font-bold text-xs active:scale-95 transition-all cursor-pointer"
                 aria-label="Open mentor menu"
                 title="Open menu & actions"
               >
@@ -400,26 +390,7 @@ export default function MentorDashboardPage() {
 
           {/* Desktop Header Bar (>= md) */}
           <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-700 via-indigo-700 to-slate-900 text-white font-extrabold text-sm shadow-xs">
-                CCE
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
-                    Sri Sairam Engineering College
-                  </span>
-                  <span className="text-xs text-slate-300 dark:text-slate-600">&bull;</span>
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Autonomous</span>
-                </div>
-                <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                  Department of Computer and Communication Engineering
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  CCE-PGPA &bull; Faculty Mentor Portal
-                </p>
-              </div>
-            </div>
+            <FineWorksBrand role="mentor" showDepartment size="md" />
 
             <div className="flex items-center gap-3 self-end sm:self-auto flex-wrap">
               <div className="text-right hidden sm:block">
@@ -1568,6 +1539,9 @@ export default function MentorDashboardPage() {
         user={user}
         token={token}
       />
+
+      {/* FineWorks Footer */}
+      <FineWorksFooter className="pb-28 md:pb-8 mt-12" />
 
       {/* Mobile Fixed Bottom Navigation Bar (< md) */}
       <MentorBottomNav

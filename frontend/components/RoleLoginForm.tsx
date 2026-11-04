@@ -1,17 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { UserRole } from "@/types/auth";
-import { RoleBadge } from "@/components/RoleBadge";
-import { ROLE_CONFIGS, ALL_ROLES } from "@/lib/role-config";
+import { ROLE_CONFIGS } from "@/lib/role-config";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
+import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 
 // Only Student, Mentor, and HOD portals are shown in public switch navigation
-// Admin login is hidden and accessed discreetly via the "CCE PGPA" branding title
 const PUBLIC_SWITCH_ROLES: UserRole[] = ["student", "mentor", "hod"];
 
 interface RoleLoginFormProps {
@@ -20,31 +19,23 @@ interface RoleLoginFormProps {
 
 const ROLE_THEME_DETAILS = {
   student: {
-    accentGradient: "from-sky-500 to-blue-600",
-    ringColor: "focus:border-sky-500 focus:ring-sky-500/20",
-    buttonBg: "bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white shadow-sky-600/20",
-    iconBg: "bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400",
-    dotColor: "bg-sky-600 dark:bg-sky-400",
+    ringColor: "focus:border-blue-500 focus:ring-blue-500/20",
+    buttonBg: "bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-xs",
+    dotColor: "bg-blue-600 dark:bg-blue-400",
   },
   mentor: {
-    accentGradient: "from-purple-500 to-indigo-600",
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-purple-600/20",
-    iconBg: "bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400",
-    dotColor: "bg-purple-600 dark:bg-purple-400",
+    ringColor: "focus:border-sky-500 focus:ring-sky-500/20",
+    buttonBg: "bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white shadow-xs",
+    dotColor: "bg-sky-600 dark:bg-sky-400",
   },
   hod: {
-    accentGradient: "from-amber-500 to-orange-600",
-    ringColor: "focus:border-amber-500 focus:ring-amber-500/20",
-    buttonBg: "bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white shadow-amber-600/20",
-    iconBg: "bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400",
-    dotColor: "bg-amber-600 dark:bg-amber-400",
+    ringColor: "focus:border-purple-500 focus:ring-purple-500/20",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-xs",
+    dotColor: "bg-purple-600 dark:bg-purple-400",
   },
   admin: {
-    accentGradient: "from-slate-700 to-slate-900 dark:from-slate-400 dark:to-slate-200",
     ringColor: "focus:border-slate-600 focus:ring-slate-500/20",
-    buttonBg: "bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white dark:bg-slate-100 dark:hover:bg-white dark:active:bg-slate-200 dark:text-slate-900 shadow-slate-900/20",
-    iconBg: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
+    buttonBg: "bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white dark:bg-slate-100 dark:hover:bg-white dark:active:bg-slate-200 dark:text-slate-900 shadow-xs",
     dotColor: "bg-slate-800 dark:bg-slate-200",
   },
 };
@@ -72,14 +63,6 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
       }
     }
   }, []);
-
-
-  // If already authenticated and the user role matches this portal, offer direct dashboard access
-  useEffect(() => {
-    if (user && !authLoading && user.role === role) {
-      // User is already logged into this exact role portal
-    }
-  }, [user, role, authLoading]);
 
   const handleSwitchAccount = async () => {
     await logout();
@@ -124,7 +107,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           (authenticatedUser.accessible_portals && authenticatedUser.accessible_portals.includes(role));
 
         if (!isAuthorizedForRole) {
-          // Immediately revoke session so unauthorized role credentials are not persisted
+          // Revoke session so unauthorized role credentials are not persisted
           await logout();
           setRoleMismatch({
             actualRole: authenticatedUser.role,
@@ -161,121 +144,43 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
   const displayError = localError || authError;
 
   return (
-    <div className="w-full min-h-[100dvh] flex flex-col justify-between bg-[#fbfbfc] dark:bg-[#0c1117] text-slate-900 dark:text-slate-100 overflow-x-hidden selection:bg-sky-100 selection:text-sky-900 dark:selection:bg-sky-900/40 dark:selection:text-sky-200">
-      {/* 1. Official Institutional Header */}
-      <header className="w-full shrink-0 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-40 transition-colors shadow-2xs">
-        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8">
-          <div className="flex h-12 sm:h-13 items-center justify-between gap-2.5 sm:gap-4">
-            {/* Left: SEC Crest & College Identification */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <Link
-                href="/"
-                className="flex items-center gap-2.5 sm:gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 rounded-xl p-0.5 min-h-[40px]"
-                title="Sri Sairam Engineering College - CCE PGPA Portal"
-              >
-                <div className="relative h-8 w-8 sm:h-8.5 sm:w-8.5 shrink-0 flex items-center justify-center">
-                  <Image
-                    src="/images/sec logo.png"
-                    alt="Sri Sairam Engineering College Crest"
-                    width={36}
-                    height={36}
-                    priority
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="font-extrabold text-[12px] sm:text-[13px] md:text-[13.5px] tracking-tight text-[#0f2942] dark:text-slate-100 uppercase leading-tight truncate">
-                    Sri Sairam Engineering College
-                  </span>
-                  <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
-                    <span className="truncate">Autonomous Institution</span>
-                    <span className="hidden sm:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
-                    <span className="hidden sm:inline truncate">Anna University Affiliated</span>
-                    <span className="hidden md:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
-                    <span className="hidden md:inline text-sky-600 dark:text-sky-400 font-semibold truncate">NBA &amp; NAAC &apos;A+&apos;</span>
-                  </div>
-                </div>
-              </Link>
-            </div>
-
-            {/* Right: Sairam Logo, Theme Toggle, & Back Link */}
-            <div className="flex items-center gap-2 sm:gap-3.5 lg:gap-4 shrink-0">
-              <ThemeToggle size="sm" />
-
-              <div className="relative h-6.5 sm:h-7.5 w-auto shrink-0 flex items-center">
-                <Image
-                  src="/images/logo1.png"
-                  alt="Sri Sairam Institutions Logo"
-                  width={60}
-                  height={32}
-                  priority
-                  className="h-6 sm:h-7 w-auto object-contain"
-                />
-              </div>
-            </div>
+    <div className="w-full min-h-[100dvh] flex flex-col justify-between bg-slate-50/50 dark:bg-[#0c1117] text-slate-900 dark:text-slate-100 overflow-x-hidden transition-colors">
+      {/* 1. Header with FineWorks Brand & Theme Toggle */}
+      <header className="w-full shrink-0 border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-40 transition-colors">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
+            <FineWorksBrand role={role} showDepartment size="md" />
+            <ThemeToggle size="sm" />
           </div>
         </div>
       </header>
 
-      {/* 2. Institutional Title Hierarchy */}
-      <section className="text-center pt-2 sm:pt-2.5 pb-1 sm:pb-1.5 px-4 shrink-0 animate-apple-fade">
-        <div className="mx-auto max-w-4xl space-y-1 sm:space-y-1.5">
-          {/* Department Identity Element */}
-          <div
-            id="department-identity-container"
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs max-w-full"
-          >
-            <span className={`h-1.5 w-1.5 rounded-full ${themeDetails.dotColor} shrink-0`} aria-hidden="true" />
-            <span
-              id="department-identity-name"
-              className="font-bold tracking-wider uppercase text-slate-700 dark:text-slate-300 text-center leading-snug break-words whitespace-normal md:whitespace-nowrap"
-              style={{ fontSize: "clamp(10px, 1.8vw, 11px)" }}
-            >
-              DEPARTMENT OF COMPUTER AND COMMUNICATION ENGINEERING
-            </span>
-          </div>
-
-          <div className="space-y-0.5">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-[#800000] dark:text-[#f87171] leading-tight">
-              CCE PGPA
-            </h1>
-            <p className="text-[9.5px] sm:text-[10px] font-bold uppercase tracking-[0.22em] text-[#0f2942] dark:text-slate-300">
-              PGPA MANAGEMENT SYSTEM
-            </p>
-          </div>
-
-          <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 italic">
-            &ldquo;Academic Performance. Structured. Simplified.&rdquo;
-          </p>
-        </div>
-      </section>
-
-      {/* 3. Main Form Container */}
-      <main className="w-full max-w-lg mx-auto px-4 sm:px-6 flex-1 flex flex-col justify-center items-center py-1 sm:py-2 min-h-0">
+      {/* 2. Main Login Card Container */}
+      <main className="w-full max-w-md mx-auto px-4 sm:px-6 flex-1 flex flex-col justify-center items-center py-8 sm:py-12 min-h-0">
         {/* Navigation Breadcrumb / Role Switch Bar */}
-        <div className="w-full flex flex-wrap items-center justify-between mb-2 sm:mb-2.5 gap-2 text-xs shrink-0">
+        <div className="w-full flex items-center justify-between mb-4 text-xs shrink-0">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
           >
             <span>&larr;</span>
-            <span>Back to Portal Selection</span>
+            <span>All Portals</span>
           </Link>
 
-          {/* Quick role switcher links: Shown only for non-admin portals; Admin has no public switch bar */}
+          {/* Quick role switcher links */}
           {role !== "admin" && (
             <div className="flex items-center gap-1 text-slate-400 shrink-0">
-              <span className="hidden sm:inline text-slate-400 dark:text-slate-500 text-[11px]">Switch:</span>
               {PUBLIC_SWITCH_ROLES.map((r) => {
                 const isCurrent = r === role;
                 return (
                   <Link
                     key={r}
                     href={ROLE_CONFIGS[r].path}
-                    className={`px-1.5 sm:px-2 py-0.5 rounded-md text-[11px] transition-colors whitespace-nowrap ${isCurrent
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors ${
+                      isCurrent
                         ? "bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold cursor-default"
-                        : "text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:underline"
-                      }`}
+                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    }`}
                   >
                     {ROLE_CONFIGS[r].shortTitle}
                   </Link>
@@ -290,11 +195,11 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           <div
             id="signed-out-success-alert"
             role="status"
-            className="w-full mb-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3 text-xs text-emerald-900 dark:text-emerald-200 shadow-2xs flex items-center justify-between gap-2 animate-apple-fade"
+            className="w-full mb-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3 text-xs text-emerald-900 dark:text-emerald-200 shadow-2xs flex items-center justify-between gap-2"
           >
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="font-semibold">Signed out safely. See you again!</span>
+              <span className="font-semibold">Signed out safely.</span>
             </div>
             <button
               type="button"
@@ -311,29 +216,26 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
           (user.role === role || (user.role === "hod" && role === "mentor") || (user.accessible_portals && user.accessible_portals.includes(role))) ? (
             <div
               role="status"
-              className="w-full mb-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/80 dark:bg-emerald-950/50 p-3.5 text-xs text-emerald-950 dark:text-emerald-200 shadow-xs flex flex-wrap items-center justify-between gap-3 animate-apple-fade"
+              className="w-full mb-4 rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/80 dark:bg-blue-950/50 p-3 text-xs text-blue-950 dark:text-blue-200 shadow-2xs flex flex-col gap-2"
             >
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
                 <span>
-                  Active Session: <strong>{user.full_name}</strong> (
-                  {user.role === "hod" ? "Department HOD & Supervisory Mentor" : ROLE_CONFIGS[user.role]?.shortTitle})
+                  Active: <strong>{user.full_name}</strong> ({ROLE_CONFIGS[user.role]?.shortTitle})
                 </span>
               </div>
 
-              <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="flex items-center gap-2 pt-1">
                 {user.role === "hod" && role === "mentor" ? (
                   <>
                     <Link
                       href="/mentor"
-                      id="btn-active-session-open-mentor"
-                      className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
+                      className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1 text-xs transition"
                     >
                       Open Mentor Portal &rarr;
                     </Link>
                     <Link
                       href="/hod"
-                      id="btn-active-session-open-hod"
                       className="rounded-lg border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 font-semibold px-3 py-1 text-xs transition"
                     >
                       Open HOD Dashboard &rarr;
@@ -342,249 +244,122 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 ) : (
                   <Link
                     href={`/${user.role}`}
-                    className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 text-xs transition"
+                    className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1 text-xs transition"
                   >
                     Open Dashboard &rarr;
                   </Link>
                 )}
-                <span className="text-slate-300 dark:text-slate-700">&bull;</span>
                 <button
                   type="button"
-                  onClick={() => logout()}
-                  className="font-medium text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:underline cursor-pointer"
+                  onClick={handleSwitchAccount}
+                  className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1 text-xs text-slate-700 dark:text-slate-300 hover:text-rose-600 transition"
                 >
                   Sign Out
                 </button>
               </div>
             </div>
-          ) : (
-            <div
-              id="role-mismatch-alert"
-              role="alert"
-              className="w-full mb-5 rounded-2xl border border-amber-300 dark:border-amber-700/80 bg-amber-50/95 dark:bg-amber-950/60 p-3.5 text-xs text-amber-950 dark:text-amber-200 shadow-xs animate-apple-fade"
-            >
-
-              <div className="flex items-start gap-2.5">
-                <span className="h-5 w-5 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5" aria-hidden="true">
-                  !
-                </span>
-                <div className="flex-1 space-y-1.5">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <h4 className="font-bold text-xs sm:text-sm text-amber-950 dark:text-amber-100">
-                      Active {ROLE_CONFIGS[user.role]?.shortTitle} Session Detected
-                    </h4>
-                    <span className="text-[10px] font-semibold bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 px-2 py-0.5 rounded-full">
-                      Signed in as {user.full_name}
-                    </span>
-                  </div>
-                  <p className="text-[11px] sm:text-xs text-amber-900/90 dark:text-amber-200/90 leading-relaxed">
-                    You are viewing the <strong>{currentConfig.portalTitle}</strong>, but your browser is currently authenticated as a <strong>{ROLE_CONFIGS[user.role]?.shortTitle}</strong>. To access this portal, please sign out to switch accounts, or return to your authorized dashboard.
-                  </p>
-                  <div className="flex items-center gap-2.5 pt-1 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={handleSwitchAccount}
-                      id="switch-account-button"
-                      className="rounded-lg bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-semibold px-3 py-1.5 text-xs transition-colors shadow-2xs cursor-pointer"
-                    >
-                      Sign Out &amp; Log In as {currentConfig.shortTitle}
-                    </button>
-                    <Link
-                      href={`/${user.role}`}
-                      className="font-semibold text-amber-900 dark:text-amber-200 hover:underline text-xs"
-                    >
-                      Go to {ROLE_CONFIGS[user.role]?.shortTitle} Dashboard &rarr;
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
+          ) : null
         )}
 
-        {/* Login Form Card */}
-        <div className="w-full relative rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] overflow-hidden animate-apple-slide-up">
-          {/* Top Subtle Color Accent Bar */}
-          <div
-            className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${themeDetails.accentGradient}`}
-            aria-hidden="true"
-          />
-
+        {/* Login Card */}
+        <div className="w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs">
           {/* Card Header */}
-          <div className="pb-2.5 border-b border-slate-100 dark:border-slate-800 mb-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className={`h-8 w-8 sm:h-8.5 sm:w-8.5 rounded-xl flex items-center justify-center shrink-0 ${themeDetails.iconBg}`}>
-                  {role === "student" && (
-                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                      <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                    </svg>
-                  )}
-                  {role === "mentor" && (
-                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                  )}
-                  {role === "hod" && (
-                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20L12 2z" />
-                    </svg>
-                  )}
-                  {role === "admin" && (
-                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                      <path d="m9 12 2 2 4-4" />
-                    </svg>
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">
-                    {currentConfig.portalTitle}
-                  </h3>
-                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400">
-                    Authorized institutional access
-                  </p>
-                </div>
-              </div>
-              <RoleBadge role={role} size="sm" />
-            </div>
-            <p className="mt-1.5 text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 leading-snug">
-              {currentConfig.description}
+          <div className="pb-5 mb-5 border-b border-slate-100 dark:border-slate-800">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {currentConfig.portalTitle}
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Department of Computer and Communication Engineering (CCE)
             </p>
           </div>
 
-          {/* Security Alert: Role Mismatch */}
+          {/* Role Mismatch Warning */}
           {roleMismatch && (
             <div
               role="alert"
-              className="mb-4 rounded-xl border border-amber-300 dark:border-amber-700/80 bg-amber-50/95 dark:bg-amber-950/60 p-3 text-xs text-amber-950 dark:text-amber-200 shadow-xs animate-apple-fade"
+              className="mb-4 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/60 p-3 text-xs text-amber-900 dark:text-amber-200"
             >
-              <div className="flex items-start gap-2.5">
-                <svg
-                  className="h-4.5 w-4.5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
+              <p className="font-semibold text-xs">Role Mismatch</p>
+              <p className="mt-1 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                You authenticated as <strong>{ROLE_CONFIGS[roleMismatch.actualRole].shortTitle}</strong>. Please switch to your authorized portal.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <Link
+                  href={ROLE_CONFIGS[roleMismatch.actualRole].dashboardPath}
+                  className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-600 text-white text-xs font-semibold hover:bg-amber-700 transition"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-                <div className="flex-1 space-y-1.5">
-                  <p className="font-bold text-amber-900 dark:text-amber-200 text-xs">
-                    Access Denied: Role Mismatch
-                  </p>
-                  <p className="text-amber-800 dark:text-amber-300 leading-tight text-[11px]">{displayError}</p>
-                  <div className="pt-1 flex flex-wrap gap-2">
-                    <Link
-                      href={ROLE_CONFIGS[roleMismatch.actualRole].path}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold transition-colors shadow-xs"
-                    >
-                      <span>
-                        Open {ROLE_CONFIGS[roleMismatch.actualRole].shortTitle} Portal &rarr;
-                      </span>
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await logout();
-                        setRoleMismatch(null);
-                        setLocalError(null);
-                      }}
-                      className="inline-flex items-center px-2.5 py-1 rounded-lg border border-amber-400 dark:border-amber-600 bg-white dark:bg-slate-800 text-amber-900 dark:text-amber-200 text-xs font-medium hover:bg-amber-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
+                  Open {ROLE_CONFIGS[roleMismatch.actualRole].shortTitle} Dashboard &rarr;
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRoleMismatch(null);
+                    setLocalError(null);
+                  }}
+                  className="inline-flex items-center px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 text-xs font-medium hover:bg-amber-100 dark:hover:bg-slate-800 transition"
+                >
+                  Dismiss
+                </button>
               </div>
             </div>
           )}
 
-          {/* Standard Authentication Error Alert */}
+          {/* Authentication Error Alert */}
           {!roleMismatch && displayError && (
             <div
               role="alert"
-              className="mb-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/90 dark:bg-rose-950/50 p-3 text-xs text-rose-800 dark:text-rose-200 shadow-xs animate-apple-fade"
+              className="mb-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/50 p-3 text-xs text-rose-800 dark:text-rose-200"
             >
-              <div className="flex items-start gap-2.5">
-                <svg
-                  className="h-4.5 w-4.5 text-rose-600 dark:text-rose-400 mt-0.5 flex-shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <div className="flex-1">
-                  <p className="font-semibold text-rose-900 dark:text-rose-200 text-xs">Authentication Error</p>
-                  <p className="mt-0.5 text-rose-700 dark:text-rose-300 leading-tight text-[11px]">{displayError}</p>
-                </div>
-              </div>
+              <p className="font-semibold text-xs">Invalid Credentials</p>
+              <p className="mt-0.5 text-rose-700 dark:text-rose-300 text-[11px] leading-tight">{displayError}</p>
             </div>
           )}
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3" noValidate>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Email / Identifier Field */}
             <div>
               <label
                 htmlFor="login-email-input"
-                className="block text-[11px] font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300"
+                className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 {role === "student" ? "Register Number or College Email" : "Official College Email"}
               </label>
-              <div className="mt-1">
-                <input
-                  id="login-email-input"
-                  name="email"
-                  type={role === "student" ? "text" : "email"}
-                  autoComplete={role === "student" ? "username" : "email"}
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={
-                    role === "student"
-                      ? "e.g. SEC25CO001 or sec25co001@sairamtap.edu.in"
-                      : currentConfig.placeholder
-                  }
-                  disabled={isSubmitting}
-                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-3.5 py-2 sm:py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
-                />
-              </div>
+              <input
+                id="login-email-input"
+                name="email"
+                type={role === "student" ? "text" : "email"}
+                autoComplete={role === "student" ? "username" : "email"}
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={
+                  role === "student"
+                    ? "e.g. SEC25CO001 or student@sairamtap.edu.in"
+                    : currentConfig.placeholder
+                }
+                disabled={isSubmitting}
+                className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
+              />
             </div>
 
             {/* Password Field */}
             <div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-1.5">
                 <label
                   htmlFor="login-password-input"
-                  className="block text-[11px] font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
                 >
-                  Account Password
+                  Password
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 transition-colors"
+                  className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                 >
                   Forgot password?
                 </Link>
               </div>
-              <div className="mt-1 relative">
+              <div className="relative">
                 <input
                   id="login-password-input"
                   name="password"
@@ -595,167 +370,60 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your account password"
                   disabled={isSubmitting}
-                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-3.5 py-2 sm:py-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
+                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  title={showPassword ? "Hide password" : "Show password"}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer"
                 >
                   {showPassword ? (
-                    <svg
-                      className="h-4.5 w-4.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.8}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"
-                      />
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
                     </svg>
                   ) : (
-                    <svg
-                      className="h-4.5 w-4.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.8}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.8}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   )}
                 </button>
               </div>
             </div>
 
-            {/* Role-Specific Login Button */}
-            <div className="pt-1">
-
+            {/* Login Button */}
+            <div className="pt-2">
               <button
                 type="submit"
                 id="login-submit-button"
                 disabled={isSubmitting}
-                className={`apple-pressable w-full flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 font-semibold text-xs sm:text-sm transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer ${themeDetails.buttonBg}`}
+                className={`w-full flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 font-semibold text-sm transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer active:scale-[0.99] ${themeDetails.buttonBg}`}
               >
                 {isSubmitting ? (
                   <>
-                    <svg
-                      className="h-4 w-4 animate-spin text-current"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
+                    <svg className="h-4 w-4 animate-spin text-current" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    <span>Securing your workspace...</span>
+                    <span>Signing in...</span>
                   </>
                 ) : (
-                  <span>Login as {currentConfig.shortTitle}</span>
+                  <span>Sign In as {currentConfig.shortTitle}</span>
                 )}
               </button>
             </div>
           </form>
 
-          {/* Institutional Closed Cohort Notice */}
-          <div className="mt-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-2 sm:p-2.5 text-center">
-            <p className="text-[10.5px] sm:text-[11px] text-slate-500 dark:text-slate-400">
-              <strong className="text-slate-700 dark:text-slate-300">Authorized Access Only:</strong> Cohort accounts are provisioned via verified departmental rosters. Public self-registration is disabled.
-            </p>
-          </div>
+          {/* Authorized Access Only Notice */}
+          <p className="mt-4 text-[11px] text-center text-slate-400 dark:text-slate-500">
+            Authorized institutional cohort access only &bull; Public registration disabled
+          </p>
         </div>
       </main>
 
-      {/* 4. Refined Institutional Footer */}
-      <footer className="w-full shrink-0 mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-950/60 py-2 sm:py-2.5 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl flex flex-col space-y-1.5 sm:space-y-2">
-          {/* Upper Footer: Founder Chairman Identity & FINEWORKS Development Branding */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800/70 pb-1.5 sm:pb-2">
-            {/* Founder Chairman Medallion */}
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              <div className="relative h-7 w-7 sm:h-7.5 sm:w-7.5 shrink-0">
-                <Image
-                  src="/images/founder logo.png"
-                  alt="Founder Chairman MJF. Ln. Leo Muthu"
-                  width={32}
-                  height={32}
-                  className="h-full w-full object-contain"
-                />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">
-                  MJF. Ln. Leo Muthu
-                </span>
-                <span className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">
-                  Founder Chairman &bull; Sri Sairam Group of Institutions
-                </span>
-              </div>
-            </div>
-
-            {/* FINEWORKS Development Wordmark */}
-            <div className="flex flex-col items-center sm:items-end text-center sm:text-right">
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                Designed &amp; Developed by
-              </span>
-              <div className="inline-flex items-center gap-1 mt-0.5">
-                <span className="text-[11px] sm:text-xs font-extrabold tracking-[0.22em] text-slate-900 dark:text-white">
-                  FINE<span className="text-sky-600 dark:text-sky-400">WORKS</span>
-                </span>
-                <span className="h-1.5 w-1.5 rounded-full bg-sky-500" aria-hidden="true" />
-              </div>
-            </div>
-          </div>
-
-          {/* Lower Footer: Legal & Department Notice */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-1 text-center sm:text-left text-[9.5px] sm:text-[10px] text-slate-500 dark:text-slate-400">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-1.5 gap-y-0.5">
-              <Link
-                href="/login/admin"
-                className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-500 rounded"
-                title="CCE PGPA Management System"
-              >
-                CCE PGPA Management System
-              </Link>
-              <span className="hidden sm:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
-              <span>Department of Computer and Communication Engineering</span>
-              <span className="hidden sm:inline text-slate-300 dark:text-slate-700" aria-hidden="true">&bull;</span>
-              <span className="block sm:inline">Sri Sairam Engineering College (Autonomous)</span>
-            </div>
-
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span>Version 1.0.0</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* 3. FineWorks Minimalist Footer */}
+      <FineWorksFooter />
     </div>
   );
 }

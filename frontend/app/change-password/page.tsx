@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -10,6 +9,8 @@ import { api, getStoredToken } from "@/lib/api-client";
 import { ROLE_CONFIGS } from "@/lib/role-config";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
+import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -128,26 +129,17 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
-      {/* 1. Official Sairam Logos Header Banner */}
-      <header className="w-full border-b border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 py-3 sm:py-3.5 px-4 shadow-2xs transition-colors">
-        <div className="mx-auto max-w-5xl flex items-center justify-between gap-3 sm:gap-4">
-          <div className="flex-1 max-w-3xl">
-            <Image
-              src="/images/sairam-logos.png"
-              alt="Sri Sairam Engineering College - Autonomous Institution - Affiliated to Anna University"
-              width={1600}
-              height={130}
-              priority
-              className="w-full h-auto max-h-10 sm:max-h-12 object-contain dark:brightness-95"
-            />
-          </div>
+      {/* 1. FineWorks Header */}
+      <header className="w-full border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl py-3 px-4 shadow-2xs transition-colors sticky top-0 z-30">
+        <div className="mx-auto max-w-5xl flex items-center justify-between gap-4">
+          <FineWorksBrand role={user.role} showDepartment size="md" />
           <div className="flex items-center gap-2">
             <ThemeToggle size="sm" />
             <button
               type="button"
               onClick={handleLogout}
               id="change-password-header-signout"
-              className="shrink-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-200 transition-colors cursor-pointer"
+              className="shrink-0 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 transition-colors cursor-pointer"
             >
               Sign Out
             </button>
@@ -155,17 +147,14 @@ export default function ChangePasswordPage() {
         </div>
       </header>
 
-      {/* 2. Institutional Title Hierarchy */}
-      <section className="text-center pt-6 pb-3 sm:pt-8 sm:pb-4 px-4">
-        <div className="mx-auto max-w-4xl space-y-1.5">
-          <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#0284c7]">
-            Department of Computer and Communication Engineering
-          </h2>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#800000]">
-            CCE PGPA Management System
+      {/* 2. Title Hierarchy */}
+      <section className="text-center pt-8 pb-4 px-4">
+        <div className="mx-auto max-w-xl space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {isMandatoryChange ? "Mandatory Password Update" : "Change Password"}
           </h1>
-          <p className="text-xs font-medium text-slate-500">
-            Account Credential & Security Management
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            Welcome, <strong className="font-semibold text-slate-800 dark:text-slate-200">{user.full_name}</strong>. Please update your account credentials.
           </p>
         </div>
       </section>
@@ -376,6 +365,9 @@ export default function ChangePasswordPage() {
           </div>
         </div>
       </main>
+
+      {/* 4. FineWorks Footer */}
+      <FineWorksFooter className="mt-auto" />
     </div>
   );
 }

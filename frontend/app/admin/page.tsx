@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { RoleBadge } from "@/components/RoleBadge";
 import { DesignationBadge } from "@/components/DesignationBadge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
+import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 import { api, HealthResponse } from "@/lib/api-client";
 import {
   AdminOverviewResponse,
@@ -349,39 +350,16 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
-      {/* 1. Official College ERP Institutional Top Strip */}
-      <div className="w-full bg-[#0a192f] text-slate-200 border-b border-slate-800 text-[11px] font-medium py-1 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-1">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-amber-400 uppercase tracking-wider">
-              Sri Sairam Engineering College
-            </span>
-            <span className="text-slate-500 hidden sm:inline">&bull;</span>
-            <span className="text-slate-300 hidden sm:inline">
-              Autonomous Institution &bull; Affiliated to Anna University &bull; NBA & NAAC 'A+' Accredited
-            </span>
-          </div>
-          <div className="flex items-center gap-3 text-slate-300">
-            <span>Chennai - 600 044</span>
-            <span className="text-slate-600">&bull;</span>
-            <span className="text-emerald-400 font-semibold flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Institutional ERP Online
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Official Administrator Header */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200/90 dark:border-slate-800 shadow-xs">
+      {/* 1. Official Administrator Header */}
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/90 dark:border-slate-800 shadow-xs">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 sm:h-20 items-center justify-between gap-4">
-            {/* Left: Identity and Sairam Emblem */}
-            <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex h-16 items-center justify-between gap-4">
+            {/* Left: Mobile Toggle & FineWorks Brand */}
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="lg:hidden p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100"
                 aria-label="Toggle mobile menu"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -389,24 +367,7 @@ export default function AdminDashboardPage() {
                 </svg>
               </button>
 
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#0a192f] via-blue-900 to-indigo-950 flex items-center justify-center text-white font-extrabold shadow-sm border border-blue-950/20 shrink-0">
-                  <span className="text-sm sm:text-base tracking-wider font-mono text-amber-300">SEC</span>
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs sm:text-sm font-extrabold tracking-tight text-slate-900 dark:text-white uppercase">
-                      CCE-PGPA
-                    </span>
-                    <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
-                      System Administrator
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight">
-                    Department of Computer and Communication Engineering
-                  </span>
-                </div>
-              </div>
+              <FineWorksBrand role="admin" showDepartment size="md" />
             </div>
 
             {/* Right: Administrator Profile, Session Actions */}
@@ -2001,31 +1962,8 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* 4. Official Sri Sairam Leo Muthu Artwork Footer Banner */}
-            <footer className="w-full mt-8 pt-4 pb-12 border-t border-slate-200/80 dark:border-slate-800">
-              <div className="mx-auto max-w-5xl mb-6">
-                <Image
-                  src="/images/sairam-footer.png"
-                  alt="Sri Sairam Engineering College - Founder Chairman MJF. Ln. Leo Muthu"
-                  width={1600}
-                  height={251}
-                  className="w-full h-auto object-contain mx-auto"
-                />
-              </div>
-
-              {/* Exact Required Footer Attribution */}
-              <div className="text-center space-y-1.5">
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 tracking-wide">
-                  Designed and Developed by Team FineWorks
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Department of Computer and Communication Engineering &bull; Sri Sairam Engineering College
-                </p>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                  CCE-PGPA Management System &bull; Version 1.0.0 &bull; All Institutional Rights Reserved
-                </p>
-              </div>
-            </footer>
+            {/* 4. FineWorks Minimalist Footer */}
+            <FineWorksFooter showAdminLink={false} className="mt-8 pb-24 lg:pb-8" />
           </main>
         </div>
       </div>

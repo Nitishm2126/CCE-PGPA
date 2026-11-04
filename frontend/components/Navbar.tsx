@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { RoleBadge } from "@/components/RoleBadge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 
 export const Navbar: React.FC = () => {
   const { user, role, firebaseUser, isEmailVerified, logout, isLoading } = useAuth();
@@ -35,19 +36,7 @@ export const Navbar: React.FC = () => {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand identity */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 dark:bg-[#1c2531] border border-blue-600 dark:border-[#2b3543] text-white dark:text-[#4c83e6] font-bold text-sm tracking-wider shadow-2xs group-hover:scale-102 transition-transform duration-200">
-            <span>CCE</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight tracking-tight">
-              CCE-PGPA
-            </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-              PGPA Management System
-            </span>
-          </div>
-        </Link>
+        <FineWorksBrand showDepartment size="md" />
 
         {/* Navigation & User Actions */}
         <nav className="flex items-center gap-3">

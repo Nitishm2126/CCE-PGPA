@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api-client";
@@ -26,9 +25,9 @@ import { BottomNavigation } from "@/components/student/BottomNavigation";
 import { MessageDrawerModal } from "@/components/messages/MessageDrawerModal";
 import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { DesignationBadge } from "@/components/DesignationBadge";
-import { RoleBadge } from "@/components/RoleBadge";
 import { PGPAPerformanceTracker } from "@/components/student/PGPAPerformanceTracker";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
+import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
@@ -476,23 +475,27 @@ export default function StudentDashboardPage() {
           unreadMessagesCount={unreadMessagesCount}
         />
 
-        {/* Dynamic Student Greeting & Institutional Banner */}
-        <div className="bg-white dark:bg-[#171E28] rounded-2xl border border-slate-200 dark:border-[#2B3543] p-5 sm:p-7 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-colors">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-[#E8EDF4]">
-                Hi, {firstName}
-              </h1>
-              <DesignationBadge designation="Change Maker" size="md" />
-              <RoleBadge role="student" size="sm" />
-            </div>
-            <p className="text-sm font-semibold text-blue-600 dark:text-[#4C83E6]">
-              Department of Computer and Communication Engineering
-            </p>
-            <p className="text-xs text-slate-500 dark:text-[#7E8B9C] font-normal">
-              Academic Year {profile?.year || 2} &bull; Section {profile?.section || "A"} &bull; {profile?.semester || "III SEM"} &bull; Batch {profile?.batch || "2025-2029"}
+        {/* Simplified Student Welcome Section */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Welcome back, {firstName}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+              Department of Computer and Communication Engineering (CCE)
             </p>
           </div>
+
+          <button
+            type="button"
+            onClick={() => handleOpenSubmitModal(null)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-2xs active:scale-95 transition-all cursor-pointer self-start sm:self-auto"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Submit Activity</span>
+          </button>
         </div>
 
         {/* TAB 1: DASHBOARD (Balanced Spacing & Clean Overview - NO duplicate components catalogue) */}
@@ -732,44 +735,8 @@ export default function StudentDashboardPage() {
         )}
       </main>
 
-      {/* 4. Official Sairam SDG Banner Strip */}
-      <section aria-label="Sustainable Development Goals" className="w-full mt-6 px-4">
-        <div className="mx-auto max-w-6xl">
-          <Image
-            src="/images/sairam-sdg.png"
-            alt="United Nations Sustainable Development Goals - Sri Sairam Engineering College"
-            width={1600}
-            height={125}
-            className="w-full h-auto object-contain mx-auto dark:opacity-85"
-          />
-        </div>
-      </section>
-
-      {/* 5. Official Sairam Leo Muthu Artwork Footer Banner */}
-      <footer className="w-full mt-4 sm:mt-6 px-4 pb-20 md:pb-6">
-        <div className="mx-auto max-w-6xl">
-          <Image
-            src="/images/sairam-footer.png"
-            alt="Sri Sairam Engineering College - Founder Chairman MJF. Ln. Leo Muthu"
-            width={1600}
-            height={251}
-            className="w-full h-auto object-contain mx-auto dark:opacity-85"
-          />
-        </div>
-
-        {/* Attribution & Legal Notice */}
-        <div className="text-center pt-4 pb-4 space-y-1">
-          <p className="text-xs font-semibold text-slate-700 dark:text-[#A0ACBC] tracking-wide">
-            Designed and Developed by Team FineWorks
-          </p>
-          <p className="text-xs text-slate-500 dark:text-[#7E8B9C]">
-            Department of Computer and Communication Engineering &bull; Sri Sairam Engineering College
-          </p>
-          <p className="text-[11px] text-slate-400 dark:text-[#64748B]">
-            CCE-PGPA Management System &bull; Version 1.0.0 &bull; All Institutional Rights Reserved
-          </p>
-        </div>
-      </footer>
+      {/* 4. FineWorks Minimalist Footer */}
+      <FineWorksFooter className="pb-24 md:pb-8" />
 
       {/* 6. Modals Container */}
       {/* Submit Achievement Modal */}
