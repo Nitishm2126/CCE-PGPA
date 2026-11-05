@@ -190,7 +190,7 @@ export const StudentDesktopNav: React.FC<StudentDesktopNavProps> = ({
               onClick={() => onSelectTab(tab.id)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                 isActive
-                  ? "bg-purple-50 dark:bg-[#181818] text-purple-700 dark:text-[#FFD84D] font-semibold border border-purple-200 dark:border-[#FFD84D]/40 shadow-2xs"
+                  ? "bg-purple-50 dark:bg-[#202020] text-purple-700 dark:text-[#5DD62C] font-semibold border border-purple-200 dark:border-[#5DD62C]/40 shadow-2xs"
                   : "text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900 dark:hover:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#181818] font-medium"
               }`}
             >
@@ -258,7 +258,7 @@ export const StudentBottomNav: React.FC<StudentBottomNavProps> = ({
               <div
                 className={`flex h-5 w-5 items-center justify-center transition-colors relative ${
                   isActive
-                    ? "text-purple-600 dark:text-[#FFD84D]"
+                    ? "text-purple-600 dark:text-[#5DD62C]"
                     : "text-slate-400 hover:text-slate-600 dark:text-[#737373] dark:hover:text-[#D4D4D4]"
                 }`}
               >
@@ -275,7 +275,7 @@ export const StudentBottomNav: React.FC<StudentBottomNavProps> = ({
                 <span
                   className={`text-[10px] leading-none tracking-tight truncate max-w-full text-center ${
                     isActive
-                      ? "font-semibold text-purple-700 dark:text-[#FFD84D]"
+                      ? "font-semibold text-purple-700 dark:text-[#5DD62C]"
                       : "font-medium text-slate-500 dark:text-[#A3A3A3]"
                   }`}
                 >
@@ -286,7 +286,7 @@ export const StudentBottomNav: React.FC<StudentBottomNavProps> = ({
               {/* Active Indicator Dot */}
               <div className="h-1 flex items-center justify-center mt-0.5">
                 {isActive ? (
-                  <span className="h-1 w-1 rounded-full bg-purple-600 dark:bg-[#FFD84D] animate-apple-fade" />
+                  <span className="h-1 w-1 rounded-full bg-purple-600 dark:bg-[#5DD62C] animate-apple-fade" />
                 ) : (
                   <span className="h-1 w-1" />
                 )}

@@ -107,7 +107,7 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
               <div
                 className={`flex h-6 w-6 items-center justify-center transition-colors relative ${
                   isActive
-                    ? "text-purple-700 dark:text-[#FFD84D]"
+                    ? "text-purple-700 dark:text-[#5DD62C]"
                     : "text-slate-400 hover:text-slate-600 dark:text-[#737373] dark:hover:text-[#D4D4D4]"
                 }`}
               >
@@ -124,7 +124,7 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
                 <span
                   className={`text-[10px] leading-none tracking-tight truncate max-w-full text-center ${
                     isActive
-                      ? "font-semibold text-purple-700 dark:text-[#FFD84D]"
+                      ? "font-semibold text-purple-700 dark:text-[#5DD62C]"
                       : "font-medium text-slate-500 dark:text-[#A3A3A3]"
                   }`}
                 >
@@ -135,7 +135,7 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
               {/* Active Indicator Dot */}
               <div className="h-1 flex items-center justify-center mt-0.5">
                 {isActive ? (
-                  <span className="h-1 w-1 rounded-full bg-purple-700 dark:bg-[#FFD84D] animate-apple-fade" />
+                  <span className="h-1 w-1 rounded-full bg-purple-700 dark:bg-[#5DD62C] animate-apple-fade" />
                 ) : (
                   <span className="h-1 w-1" />
                 )}
@@ -153,7 +153,7 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
         >
           <div
             className={`flex h-6 w-6 items-center justify-center transition-colors ${
-              isMoreActive ? "text-purple-700 dark:text-[#FFD84D]" : ""
+              isMoreActive ? "text-purple-700 dark:text-[#5DD62C]" : ""
             }`}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -168,7 +168,7 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
             <span
               className={`text-[10px] leading-none tracking-tight font-medium text-center ${
                 isMoreActive
-                  ? "font-semibold text-purple-700 dark:text-[#FFD84D]"
+                  ? "font-semibold text-purple-700 dark:text-[#5DD62C]"
                   : "text-slate-500 dark:text-[#A3A3A3]"
               }`}
             >

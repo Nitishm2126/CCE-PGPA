@@ -106,15 +106,20 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
             </button>
           )}
 
-          {/* Sign Out Action */}
+          {/* Sign Out Action: Visible on mobile and desktop */}
           {onLogout && (
             <button
               type="button"
               onClick={onLogout}
               id="student-header-signout"
-              className="hidden md:inline-flex items-center text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 transition-colors cursor-pointer"
+              aria-label="Sign Out"
+              title="Sign Out"
+              className="flex h-8 w-8 sm:h-9 sm:w-auto items-center justify-center sm:px-2.5 sm:py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 active:scale-95 transition-all cursor-pointer shrink-0"
             >
-              Sign Out
+              <svg className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+              </svg>
+              <span className="hidden sm:inline ml-1 text-xs font-semibold">Sign Out</span>
             </button>
           )}
 

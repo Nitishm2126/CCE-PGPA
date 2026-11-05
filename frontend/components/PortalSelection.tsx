@@ -27,36 +27,36 @@ interface PortalCardTheme {
 const PORTAL_CARD_THEMES: Record<string, PortalCardTheme> = {
   student: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-purple-400 dark:hover:border-indigo-500/60",
-    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-indigo-500",
-    badgeBg: "bg-purple-50 dark:bg-indigo-950/40 border-purple-200 dark:border-indigo-800/60",
-    badgeText: "text-purple-700 dark:text-indigo-300",
-    iconBg: "bg-purple-50 dark:bg-indigo-950/50",
-    iconText: "text-purple-600 dark:text-indigo-400",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:text-white",
-    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-indigo-500",
+    hoverBorder: "hover:border-purple-400 dark:hover:border-[#5DD62C]/70",
+    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-[#5DD62C]",
+    badgeBg: "bg-purple-50 dark:bg-[#337418]/25 border-purple-200 dark:border-[#5DD62C]/30",
+    badgeText: "text-purple-700 dark:text-[#5DD62C]",
+    iconBg: "bg-purple-50 dark:bg-[#337418]/25",
+    iconText: "text-purple-600 dark:text-[#5DD62C]",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:text-[#0F0F0F] font-bold",
+    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-[#4ec224]",
   },
   mentor: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-purple-400 dark:hover:border-indigo-500/60",
-    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-indigo-500",
-    badgeBg: "bg-purple-50/70 dark:bg-indigo-950/30 border-purple-200 dark:border-indigo-800/50",
-    badgeText: "text-purple-700 dark:text-indigo-300",
-    iconBg: "bg-purple-50 dark:bg-indigo-950/50",
-    iconText: "text-purple-600 dark:text-indigo-400",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:text-white",
-    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-indigo-500",
+    hoverBorder: "hover:border-purple-400 dark:hover:border-[#5DD62C]/70",
+    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-[#5DD62C]",
+    badgeBg: "bg-purple-50/70 dark:bg-[#337418]/25 border-purple-200 dark:border-[#5DD62C]/30",
+    badgeText: "text-purple-700 dark:text-[#5DD62C]",
+    iconBg: "bg-purple-50 dark:bg-[#337418]/25",
+    iconText: "text-purple-600 dark:text-[#5DD62C]",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:text-[#0F0F0F] font-bold",
+    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-[#4ec224]",
   },
   hod: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-purple-400 dark:hover:border-indigo-500/60",
-    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-indigo-500",
-    badgeBg: "bg-purple-50 dark:bg-indigo-950/40 border-purple-200 dark:border-indigo-800/60",
-    badgeText: "text-purple-700 dark:text-indigo-300",
-    iconBg: "bg-purple-50 dark:bg-indigo-950/50",
-    iconText: "text-purple-600 dark:text-indigo-400",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:text-white",
-    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-indigo-500",
+    hoverBorder: "hover:border-purple-400 dark:hover:border-[#5DD62C]/70",
+    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-[#5DD62C]",
+    badgeBg: "bg-purple-50 dark:bg-[#337418]/25 border-purple-200 dark:border-[#5DD62C]/30",
+    badgeText: "text-purple-700 dark:text-[#5DD62C]",
+    iconBg: "bg-purple-50 dark:bg-[#337418]/25",
+    iconText: "text-purple-600 dark:text-[#5DD62C]",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:text-[#0F0F0F] font-bold",
+    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-[#4ec224]",
   },
 };
 
@@ -129,7 +129,7 @@ function PortalSelectionContent() {
           </div>
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-            CCE PGPA <span className="text-purple-600 dark:text-indigo-400">Management System</span>
+            CCE PGPA <span className="text-purple-600 dark:text-[#5DD62C]">Management System</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-normal">

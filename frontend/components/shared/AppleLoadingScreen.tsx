@@ -24,8 +24,8 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
   useEffect(() => {
     if (!isSignOut) return;
 
-    const t1 = setTimeout(() => setStep(1), 500);
-    const t2 = setTimeout(() => setStep(2), 1100);
+    const t1 = setTimeout(() => setStep(1), 300);
+    const t2 = setTimeout(() => setStep(2), 650);
 
     return () => {
       clearTimeout(t1);
@@ -53,8 +53,8 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
   const isLoginVariant = variant === "login";
 
   const containerClasses = fullScreen
-    ? "fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50/95 text-slate-900 dark:bg-[#0A0A0A]/95 dark:text-[#F5F5F5] select-none transition-all duration-300 backdrop-blur-md"
-    : `flex-1 flex items-center justify-center p-8 bg-slate-50/95 text-slate-900 dark:bg-[#0A0A0A]/95 dark:text-[#F5F5F5] select-none ${className}`;
+    ? "fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50/95 text-slate-900 dark:bg-[#0F0F0F]/95 dark:text-[#F8F8F8] select-none transition-all duration-300 backdrop-blur-md"
+    : `flex-1 flex items-center justify-center p-8 bg-slate-50/95 text-slate-900 dark:bg-[#0F0F0F]/95 dark:text-[#F8F8F8] select-none ${className}`;
 
   return (
     <div
@@ -67,8 +67,8 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
       <div
         className={`absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(124,58,237,0.08)_0%,transparent_65%)] ${
           isLoginVariant
-            ? "dark:bg-[radial-gradient(circle_at_center,rgba(129,140,248,0.12)_0%,transparent_65%)]"
-            : "dark:bg-[radial-gradient(circle_at_center,rgba(255,216,77,0.08)_0%,transparent_65%)]"
+            ? "dark:bg-[radial-gradient(circle_at_center,rgba(93,214,44,0.10)_0%,transparent_65%)]"
+            : "dark:bg-[radial-gradient(circle_at_center,rgba(93,214,44,0.08)_0%,transparent_65%)]"
         }`}
         aria-hidden="true"
       />
@@ -79,7 +79,7 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
           {/* Breathing ambient halo: subtle purple in light mode, yellow or indigo in dark mode */}
           <div
             className={`absolute -inset-2 rounded-3xl bg-purple-500/15 blur-xl animate-apple-halo pointer-events-none ${
-              isLoginVariant ? "dark:bg-indigo-500/20" : "dark:bg-[#FFD84D]/15"
+              "dark:bg-[#5DD62C]/15"
             }`}
             aria-hidden="true"
           />
@@ -88,7 +88,7 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
           <div className="relative flex items-center justify-center">
             <svg
               className={`h-20 w-20 animate-apple-spin text-purple-600/20 ${
-                isLoginVariant ? "dark:text-indigo-500/20" : "dark:text-[#FFD84D]/20"
+                "dark:text-[#5DD62C]/20"
               }`}
               viewBox="0 0 80 80"
               fill="none"
@@ -119,7 +119,7 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
                 cx="40"
                 cy="40"
                 r="36"
-                stroke={isLoginVariant ? "url(#appleProgressGradDarkIndigo)" : "url(#appleProgressGradDarkYellow)"}
+                stroke="url(#appleProgressGradDarkGreen)"
                 strokeWidth="2.5"
                 strokeDasharray="160 80"
                 strokeLinecap="round"
@@ -139,35 +139,23 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
                   <stop offset="1" stopColor="#c4b5fd" stopOpacity="0.2" />
                 </linearGradient>
                 <linearGradient
-                  id="appleProgressGradDarkYellow"
+                  id="appleProgressGradDarkGreen"
                   x1="0"
                   y1="0"
                   x2="80"
                   y2="80"
                   gradientUnits="userSpaceOnUse"
                 >
-                  <stop stopColor="#FFD84D" />
-                  <stop offset="0.6" stopColor="#facc15" />
-                  <stop offset="1" stopColor="#fde047" stopOpacity="0.2" />
-                </linearGradient>
-                <linearGradient
-                  id="appleProgressGradDarkIndigo"
-                  x1="0"
-                  y1="0"
-                  x2="80"
-                  y2="80"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stopColor="#818CF8" />
-                  <stop offset="0.6" stopColor="#6366F1" />
-                  <stop offset="1" stopColor="#A5B4FC" stopOpacity="0.2" />
+                  <stop stopColor="#5DD62C" />
+                  <stop offset="0.6" stopColor="#4ec224" />
+                  <stop offset="1" stopColor="#337418" stopOpacity="0.2" />
                 </linearGradient>
               </defs>
             </svg>
 
             {/* Centered Clean CCE Brand Monogram */}
-            <div className="absolute inset-2 rounded-2xl bg-white dark:bg-[#111111] border border-purple-200/80 dark:border-[#292929] shadow-sm flex items-center justify-center p-1.5 overflow-hidden">
-              <span className="font-extrabold text-base tracking-wider text-purple-700 dark:text-[#F5F5F5] select-none">
+            <div className="absolute inset-2 rounded-2xl bg-white dark:bg-[#202020] border border-purple-200/80 dark:border-[#2e2e2e] shadow-sm flex items-center justify-center p-1.5 overflow-hidden">
+              <span className="font-extrabold text-base tracking-wider text-purple-700 dark:text-[#5DD62C] select-none">
                 CCE
               </span>
             </div>
@@ -176,10 +164,10 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
 
         {/* Dynamic Typography with Smooth Fade Transition */}
         <div className="space-y-1.5 transition-all duration-200">
-          <h2 className="text-sm font-semibold tracking-tight text-slate-900 dark:text-[#F5F5F5]">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900 dark:text-[#F8F8F8]">
             {currentTitle}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-[#A3A3A3] tracking-normal">
+          <p className="text-xs text-slate-500 dark:text-[#B0B0B0] tracking-normal">
             {currentSub}
           </p>
         </div>

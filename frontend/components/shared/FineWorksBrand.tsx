@@ -29,7 +29,7 @@ export const FineWorksBrand: React.FC<FineWorksBrandProps> = ({
     },
     hod: {
       label: "HOD",
-      badgeClass: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-[#181818] dark:text-[#FFD84D] dark:border-[#292929]",
+      badgeClass: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-[#181818] dark:text-[#5DD62C] dark:border-[#292929]",
     },
     admin: {
       label: "Admin",

@@ -125,7 +125,7 @@ export const AdminBottomNav: React.FC<AdminBottomNavProps> = ({
               <div
                 className={`flex h-6 w-6 items-center justify-center transition-colors relative ${
                   isActive
-                    ? "text-blue-600 dark:text-[#FFD84D]"
+                    ? "text-blue-600 dark:text-[#5DD62C]"
                     : "text-slate-400 hover:text-slate-600 dark:text-[#737373] dark:hover:text-[#D4D4D4]"
                 }`}
               >
@@ -137,7 +137,7 @@ export const AdminBottomNav: React.FC<AdminBottomNavProps> = ({
                 <span
                   className={`text-[10px] leading-none tracking-tight truncate max-w-full text-center ${
                     isActive
-                      ? "font-semibold text-blue-600 dark:text-[#FFD84D]"
+                      ? "font-semibold text-blue-600 dark:text-[#5DD62C]"
                       : "font-medium text-slate-500 dark:text-[#A3A3A3]"
                   }`}
                 >
@@ -148,7 +148,7 @@ export const AdminBottomNav: React.FC<AdminBottomNavProps> = ({
               {/* Active Indicator Dot */}
               <div className="h-1 flex items-center justify-center mt-0.5">
                 {isActive ? (
-                  <span className="h-1 w-1 rounded-full bg-blue-600 dark:bg-[#FFD84D] animate-apple-fade" />
+                  <span className="h-1 w-1 rounded-full bg-blue-600 dark:bg-[#5DD62C] animate-apple-fade" />
                 ) : (
                   <span className="h-1 w-1" />
                 )}
@@ -166,7 +166,7 @@ export const AdminBottomNav: React.FC<AdminBottomNavProps> = ({
         >
           <div
             className={`flex h-6 w-6 items-center justify-center transition-colors ${
-              isMenuSection ? "text-blue-600 dark:text-[#FFD84D]" : ""
+              isMenuSection ? "text-blue-600 dark:text-[#5DD62C]" : ""
             }`}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -177,7 +177,7 @@ export const AdminBottomNav: React.FC<AdminBottomNavProps> = ({
             <span
               className={`text-[10px] leading-none tracking-tight font-medium text-center ${
                 isMenuSection
-                  ? "font-semibold text-blue-600 dark:text-[#FFD84D]"
+                  ? "font-semibold text-blue-600 dark:text-[#5DD62C]"
                   : "text-slate-500 dark:text-[#A3A3A3]"
               }`}
             >
@@ -186,7 +186,7 @@ export const AdminBottomNav: React.FC<AdminBottomNavProps> = ({
           </div>
           <div className="h-1 flex items-center justify-center mt-0.5">
             {isMenuSection ? (
-              <span className="h-1 w-1 rounded-full bg-blue-600 dark:bg-[#FFD84D] animate-apple-fade" />
+              <span className="h-1 w-1 rounded-full bg-blue-600 dark:bg-[#5DD62C] animate-apple-fade" />
             ) : (
               <span className="h-1 w-1" />
             )}

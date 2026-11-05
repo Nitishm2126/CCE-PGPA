@@ -386,7 +386,19 @@ export default function HODDashboardPage() {
         <div className="mx-auto max-w-7xl px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
           {/* Mobile Header Bar (< md) */}
           <div className="flex md:hidden items-center justify-between gap-2">
-            <FineWorksBrand role="hod" size="sm" />
+            <div className="flex items-center gap-2.5 min-w-0">
+              <button
+                type="button"
+                onClick={() => setIsMobileMoreOpen(true)}
+                aria-label="Open HOD navigation menu"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <FineWorksBrand role="hod" size="sm" />
+            </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
               <button
@@ -402,10 +414,24 @@ export default function HODDashboardPage() {
                 </svg>
               </button>
               <ThemeToggle size="sm" />
+              {/* Direct Sign Out in mobile header */}
+              <button
+                type="button"
+                onClick={handleLogout}
+                id="hod-mobile-header-signout"
+                aria-label="Sign Out"
+                title="Sign Out"
+                className="flex h-8 w-8 sm:h-9 sm:w-auto items-center justify-center sm:px-2.5 sm:py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 active:scale-95 transition-all cursor-pointer shrink-0"
+              >
+                <svg className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                </svg>
+                <span className="hidden sm:inline ml-1 text-xs font-semibold">Sign Out</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setIsMobileMoreOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-bold text-xs active:scale-95 transition-all cursor-pointer"
+                className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-bold text-xs active:scale-95 transition-all cursor-pointer"
                 aria-label="Open HOD menu"
                 title="Open menu & tools"
               >

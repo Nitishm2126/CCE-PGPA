@@ -20,24 +20,24 @@ interface RoleLoginFormProps {
 
 const ROLE_THEME_DETAILS = {
   student: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:active:bg-indigo-700 dark:text-white shadow-xs",
-    dotColor: "bg-purple-600 dark:bg-indigo-500",
+    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
+    dotColor: "bg-purple-600 dark:bg-[#5DD62C]",
   },
   mentor: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:active:bg-indigo-700 dark:text-white shadow-xs",
-    dotColor: "bg-purple-600 dark:bg-indigo-500",
+    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
+    dotColor: "bg-purple-600 dark:bg-[#5DD62C]",
   },
   hod: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:active:bg-indigo-700 dark:text-white shadow-xs",
-    dotColor: "bg-purple-600 dark:bg-indigo-500",
+    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
+    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
+    dotColor: "bg-purple-600 dark:bg-[#5DD62C]",
   },
   admin: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20",
-    buttonBg: "bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 dark:active:bg-indigo-700 dark:text-white shadow-xs",
-    dotColor: "bg-slate-800 dark:bg-indigo-500",
+    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
+    buttonBg: "bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
+    dotColor: "bg-slate-800 dark:bg-[#5DD62C]",
   },
 };
 
@@ -187,7 +187,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         <div className="w-full flex items-center justify-between mb-2 sm:mb-2.5 text-xs shrink-0">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 font-semibold text-purple-600 dark:text-indigo-400 hover:text-purple-800 dark:hover:text-indigo-300 transition-colors"
+            className="inline-flex items-center gap-1.5 font-semibold text-purple-600 dark:text-[#5DD62C] hover:text-purple-800 dark:hover:text-[#4ec224] transition-colors"
           >
             <span>&larr;</span>
             <span>All Portals</span>
@@ -204,7 +204,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                     href={ROLE_CONFIGS[r].path}
                     className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors ${
                       isCurrent
-                        ? "bg-slate-200 dark:bg-indigo-950/40 text-slate-900 dark:text-indigo-300 border border-transparent dark:border-indigo-800/40 font-semibold cursor-default"
+                        ? "bg-slate-200 dark:bg-[#337418]/30 text-slate-900 dark:text-[#5DD62C] border border-transparent dark:border-[#5DD62C]/40 font-semibold cursor-default"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                     }`}
                   >
@@ -219,7 +219,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         {/* Main Heading centered above the Login Card */}
         <div className="text-center mb-2.5 sm:mb-3.5 shrink-0">
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-            CCE-PGPA <span className="text-purple-600 dark:text-indigo-400">Management System</span>
+            CCE-PGPA <span className="text-purple-600 dark:text-[#5DD62C]">Management System</span>
           </h2>
         </div>
 
@@ -338,7 +338,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs font-medium text-purple-600 dark:text-indigo-400 hover:text-purple-800 dark:hover:text-indigo-300 transition-colors"
+                  className="text-xs font-medium text-purple-600 dark:text-[#5DD62C] hover:text-purple-800 dark:hover:text-[#4ec224] transition-colors"
                 >
                   Forgot password?
                 </Link>
