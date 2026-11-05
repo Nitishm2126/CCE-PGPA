@@ -475,6 +475,23 @@ export default function MentorDashboardPage() {
               <button
                 type="button"
                 onClick={() => {
+                  if (!manualPointsStudent && students.length > 0) {
+                    setManualPointsStudent(students[0]);
+                  }
+                  setIsManualPointsModalOpen(true);
+                }}
+                id="btn-mentor-manual-points"
+                className="rounded-lg border border-slate-200 dark:border-[#2e2e2e] bg-white dark:bg-[#202020] text-slate-700 dark:text-[#5DD62C] hover:bg-slate-50 dark:hover:bg-[#282828] px-3 py-1.5 text-xs font-semibold transition cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                title="Award or manage semester-wise manual points for all 14 PGPA components"
+              >
+                <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-[#5DD62C]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                <span>Manual Points</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
                   setExportStudentId("all");
                   setIsExportModalOpen(true);
                 }}
@@ -504,7 +521,7 @@ export default function MentorDashboardPage() {
               <button
                 type="button"
                 onClick={() => router.push("/change-password")}
-                className="rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                className="rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] hover:text-blue-600 dark:hover:text-[#5DD62C] transition-colors cursor-pointer"
               >
                 Change Password
               </button>
@@ -534,7 +551,7 @@ export default function MentorDashboardPage() {
                   HOD Assigned Mentee Portal &bull; {students.length} Assigned Students
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/60 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 mb-2">
+                <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-[#337418]/30 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-[#5DD62C] border border-blue-200 dark:border-[#337418] mb-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
                   Faculty Mentorship Portal &bull; Active Evaluation
                 </div>
@@ -574,13 +591,13 @@ export default function MentorDashboardPage() {
               </div>
 
               <div className="rounded-xl border border-slate-200/80 dark:border-[#292929] bg-slate-50/70 dark:bg-[#181818] p-3.5 text-center min-w-[110px]">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-400">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-700 dark:text-[#5DD62C]">
                   Submissions
                 </p>
                 <p className="text-2xl font-bold text-slate-900 dark:text-[#F5F5F5] mt-0.5">
                   {submissions.length}
                 </p>
-                <p className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Recorded activities</p>
+                <p className="text-[10px] text-blue-600 dark:text-[#5DD62C] font-medium">Recorded activities</p>
               </div>
             </div>
           </div>
@@ -758,7 +775,7 @@ export default function MentorDashboardPage() {
                             <p className="font-bold text-slate-900 dark:text-[#F5F5F5] text-sm leading-snug truncate">
                               {sub.student_name || "Assigned Student"}
                             </p>
-                            <p className="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
+                            <p className="font-mono text-xs font-semibold text-blue-600 dark:text-[#5DD62C] mt-0.5">
                               {sub.student_register_number || "—"}
                             </p>
                           </div>
@@ -807,7 +824,7 @@ export default function MentorDashboardPage() {
                                 type="button"
                                 onClick={() => handleViewEvidence(sub.files[0].id)}
                                 disabled={isOpeningFile === sub.files[0].id}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/70 dark:bg-blue-950/40 text-[11px] font-semibold text-blue-700 dark:text-blue-300 active:scale-95 transition-all cursor-pointer"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-blue-200 dark:border-[#337418] bg-blue-50/70 dark:bg-[#337418]/25 text-[11px] font-semibold text-blue-700 dark:text-[#5DD62C] active:scale-95 transition-all cursor-pointer"
                               >
                                 {isOpeningFile === sub.files[0].id ? (
                                   <span className="h-3 w-3 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
@@ -834,7 +851,7 @@ export default function MentorDashboardPage() {
                               }}
                               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5] active:scale-95 transition-all cursor-pointer"
                             >
-                              <svg className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <svg className="h-3.5 w-3.5 text-blue-600 dark:text-[#5DD62C]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                               </svg>
                               <span>Remarks</span>
@@ -890,7 +907,7 @@ export default function MentorDashboardPage() {
                         >
                           {/* Student Details */}
                           <td className="py-3 px-4">
-                            <p className="font-bold text-slate-900 dark:text-[#F5F5F5] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <p className="font-bold text-slate-900 dark:text-[#F5F5F5] group-hover:text-blue-600 dark:group-hover:text-[#5DD62C] transition-colors">
                               {sub.student_name || "Assigned Student"}
                             </p>
                             <p className="font-mono text-[11px] text-slate-500 dark:text-[#A3A3A3]">
@@ -948,7 +965,7 @@ export default function MentorDashboardPage() {
                                 type="button"
                                 onClick={() => handleViewEvidence(sub.files[0].id)}
                                 disabled={isOpeningFile === sub.files[0].id}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/70 dark:bg-blue-950/40 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 dark:border-[#337418] bg-blue-50/70 dark:bg-[#337418]/25 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-[#5DD62C] hover:bg-blue-100 dark:hover:bg-[#337418]/40 transition-colors cursor-pointer disabled:opacity-50"
                               >
                                 {isOpeningFile === sub.files[0].id ? (
                                   <span className="h-3 w-3 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
@@ -978,10 +995,10 @@ export default function MentorDashboardPage() {
                                 });
                                 setIsMessageDrawerOpen(true);
                               }}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] hover:text-blue-600 dark:hover:text-[#5DD62C] transition-colors cursor-pointer"
                               title="Send remarks, congratulations, or view message history"
                             >
-                              <svg className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                              <svg className="h-3.5 w-3.5 text-blue-600 dark:text-[#5DD62C]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                               </svg>
                               <span>Remarks</span>
@@ -1029,7 +1046,7 @@ export default function MentorDashboardPage() {
                   Authoritative student assignments in PostgreSQL for CCE II Year Section A
                 </p>
               </div>
-              <span className="rounded-full bg-blue-50 dark:bg-blue-950/40 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              <span className="rounded-full bg-blue-50 dark:bg-[#337418]/25 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-[#5DD62C] border border-blue-200 dark:border-[#337418]">
                 Department Isolated: CCE
               </span>
             </div>
@@ -1060,14 +1077,14 @@ export default function MentorDashboardPage() {
                   return (
                     <div
                       key={st.student_id}
-                      className="rounded-xl border border-slate-200/80 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818] p-4 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-white dark:hover:bg-[#222222] transition-all shadow-2xs space-y-3"
+                      className="rounded-xl border border-slate-200/80 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818] p-4 hover:border-blue-300 dark:hover:border-[#5DD62C] hover:bg-white dark:hover:bg-[#222222] transition-all shadow-2xs space-y-3"
                     >
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] leading-snug">
                             {st.full_name}
                           </p>
-                          <p className="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
+                          <p className="font-mono text-xs font-semibold text-blue-600 dark:text-[#5DD62C] mt-0.5">
                             {st.register_number || "Registration Pending"}
                           </p>
                         </div>
@@ -1120,7 +1137,7 @@ export default function MentorDashboardPage() {
                               setSelectedMenteeId(st.student_id);
                               setActiveTab("submissions");
                             }}
-                            className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors cursor-pointer"
+                            className="font-semibold text-blue-600 dark:text-[#5DD62C] hover:text-blue-800 dark:hover:text-blue-300 transition-colors cursor-pointer"
                           >
                             Filter Activities &rarr;
                           </button>
@@ -1160,7 +1177,7 @@ export default function MentorDashboardPage() {
               <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-[#292929]">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="rounded-md bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                    <span className="rounded-md bg-blue-50 dark:bg-[#337418]/25 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:text-[#5DD62C] border border-blue-200 dark:border-[#337418]">
                       {selectedSubmission.component_name || "PGPA Component"}
                     </span>
                     {selectedSubmission.semester ? (
@@ -1203,7 +1220,7 @@ export default function MentorDashboardPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono text-xs font-semibold text-blue-700 dark:text-blue-400">
+                    <p className="font-mono text-xs font-semibold text-blue-700 dark:text-[#5DD62C]">
                       {selectedSubmission.student_register_number || "—"}
                     </p>
                     <p className="text-[11px] text-slate-400 dark:text-[#A3A3A3]">Department of CCE</p>
@@ -1339,7 +1356,7 @@ export default function MentorDashboardPage() {
                     <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] text-[11px] mb-1">
                       Student Remarks
                     </p>
-                    <div className="rounded-xl border border-blue-200/80 dark:border-blue-900/60 p-3 bg-blue-50/40 dark:bg-blue-950/30 text-slate-800 dark:text-[#F5F5F5] leading-relaxed font-medium text-xs">
+                    <div className="rounded-xl border border-blue-200/80 dark:border-[#337418]/60 p-3 bg-blue-50/40 dark:bg-[#337418]/20 text-slate-800 dark:text-[#F5F5F5] leading-relaxed font-medium text-xs">
                       {selectedSubmission.remarks}
                     </div>
                   </div>
@@ -1370,7 +1387,7 @@ export default function MentorDashboardPage() {
                           className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xs"
                         >
                           <div className="flex items-center gap-2.5 truncate">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shrink-0">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-[#337418]/25 text-blue-600 dark:text-[#5DD62C] shrink-0">
                               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                               </svg>
@@ -1415,7 +1432,7 @@ export default function MentorDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-bold text-slate-900 dark:text-[#F5F5F5] text-xs flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />
+                        <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-[#5DD62C]" />
                         Faculty Evaluation &amp; Verification Action
                       </p>
                       <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-0.5">
@@ -1718,6 +1735,12 @@ export default function MentorDashboardPage() {
           setIsExportModalOpen(true);
         }}
         onRefreshClick={() => { void loadData(); }}
+        onManualPointsClick={() => {
+          if (!manualPointsStudent && students.length > 0) {
+            setManualPointsStudent(students[0]);
+          }
+          setIsManualPointsModalOpen(true);
+        }}
         onLogout={handleLogout}
       />
 
@@ -1729,6 +1752,8 @@ export default function MentorDashboardPage() {
           setManualPointsStudent(null);
         }}
         student={manualPointsStudent}
+        students={students}
+        onSelectStudent={(st) => setManualPointsStudent(st)}
         token={token}
         components={components}
         semesters={semesters}

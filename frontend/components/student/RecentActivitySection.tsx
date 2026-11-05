@@ -258,10 +258,10 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
           <div className="space-y-3">
             {displayedAchievements.map((item) => {
               const latestLog = item.verification_logs?.[item.verification_logs.length - 1];
-              // Submitted, Draft, Under Review, and Rejected records are fully editable and deletable by their student owner
+              // Submitted, Draft, Under Review, and Rejected records are fully revisable/editable and deletable by their student owner
               const isEditable = item.status === "draft" || item.status === "rejected" || item.status === "pending" || item.status === "under_review";
               const isDeletable = item.status === "draft" || item.status === "rejected" || item.status === "pending" || item.status === "under_review";
-              const isRevisable = item.status === "approved";
+              const isApproved = item.status === "approved";
               const unreadMsgCount = unreadCountsByAchievement?.[item.id] || 0;
 
               return (
@@ -441,31 +441,37 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                       </button>
                     )}
 
-                    {/* Edit Button for Draft, Rejected, or Pending (Submitted) */}
+                    {/* Revise / Edit Button for Draft, Rejected, or Submitted (Pending / Under Review) */}
                     {isEditable && onEditAchievement && (
                       <button
                         type="button"
                         onClick={() => onEditAchievement(item)}
-                        title={item.status === "pending" ? "Edit submitted achievement details or update evidence" : "Edit activity details"}
+                        title={
+                          item.status === "rejected"
+                            ? "Revise rejected submission with updated details or evidence"
+                            : item.status === "pending" || item.status === "under_review"
+                            ? "Revise submitted activity details or update evidence"
+                            : "Edit draft details"
+                        }
                         className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111] hover:bg-slate-50 dark:hover:bg-[#181818] px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] transition-colors cursor-pointer min-h-[36px]"
                       >
                         <svg className="h-3 w-3 text-slate-500 dark:text-[#A3A3A3]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                         </svg>
-                        <span>Edit</span>
+                        <span>{item.status === "draft" ? "Edit" : "Revise"}</span>
                       </button>
                     )}
 
-                    {/* Controlled Revision for Approved Records */}
-                    {isRevisable && onEditAchievement && (
+                    {/* Permanently Locked Revise Button for Approved Records */}
+                    {isApproved && (
                       <button
                         type="button"
-                        onClick={() => onEditAchievement(item)}
-                        title="Initiate controlled revision workflow for this approved record"
-                        className="inline-flex items-center gap-1 rounded-lg border border-amber-200 dark:border-amber-800/80 bg-amber-50 dark:bg-[#2A2012] hover:bg-amber-100 dark:hover:bg-[#382B18] px-2.5 py-1.5 text-xs font-semibold text-amber-800 dark:text-[#FCD34D] transition-colors cursor-pointer min-h-[36px]"
+                        disabled
+                        title="Approved submissions cannot be revised. Contact your mentor to revert verification first."
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200/60 dark:border-[#292929] bg-slate-50 dark:bg-[#141414] px-2.5 py-1.5 text-xs font-semibold text-slate-400 dark:text-[#666666] opacity-60 cursor-not-allowed min-h-[36px]"
                       >
-                        <svg className="h-3 w-3 text-amber-600 dark:text-[#FCD34D]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                         </svg>
                         <span>Revise</span>
                       </button>

@@ -345,7 +345,7 @@ export default function HODDashboardPage() {
         );
       case "pending":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-[#337418]/25 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-[#5DD62C] border border-blue-200 dark:border-[#337418]/60">
             <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
             Submitted
           </span>

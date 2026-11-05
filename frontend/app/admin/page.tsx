@@ -546,7 +546,7 @@ export default function AdminDashboardPage() {
                     {!sidebarCollapsed && (
                       <div className="flex-1 flex items-center justify-between">
                         <span>Students</span>
-                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 dark:bg-[#337418]/30 dark:text-[#5DD62C]">
                           {overviewData?.total_students || 61}
                         </span>
                       </div>
@@ -866,7 +866,7 @@ export default function AdminDashboardPage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-[#5DD62C]">
                       Sri Sairam Engineering College
                     </span>
                     <span className="text-slate-300">&bull;</span>
@@ -943,7 +943,7 @@ export default function AdminDashboardPage() {
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Total Students
                       </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-[#337418]/30 dark:text-[#5DD62C] border border-blue-200 dark:border-[#337418]/60">
                         2025-2029 Cohort
                       </span>
                     </div>
@@ -1146,7 +1146,7 @@ export default function AdminDashboardPage() {
 
                     <Link
                       href="/verify-email"
-                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/40 hover:bg-blue-100 text-blue-700 dark:text-blue-300 text-xs font-semibold transition cursor-pointer"
+                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-blue-200 dark:border-[#337418] bg-blue-50/60 dark:bg-[#337418]/25 hover:bg-blue-100 text-blue-700 dark:text-[#5DD62C] text-xs font-semibold transition cursor-pointer"
                       title="Open Email Verification Portal"
                     >
                       <span>✉️</span>
@@ -1170,7 +1170,7 @@ export default function AdminDashboardPage() {
                     <button
                       type="button"
                       onClick={() => setActiveSection("submissions")}
-                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+                      className="text-xs font-semibold text-blue-600 dark:text-[#5DD62C] hover:underline inline-flex items-center gap-1"
                     >
                       <span>View All Submissions</span>
                       <span>&rarr;</span>
@@ -1196,7 +1196,7 @@ export default function AdminDashboardPage() {
                               <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
                                 {sub.student_name}
                               </td>
-                              <td className="px-4 py-3 font-mono text-blue-600 dark:text-blue-400">
+                              <td className="px-4 py-3 font-mono text-blue-600 dark:text-[#5DD62C]">
                                 {sub.register_number}
                               </td>
                               <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
@@ -1234,7 +1234,7 @@ export default function AdminDashboardPage() {
                                       setActiveSection("submissions");
                                     }
                                   }}
-                                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 underline"
+                                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 dark:text-[#5DD62C] underline"
                                 >
                                   Inspect Details
                                 </button>
@@ -1382,7 +1382,7 @@ export default function AdminDashboardPage() {
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                         {filteredAllocations.map((a) => (
                           <tr key={a.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                            <td className="px-4 py-3 font-mono font-bold text-blue-600 dark:text-blue-400">
+                            <td className="px-4 py-3 font-mono font-bold text-blue-600 dark:text-[#5DD62C]">
                               {a.register_number}
                             </td>
                             <td className="px-4 py-3">
@@ -1556,7 +1556,7 @@ export default function AdminDashboardPage() {
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                         {filteredSubmissions.map((s) => (
                           <tr key={s.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                            <td className="px-4 py-3 font-mono font-bold text-blue-600 dark:text-blue-400">
+                            <td className="px-4 py-3 font-mono font-bold text-blue-600 dark:text-[#5DD62C]">
                               {s.register_number}
                             </td>
                             <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
@@ -1605,7 +1605,7 @@ export default function AdminDashboardPage() {
                               <button
                                 type="button"
                                 onClick={() => setSelectedSubmission(s)}
-                                className="text-xs font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 underline cursor-pointer"
+                                className="text-xs font-semibold text-blue-600 hover:text-blue-800 dark:text-[#5DD62C] underline cursor-pointer"
                               >
                                 Inspect
                               </button>
@@ -1629,7 +1629,7 @@ export default function AdminDashboardPage() {
                 <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div className="flex items-start sm:items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/50">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-[#337418]/25 text-blue-600 dark:text-[#5DD62C] border border-blue-200/50">
                       <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
@@ -1685,7 +1685,7 @@ export default function AdminDashboardPage() {
                       type="button"
                       onClick={handleConnectDrive}
                       disabled={isConnectingDrive}
-                      className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg shadow-xs transition disabled:opacity-60 cursor-pointer"
+                      className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 dark:bg-[#337418] dark:hover:bg-[#275913] rounded-lg shadow-xs transition disabled:opacity-60 cursor-pointer"
                     >
                       {isConnectingDrive ? (
                         <>
@@ -1790,7 +1790,7 @@ export default function AdminDashboardPage() {
                 )}
 
                 {storageStatus?.message && (
-                  <div className="p-3.5 rounded-xl border border-blue-200/70 bg-blue-50/50 dark:bg-blue-950/20 text-xs text-blue-900 dark:text-blue-200">
+                  <div className="p-3.5 rounded-xl border border-blue-200/70 bg-blue-50/50 dark:bg-[#337418]/15 text-xs text-blue-900 dark:text-[#5DD62C]">
                     <span className="font-bold">Diagnostic Status: </span>
                     <span>{storageStatus.message}</span>
                   </div>
@@ -1832,7 +1832,7 @@ export default function AdminDashboardPage() {
                         <h3 className="text-base font-bold text-slate-900 dark:text-white">
                           Individual Student Storage Folders
                         </h3>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-blue-800 dark:bg-[#337418]/30 dark:text-[#5DD62C]">
                           {"{REGISTER_NUMBER}_{NORMALIZED_NAME}"}
                         </span>
                       </div>
@@ -1854,7 +1854,7 @@ export default function AdminDashboardPage() {
                         type="button"
                         onClick={() => handleExecuteProvisioning(true)}
                         disabled={isProvisioning}
-                        className="px-3.5 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800 transition"
+                        className="px-3.5 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg dark:bg-[#337418]/25 dark:text-[#5DD62C] dark:border-[#337418] transition"
                       >
                         {isProvisioning ? "Running..." : "Run Dry-Run"}
                       </button>
@@ -1896,7 +1896,7 @@ export default function AdminDashboardPage() {
                     </div>
                     <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
                       <span className="text-[11px] text-slate-500">Existing in Drive</span>
-                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400 mt-0.5">
+                      <p className="text-lg font-bold text-blue-600 dark:text-[#5DD62C] mt-0.5">
                         {driveAuditReport?.found_in_drive ?? 0}
                       </p>
                     </div>
@@ -1970,7 +1970,7 @@ export default function AdminDashboardPage() {
                           })
                           .map((s) => (
                             <tr key={s.student_id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                              <td className="px-4 py-3 font-mono font-bold text-blue-600 dark:text-blue-400">
+                              <td className="px-4 py-3 font-mono font-bold text-blue-600 dark:text-[#5DD62C]">
                                 {s.register_number}
                               </td>
                               <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
@@ -1988,7 +1988,7 @@ export default function AdminDashboardPage() {
                                     Provisioned in DB
                                   </span>
                                 ) : s.status === "EXISTS_IN_DRIVE_NEEDS_LINK" ? (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-300/40">
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-[#337418]/30 dark:text-[#5DD62C] border border-blue-300/40">
                                     Exists on Drive
                                   </span>
                                 ) : (
@@ -2057,7 +2057,7 @@ export default function AdminDashboardPage() {
                         <td className="px-4 py-3">/api/v1/hod/*</td>
                       </tr>
                       <tr>
-                        <td className="px-4 py-3 font-semibold text-blue-600 dark:text-blue-400 font-sans">
+                        <td className="px-4 py-3 font-semibold text-blue-600 dark:text-[#5DD62C] font-sans">
                           MENTOR
                         </td>
                         <td className="px-4 py-3 font-sans">
@@ -2098,7 +2098,7 @@ export default function AdminDashboardPage() {
           <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5">
             <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-[#5DD62C]">
                   PGPA Submission Inspection
                 </span>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
@@ -2128,7 +2128,7 @@ export default function AdminDashboardPage() {
               </div>
               <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100">
                 <span className="text-slate-500 text-[11px]">Register Number</span>
-                <p className="font-mono font-bold text-blue-600 dark:text-blue-400 mt-0.5">
+                <p className="font-mono font-bold text-blue-600 dark:text-[#5DD62C] mt-0.5">
                   {selectedSubmission.register_number}
                 </p>
               </div>
@@ -2215,7 +2215,7 @@ export default function AdminDashboardPage() {
           <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
             <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-[#5DD62C]">
                   Storage Provisioning
                 </span>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
@@ -2232,7 +2232,7 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300">
-              <div className="p-3.5 bg-blue-50/60 dark:bg-blue-950/30 rounded-xl border border-blue-200/60 text-blue-900 dark:text-blue-200">
+              <div className="p-3.5 bg-blue-50/60 dark:bg-[#337418]/20 rounded-xl border border-blue-200/60 text-blue-900 dark:text-[#5DD62C]">
                 <span className="font-bold">Institutional Storage Safety Rules:</span>
                 <ul className="list-disc list-inside mt-1.5 space-y-1">
                   <li>Creates dedicated folders under official root folder ({storageStatus?.root_folder_id || "configured folder"}).</li>

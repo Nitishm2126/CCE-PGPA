@@ -708,6 +708,13 @@ def update_achievement(
             detail="Access forbidden: You cannot modify achievements belonging to another student.",
         )
 
+    # Permanent lock: approved achievements cannot be revised by students
+    if achievement.status == AchievementStatus.APPROVED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Approved submissions are permanently locked and cannot be revised by students. Contact your mentor to revert verification first.",
+        )
+
     was_approved = achievement.status == AchievementStatus.APPROVED
     was_pending = achievement.status == AchievementStatus.PENDING
 

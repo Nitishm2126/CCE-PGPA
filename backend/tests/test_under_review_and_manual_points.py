@@ -271,12 +271,12 @@ def test_manual_component_points_crud_and_auth(client: TestClient, db: Session):
     other_token = create_access_token(unauthorized_mentor.id, unauthorized_mentor.role.value)
     student_token = create_access_token(student_user.id, student_user.role.value)
 
-    # 1. Validation test: points > 10.0 must be rejected
+    # 1. Validation test: points > 64000.0 must be rejected by schema
     bad_payload = {
         "student_id": str(student_user.id),
         "component_id": str(component.id),
         "semester_id": str(semester.id),
-        "points": 12.5,  # Exceeds max 10.0
+        "points": 70000.0,  # Exceeds max schema 64000.0
         "remarks": "Exceptional work",
     }
     resp = client.post(
@@ -285,6 +285,24 @@ def test_manual_component_points_crud_and_auth(client: TestClient, db: Session):
         headers={"Authorization": f"Bearer {mentor_token}"},
     )
     assert resp.status_code == 422
+
+    # 1b. Component-specific scale validation test
+    gpa_comp = db.scalars(select(PGPAComponent).where(PGPAComponent.slug == "academics-gpa")).first()
+    if gpa_comp:
+        bad_gpa_payload = {
+            "student_id": str(student_user.id),
+            "component_id": str(gpa_comp.id),
+            "semester_id": str(semester.id),
+            "points": 12.5,  # Exceeds max 10.0 for GPA
+            "remarks": "Exceeding GPA scale",
+        }
+        resp_gpa = client.post(
+            "/api/v1/mentor/manual-points",
+            json=bad_gpa_payload,
+            headers={"Authorization": f"Bearer {mentor_token}"},
+        )
+        assert resp_gpa.status_code == 400
+        assert "official scale" in resp_gpa.json()["detail"]
 
     # 2. Validation test: negative points must be rejected
     bad_neg = {
@@ -330,6 +348,15 @@ def test_manual_component_points_crud_and_auth(client: TestClient, db: Session):
     assert created_data["mentor_id"] == str(mentor_user.id)
     point_id = created_data["id"]
     db.track_manual_point(uuid.UUID(point_id))  # type: ignore
+
+    # 4b. Mentor updates existing manual point
+    resp_update = client.put(
+        f"/api/v1/mentor/manual-points/{point_id}",
+        json={"points": 5.0, "remarks": "Updated points after mentee consultation"},
+        headers={"Authorization": f"Bearer {mentor_token}"},
+    )
+    assert resp_update.status_code == 200, resp_update.text
+    assert resp_update.json()["points"] == 5.0
 
     # 5. Student retrieves their awarded manual points
     resp_student_view = client.get(

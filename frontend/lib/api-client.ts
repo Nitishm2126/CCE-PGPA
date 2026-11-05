@@ -680,6 +680,21 @@ export const api = {
     );
   },
 
+  updateMentorManualPoint: async (
+    pointId: string,
+    data: { points: number; remarks: string },
+    token?: string | null
+  ): Promise<ManualComponentPointResponse> => {
+    return request<ManualComponentPointResponse>(
+      `/mentor/manual-points/${pointId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
   exportMentorReport: async (
     format: "excel" | "pdf",
     filters?: {

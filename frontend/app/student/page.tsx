@@ -596,7 +596,7 @@ export default function StudentDashboardPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab("components")}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/80 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold text-xs shadow-2xs transition-colors cursor-pointer min-h-[36px]"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-blue-200 dark:border-[#337418]/60 bg-blue-50/80 dark:bg-[#337418]/25 hover:bg-blue-100 dark:hover:bg-[#337418]/40 text-blue-700 dark:text-[#5DD62C] font-semibold text-xs shadow-2xs transition-colors cursor-pointer min-h-[36px]"
                 >
                   <span>Browse All 14 Components</span>
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -619,14 +619,14 @@ export default function StudentDashboardPage() {
                   </span>
                 </div>
 
-                <div className="rounded-xl bg-blue-50/60 dark:bg-[#132338] border border-blue-200/70 dark:border-blue-800/60 p-3.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-400">
+                <div className="rounded-xl bg-blue-50/60 dark:bg-[#202020] border border-blue-200/70 dark:border-[#337418]/60 p-3.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-800 dark:text-[#5DD62C]">
                     In Review
                   </span>
                   <p className="text-2xl font-extrabold text-blue-900 dark:text-[#93C5FD] mt-1">
                     {achievementMetrics.pending}
                   </p>
-                  <span className="text-[10px] text-blue-700 dark:text-blue-400/80 mt-0.5 block">
+                  <span className="text-[10px] text-blue-700 dark:text-[#5DD62C]/80 mt-0.5 block">
                     Awaiting Audit
                   </span>
                 </div>

@@ -708,12 +708,11 @@ def test_student_delete_achievement_workflow_rules(client: TestClient, db: Sessi
     assert lock_res.status_code == 400
     assert "Cannot delete an approved achievement" in lock_res.json()["detail"]
 
-    # 4. Editing approved achievement initiates controlled revision
+    # 4. Editing approved achievement is permanently locked (forbidden)
     revise_res = client.patch(
         f"/api/v1/students/me/achievements/{approved_ach.id}",
         json={"description": "Corrected description for re-verification."},
         headers={"Authorization": f"Bearer {token}"},
     )
-    assert revise_res.status_code == 200
-    assert revise_res.json()["status"] == "pending"
-    assert len(revise_res.json()["verification_logs"]) >= 1
+    assert revise_res.status_code == 403
+    assert "permanently locked" in revise_res.json()["detail"]

@@ -11,8 +11,24 @@ class ManualPointCreate(BaseModel):
     student_id: uuid.UUID = Field(..., description="Student User UUID")
     component_id: uuid.UUID = Field(..., description="PGPA Component UUID")
     semester_id: uuid.UUID = Field(..., description="Academic Semester UUID")
-    points: float = Field(..., ge=0.0, le=10.0, description="Points awarded (0.0 to 10.0 according to official Table B scale)")
+    points: float = Field(..., ge=0.0, le=64000.0, description="Points awarded according to official component-specific evaluation rules")
     remarks: str = Field(..., min_length=3, max_length=1000, description="Mandatory reason or explanation for the manual award")
+
+    @field_validator("remarks")
+    @classmethod
+    def validate_remarks(cls, v: str) -> str:
+        stripped = v.strip()
+        if len(stripped) < 3:
+            raise ValueError("Remarks must be at least 3 characters explaining the award reason.")
+        return stripped
+
+
+class ManualPointUpdate(BaseModel):
+    """
+    Payload for updating an existing manual component point record.
+    """
+    points: float = Field(..., ge=0.0, le=64000.0, description="Updated points awarded")
+    remarks: str = Field(..., min_length=3, max_length=1000, description="Mandatory reason or explanation")
 
     @field_validator("remarks")
     @classmethod

@@ -22,7 +22,7 @@ export const WorkflowLockModal: React.FC<WorkflowLockModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#292929] shadow-2xl overflow-hidden p-6">
         <div className="flex items-center gap-3.5 mb-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-transparent dark:border-blue-900/40">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-[#337418]/25 text-blue-600 dark:text-[#5DD62C] border border-transparent dark:border-[#337418]/40">
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
             </svg>
@@ -46,7 +46,7 @@ export const WorkflowLockModal: React.FC<WorkflowLockModalProps> = ({
             {achievement.title}
           </p>
           <div className="flex items-center gap-2 pt-1">
-            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold border bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-blue-950/40 dark:text-[#7EB0FF] dark:border-blue-900/50">
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold border bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-[#337418]/25 dark:text-[#5DD62C] dark:border-[#337418]/50">
               Status: {isApproved ? "Approved & Audited" : "Submitted for Review"}
             </span>
           </div>

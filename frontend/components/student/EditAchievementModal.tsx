@@ -160,6 +160,11 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isApproved) {
+      setError("Approved submissions are permanently locked and cannot be revised by students. Contact your mentor to revert verification first.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setError(null);
@@ -291,7 +296,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
 
           {/* Pending Submission Notice */}
           {isPending && (
-            <div className="rounded-xl bg-blue-50 dark:bg-[#132338] border border-blue-200/80 dark:border-blue-800/80 p-3 text-xs text-blue-800 dark:text-[#93C5FD] flex items-start gap-2">
+            <div className="rounded-xl bg-blue-50 dark:bg-[#202020] border border-blue-200/80 dark:border-[#337418]/80 p-3 text-xs text-blue-800 dark:text-[#5DD62C] flex items-start gap-2">
               <svg className="h-4 w-4 text-blue-600 dark:text-[#FFD84D] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
               </svg>
@@ -314,9 +319,9 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           {/* Component-Specific Form Content */}
           {isAcademics ? (
             <div className="space-y-4">
-              <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/40 p-4">
+              <div className="rounded-xl border border-blue-200 dark:border-[#337418] bg-blue-50/60 dark:bg-[#337418]/25 p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                  <span className="text-xs font-bold text-blue-900 dark:text-[#5DD62C]">
                     Academics / Anna University GPA
                   </span>
                   {calculatedGradePreview && (
@@ -325,7 +330,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-blue-700 dark:text-blue-300 mb-3">
+                <p className="text-[11px] text-blue-700 dark:text-[#5DD62C] mb-3">
                   Enter your official Anna University Semester GPA on a 10.00 point scale. Grade Points are computed using Table B authoritative rules.
                 </p>
 
@@ -350,12 +355,12 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           ) : isClubsAndCells ? (
             <div className="space-y-4">
               {/* Clubs & Organizations Participation Header */}
-              <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/60 dark:bg-blue-950/40 p-3.5 flex items-center justify-between">
+              <div className="rounded-xl border border-blue-200 dark:border-[#337418]/60 bg-blue-50/60 dark:bg-[#337418]/25 p-3.5 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                  <p className="text-xs font-bold text-blue-900 dark:text-[#5DD62C]">
                     Clubs &amp; Organizations Participation
                   </p>
-                  <p className="text-[11px] text-blue-700 dark:text-blue-300">
+                  <p className="text-[11px] text-blue-700 dark:text-[#5DD62C]">
                     {roleCategory} {roleCategory === "Event Participation" || roleCategory === "Winner" ? `(${eventLevel})` : ""}
                   </p>
                 </div>
@@ -548,7 +553,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
                   certificateStatus === "uploaded"
-                    ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
+                    ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-[#337418]/25 dark:text-[#5DD62C] dark:border-[#337418]"
                     : certificateStatus === "yet_to_receive"
                     ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
                     : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
@@ -569,7 +574,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                 onClick={() => setCertificateStatus("uploaded")}
                 className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                   certificateStatus === "uploaded"
-                    ? "border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 dark:border-blue-500 shadow-2xs ring-1 ring-blue-500"
+                    ? "border-blue-600 bg-blue-50/70 dark:bg-[#337418]/25 dark:border-[#5DD62C] shadow-2xs ring-1 ring-blue-500"
                     : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818]"
                 }`}
               >
@@ -727,13 +732,17 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-2xs transition-colors disabled:opacity-50 cursor-pointer min-h-[36px]"
+              disabled={isSubmitting || isApproved}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl text-white shadow-2xs transition-colors min-h-[36px] ${
+                isApproved
+                  ? "bg-slate-400 dark:bg-[#333333] cursor-not-allowed opacity-60"
+                  : "bg-blue-600 hover:bg-blue-700 cursor-pointer disabled:opacity-50"
+              }`}
             >
               {isSubmitting && (
                 <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
               )}
-              <span>{isApproved ? "Confirm Revision" : "Save Changes"}</span>
+              <span>{isApproved ? "Locked (Approved)" : "Save Changes"}</span>
             </button>
           </div>
         </form>

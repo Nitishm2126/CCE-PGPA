@@ -24,8 +24,8 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
   useEffect(() => {
     if (!isSignOut) return;
 
-    const t1 = setTimeout(() => setStep(1), 300);
-    const t2 = setTimeout(() => setStep(2), 650);
+    const t1 = setTimeout(() => setStep(1), 120);
+    const t2 = setTimeout(() => setStep(2), 260);
 
     return () => {
       clearTimeout(t1);

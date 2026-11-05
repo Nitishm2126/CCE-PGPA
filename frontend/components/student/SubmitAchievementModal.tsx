@@ -837,7 +837,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             <h2 id="submit-achievement-modal-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#F5F5F5]">
               {currentSlug === "academics-gpa" ? "Record Semester GPA" : "Submit PGPA Achievement"}
             </h2>
-            <span className="rounded-full bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            <span className="rounded-full bg-blue-50 dark:bg-[#337418]/35 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-[#5DD62C] border border-blue-200 dark:border-[#337418]">
               {currentComponent?.credit_value ?? 3} Credits
             </span>
           </div>
@@ -1037,7 +1037,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Skillrack Coding Assessment (Table 1.1)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 3 Credits &bull; Semester Thresholds
               </span>
             </div>
@@ -1096,7 +1096,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 AMCAT Employability Assessment (Table 2.1)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 3 Credits &bull; 0.0 – 10.0 Scale
               </span>
             </div>
@@ -1157,7 +1157,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Industrial Internship Evaluation (Table 3.3)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 3 Credits &bull; Core / Others
               </span>
             </div>
@@ -1246,7 +1246,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Sairam SDG Action Programme (Table 4.1 &amp; 4.2)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 3 Credits &bull; Service &amp; Drill
               </span>
             </div>
@@ -1326,7 +1326,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Innovation Eco-System (Table 5.1)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 4 Credits &bull; Stage Outcomes
               </span>
             </div>
@@ -1409,7 +1409,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Sairam AI Learning — SAIL (Table 6.2)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 3 Credits &bull; Semester Milestones
               </span>
             </div>
@@ -1468,7 +1468,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Sports &amp; Games Competition (Table 8.1 &amp; 8.2)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 3 Credits &bull; Table 8.1 Medal Matrix
               </span>
             </div>
@@ -1617,7 +1617,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Online Course Certifications (IITB Spoken Tutorials &amp; MOOCs)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 2 Credits &bull; Categorical
               </span>
             </div>
@@ -1702,7 +1702,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 NPTEL Non-Credit Transfer (Table 10.1)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 4 Credits &bull; Table 10.1 Tiers
               </span>
             </div>
@@ -1783,7 +1783,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 GATE Examination (Table 11.1)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 4 Credits &bull; Percentile / Score
               </span>
             </div>
@@ -1863,7 +1863,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Scouts for SDGs (Table 12.1)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 3 Credits &bull; Service Hours
               </span>
             </div>
@@ -1940,7 +1940,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
                 Fit India Initiatives (Table 13.1)
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
                 3 Credits &bull; Score &gt;= 100 for &apos;O&apos;
               </span>
             </div>
@@ -1998,12 +1998,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         {/* Clubs & Organizations Participation (Positioned above certificate)   */}
         {/* ==================================================================== */}
         {currentSlug === "clubs-and-cells" && (
-          <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-4 space-y-3.5">
+          <div className="rounded-xl border border-blue-200 dark:border-[#337418]/60 bg-blue-50/40 dark:bg-[#337418]/15 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-blue-900 dark:text-[#5DD62C] uppercase tracking-wider">
                 Clubs &amp; Organizations Participation
               </span>
-              <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-400">
+              <span className="text-[10px] font-semibold text-blue-700 dark:text-[#5DD62C]">
                 Optional Extracurricular Details
               </span>
             </div>
@@ -2112,10 +2112,10 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             )}
 
             {/* Simple Credit Points Indicator */}
-            <div className="p-3 rounded-lg bg-white dark:bg-[#181818] border border-blue-200/80 dark:border-blue-900/40 flex items-center justify-between">
+            <div className="p-3 rounded-lg bg-white dark:bg-[#181818] border border-blue-200/80 dark:border-[#337418]/40 flex items-center justify-between">
               <div>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Credit Points:</span>
-                <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                <span className="text-sm font-bold text-blue-700 dark:text-[#5DD62C]">
                   {clubsCalculatedPoints} Points
                 </span>
               </div>
@@ -2150,7 +2150,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 certificateStatus === "uploaded"
                   ? isPdfRequired
                     ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
-                    : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800"
+                    : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-[#337418]/25 dark:text-[#5DD62C] dark:border-[#337418]"
                   : certificateStatus === "yet_to_receive"
                   ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
                   : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
@@ -2177,7 +2177,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               disabled={isSubmitting}
               className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                 certificateStatus === "uploaded"
-                  ? "border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 dark:border-blue-500 shadow-2xs ring-1 ring-blue-500"
+                  ? "border-blue-600 bg-blue-50/70 dark:bg-[#337418]/25 dark:border-[#5DD62C] shadow-2xs ring-1 ring-blue-500"
                   : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-slate-600"
               }`}
             >
@@ -2316,13 +2316,13 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                       }}
                       className={`rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${
                         isDragging
-                          ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
+                          ? "border-blue-500 bg-blue-50/50 dark:bg-[#337418]/15"
                           : fileError
                             ? "border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20"
-                            : "border-slate-300 dark:border-[#292929] hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/40 dark:bg-[#181818]/40"
+                            : "border-slate-300 dark:border-[#292929] hover:border-blue-400 dark:hover:border-[#5DD62C] bg-slate-50/40 dark:bg-[#181818]/40"
                       }`}
                     >
-                      <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-2">
+                      <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-[#337418]/35 text-blue-600 dark:text-[#5DD62C] mb-2">
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>

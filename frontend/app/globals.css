@@ -203,11 +203,70 @@ html {
 }
 
 .animate-apple-halo {
-  animation: appleHalo 1.2s ease-in-out infinite;
+  animation: appleHalo 0.8s ease-in-out infinite;
 }
 
 .animate-apple-spin {
-  animation: appleSpinSmooth 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: appleSpinSmooth 0.65s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* ==========================================================================
+   DARK THEME: PURE BLACK + GREEN PALETTE ENFORCEMENT
+   Guarantees zero blue/sky/indigo accents escape anywhere in dark mode
+   Primary Green: #5DD62C, Secondary Green: #337418, Text: #F8F8F8
+   Light theme remains 100% unchanged.
+   ========================================================================== */
+.dark [class*="text-blue-"],
+.dark [class*="text-sky-"],
+.dark [class*="text-indigo-"] {
+  color: #5DD62C !important;
+}
+
+.dark [class*="bg-blue-600"],
+.dark [class*="bg-blue-500"],
+.dark [class*="bg-blue-700"],
+.dark [class*="bg-indigo-600"],
+.dark [class*="bg-indigo-500"],
+.dark [class*="bg-sky-600"],
+.dark [class*="bg-sky-500"] {
+  background-color: #337418 !important;
+  color: #F8F8F8 !important;
+}
+
+.dark [class*="hover:bg-blue-700"]:hover,
+.dark [class*="hover:bg-blue-600"]:hover,
+.dark [class*="hover:bg-indigo-700"]:hover {
+  background-color: #275913 !important;
+}
+
+.dark [class*="bg-blue-50"],
+.dark [class*="bg-blue-100"],
+.dark [class*="bg-blue-900"],
+.dark [class*="bg-blue-950"],
+.dark [class*="bg-indigo-50"],
+.dark [class*="bg-indigo-950"],
+.dark [class*="bg-sky-50"],
+.dark [class*="bg-sky-950"] {
+  background-color: rgba(51, 116, 24, 0.22) !important;
+  color: #5DD62C !important;
+}
+
+.dark [class*="border-blue-"],
+.dark [class*="border-sky-"],
+.dark [class*="border-indigo-"] {
+  border-color: rgba(93, 214, 44, 0.35) !important;
+}
+
+.dark [class*="ring-blue-"],
+.dark [class*="ring-sky-"],
+.dark [class*="ring-indigo-"] {
+  --tw-ring-color: #5DD62C !important;
+}
+
+.dark [class*="focus:ring-blue-"]:focus,
+.dark [class*="focus:ring-sky-"]:focus,
+.dark [class*="focus:ring-indigo-"]:focus {
+  --tw-ring-color: #5DD62C !important;
 }
 
 /* Safe area padding utilities & mobile navigation architecture */

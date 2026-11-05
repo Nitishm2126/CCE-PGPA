@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import uuid
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import and_, func, or_, select
@@ -19,7 +19,7 @@ from app.models.semester import Semester
 from app.models.user import StudentProfile, User
 from app.schemas.achievement import AchievementResponse, ReviewSubmissionRequest
 from app.schemas.auth import MentorStudentItem
-from app.schemas.manual_point import ManualPointCreate, ManualPointResponse
+from app.schemas.manual_point import ManualPointCreate, ManualPointUpdate, ManualPointResponse
 from app.services.component_service import _recalculate_student_semester_pgpa
 from app.services.export_service import build_report_data, generate_excel_report, generate_pdf_report
 from app.services.grading_engine import calculate_component_grade
@@ -629,6 +629,108 @@ def format_manual_point_response(mp: ManualComponentPoint) -> ManualPointRespons
     )
 
 
+OFFICIAL_COMPONENT_POINT_SCALES: Dict[str, Dict[str, Any]] = {
+    "skillrack": {
+        "min": 0.0,
+        "max": 64000.0,
+        "name": "Skillrack",
+        "scale_label": "0.0 - 64,000.0 Problems/Score",
+        "guideline": "Table 1.1 thresholds (Sem 1: 500, Sem 2: 1000, ..., Sem 8: 64000)",
+    },
+    "academics-gpa": {
+        "min": 0.0,
+        "max": 10.0,
+        "name": "Academics (GPA)",
+        "scale_label": "0.00 - 10.00 GPA",
+        "guideline": "Anna University Semester GPA scale (0.00 - 10.00)",
+    },
+    "amcat": {
+        "min": 0.0,
+        "max": 100.0,
+        "name": "AMCAT",
+        "scale_label": "0.0 - 100.0 Score / Percentile",
+        "guideline": "Table 2.1 score ranges or Table B scale",
+    },
+    "clubs-and-cells": {
+        "min": 0.0,
+        "max": 6000.0,
+        "name": "Clubs & Cells",
+        "scale_label": "0.0 - 6,000.0 Points",
+        "guideline": "Table 7.1 point allocations (100 - 700 pts/event, up to 6,000 cumulative)",
+    },
+    "sairam-innovation-eco-system": {
+        "min": 0.0,
+        "max": 10.0,
+        "name": "Sairam Innovation Eco-System",
+        "scale_label": "0.0 - 10.0 Grade Points",
+        "guideline": "Table 5.1 & Table B grade points (Overall Winner=10, SDG Winner=9, Top 15=7, Participant=3)",
+    },
+    "nptel-non-credit-transfer": {
+        "min": 0.0,
+        "max": 100.0,
+        "name": "NPTEL (Non-Credit Transfer)",
+        "scale_label": "0.0 - 100.0 Marks or 0.0 - 10.0 Grade Points",
+        "guideline": "Table 10.1 marks (Topper 90+=10, Gold 75+=9, Silver 60+=7, Elite 50+=5, Pass=3)",
+    },
+    "sail": {
+        "min": 0.0,
+        "max": 560.0,
+        "name": "SAIL",
+        "scale_label": "0.0 - 560.0 SAIL Points",
+        "guideline": "Table 6.2 cumulative semester thresholds (Sem 1: 70, ..., Sem 8: 560)",
+    },
+    "online-certifications": {
+        "min": 0.0,
+        "max": 100.0,
+        "name": "Online Certifications",
+        "scale_label": "0.0 - 100.0 Marks or 0.0 - 10.0 Grade Points",
+        "guideline": "Table B grade points or marks (Coursera, edX, Spoken Tutorial)",
+    },
+    "fit-india-certifications": {
+        "min": 0.0,
+        "max": 100.0,
+        "name": "FIT INDIA Certifications",
+        "scale_label": "0.0 - 100.0 Fitness Score",
+        "guideline": "Table 13.1 fitness challenge score (100=O, 75=A+, 50=A, 30=B+)",
+    },
+    "internship": {
+        "min": 0.0,
+        "max": 10.0,
+        "name": "Internship",
+        "scale_label": "0.0 - 10.0 Grade Points",
+        "guideline": "Table 3.3 grade points (Core/Stipend min A+=9/O=10, Others upto A=7)",
+    },
+    "sairam-sdg-action-programme": {
+        "min": 0.0,
+        "max": 100.0,
+        "name": "Sairam SDG Action Programme",
+        "scale_label": "0.0 - 100.0 SAP Points",
+        "guideline": "Table 4.2 SAP points (75+=O, 60+=A+, 45+=A, 30+=B+, 11+=B)",
+    },
+    "sports-and-games": {
+        "min": 0.0,
+        "max": 1000.0,
+        "name": "Sports & Games",
+        "scale_label": "0.0 - 1,000.0 Points",
+        "guideline": "Table 8.1 medal matrix points (5 - 115 pts/event, cumulative up to 700+ for O)",
+    },
+    "scouts-for-sdgs": {
+        "min": 0.0,
+        "max": 50.0,
+        "name": "Scouts for SDGs",
+        "scale_label": "0.0 - 50.0 Service Hours or 0.0 - 10.0 Grade Points",
+        "guideline": "Table 12.1 service hours (20+ hrs = O) or grade points",
+    },
+    "gate": {
+        "min": 0.0,
+        "max": 1000.0,
+        "name": "GATE",
+        "scale_label": "0.0 - 1,000.0 GATE Score",
+        "guideline": "Table 11.1 score ranges (400+=A+, 100+=A, percentile 90+=O)",
+    },
+}
+
+
 @router.post(
     "/manual-points",
     response_model=ManualPointResponse,
@@ -668,10 +770,14 @@ def create_or_update_manual_points(
             detail="Invalid academic semester.",
         )
 
-    if payload.points < 0.0 or payload.points > 10.0:
+    scale_rule = OFFICIAL_COMPONENT_POINT_SCALES.get(
+        comp.slug,
+        {"min": 0.0, "max": 1000.0, "scale_label": "0.0 - 1,000.0 Points", "guideline": "Official Component Guidelines"}
+    )
+    if payload.points < scale_rule["min"] or payload.points > scale_rule["max"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Points must be between 0.0 and 10.0 according to official Table B evaluation guidelines.",
+            detail=f"Points for {comp.name} must be within official scale: {scale_rule['scale_label']}. ({scale_rule['guideline']})",
         )
 
     now_utc = datetime.now(timezone.utc)
@@ -785,6 +891,70 @@ def get_mentee_manual_points(
     )
     records = db.scalars(stmt).all()
     return [format_manual_point_response(r) for r in records]
+
+
+@router.put(
+    "/manual-points/{point_id}",
+    response_model=ManualPointResponse,
+    summary="Update an existing manual component point award",
+)
+def update_manual_point(
+    point_id: uuid.UUID,
+    payload: ManualPointUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_mentor),
+):
+    ensure_mentor_assignments(db, current_user)
+    rec = db.get(ManualComponentPoint, point_id)
+    if not rec or not rec.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Manual component point record not found or inactive.",
+        )
+    is_assigned = db.scalar(
+        select(func.count(MentorAssignment.id)).where(
+            MentorAssignment.mentor_id == current_user.id,
+            MentorAssignment.student_id == rec.student_id,
+            MentorAssignment.is_active.is_(True),
+        )
+    )
+    if not is_assigned:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: You can only edit manual points for your assigned mentees.",
+        )
+    comp = rec.component
+    scale_rule = OFFICIAL_COMPONENT_POINT_SCALES.get(
+        comp.slug if comp else "",
+        {"min": 0.0, "max": 1000.0, "scale_label": "0.0 - 1,000.0 Points", "guideline": "Official Component Guidelines"}
+    )
+    if payload.points < scale_rule["min"] or payload.points > scale_rule["max"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Points for {comp.name if comp else 'component'} must be within official scale: {scale_rule['scale_label']}. ({scale_rule['guideline']})",
+        )
+    old_points = rec.points
+    rec.points = payload.points
+    rec.remarks = payload.remarks
+    rec.mentor_id = current_user.id
+    rec.updated_at = datetime.now(timezone.utc)
+    db.add(rec)
+    audit = AuditLog(
+        id=uuid.uuid4(),
+        actor_id=current_user.id,
+        action="UPDATE_MANUAL_POINTS",
+        target_type="manual_component_points",
+        target_id=str(rec.id),
+        action_metadata={
+            "old_points": old_points,
+            "new_points": payload.points,
+            "remarks": payload.remarks,
+        },
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(rec)
+    return format_manual_point_response(rec)
 
 
 @router.delete(
