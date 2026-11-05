@@ -380,7 +380,7 @@ export default function MentorDashboardPage() {
 
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-28 md:pb-12 transition-colors">
+    <div className="min-h-screen bg-[#fafbfc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-6 md:pb-12 transition-colors">
       {/* Sairam Institutional Header */}
       <header className="border-b border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs transition-colors">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
@@ -1129,7 +1129,7 @@ export default function MentorDashboardPage() {
           />
 
           <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
-            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#111111] p-5 sm:p-7 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] text-left shadow-2xl transition-all border border-slate-200/90 dark:border-[#292929] my-auto">
+            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#111111] p-5 sm:p-7 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:pb-7 text-left shadow-2xl transition-all border border-slate-200/90 dark:border-[#292929] my-auto">
               {/* Modal Header */}
               <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-[#292929]">
                 <div>
