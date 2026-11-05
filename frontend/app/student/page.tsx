@@ -21,7 +21,7 @@ import { StudentProfileSection } from "@/components/student/StudentProfileSectio
 import { SubmitAchievementModal, SubmitAchievementFormContent } from "@/components/student/SubmitAchievementModal";
 import { EditAchievementModal } from "@/components/student/EditAchievementModal";
 import { DeleteAchievementModal } from "@/components/student/DeleteAchievementModal";
-import { BottomNavigation } from "@/components/student/BottomNavigation";
+import { StudentDesktopNav, StudentBottomNav } from "@/components/student/BottomNavigation";
 import { MessageDrawerModal } from "@/components/messages/MessageDrawerModal";
 import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { DesignationBadge } from "@/components/DesignationBadge";
@@ -472,11 +472,10 @@ export default function StudentDashboardPage() {
 
       {/* 3. Main Dashboard Body Container with Harmonious Spacing and Viewport Clearance */}
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-8 md:pb-10 space-y-6">
-        {/* Desktop Segment Navigation */}
-        <BottomNavigation
+        {/* Desktop Segment Navigation (md+) */}
+        <StudentDesktopNav
           activeTab={activeTab}
           onSelectTab={(tab) => setActiveTab(tab)}
-          onSubmitClick={() => handleOpenSubmitModal(null)}
           unreadMessagesCount={unreadMessagesCount}
         />
 
@@ -766,6 +765,13 @@ export default function StudentDashboardPage() {
 
       {/* 4. FineWorks Minimalist Footer */}
       <FineWorksFooter className="pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-6" />
+
+      {/* 5. Mobile Fixed Bottom Navigation Bar (< md) */}
+      <StudentBottomNav
+        activeTab={activeTab}
+        onSelectTab={(tab) => setActiveTab(tab)}
+        unreadMessagesCount={unreadMessagesCount}
+      />
 
       {/* 6. Modals Container */}
       {/* Submit Achievement Modal */}

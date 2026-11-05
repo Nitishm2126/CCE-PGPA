@@ -94,7 +94,8 @@ export const AdminBottomNav: React.FC<AdminBottomNavProps> = ({
   return (
     <nav
       aria-label="Admin Mobile Navigation"
-      className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#292929] shadow-[0_-2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_-2px_16px_rgba(0,0,0,0.6)] pb-[env(safe-area-inset-bottom,0px)] transition-colors"
+      className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#292929] shadow-[0_-2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_-2px_16px_rgba(0,0,0,0.6)] pb-[env(safe-area-inset-bottom,0px)] transition-colors !m-0 !mb-0"
+      style={{ margin: 0, marginBottom: 0 }}
     >
       <div className="grid grid-cols-5 items-center justify-around px-1 max-w-md mx-auto py-1">
         {tabs.map((tab) => {

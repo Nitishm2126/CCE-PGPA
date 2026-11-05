@@ -273,6 +273,14 @@ textarea {
   animation: appleSheetFadeIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
+
+/* Ensure mobile bottom navigation bars across all portals are firmly docked at viewport bottom with 0 margin */
+nav[aria-label$="Mobile Navigation"] {
+  margin: 0 !important;
+  margin-bottom: 0 !important;
+  bottom: 0 !important;
+}
+
 /* Apple touch manipulation & tap feedback */
 .apple-tap-feedback {
   touch-action: manipulation;
