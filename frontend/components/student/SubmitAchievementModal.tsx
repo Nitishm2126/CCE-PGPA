@@ -826,7 +826,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
     <div
       className={
         isModal
-          ? "relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#111111] p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200 dark:border-[#292929] custom-scrollbar"
+          ? "relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#111111] p-5 sm:p-7 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] text-left shadow-2xl transition-all border border-slate-200 dark:border-[#292929] custom-scrollbar"
           : "w-full max-w-3xl mx-auto rounded-2xl bg-white dark:bg-[#111111] p-5 sm:p-8 text-left shadow-xs transition-all border border-slate-200 dark:border-[#292929]"
       }
     >
@@ -2459,7 +2459,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-2.5">
+          <div className="flex flex-wrap items-center justify-end gap-2.5 pb-1">
             <button
               type="button"
               onClick={handleCancel}

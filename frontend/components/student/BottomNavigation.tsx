@@ -170,12 +170,12 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
 
   return (
     <>
-      {/* Mobile Fixed Bottom Navigation Bar (< md): Full-width, attached to viewport edge */}
+      {/* Mobile Fixed Bottom Navigation Bar (< md): Full-width, attached flush to viewport bottom */}
       <nav
         aria-label="Student Mobile Navigation"
-        className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#292929] shadow-[0_-2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_-2px_16px_rgba(0,0,0,0.6)] pb-[env(safe-area-inset-bottom,0px)] transition-colors"
+        className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#292929] shadow-[0_-2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_-2px_16px_rgba(0,0,0,0.6)] pb-[env(safe-area-inset-bottom,0px)] transition-colors"
       >
-        <div className="grid grid-cols-5 items-center justify-between w-full max-w-md mx-auto px-1 py-1">
+        <div className="grid grid-cols-5 items-center justify-around w-full max-w-md mx-auto px-1 py-1">
           {mobileNavTabs.map((tab) => {
             const isActive = activeTab === tab.id;
 
@@ -186,7 +186,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 onClick={() => onSelectTab(tab.id)}
                 aria-label={tab.label}
                 aria-current={isActive ? "page" : undefined}
-                className="relative flex flex-col items-center justify-center py-1 transition-all duration-150 active:scale-95 cursor-pointer min-h-[46px] select-none apple-tap-feedback"
+                className="relative flex flex-col items-center justify-center py-1 transition-all duration-150 active:scale-95 cursor-pointer min-h-[48px] select-none apple-tap-feedback"
               >
                 {/* Fixed Icon Box for uniform baseline across all tabs */}
                 <div

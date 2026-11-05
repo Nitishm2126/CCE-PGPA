@@ -338,7 +338,7 @@ export const MessageDrawerModal: React.FC<MessageDrawerModalProps> = ({
         </div>
 
         {/* Compose Form */}
-        <form onSubmit={handleSend} className="p-3 sm:p-4 border-t border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111]">
+        <form onSubmit={handleSend} className="p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] border-t border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111]">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between gap-2">
               <label htmlFor="message-type-select" className="text-xs font-semibold text-slate-600 dark:text-[#A3A3A3]">Message Category:</label>

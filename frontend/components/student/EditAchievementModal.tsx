@@ -716,7 +716,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           </div>
 
           {/* Modal Actions */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-[#292929]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] border-t border-slate-200 dark:border-[#292929]">
             <button
               type="button"
               onClick={onClose}

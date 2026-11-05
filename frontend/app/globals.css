@@ -208,7 +208,7 @@ html {
   animation: appleSpinSmooth 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Safe area padding utilities */
+/* Safe area padding utilities & mobile navigation architecture */
 .safe-pb {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
@@ -219,6 +219,29 @@ html {
 
 .safe-pt {
   padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+
+/* Mobile Viewport Navigation Clearance Architecture */
+@media (max-width: 767px) {
+  html,
+  body {
+    scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 1023px) {
+  /* Admin portal mobile bottom navigation clearance */
+  body[data-portal="admin"],
+  html:has(body[data-portal="admin"]) {
+    scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Ensure inputs, pickers, and interactive form controls never sit behind the bottom nav when focused */
+input,
+select,
+textarea {
+  scroll-margin-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* Apple Fluid Sheet and Modal Transitions */

@@ -497,7 +497,7 @@ export default function MentorDashboardPage() {
       </header>
 
       {/* Main Container */}
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6 pb-4 md:pb-8">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6 pb-8 md:pb-10">
         {/* Mentor Overview Banner */}
         <div className="rounded-2xl border border-slate-200/90 dark:border-[#292929] bg-white dark:bg-[#111111] p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -1129,7 +1129,7 @@ export default function MentorDashboardPage() {
           />
 
           <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
-            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#111111] p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200/90 dark:border-[#292929] my-auto">
+            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#111111] p-5 sm:p-7 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] text-left shadow-2xl transition-all border border-slate-200/90 dark:border-[#292929] my-auto">
               {/* Modal Header */}
               <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-[#292929]">
                 <div>
@@ -1666,7 +1666,7 @@ export default function MentorDashboardPage() {
       />
 
       {/* FineWorks Footer */}
-      <FineWorksFooter className="pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))] md:pb-6 mt-8" />
+      <FineWorksFooter className="pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-6 mt-8" />
 
       {/* Mobile Fixed Bottom Navigation Bar (< md) */}
       <MentorBottomNav
