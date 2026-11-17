@@ -16,6 +16,7 @@ import { HODExcelImportConsole } from "@/components/hod/HODExcelImportConsole";
 import { HODPGPAGradesTab } from "@/components/hod/HODPGPAGradesTab";
 import { ExportDataModal } from "@/components/export/ExportDataModal";
 import { SettingsModal } from "@/components/shared/SettingsModal";
+import { PGPAComponentPointsConfig } from "@/components/shared/PGPAComponentPointsConfig";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { HODBottomNav } from "@/components/hod/HODBottomNav";
 import { HODMobileActionsDrawer } from "@/components/hod/HODMobileActionsDrawer";
@@ -78,6 +79,7 @@ export default function HODDashboardPage() {
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [exportStudentId, setExportStudentId] = useState<string>("all");
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [isPointsConfigOpen, setIsPointsConfigOpen] = useState<boolean>(false);
 
 
   // Auth Guard
@@ -486,6 +488,18 @@ export default function HODDashboardPage() {
                 <span>Export Data</span>
               </button>
               <ThemeToggle size="sm" />
+              <button
+                type="button"
+                onClick={() => setIsPointsConfigOpen(true)}
+                id="btn-hod-point-settings"
+                className="rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] hover:text-[#5DD62C] dark:hover:text-[#5DD62C] transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                title="Manage PGPA Component & Semester Points Configuration"
+              >
+                <svg className="w-3.5 h-3.5 text-emerald-500 dark:text-[#5DD62C]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <span>PGPA Points</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
@@ -1639,7 +1653,17 @@ export default function HODDashboardPage() {
         onClose={() => setIsSettingsOpen(false)}
         user={user}
         token={token}
+        onOpenPointsConfig={() => setIsPointsConfigOpen(true)}
       />
+
+      {/* Centralized PGPA Component & Semester Point Settings Modal */}
+      {isPointsConfigOpen && (
+        <PGPAComponentPointsConfig
+          isModal={true}
+          onClose={() => setIsPointsConfigOpen(false)}
+          token={token}
+        />
+      )}
 
       {/* FineWorks Footer */}
       <FineWorksFooter className="pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-6 mt-8" />
@@ -1668,6 +1692,7 @@ export default function HODDashboardPage() {
         }}
         onRefreshClick={() => { void loadDepartmentData(); }}
         onLogout={handleLogout}
+        onOpenPointsConfig={() => setIsPointsConfigOpen(true)}
       />
     </div>
   );

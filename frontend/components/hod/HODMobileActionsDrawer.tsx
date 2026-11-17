@@ -17,6 +17,7 @@ interface HODMobileActionsDrawerProps {
   onExportClick: () => void;
   onRefreshClick: () => void;
   onLogout: () => void;
+  onOpenPointsConfig?: () => void;
 }
 
 export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
@@ -31,6 +32,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
   onExportClick,
   onRefreshClick,
   onLogout,
+  onOpenPointsConfig,
 }) => {
   useBodyLock(isOpen);
 
@@ -176,6 +178,33 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
+
+          {/* PGPA Component Points Settings */}
+          {onOpenPointsConfig && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenPointsConfig();
+              }}
+              className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#222222] text-slate-800 dark:text-[#F5F5F5] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#337418] text-white">
+                  <svg className="h-4 w-4 text-[#5DD62C]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] text-xs">PGPA Component Points</p>
+                  <p className="text-[10px] text-slate-500 dark:text-[#A3A3A3]">Manage semester 1-8 points, scales &amp; rubrics</p>
+                </div>
+              </div>
+              <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
 
           {/* Export Department Report */}
           <button

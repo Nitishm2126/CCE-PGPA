@@ -8,6 +8,7 @@ import {
   SemesterResponse,
   ManualComponentPointResponse,
 } from "@/types/achievement";
+import { ComponentPointSettingsResponse } from "@/types/point-settings";
 
 export interface ComponentScaleRule {
   min: number;
@@ -167,6 +168,7 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
   const activeStudent = student || (students.length > 0 ? students[0] : null);
 
   const [manualPoints, setManualPoints] = useState<ManualComponentPointResponse[]>([]);
+  const [pointConfigs, setPointConfigs] = useState<ComponentPointSettingsResponse[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -183,12 +185,55 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
   const [pointsInput, setPointsInput] = useState<string>("");
   const [remarksInput, setRemarksInput] = useState<string>("");
 
-  // Determine current component scale rule
+  // Load dynamic point settings from API
+  useEffect(() => {
+    if (isOpen && token) {
+      api.getComponentPointSettings(token)
+        .then((data) => setPointConfigs(data))
+        .catch(() => {
+          // Gracefully keep using OFFICIAL_COMPONENT_SCALES defaults
+        });
+    }
+  }, [isOpen, token]);
+
+  // Determine current component scale rule dynamically
   const currentScaleRule = useMemo<ComponentScaleRule>(() => {
     const comp = components.find((c) => c.id === selectedComponentId);
     if (!comp) return DEFAULT_SCALE;
+
+    const sem = semesters.find((s) => s.id === selectedSemesterId);
+    const semNum = sem?.semester_number || 1;
+
+    // Check if configured dynamically in pointConfigs
+    const customConfig = pointConfigs.find(
+      (c) => c.component_slug === comp.slug || c.component_id === comp.id
+    );
+
+    if (customConfig && customConfig.semesters?.length) {
+      const semConfig = customConfig.semesters.find((s) => s.semester_number === semNum);
+      if (semConfig) {
+        const unit = customConfig.unit || OFFICIAL_COMPONENT_SCALES[comp.slug]?.unit || "Points";
+        const min = typeof semConfig.min_points === "number" ? semConfig.min_points : 0;
+        const max = typeof semConfig.max_points === "number" ? semConfig.max_points : 1000;
+        const guideline =
+          semConfig.guideline ||
+          customConfig.guideline ||
+          OFFICIAL_COMPONENT_SCALES[comp.slug]?.guideline ||
+          "Official PGPA Guidelines";
+
+        return {
+          min,
+          max,
+          step: max <= 10 ? 0.01 : 1,
+          unit,
+          scaleLabel: `${min} - ${max} ${unit}`,
+          guideline,
+        };
+      }
+    }
+
     return OFFICIAL_COMPONENT_SCALES[comp.slug] || DEFAULT_SCALE;
-  }, [components, selectedComponentId]);
+  }, [components, selectedComponentId, semesters, selectedSemesterId, pointConfigs]);
 
   const loadPoints = useCallback(async () => {
     if (!activeStudent || !token) return;

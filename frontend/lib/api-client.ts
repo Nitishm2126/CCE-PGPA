@@ -66,6 +66,10 @@ import {
   ManualComponentPointResponse,
   ManualPointCreatePayload,
 } from "@/types/achievement";
+import {
+  ComponentPointSettingsResponse,
+  ComponentPointSettingsUpdatePayload,
+} from "@/types/point-settings";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -690,6 +694,31 @@ export const api = {
       {
         method: "PUT",
         body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  getComponentPointSettings: async (
+    token?: string | null
+  ): Promise<ComponentPointSettingsResponse[]> => {
+    return request<ComponentPointSettingsResponse[]>(
+      "/components/point-settings",
+      { method: "GET" },
+      token
+    );
+  },
+
+  updateComponentPointSettings: async (
+    componentId: string,
+    payload: ComponentPointSettingsUpdatePayload,
+    token?: string | null
+  ): Promise<ComponentPointSettingsResponse> => {
+    return request<ComponentPointSettingsResponse>(
+      `/components/${componentId}/point-settings`,
+      {
+        method: "PUT",
+        body: JSON.stringify(payload),
       },
       token
     );

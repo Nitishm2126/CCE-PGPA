@@ -331,6 +331,7 @@ def review_achievement_as_hod(
                     semester_number=achievement.semester.semester_number,
                     inputs=inputs,
                     credit_value=achievement.component.credit_value,
+                    point_config=(achievement.component.config_schema or {}).get("point_config"),
                 )
                 now_utc = datetime.now(timezone.utc)
                 stmt = select(StudentComponentResult).where(

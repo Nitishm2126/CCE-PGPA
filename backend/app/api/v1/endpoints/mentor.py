@@ -23,6 +23,7 @@ from app.schemas.manual_point import ManualPointCreate, ManualPointUpdate, Manua
 from app.services.component_service import _recalculate_student_semester_pgpa
 from app.services.export_service import build_report_data, generate_excel_report, generate_pdf_report
 from app.services.grading_engine import calculate_component_grade
+from app.services.component_point_service import get_effective_component_scale
 from app.api.v1.endpoints.students import format_achievement_response
 
 router = APIRouter()
@@ -355,6 +356,7 @@ def review_mentee_achievement(
                     semester_number=achievement.semester.semester_number,
                     inputs=inputs,
                     credit_value=achievement.component.credit_value,
+                    point_config=(achievement.component.config_schema or {}).get("point_config"),
                 )
 
                 # If mentor explicitly confirmed or adjusted grade:
@@ -770,10 +772,7 @@ def create_or_update_manual_points(
             detail="Invalid academic semester.",
         )
 
-    scale_rule = OFFICIAL_COMPONENT_POINT_SCALES.get(
-        comp.slug,
-        {"min": 0.0, "max": 1000.0, "scale_label": "0.0 - 1,000.0 Points", "guideline": "Official Component Guidelines"}
-    )
+    scale_rule = get_effective_component_scale(db, comp.slug, sem.semester_number)
     if payload.points < scale_rule["min"] or payload.points > scale_rule["max"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -924,10 +923,8 @@ def update_manual_point(
             detail="Forbidden: You can only edit manual points for your assigned mentees.",
         )
     comp = rec.component
-    scale_rule = OFFICIAL_COMPONENT_POINT_SCALES.get(
-        comp.slug if comp else "",
-        {"min": 0.0, "max": 1000.0, "scale_label": "0.0 - 1,000.0 Points", "guideline": "Official Component Guidelines"}
-    )
+    sem_number = rec.semester.semester_number if rec.semester else None
+    scale_rule = get_effective_component_scale(db, comp.slug if comp else "", sem_number)
     if payload.points < scale_rule["min"] or payload.points > scale_rule["max"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

@@ -142,6 +142,7 @@ def format_achievement_response(
                     semester_number=achievement.semester.semester_number,
                     inputs=calc_inputs,
                     credit_value=achievement.component.credit_value,
+                    point_config=(achievement.component.config_schema or {}).get("point_config"),
                 )
                 evaluated_grade = tentative.get("grade")
                 evaluated_grade_points = tentative.get("grade_points")

@@ -28,6 +28,7 @@ import {
 import { ReassignStudentsModal } from "@/components/admin/MentorModals";
 import { SemesterManagementConsole } from "@/components/admin/SemesterManagementConsole";
 import { ComponentManagementConsole } from "@/components/admin/ComponentManagementConsole";
+import { PGPAComponentPointsConfig } from "@/components/shared/PGPAComponentPointsConfig";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { AdminBottomNav } from "@/components/admin/AdminBottomNav";
 import { useBodyLock } from "@/lib/use-body-lock";
@@ -41,6 +42,7 @@ type AdminNavigationSection =
   | "allocation"
   | "semesters"
   | "components"
+  | "component-points"
   | "submissions"
   | "storage"
   | "system";
@@ -696,6 +698,30 @@ export default function AdminDashboardPage() {
 
                   <button
                     type="button"
+                    onClick={() => setActiveSection("component-points")}
+                    id="admin-nav-component-points"
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
+                      activeSection === "component-points"
+                        ? "bg-[#0a192f] text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    }`}
+                    title="Official Semester-Wise PGPA Component Points & Scoring Configuration"
+                  >
+                    <svg className="h-4 w-4 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                    {!sidebarCollapsed && (
+                      <div className="flex-1 flex items-center justify-between">
+                        <span>PGPA Component Points</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 font-bold">
+                          Points
+                        </span>
+                      </div>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => setActiveSection("submissions")}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
                       activeSection === "submissions"
@@ -829,6 +855,7 @@ export default function AdminDashboardPage() {
                     { id: "allocation", label: "Mentor Allocation" },
                     { id: "semesters", label: "Semester System" },
                     { id: "components", label: "PGPA Components & Matrix" },
+                    { id: "component-points", label: "PGPA Component Points" },
                     { id: "submissions", label: "PGPA Submissions" },
                     { id: "storage", label: "Evidence Storage" },
                     { id: "system", label: "Security & RBAC" },
@@ -880,6 +907,8 @@ export default function AdminDashboardPage() {
                     {activeSection === "users" && "User Directory & Bulk Login Provisioning"}
                     {activeSection === "allocation" && "Faculty Mentor Allocation Registry"}
                     {activeSection === "semesters" && "Academic Configuration & Eight-Semester System"}
+                    {activeSection === "components" && "PGPA Components Catalogue & Semester Matrix"}
+                    {activeSection === "component-points" && "PGPA Component & Semester Point Settings"}
                     {activeSection === "submissions" && "PGPA Student Achievements Audit"}
                     {activeSection === "storage" && "Google Drive OAuth & Binary Storage Health"}
                     {activeSection === "system" && "Institutional RBAC Permission Matrix"}
@@ -1440,6 +1469,13 @@ export default function AdminDashboardPage() {
 
             {/* VIEW: PGPA COMPONENTS & SEMESTER MATRIX */}
             {activeSection === "components" && <ComponentManagementConsole token={token} />}
+
+            {/* VIEW: CENTRALIZED PGPA COMPONENT & SEMESTER POINT SETTINGS */}
+            {activeSection === "component-points" && (
+              <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-xs">
+                <PGPAComponentPointsConfig token={token} />
+              </div>
+            )}
 
             {/* VIEW 7: PGPA COMPONENTS & SUBMISSIONS DIRECTORY */}
             {activeSection === "submissions" && (

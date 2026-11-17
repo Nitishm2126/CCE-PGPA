@@ -455,11 +455,21 @@ grade_academics_gpa = grade_academics
 # ==============================================================================
 # Unified Dispatcher
 # ==============================================================================
+def grade_by_custom_thresholds(score: float, thresholds: Dict[str, float]) -> Tuple[str, int]:
+    """Grade numeric score using HOD/Admin configured semester thresholds."""
+    for g in ["O", "A+", "A", "B+", "B"]:
+        cutoff = thresholds.get(g)
+        if cutoff is not None and score >= cutoff:
+            return g, GRADE_POINTS_MAP.get(g, 1)
+    return "C", 1
+
+
 def calculate_component_grade(
     component_slug: str,
     semester_number: int,
     inputs: Dict[str, Any],
     credit_value: int = 3,
+    point_config: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Evaluates inputs according to component rules and returns unified grading payload:
@@ -471,15 +481,27 @@ def calculate_component_grade(
         "category": Optional[str],
         "explanation": str
     }
+    Supports dynamic thresholds from centralized point_config when configured by HOD/Admin.
     """
     slug = component_slug.strip().lower()
     raw_score = None
     category = None
     explanation = ""
 
+    custom_thresholds = None
+    if point_config and isinstance(point_config, dict):
+        custom_thresholds = point_config.get("thresholds") or point_config.get("grade_thresholds")
+        if not custom_thresholds:
+            s_cfg = point_config.get("semesters", {}).get(str(semester_number))
+            if isinstance(s_cfg, dict):
+                custom_thresholds = s_cfg.get("thresholds") or s_cfg.get("grade_thresholds")
+
     if slug == "skillrack":
         points = float(inputs.get("points") or inputs.get("raw_score") or 0)
-        grade, gp = grade_skillrack(points, semester_number)
+        if custom_thresholds and isinstance(custom_thresholds, dict) and "O" in custom_thresholds:
+            grade, gp = grade_by_custom_thresholds(points, custom_thresholds)
+        else:
+            grade, gp = grade_skillrack(points, semester_number)
         raw_score = points
         explanation = f"Skillrack {points:g} pts in Sem {semester_number} -> Grade {grade}"
 

@@ -11,6 +11,7 @@ export type AdminNavigationSection =
   | "allocation"
   | "semesters"
   | "components"
+  | "component-points"
   | "submissions"
   | "storage"
   | "system";

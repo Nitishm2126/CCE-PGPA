@@ -10,6 +10,7 @@ interface SettingsModalProps {
   onClose: () => void;
   user: UserResponse | null;
   token?: string | null;
+  onOpenPointsConfig?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -17,6 +18,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   user,
   token,
+  onOpenPointsConfig,
 }) => {
   const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
   const [firebaseLinked, setFirebaseLinked] = useState<boolean>(false);
@@ -262,6 +264,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </button>
           </div>
         </div>
+
+        {/* PGPA Component Points Section (HOD & Admin only) */}
+        {(user?.role === "hod" || user?.role === "admin") && (
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>PGPA Component Points</span>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    Governance
+                  </span>
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Configure semester-wise scoring scales, max points, credit weights, and grading rubrics across all 14 official PGPA components.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              id="btn-open-pgpa-component-points"
+              onClick={() => {
+                onClose();
+                onOpenPointsConfig?.();
+              }}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-[#337418] dark:hover:bg-[#337418]/80 dark:text-white font-semibold text-xs px-4 py-2.5 transition shadow-2xs cursor-pointer"
+            >
+              <svg className="w-4 h-4 text-emerald-400 dark:text-[#5DD62C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              <span>Manage PGPA Component Points</span>
+            </button>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">

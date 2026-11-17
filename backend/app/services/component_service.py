@@ -860,11 +860,13 @@ def parse_and_preview_hod_import(
             except ValueError:
                 pass
 
+            point_cfg = (component.config_schema or {}).get("point_config")
             grading_res = calculate_component_grade(
                 component_slug=component.slug,
                 semester_number=semester.semester_number,
                 inputs=inputs,
                 credit_value=component.credit_value,
+                point_config=point_cfg,
             )
 
             preview_rows.append(
