@@ -30,6 +30,7 @@ export interface AuthContextType {
   reloadFirebaseUser: () => Promise<boolean>;
 
   login: (email: string, password: string, portalRole?: UserRole) => Promise<UserResponse | null>;
+  loginWithGoogle: (idToken: string, portalRole?: UserRole) => Promise<UserResponse | null>;
   logout: () => Promise<void>;
   updateUser: (updated: UserResponse) => void;
   refreshUser: () => Promise<UserResponse | null>;
@@ -212,77 +213,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isAdminAccount =
       portalRole === "admin" || normalizedEmail === "cce.pgpa@gmail.com";
 
-    // 1. System Administrator authentication: STRICTLY via Firebase Web SDK
-    if (isAdminAccount) {
-      const activeAuth = getFirebaseAuth() || firebaseAuth;
-      if (!isFirebaseConfigured() || !activeAuth) {
-        const msg = "Firebase Authentication is not available. Please verify client configuration.";
-        setError(msg);
-        setIsLoading(false);
-        isLoggingInRef.current = false;
-        throw new Error(msg);
-      }
-
-      try {
-        const userCredential = await signInWithEmailAndPassword(activeAuth, normalizedEmail, password);
-        const fbUser = userCredential.user;
-        setFirebaseUser(fbUser);
-
-        const idToken = await fbUser.getIdToken();
-        setStoredToken(idToken);
-        setToken(idToken);
-
-        // Fetch verified user profile from backend via GET /api/v1/auth/me
-        try {
-          const userData = await api.getMe(idToken);
-          setUser(userData);
-          setIsProvisioned(true);
-          return userData;
-        } catch (meErr: unknown) {
-          if (meErr instanceof ApiError && meErr.status === 401) {
-            setUser(null);
-            setIsProvisioned(false);
-            return null;
-          }
-          const msg =
-            meErr instanceof ApiError
-              ? meErr.message
-              : "Unable to verify administrator profile with backend.";
-          setError(msg);
-          throw new Error(msg);
-        }
-      } catch (fbErr: unknown) {
-        // MANDATORY: Never fall back to direct password login for FIREBASE_MANAGED_ACCOUNT!
-        // Directly inspect and surface actionable error details from Firebase.
-        const errObj = fbErr as { code?: string; message?: string };
-        let msg = "Invalid email or password. Please verify your credentials.";
-
-        if (errObj.code === "auth/invalid-credential" || errObj.code === "auth/wrong-password") {
-          msg = "Invalid email or password. Please verify your credentials.";
-        } else if (errObj.code === "auth/user-not-found") {
-          msg = "Administrator account not found in Firebase Authentication.";
-        } else if (errObj.code === "auth/too-many-requests") {
-          msg = "Too many failed login attempts. Please wait a few minutes before trying again.";
-        } else if (errObj.code === "auth/user-disabled") {
-          msg = "This administrator account has been disabled.";
-        } else if (errObj.code === "auth/network-request-failed") {
-          msg = "Network error: Unable to reach Firebase Authentication service. Please check connection.";
-        } else if (errObj.code === "auth/unauthorized-domain") {
-          msg = "Domain unauthorized: Please add cce-pgpa.vercel.app to Firebase Console > Authentication > Settings > Authorized Domains.";
-        } else if (errObj.code) {
-          msg = `Firebase Authentication error (${errObj.code}): ${errObj.message || ""}`;
-        }
-
-        console.error("Firebase admin sign-in error:", fbErr);
-        setError(msg);
-        throw new Error(msg);
-      } finally {
-        setIsLoading(false);
-        isLoggingInRef.current = false;
-      }
-    }
-
-    // 2. Non-admin roles (Students, Mentors, HOD): Authenticate directly via FastAPI / PostgreSQL
+    // Primary Authentication: Direct via Backend API (POST /api/v1/auth/login)
     try {
       const tokenResponse = await api.login(email, password, portalRole);
       setStoredToken(tokenResponse.access_token);
@@ -293,21 +224,80 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsProvisioned(true);
       return userData;
     } catch (err: unknown) {
+      // If admin direct login fails and Firebase is configured, attempt Firebase fallback
+      if (isAdminAccount && isFirebaseConfigured()) {
+        const activeAuth = getFirebaseAuth() || firebaseAuth;
+        if (activeAuth) {
+          try {
+            const userCredential = await signInWithEmailAndPassword(activeAuth, normalizedEmail, password);
+            const fbUser = userCredential.user;
+            setFirebaseUser(fbUser);
+            const idToken = await fbUser.getIdToken();
+            setStoredToken(idToken);
+            setToken(idToken);
+            const userData = await api.getMe(idToken);
+            setUser(userData);
+            setIsProvisioned(true);
+            return userData;
+          } catch (fbErr: unknown) {
+            console.warn("Firebase admin fallback failed:", fbErr);
+          }
+        }
+      }
+
       let message = "Invalid email or password. Please verify your credentials.";
       if (err instanceof ApiError) {
         if (err.status === 408) {
           message = "Login request timed out. Please retry.";
         } else if (err.status === 0) {
-          message = "Backend service unavailable. Please check your connection.";
-        } else if (err.status === 401) {
-          message = "Invalid email or password. Please verify your credentials.";
+          message = "Cannot connect to server. Please check your network connection.";
         } else if (err.status === 403) {
-          message = err.message || "Account is deactivated. Please contact an administrator.";
-        } else if (err.status >= 500) {
-          message = `Backend server error (${err.status}): ${err.message}`;
-        } else {
+          message = err.message || "Account is deactivated or unauthorized.";
+        } else if (err.status === 401) {
+          message = "Incorrect email/ID or password.";
+        } else if (err.message) {
           message = err.message;
         }
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
+      throw new Error(message);
+    } finally {
+      setIsLoading(false);
+      isLoggingInRef.current = false;
+    }
+  };
+
+  const loginWithGoogle = async (
+    idToken: string,
+    portalRole?: UserRole
+  ): Promise<UserResponse | null> => {
+    setError(null);
+    isLoggingInRef.current = true;
+    setIsLoading(true);
+
+    // Flush any preexisting session credentials to guarantee complete role isolation
+    clearStoredToken();
+    clearApiCache();
+    setUser(null);
+    setToken(null);
+    setFirebaseUser(null);
+    setIsProvisioned(false);
+
+    try {
+      const tokenResponse = await api.loginWithGoogle(idToken, portalRole);
+      setStoredToken(tokenResponse.access_token);
+      setToken(tokenResponse.access_token);
+
+      const userData = await api.getMe(tokenResponse.access_token);
+      setUser(userData);
+      setIsProvisioned(true);
+      return userData;
+    } catch (err: unknown) {
+      let message = "Google Sign-In failed. Please verify your institutional account.";
+      if (err instanceof ApiError) {
+        message = err.message || message;
       } else if (err instanceof Error) {
         message = err.message;
       }
@@ -480,6 +470,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sendVerificationEmail,
         reloadFirebaseUser,
         login,
+        loginWithGoogle,
         logout,
         updateUser,
         refreshUser,

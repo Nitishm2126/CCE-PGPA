@@ -10,6 +10,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 
 // Only Student, Mentor, and HOD portals are shown in public switch navigation
 const PUBLIC_SWITCH_ROLES: UserRole[] = ["student", "mentor", "hod"];
@@ -92,66 +93,13 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isSubmitting) return;
-
     clearError();
-    setLocalError(null);
     setRoleMismatch(null);
 
-    const trimmedEmail = email.trim().toLowerCase();
-    if (!trimmedEmail) {
-      setLocalError(
-        "Please enter your college email address."
-      );
-      return;
-    }
-    if (!password) {
-      setLocalError("Please enter your account password.");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      const authenticatedUser = await login(trimmedEmail, password, role);
-
-      if (authenticatedUser) {
-        // MANDATORY SECURITY RULE: Verify database role matches requested portal
-        const isAuthorizedForRole =
-          authenticatedUser.role === role ||
-          (authenticatedUser.role === "hod" && role === "mentor") ||
-          (authenticatedUser.accessible_portals && authenticatedUser.accessible_portals.includes(role));
-
-        if (!isAuthorizedForRole) {
-          // Revoke session so unauthorized role credentials are not persisted
-          await logout();
-          setRoleMismatch({
-            actualRole: authenticatedUser.role,
-            attemptedRole: role,
-          });
-          setLocalError(
-            `Unauthorized Role: You authenticated with valid credentials, but your account is registered as "${ROLE_CONFIGS[authenticatedUser.role].shortTitle}". You cannot access the ${ROLE_CONFIGS[role].shortTitle} portal.`
-          );
-          return;
-        }
-
-        // Check mandatory first-login password change requirement
-        if (authenticatedUser.must_change_password) {
-          router.replace("/change-password");
-          return;
-        }
-
-        // Role matches: proceed to authorized dashboard
-        router.replace(`/${role}`);
-      } else {
-        // Firebase authenticated, but pending PostgreSQL directory provisioning
-        router.replace("/verify-email");
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Authentication failed.";
-      setLocalError(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Password login is disabled on Cloudflare Free ($0/mo) due to 10ms CPU limit for Argon2id
+    setLocalError(
+      "Traditional password login is temporarily unavailable on Cloudflare Free tier ($0/mo) because Argon2id hash verification exceeds the 10ms CPU limit. All original passwords remain safely preserved in the database. Please use the Institutional Google Workspace Sign-In button above with your official college account."
+    );
   };
 
   const currentConfig = ROLE_CONFIGS[role];
@@ -299,31 +247,79 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-3.5" noValidate>
+          {/* 1. PRIMARY LOGIN: Institutional Google Workspace SSO */}
+          <div className="space-y-3">
+            <div className="rounded-xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40 p-3 text-center">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 mb-1.5">
+                Official $0/mo Authentication Method
+              </span>
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                Institutional Google Workspace Sign-In
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                {role === "student"
+                  ? "Use your student account: @sairamtap.edu.in"
+                  : role === "admin"
+                  ? "Use your admin account: cce.pgpa@gmail.com"
+                  : "Use your faculty account: @sairam.edu.in"}
+              </p>
+            </div>
+
+            <GoogleSignInButton
+              role={role}
+              onError={(msg) => {
+                setLocalError(msg);
+                setRoleMismatch(null);
+              }}
+              disabled={isSubmitting}
+            />
+          </div>
+
+          {/* Divider */}
+          <div className="relative my-4 flex items-center justify-center">
+            <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+            <span className="absolute bg-white dark:bg-slate-900 px-2.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              Traditional Password Login
+            </span>
+          </div>
+
+          {/* Password Authentication Notice on Cloudflare Free */}
+          <div className="rounded-xl border border-amber-200/90 dark:border-amber-800/60 bg-amber-50/80 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200">
+            <div className="font-semibold flex items-center gap-1.5 text-xs text-amber-800 dark:text-amber-300">
+              <svg className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>Unavailable on Cloudflare Free ($0/mo)</span>
+            </div>
+            <p className="mt-1 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+              Direct password login is disabled because memory-hard Argon2id hash verification exceeds the 10ms execution limit. Original password hashes remain safely preserved in D1. Please use <strong>Google Workspace Sign-In</strong> above.
+            </p>
+          </div>
+
+          {/* Disabled Password Form */}
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-3.5 mt-3 opacity-60" noValidate>
             {/* Email / Identifier Field */}
             <div>
               <label
                 htmlFor="login-email-input"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                College Email
+                {role === "student" ? "College Email or Student ID (Register Number)" : "College Email"}
               </label>
               <input
                 id="login-email-input"
                 name="email"
-                type={role === "student" ? "text" : "email"}
+                type="text"
                 autoComplete={role === "student" ? "username" : "email"}
-                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={
                   role === "student"
-                    ? "e.g. sec25co001@sairamtap.edu.in"
+                    ? "e.g. SEC25CO001 or sec25co001@sairamtap.edu.in"
                     : currentConfig.placeholder
                 }
-                disabled={isSubmitting}
-                className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 sm:py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
+                disabled={true}
+                className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-3.5 py-2 sm:py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 cursor-not-allowed`}
               />
             </div>
 
@@ -336,12 +332,6 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 >
                   Password
                 </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs font-medium text-purple-600 dark:text-[#5DD62C] hover:text-purple-800 dark:hover:text-[#4ec224] transition-colors"
-                >
-                  Forgot password?
-                </Link>
               </div>
               <div className="relative">
                 <input
@@ -349,52 +339,24 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your account password"
-                  disabled={isSubmitting}
-                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 sm:py-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
+                  placeholder="Password login disabled on Free tier"
+                  disabled={true}
+                  className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-3.5 py-2 sm:py-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 cursor-not-allowed`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer"
-                >
-                  {showPassword ? (
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                    </svg>
-                  ) : (
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
               </div>
             </div>
 
             {/* Login Button */}
-            <div className="pt-1.5">
+            <div className="pt-1">
               <button
                 type="submit"
                 id="login-submit-button"
-                disabled={isSubmitting}
-                className={`w-full flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 font-semibold text-sm transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer active:scale-[0.99] ${themeDetails.buttonBg}`}
+                disabled={true}
+                className={`w-full flex items-center justify-center gap-2 rounded-xl py-2 px-4 font-semibold text-xs bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed`}
               >
-                {isSubmitting ? (
-                  <>
-                    <svg className="h-4 w-4 animate-spin text-current" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <span>Signing in...</span>
-                  </>
-                ) : (
-                  <span>Sign In as {currentConfig.shortTitle}</span>
-                )}
+                Password Login Disabled (Use Google SSO Above)
               </button>
             </div>
           </form>

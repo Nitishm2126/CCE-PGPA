@@ -75,8 +75,8 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   (typeof window !== "undefined" &&
   !["localhost", "127.0.0.1", "::1"].includes(window.location.hostname)
-    ? "https://cce-pgpa.onrender.com/api/v1"
-    : "http://127.0.0.1:8000/api/v1");
+    ? "https://cce-pgpa-staging.nitishms007.workers.dev/api/v1"
+    : "https://cce-pgpa-staging.nitishms007.workers.dev/api/v1");
 
 const TOKEN_STORAGE_KEY = "cce_achieve_token";
 
@@ -313,6 +313,13 @@ export const api = {
     return request<TokenResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password, role }),
+    });
+  },
+
+  loginWithGoogle: async (idToken: string, role?: string): Promise<TokenResponse> => {
+    return request<TokenResponse>("/auth/google/sso", {
+      method: "POST",
+      body: JSON.stringify({ id_token: idToken, role }),
     });
   },
 
