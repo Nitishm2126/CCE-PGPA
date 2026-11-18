@@ -517,7 +517,7 @@ export default function StudentDashboardPage() {
               <button
                 type="button"
                 onClick={() => handleOpenSubmitModal(null)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-2xs active:scale-95 transition-all cursor-pointer self-start sm:self-auto"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] text-white dark:text-[#0F0F0F] font-semibold text-xs shadow-2xs active:scale-95 transition-all cursor-pointer self-start sm:self-auto"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

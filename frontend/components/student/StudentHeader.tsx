@@ -78,9 +78,9 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
               onClick={onOpenMessages}
               aria-label="View messages and remarks"
               title="Messages & Remarks"
-              className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
+              className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-[#C9D3DC] dark:border-slate-700 bg-[#F2F5F7] dark:bg-slate-800 text-[#1E2A33] dark:text-slate-200 hover:bg-[#E4EBEF] active:scale-95 transition-all cursor-pointer"
             >
-              <svg className="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <svg className="h-4 w-4 text-[#1E2A33] dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
               </svg>
               {unreadMessagesCount > 0 && (
@@ -97,7 +97,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
               type="button"
               id="student-header-submit-btn"
               onClick={onSubmitClick}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-2 shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] text-white dark:text-[#0F0F0F] text-xs font-semibold px-3 py-2 shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

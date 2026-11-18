@@ -20,24 +20,24 @@ interface RoleLoginFormProps {
 
 const ROLE_THEME_DETAILS = {
   student: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
-    dotColor: "bg-purple-600 dark:bg-[#5DD62C]",
+    ringColor: "focus:border-[#FFB347] focus:ring-[#FFB347]/30 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
+    buttonBg: "bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
+    dotColor: "bg-[#1E2A33] dark:bg-[#5DD62C]",
   },
   mentor: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
-    dotColor: "bg-purple-600 dark:bg-[#5DD62C]",
+    ringColor: "focus:border-[#FFB347] focus:ring-[#FFB347]/30 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
+    buttonBg: "bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
+    dotColor: "bg-[#1E2A33] dark:bg-[#5DD62C]",
   },
   hod: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
-    dotColor: "bg-purple-600 dark:bg-[#5DD62C]",
+    ringColor: "focus:border-[#FFB347] focus:ring-[#FFB347]/30 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
+    buttonBg: "bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
+    dotColor: "bg-[#1E2A33] dark:bg-[#5DD62C]",
   },
   admin: {
-    ringColor: "focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
-    buttonBg: "bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
-    dotColor: "bg-slate-800 dark:bg-[#5DD62C]",
+    ringColor: "focus:border-[#FFB347] focus:ring-[#FFB347]/30 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
+    buttonBg: "bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
+    dotColor: "bg-[#1E2A33] dark:bg-[#5DD62C]",
   },
 };
 
