@@ -216,7 +216,7 @@ export default function AdminDashboardPage() {
       setComponentsList(compsRes);
     } catch (err: unknown) {
       console.error("Failed to load submissions:", err);
-      const msg = err instanceof Error ? err.message : "Failed to load submissions from PostgreSQL.";
+      const msg = err instanceof Error ? err.message : "Failed to load submissions from database.";
       setSubmissionsError(msg);
     } finally {
       setSubmissionsLoading(false);
@@ -930,7 +930,7 @@ export default function AdminDashboardPage() {
                     }}
                     disabled={overviewLoading}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 transition cursor-pointer"
-                    title="Refresh data from PostgreSQL database"
+                    title="Refresh data from Cloudflare D1 database"
                   >
                     <svg className={`h-3.5 w-3.5 ${overviewLoading ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -940,7 +940,7 @@ export default function AdminDashboardPage() {
 
                   <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-200/60 dark:border-emerald-900/60">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    PostgreSQL Live
+                    Cloudflare D1 Live
                   </span>
                 </div>
               </div>
@@ -1307,7 +1307,7 @@ export default function AdminDashboardPage() {
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-1.5">
                     <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
                       <span className="text-base text-purple-600">📊</span>
-                      <span>PostgreSQL Preservation</span>
+                      <span>Cloudflare D1 Preservation</span>
                     </div>
                     <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
                       All student registration numbers, academic batches, and mentor allocations are preserved with strict relational foreign keys.
@@ -1925,7 +1925,7 @@ export default function AdminDashboardPage() {
                       </p>
                     </div>
                     <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
-                      <span className="text-[11px] text-slate-500">Bound in PostgreSQL</span>
+                      <span className="text-[11px] text-slate-500">Bound in Cloudflare D1</span>
                       <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
                         {driveAuditReport?.provisioned_in_db ?? 0}
                       </p>
@@ -2053,7 +2053,7 @@ export default function AdminDashboardPage() {
                     Four-Role Institutional Server-Side Authorization Matrix
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    All client-supplied roles are rejected. Roles are derived strictly from PostgreSQL on every request.
+                    All client-supplied roles are rejected. Roles are derived strictly from Cloudflare D1 on every request.
                   </p>
                 </div>
 
@@ -2274,7 +2274,7 @@ export default function AdminDashboardPage() {
                   <li>Creates dedicated folders under official root folder ({storageStatus?.root_folder_id || "configured folder"}).</li>
                   <li>Follows canonical naming: <span className="font-mono font-bold">{"{REGISTER_NUMBER}_{NORMALIZED_NAME}"}</span>.</li>
                   <li>Reuses existing folders where verified to prevent duplicates.</li>
-                  <li>Persists each folder ID directly into the student&apos;s PostgreSQL record.</li>
+                  <li>Persists each folder ID directly into the student&apos;s Cloudflare D1 record.</li>
                   <li>Existing evidence PDFs will NOT be moved or deleted.</li>
                 </ul>
               </div>
@@ -2285,7 +2285,7 @@ export default function AdminDashboardPage() {
                   <span className="font-bold">{driveAuditReport?.total_students ?? 61}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-200/60 dark:border-slate-700">
-                  <span>Already Bound in PostgreSQL:</span>
+                  <span>Already Bound in Cloudflare D1:</span>
                   <span className="font-bold text-emerald-600">{driveAuditReport?.provisioned_in_db ?? 0}</span>
                 </div>
                 <div className="flex justify-between py-1">

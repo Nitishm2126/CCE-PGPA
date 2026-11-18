@@ -302,7 +302,7 @@ export default function VerifyEmailPage() {
                             <span>Institutional Directory Provisioning Pending</span>
                           </div>
                           <p className="leading-relaxed">
-                            Your Firebase account <strong>{firebaseUser.email}</strong> is verified. However, this email is not yet registered in the CCE PostgreSQL institutional directory.
+                            Your Firebase account <strong>{firebaseUser.email}</strong> is verified. However, this email is not yet registered in the CCE institutional directory.
                           </p>
                           <div className="pt-2 border-t border-amber-200/60 dark:border-amber-800/60 text-[11px] space-y-1">
                             <p className="font-semibold text-amber-950 dark:text-amber-200">Next Action Required:</p>
@@ -438,7 +438,7 @@ export default function VerifyEmailPage() {
           {/* Institutional Security Notice */}
           <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-center dark:border-slate-800/80 dark:bg-slate-800/30">
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              <strong className="text-slate-700 dark:text-slate-300">Preservation Notice:</strong> Email verification is performed entirely via Firebase Web SDK (<code className="font-mono text-[10px]">sendEmailVerification</code>). PostgreSQL database records and cohort data remain completely untouched.
+              <strong className="text-slate-700 dark:text-slate-300">Preservation Notice:</strong> Email verification is performed entirely via Firebase Web SDK (<code className="font-mono text-[10px]">sendEmailVerification</code>). Cloudflare D1 database records and cohort data remain completely untouched.
             </p>
           </div>
         </div>

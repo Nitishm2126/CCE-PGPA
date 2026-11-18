@@ -327,7 +327,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(userData);
           setIsProvisioned(true);
         } catch {
-          // Still unprovisioned in PostgreSQL
+          // Still unprovisioned in Cloudflare D1
         }
       } catch {
         // Token refresh error

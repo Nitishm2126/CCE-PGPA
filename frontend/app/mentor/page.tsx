@@ -123,7 +123,7 @@ export default function MentorDashboardPage() {
       setComponents(compsRes);
       setSemesters(semsRes);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to load mentor data from PostgreSQL.";
+      const msg = err instanceof Error ? err.message : "Failed to load mentor data from database.";
       setDataError(msg);
     } finally {
       setIsLoadingData(false);
@@ -154,7 +154,7 @@ export default function MentorDashboardPage() {
         setDataError(null);
       } catch (err: unknown) {
         if (ignore) return;
-        const msg = err instanceof Error ? err.message : "Failed to load mentor data from PostgreSQL.";
+        const msg = err instanceof Error ? err.message : "Failed to load mentor data from database.";
         setDataError(msg);
       } finally {
         if (!ignore) {
@@ -1043,7 +1043,7 @@ export default function MentorDashboardPage() {
                   Assigned Mentee Cohort ({students.length} Students)
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
-                  Authoritative student assignments in PostgreSQL for CCE II Year Section A
+                  Authoritative student assignments in Cloudflare D1 for CCE II Year Section A
                 </p>
               </div>
               <span className="rounded-full bg-blue-50 dark:bg-[#337418]/25 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-[#5DD62C] border border-blue-200 dark:border-[#337418]">
