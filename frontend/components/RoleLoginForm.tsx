@@ -99,12 +99,8 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
     setRoleMismatch(null);
 
     const trimmed = email.trim();
-    if (!trimmed) {
-      setLocalError(
-        role === "student"
-          ? "Please enter your College Register Number or College Email."
-          : "Please enter your college email address."
-      );
+    if (!trimmed || !trimmed.includes("@")) {
+      setLocalError("Please enter your college email address.");
       return;
     }
     if (!password) {
@@ -305,21 +301,17 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 htmlFor="login-email-input"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                {role === "student" ? "College Register Number or College Email" : "College Email"}
+                College Email
               </label>
               <input
                 id="login-email-input"
                 name="email"
-                type="text"
-                autoComplete={role === "student" ? "username" : "email"}
+                type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={
-                  role === "student"
-                    ? "e.g. SEC25CO001 or sec25co001@sairamtap.edu.in"
-                    : currentConfig.placeholder
-                }
+                placeholder="Enter your college email"
                 disabled={isSubmitting}
                 className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
               />

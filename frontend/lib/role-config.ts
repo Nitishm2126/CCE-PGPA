@@ -31,7 +31,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     portalName: "Student Portal",
     portalTitle: "Student Portal Login",
     badgeText: "2025-2029 Students",
-    placeholder: "e.g. sec25co001@sairamtap.edu.in",
+    placeholder: "Enter your college email",
     description:
       "Submit academic activities, upload evidence and track PGPA progress.",
     path: "/login/student",
@@ -53,7 +53,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     portalName: "Faculty Mentor Portal",
     portalTitle: "Faculty Mentor Login",
     badgeText: "Review & Verification",
-    placeholder: "e.g. mentor.cce@sairam.edu.in",
+    placeholder: "Enter your college email",
     description:
       "Review student submissions, verify evidence and provide feedback.",
     path: "/login/mentor",
@@ -75,7 +75,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     portalName: "Department HOD Portal",
     portalTitle: "Department Head Login",
     badgeText: "Department Administration",
-    placeholder: "e.g. hod.cce@sairam.edu.in",
+    placeholder: "Enter your college email",
     description:
       "Monitor department-wide performance, mentor activity and PGPA progress.",
     path: "/login/hod",
@@ -97,7 +97,7 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     portalName: "Administrator Portal",
     portalTitle: "Administrator Console Login",
     badgeText: "System Administration",
-    placeholder: "e.g. cce.pgpa@gmail.com",
+    placeholder: "Enter your college email",
     description:
       "Manage student accounts, mentors, components and system configuration.",
     path: "/login/admin",

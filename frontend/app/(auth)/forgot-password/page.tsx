@@ -21,16 +21,12 @@ export default function ForgotPasswordPage() {
     setErrorMessage(null);
     const trimmed = identifier.trim().toLowerCase();
 
-    if (!trimmed) {
-      setErrorMessage("Please enter your College Register Number or College Email.");
+    if (!trimmed || !trimmed.includes("@")) {
+      setErrorMessage("Please enter your College Email.");
       return;
     }
 
-    // Normalize identifier: if no "@", treat as student register number e.g. sec25co001 -> sec25co001@sairamtap.edu.in
-    let targetEmail = trimmed;
-    if (!targetEmail.includes("@")) {
-      targetEmail = `${targetEmail}@sairamtap.edu.in`;
-    }
+    const targetEmail = trimmed;
 
     try {
       setIsSubmitting(true);
@@ -188,7 +184,7 @@ export default function ForgotPasswordPage() {
                   First-Time Student Password Setup
                 </p>
                 <p className="leading-relaxed">
-                  Enter your College Register Number (e.g. <code className="font-semibold text-slate-900 dark:text-white">SEC25CO001</code>) or official email. A secure password setup link will be dispatched directly to your college email address.
+                  Enter your College Email. A secure password setup link will be dispatched directly to your college email address.
                 </p>
               </div>
 
@@ -197,16 +193,16 @@ export default function ForgotPasswordPage() {
                   htmlFor="recovery-identifier-input"
                   className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
                 >
-                  Register Number or College Email
+                  College Email
                 </label>
                 <input
                   id="recovery-identifier-input"
-                  type="text"
-                  autoComplete="username"
+                  type="email"
+                  autoComplete="email"
                   required
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="e.g. SEC25CO001 or sec25co001@sairamtap.edu.in"
+                  placeholder="Enter your college email"
                   disabled={isSubmitting}
                   className="block w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-purple-500 focus:ring-purple-500/20 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20 disabled:opacity-60 transition duration-150"
                 />
