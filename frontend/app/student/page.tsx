@@ -80,7 +80,7 @@ export default function StudentDashboardPage() {
       return;
     }
     if (!authLoading && user && user.role !== "student") {
-      router.replace("/login/student");
+      router.replace(`/${user.role}`);
       return;
     }
     if (!authLoading && user && user.must_change_password) {

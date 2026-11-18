@@ -243,6 +243,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsProvisioned(true);
       return userData;
     } catch (err: unknown) {
+      // Clear any dangling Firebase session if Cloudflare session exchange failed
+      try {
+        const activeAuth = getFirebaseAuth() || firebaseAuth;
+        if (activeAuth) await activeAuth.signOut();
+      } catch {
+        // Ignore signout error
+      }
+      setFirebaseUser(null);
+      clearStoredToken();
+      clearApiCache();
+      setUser(null);
+      setToken(null);
+      setIsProvisioned(false);
+
       let message = "Invalid email/ID or password. Please verify your credentials.";
       const errObj = err as { code?: string; message?: string };
 
@@ -271,10 +285,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const sendVerificationEmail = async (): Promise<void> => {
-    if (!firebaseAuth) {
+    const activeAuth = getFirebaseAuth() || firebaseAuth;
+    if (!activeAuth) {
       throw new Error("Firebase Authentication is not configured.");
     }
-    const currentUser = firebaseAuth.currentUser;
+    const currentUser = activeAuth.currentUser || firebaseUser;
     if (!currentUser) {
       throw new Error("No active Firebase session found. Please sign in first.");
     }
@@ -283,7 +298,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const continueUrl =
         typeof window !== "undefined"
           ? `${window.location.origin}/verify-email`
-          : "http://localhost:3000/verify-email";
+          : "https://cce-pgpa.vercel.app/verify-email";
 
       const actionCodeSettings: ActionCodeSettings = {
         url: continueUrl,
@@ -294,8 +309,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await sendEmailVerification(currentUser, actionCodeSettings);
       } catch (innerErr: unknown) {
         const fbCode = (innerErr as { code?: string })?.code;
-        if (fbCode === "auth/unauthorized-continue-uri") {
-          // Fallback without actionCodeSettings if redirect URL is not whitelisted in Firebase Console
+        if (
+          fbCode === "auth/unauthorized-continue-uri" ||
+          fbCode === "auth/unauthorized-domain"
+        ) {
+          // Fallback without actionCodeSettings if redirect URL is rejected
           await sendEmailVerification(currentUser);
         } else {
           throw innerErr;
@@ -304,7 +322,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: unknown) {
       const errObj = err as { code?: string; message?: string };
       if (errObj?.code === "auth/too-many-requests") {
-        throw new Error("Too many verification requests. Please wait a few minutes before trying again.");
+        throw new Error(
+          "Too many verification requests sent to this email address. Firebase has placed a temporary cooldown. Please wait a few minutes before trying again."
+        );
       }
       const message = errObj?.message || "Failed to send verification email.";
       throw new Error(message);
@@ -312,31 +332,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const reloadFirebaseUser = async (): Promise<boolean> => {
-    if (!firebaseAuth || !firebaseAuth.currentUser) {
+    const activeAuth = getFirebaseAuth() || firebaseAuth;
+    const currentUser = activeAuth?.currentUser || firebaseUser;
+    if (!currentUser) {
       return false;
     }
 
-    await firebaseAuth.currentUser.reload();
-    const updated = firebaseAuth.currentUser;
-    setFirebaseUser(updated);
+    try {
+      await currentUser.reload();
+      const updated = activeAuth?.currentUser || currentUser;
+      setFirebaseUser(updated);
 
-    if (updated) {
-      try {
-        const idToken = await updated.getIdToken(true);
-        setToken(idToken);
-        setStoredToken(idToken);
-
-        try {
-          const userData = await api.getMe(idToken);
-          setUser(userData);
-          setIsProvisioned(true);
-        } catch {
-          // Still unprovisioned in Cloudflare D1
+      if (updated) {
+        if (updated.emailVerified) {
+          try {
+            const idToken = await updated.getIdToken(true);
+            const sess = await api.loginWithFirebase(idToken, user?.role);
+            setToken(sess.access_token);
+            setStoredToken(sess.access_token);
+            const userData = await api.getMe(sess.access_token);
+            setUser(userData);
+            setIsProvisioned(true);
+          } catch {
+            // Non-critical session sync
+          }
         }
-      } catch {
-        // Token refresh error
+        return updated.emailVerified;
       }
-      return updated.emailVerified;
+    } catch (e) {
+      console.warn("Failed to reload Firebase user:", e);
     }
 
     return false;

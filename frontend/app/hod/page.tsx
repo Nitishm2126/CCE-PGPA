@@ -105,7 +105,7 @@ export default function HODDashboardPage() {
       return;
     }
     if (!authLoading && user && user.role !== "hod" && !user.accessible_portals?.includes("hod")) {
-      router.replace("/login/hod");
+      router.replace(`/${user.role}`);
       return;
     }
     if (!authLoading && user && user.must_change_password) {

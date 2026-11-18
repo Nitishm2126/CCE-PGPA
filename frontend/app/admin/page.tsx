@@ -119,7 +119,7 @@ export default function AdminDashboardPage() {
       return;
     }
     if (!authLoading && user && user.role !== "admin") {
-      router.replace("/login/admin");
+      router.replace(`/${user.role}`);
       return;
     }
     if (!authLoading && user && user.must_change_password) {

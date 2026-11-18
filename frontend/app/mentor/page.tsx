@@ -85,7 +85,7 @@ export default function MentorDashboardPage() {
       return;
     }
     if (!authLoading && user && user.role !== "mentor" && user.role !== "hod" && !user.accessible_portals?.includes("mentor")) {
-      router.replace("/login/mentor");
+      router.replace(`/${user.role}`);
       return;
     }
     if (!authLoading && user && user.must_change_password) {

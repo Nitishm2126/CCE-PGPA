@@ -57,6 +57,9 @@ export default function VerifyEmailPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to send verification email.";
       setErrorMessage(msg);
+      if (msg.toLowerCase().includes("too many") || msg.toLowerCase().includes("rate-limit") || msg.toLowerCase().includes("cooldown")) {
+        setCooldown(180); // 3-minute cooldown on rate-limit to protect account
+      }
     } finally {
       setIsSending(false);
     }
