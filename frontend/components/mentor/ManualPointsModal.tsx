@@ -237,10 +237,12 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
 
   const loadPoints = useCallback(async () => {
     if (!activeStudent || !token) return;
+    const targetStudentId = activeStudent.student_id || (activeStudent as { id?: string }).id;
+    if (!targetStudentId) return;
     try {
       setIsLoading(true);
       setErrorMsg(null);
-      const res = await api.getMenteeManualPoints(activeStudent.student_id, token);
+      const res = await api.getMenteeManualPoints(targetStudentId, token);
       setManualPoints(res);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load manual points.";
@@ -337,9 +339,10 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
         setSuccessMsg(`Successfully updated manual point record to ${pts} ${currentScaleRule.unit}.`);
       } else {
         // Create new record
+        const targetStudentId = activeStudent.student_id || (activeStudent as { id?: string }).id || "";
         await api.createMentorManualPoint(
           {
-            student_id: activeStudent.student_id,
+            student_id: targetStudentId,
             component_id: selectedComponentId,
             semester_id: selectedSemesterId,
             points: pts,
