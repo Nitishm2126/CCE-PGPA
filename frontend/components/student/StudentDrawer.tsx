@@ -142,7 +142,7 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[80] overflow-hidden" role="dialog" aria-modal="true">
       {/* Dimmed Backdrop */}
       <div
         onClick={onClose}
@@ -150,41 +150,42 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
         aria-hidden="true"
       />
 
-      <div className="fixed inset-y-0 left-0 max-w-full flex">
-        <div className="w-screen max-w-xs sm:max-w-sm bg-white dark:bg-[#111111] shadow-2xl flex flex-col justify-between overflow-y-auto border-r border-slate-200 dark:border-[#292929] transition-colors">
-          {/* Header */}
-          <div>
-            <div className="p-4 border-b border-[#C9D3DC] dark:border-[#292929] flex items-center justify-between bg-[#F2F5F7] dark:bg-[#111111]">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white dark:bg-[#181818] text-[#1E2A33] dark:text-[#FFD84D] border border-[#C9D3DC] dark:border-[#292929] font-bold text-xs shadow-2xs">
-                  CCE
-                </div>
-                <div>
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-[#1E2A33] dark:text-[#F5F5F5]">
-                    CCE-PGPA
-                  </h2>
-                  <p className="text-[11px] text-[#5C6B77] dark:text-blue-400 font-semibold">Student Portal</p>
-                </div>
+      <div className="fixed inset-y-0 left-0 max-w-full flex h-[100dvh] max-h-[100dvh]">
+        <div className="w-screen max-w-xs sm:max-w-sm bg-white dark:bg-[#111111] shadow-2xl flex flex-col h-[100dvh] max-h-[100dvh] border-r border-slate-200 dark:border-[#292929] transition-colors">
+          {/* Header - Fixed at top */}
+          <div className="p-4 border-b border-slate-200 dark:border-[#292929] flex items-center justify-between bg-slate-50 dark:bg-[#111111] shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFB347]/20 dark:bg-[#181818] text-[#1E2A33] dark:text-[#FFD84D] border border-[#FFB347]/40 dark:border-[#292929] font-bold text-xs shadow-2xs">
+                CCE
               </div>
-
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close navigation menu"
-                className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#181818] transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <div>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-[#F5F5F5]">
+                  CCE-PGPA
+                </h2>
+                <p className="text-[11px] text-[#5C6B77] dark:text-blue-400 font-semibold">Student Portal</p>
+              </div>
             </div>
 
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close navigation menu"
+              className="rounded-lg p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#181818] transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Scrollable Middle Body */}
+          <div className="flex-1 overflow-y-auto overscroll-contain">
             {/* Student ID Card snippet */}
-            <div className="p-4 bg-[#F2F5F7] dark:bg-[#131922] border-b border-[#C9D3DC] dark:border-[#292929]">
+            <div className="p-4 bg-slate-50/70 dark:bg-[#131922] border-b border-slate-200 dark:border-[#292929]">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <p className="text-sm font-bold text-[#1E2A33] dark:text-[#F5F5F5] leading-tight">
+                    <p className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] leading-tight">
                       {studentData?.full_name || "Student"}
                     </p>
                     <DesignationBadge designation="Change Maker" size="sm" />
@@ -193,39 +194,39 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
                     {profile?.register_number || "SEC25CO031"}
                   </p>
                 </div>
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-white dark:bg-blue-950/60 text-[#1E2A33] dark:text-blue-300 border border-[#C9D3DC] dark:border-blue-900/60 shrink-0">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-[#F2F5F7] dark:bg-blue-950/60 text-[#1E2A33] dark:text-blue-300 border border-[#C9D3DC] dark:border-blue-900/60 shrink-0">
                   {profile?.batch || "2025-2029"}
                 </span>
               </div>
 
-              <div className="mt-3 grid grid-cols-3 gap-1.5 text-[11px] text-[#1E2A33] dark:text-slate-300">
-                <div className="bg-white dark:bg-[#181818] p-2 rounded-lg border border-[#C9D3DC] dark:border-[#292929] text-center">
-                  <span className="block text-[9px] text-[#5C6B77] dark:text-[#A3A3A3] font-medium uppercase">Year</span>
-                  <span className="font-bold text-[#1E2A33] dark:text-[#F5F5F5]">{profile?.year || 2}</span>
+              <div className="mt-3 grid grid-cols-3 gap-1.5 text-[11px] text-slate-700 dark:text-slate-300">
+                <div className="bg-white dark:bg-[#181818] p-2 rounded-lg border border-slate-200 dark:border-[#292929] text-center">
+                  <span className="block text-[9px] text-slate-500 dark:text-[#A3A3A3] font-medium uppercase">Year</span>
+                  <span className="font-bold text-slate-900 dark:text-[#F5F5F5]">{profile?.year || 2}</span>
                 </div>
-                <div className="bg-white dark:bg-[#181818] p-2 rounded-lg border border-[#C9D3DC] dark:border-[#292929] text-center">
-                  <span className="block text-[9px] text-[#5C6B77] dark:text-[#A3A3A3] font-medium uppercase">Sec</span>
-                  <span className="font-bold text-[#1E2A33] dark:text-[#F5F5F5]">{profile?.section || "A"}</span>
+                <div className="bg-white dark:bg-[#181818] p-2 rounded-lg border border-slate-200 dark:border-[#292929] text-center">
+                  <span className="block text-[9px] text-slate-500 dark:text-[#A3A3A3] font-medium uppercase">Sec</span>
+                  <span className="font-bold text-slate-900 dark:text-[#F5F5F5]">{profile?.section || "A"}</span>
                 </div>
-                <div className="bg-white dark:bg-[#181818] p-2 rounded-lg border border-[#C9D3DC] dark:border-[#292929] text-center">
-                  <span className="block text-[9px] text-[#5C6B77] dark:text-[#A3A3A3] font-medium uppercase">Sem</span>
-                  <span className="font-bold text-[#1E2A33] dark:text-[#F5F5F5]">{profile?.semester || "III"}</span>
+                <div className="bg-white dark:bg-[#181818] p-2 rounded-lg border border-slate-200 dark:border-[#292929] text-center">
+                  <span className="block text-[9px] text-slate-500 dark:text-[#A3A3A3] font-medium uppercase">Sem</span>
+                  <span className="font-bold text-slate-900 dark:text-[#F5F5F5]">{profile?.semester || "III"}</span>
                 </div>
               </div>
             </div>
 
             {/* Assigned Mentor Card */}
-            <div className="p-3 mx-3 my-3 rounded-xl border border-[#C9D3DC] dark:border-[#292929] bg-white dark:bg-[#181818]">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5C6B77] dark:text-[#A3A3A3]">
+            <div className="p-3 mx-3 my-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818]">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3]">
                 Assigned Faculty Mentor
               </p>
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                <p className="text-xs font-bold text-[#1E2A33] dark:text-[#F5F5F5]">
+                <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">
                   {mentor?.full_name || profile?.original_mentor_name || "LURDHUMARY J"}
                 </p>
                 <DesignationBadge designation="Torch Bearer" size="sm" />
               </div>
-              <p className="text-[11px] text-[#5C6B77] dark:text-[#A3A3A3] mt-0.5">
+              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-0.5">
                 Department of Computer and Communication Engineering
               </p>
             </div>
@@ -238,7 +239,7 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
                   onClose();
                   onSubmitClick();
                 }}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] px-4 py-2.5 text-xs font-bold text-white dark:text-[#0F0F0F] shadow-2xs transition-colors cursor-pointer min-h-[44px]"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#337418] dark:hover:bg-[#275913] dark:text-[#F8F8F8] dark:border-[#337418] px-4 py-2.5 text-xs font-bold shadow-xs transition-colors cursor-pointer min-h-[44px]"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -248,7 +249,7 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
             </div>
 
             {/* Navigation Menu List */}
-            <nav className="mt-4 px-3 space-y-1">
+            <nav className="mt-4 px-3 pb-4 space-y-1">
               {navItems.map((item) => {
                 const isActive = activeTab === item.id;
                 return (
@@ -261,12 +262,12 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
                     }}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer min-h-[44px] ${
                       isActive
-                        ? "bg-[#F2F5F7] dark:bg-blue-950/60 text-[#1E2A33] dark:text-blue-300 border border-[#C9D3DC] dark:border-blue-900/60 shadow-2xs relative before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:bg-[#FFB347] before:rounded-r"
-                        : "text-[#5C6B77] dark:text-[#A3A3A3] hover:text-[#1E2A33] dark:hover:text-[#F5F5F5] hover:bg-[#F2F5F7] dark:hover:bg-[#181818]"
+                        ? "bg-[#FFB347]/20 dark:bg-blue-950/60 text-[#1E2A33] dark:text-blue-300 border border-[#FFB347] dark:border-blue-900/60 shadow-2xs font-bold"
+                        : "text-slate-700 dark:text-[#A3A3A3] hover:text-slate-900 dark:hover:text-[#F5F5F5] hover:bg-slate-100 dark:hover:bg-[#181818]"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={isActive ? "text-[#1E2A33] dark:text-blue-400" : "text-[#5C6B77] dark:text-[#A3A3A3]"}>
+                      <div className={isActive ? "text-[#1E2A33] dark:text-blue-400 font-bold" : "text-slate-500 dark:text-[#A3A3A3]"}>
                         {item.icon}
                       </div>
                       <span>{item.label}</span>
@@ -282,18 +283,22 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
             </nav>
           </div>
 
-          {/* Footer & Sign Out */}
-          <div className="p-4 border-t border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#111111] space-y-2">
+          {/* Pinned Bottom Actions & Sign Out */}
+          <div className="p-4 border-t border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#111111] space-y-2 shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]">
             <Link
               href="/change-password"
-              className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] hover:bg-blue-50 dark:hover:bg-[#181818] hover:text-blue-700 dark:hover:text-blue-300 transition-colors min-h-[44px]"
+              onClick={onClose}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] hover:bg-[#FFB347]/15 dark:hover:bg-[#181818] hover:text-[#1E2A33] dark:hover:text-blue-300 transition-colors min-h-[44px]"
             >
               <span>🔑</span>
               <span>Change Account Password</span>
             </Link>
             <button
               type="button"
-              onClick={onLogout}
+              onClick={() => {
+                onClose();
+                onLogout();
+              }}
               className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-700 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900 transition-colors cursor-pointer min-h-[44px]"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -301,7 +306,7 @@ export const StudentDrawer: React.FC<StudentDrawerProps> = ({
               </svg>
               <span>Sign Out of Portal</span>
             </button>
-            <p className="mt-3 text-[10px] text-center text-slate-500 dark:text-[#A3A3A3]">
+            <p className="mt-1 text-[10px] text-center text-slate-500 dark:text-[#A3A3A3]">
               Department of CCE &bull; Sri Sairam Engineering College
             </p>
           </div>

@@ -18,10 +18,8 @@ import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { MentorBottomNav } from "@/components/mentor/MentorBottomNav";
 import { MentorMobileActionsDrawer } from "@/components/mentor/MentorMobileActionsDrawer";
 import { ManualPointsModal } from "@/components/mentor/ManualPointsModal";
-import { formatSemester } from "@/lib/format-semester";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
-import { ActivityInspectionModal } from "@/components/shared/ActivityInspectionModal";
 
 
 export default function MentorDashboardPage() {
@@ -85,7 +83,7 @@ export default function MentorDashboardPage() {
       return;
     }
     if (!authLoading && user && user.role !== "mentor" && user.role !== "hod" && !user.accessible_portals?.includes("mentor")) {
-      router.replace(`/${user.role}`);
+      router.replace("/login/mentor");
       return;
     }
     if (!authLoading && user && user.must_change_password) {
@@ -234,30 +232,33 @@ export default function MentorDashboardPage() {
     router.replace("/login?signedOut=true");
   };
 
-  const handleOpenSubmission = async (sub: AchievementResponse) => {
+  const handleOpenSubmission = (sub: AchievementResponse) => {
     setSelectedSubmission(sub);
     setReviewRemarks("");
+    setAwardedPoints(
+      sub.evaluated_points !== null && sub.evaluated_points !== undefined
+        ? sub.evaluated_points.toString()
+        : sub.component_metadata?.calculated_points !== undefined
+        ? sub.component_metadata.calculated_points.toString()
+        : ""
+    );
+    setAwardedGrade(sub.evaluated_grade || "");
     setReviewError(null);
     setReviewSuccessMsg(null);
     setShowRevertConfirm(false);
     setRevertRemarks("");
-    if (token) {
-      try {
-        const fullDetail = await api.getAchievementDetail(sub.id, token);
-        if (fullDetail) {
-          setSelectedSubmission(fullDetail);
-        }
-      } catch {
-        // Fallback to initial sub
-      }
-    }
   };
 
-  const handleReviewSubmission = async (action: "approved" | "under_review" | "rejected", remarks: string) => {
+  const handleReviewSubmission = async (action: "approved" | "rejected" | "requested_changes" | "under_review" | "revert") => {
     if (!selectedSubmission || !token) return;
 
-    if (action === "rejected" && !remarks.trim()) {
+    if (action === "rejected" && !reviewRemarks.trim()) {
       setReviewError("Please provide feedback remarks explaining the reason for rejection so the student can rectify and resubmit.");
+      return;
+    }
+
+    if (action === "requested_changes" && !reviewRemarks.trim()) {
+      setReviewError("Please specify what changes are required before moving this submission back to draft.");
       return;
     }
 
@@ -266,11 +267,15 @@ export default function MentorDashboardPage() {
     setReviewSuccessMsg(null);
 
     try {
+      const parsedPoints = awardedPoints.trim() ? parseFloat(awardedPoints.trim()) : undefined;
+      const remarksToSend = action === "revert" ? (revertRemarks.trim() || reviewRemarks.trim() || undefined) : (reviewRemarks.trim() || undefined);
       const updated = await api.reviewMenteeAchievement(
         selectedSubmission.id,
         {
           action,
-          remarks: remarks.trim() || undefined,
+          remarks: remarksToSend,
+          awarded_points: action === "approved" ? parsedPoints : undefined,
+          awarded_grade: action === "approved" && awardedGrade.trim() ? awardedGrade.trim() : undefined,
         },
         token
       );
@@ -281,37 +286,25 @@ export default function MentorDashboardPage() {
       );
       setSelectedSubmission(updated);
       setReviewRemarks("");
+      setRevertRemarks("");
+      setShowRevertConfirm(false);
       setReviewSuccessMsg(
         `Submission marked as ${
           action === "approved"
-            ? "Approved"
+            ? "Verified & Approved"
             : action === "rejected"
             ? "Rejected"
-            : "Under Review"
+            : action === "under_review"
+            ? "Under Review (Pending further evaluation)"
+            : action === "revert"
+            ? "Reverted back to Pending (Verified score reset)"
+            : "Changes Requested (Returned to Draft)"
         }.`
       );
       loadData();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to record review decision.";
       setReviewError(msg);
-      throw err;
-    } finally {
-      setIsSubmittingReview(false);
-    }
-  };
-
-  const handleRevertSubmission = async (remarks: string) => {
-    if (!selectedSubmission || !token) return;
-    setIsSubmittingReview(true);
-    try {
-      const updated = await api.revertMenteeAchievement(selectedSubmission.id, remarks, token);
-      setSubmissions((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-      setSelectedSubmission(updated);
-      loadData();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to revert submission.";
-      setReviewError(msg);
-      throw err;
     } finally {
       setIsSubmittingReview(false);
     }
@@ -794,11 +787,15 @@ export default function MentorDashboardPage() {
                           <span className="inline-flex items-center rounded-md bg-white dark:bg-[#111111] px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5] border border-slate-200 dark:border-[#292929]">
                             {sub.component_name || "PGPA Component"}
                           </span>
-                          {(sub.semester || sub.semester_id || sub.semester_name) && (
+                          {sub.semester ? (
                             <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.5 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                              {formatSemester(sub.semester_id, sub.semester?.display_name || sub.semester_name)}
+                              {sub.semester.display_name}
                             </span>
-                          )}
+                          ) : sub.semester_id ? (
+                            <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.5 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
+                              Semester {sub.semester_id}
+                            </span>
+                          ) : null}
                         </div>
 
                         {/* Title & Organizer */}
@@ -924,11 +921,15 @@ export default function MentorDashboardPage() {
                               <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-[#181818] px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5]">
                                 {sub.component_name || "PGPA Component"}
                               </span>
-                              {(sub.semester || sub.semester_id || sub.semester_name) && (
+                              {sub.semester ? (
                                 <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                                  {formatSemester(sub.semester_id, sub.semester?.display_name || sub.semester_name)}
+                                  {sub.semester.display_name}
                                 </span>
-                              )}
+                              ) : sub.semester_id ? (
+                                <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
+                                  Semester {sub.semester_id}
+                                </span>
+                              ) : null}
                             </div>
                           </td>
 
@@ -1162,28 +1163,510 @@ export default function MentorDashboardPage() {
         )}
       </main>
 
-      {/* Activity Inspection & Verification Modal */}
-      <ActivityInspectionModal
-        isOpen={!!selectedSubmission}
-        onClose={() => setSelectedSubmission(null)}
-        achievement={selectedSubmission}
-        userRole="mentor"
-        canReview={true}
-        onReviewDecision={handleReviewSubmission}
-        isSubmittingReview={isSubmittingReview}
-        onRevert={handleRevertSubmission}
-        onOpenMessages={(ach) => {
-          setSelectedSubmission(null);
-          setDrawerAchievement(ach);
-          setDrawerStudent({
-            id: ach.student_id,
-            name: ach.student_name || "Student",
-            register_number: ach.student_register_number || "",
-          });
-          setIsMessageDrawerOpen(true);
-        }}
-        token={token}
-      />
+      {/* Read-Only Activity Inspector Modal */}
+      {selectedSubmission && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+          <div
+            onClick={() => setSelectedSubmission(null)}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+          />
+
+          <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
+            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#111111] p-4 sm:p-7 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:pb-7 text-left shadow-2xl transition-all border border-slate-200/90 dark:border-[#292929] my-auto max-h-[90dvh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-[#292929]">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="rounded-md bg-blue-50 dark:bg-[#337418]/25 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:text-[#5DD62C] border border-blue-200 dark:border-[#337418]">
+                      {selectedSubmission.component_name || "PGPA Component"}
+                    </span>
+                    {selectedSubmission.semester ? (
+                      <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
+                        {selectedSubmission.semester.display_name}
+                      </span>
+                    ) : selectedSubmission.semester_id ? (
+                      <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
+                        Semester {selectedSubmission.semester_id}
+                      </span>
+                    ) : null}
+                    {renderStatusBadge(selectedSubmission.status)}
+                  </div>
+                  <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-[#F5F5F5] leading-snug">
+                    {selectedSubmission.title}
+                  </h3>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedSubmission(null)}
+                  className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#181818] transition-colors cursor-pointer"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="mt-4 space-y-4 text-xs">
+                {/* Student Identity Card */}
+                <div className="rounded-xl border border-slate-100 dark:border-[#292929] bg-slate-50/70 dark:bg-[#181818] p-3.5 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3]">
+                      Submitting Student
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] mt-0.5">
+                      {selectedSubmission.student_name || "Assigned Student"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono text-xs font-semibold text-blue-700 dark:text-[#5DD62C]">
+                      {selectedSubmission.student_register_number || "—"}
+                    </p>
+                    <p className="text-[11px] text-slate-400 dark:text-[#A3A3A3]">Department of CCE</p>
+                  </div>
+                </div>
+
+                {/* Component-Specific Metadata Breakdown */}
+                {selectedSubmission.component_metadata && (
+                  <div className="rounded-xl border border-indigo-100 dark:border-indigo-900/60 bg-indigo-50/50 dark:bg-indigo-950/30 p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+                        Component-Specific Data &amp; Rubric Criteria
+                      </span>
+                      {selectedSubmission.evaluated_grade && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-600 text-white font-bold text-xs shadow-2xs">
+                          Rubric Grade: {selectedSubmission.evaluated_grade} ({selectedSubmission.evaluated_grade_points || 0} GP)
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                      {selectedSubmission.component_metadata.gpa !== undefined && (
+                        <div className="rounded-lg bg-white dark:bg-[#181818] p-2 border border-indigo-200/60 dark:border-[#292929]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Anna Univ GPA</span>
+                          <p className="font-bold text-slate-900 dark:text-[#F5F5F5] text-sm">{selectedSubmission.component_metadata.gpa} / 10.00</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.club_name && (
+                        <div className="rounded-lg bg-white dark:bg-[#181818] p-2 border border-indigo-200/60 dark:border-[#292929]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Club / Cell</span>
+                          <p className="font-bold text-slate-900 dark:text-[#F5F5F5] truncate">{selectedSubmission.component_metadata.club_name}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.role_category && (
+                        <div className="rounded-lg bg-white dark:bg-[#181818] p-2 border border-indigo-200/60 dark:border-[#292929]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Role Category</span>
+                          <p className="font-bold text-slate-900 dark:text-[#F5F5F5] truncate">{selectedSubmission.component_metadata.role_category}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.event_level && (
+                        <div className="rounded-lg bg-white dark:bg-[#181818] p-2 border border-indigo-200/60 dark:border-[#292929]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Event Level</span>
+                          <p className="font-bold text-slate-900 dark:text-[#F5F5F5] truncate">{selectedSubmission.component_metadata.event_level}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.calculated_points !== undefined && (
+                        <div className="rounded-lg bg-white dark:bg-[#181818] p-2 border border-indigo-200/60 dark:border-[#292929]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Table 7.1 Points</span>
+                          <p className="font-bold text-indigo-700 dark:text-indigo-400 text-sm">{selectedSubmission.component_metadata.calculated_points} Points</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.points !== undefined && (
+                        <div className="rounded-lg bg-white dark:bg-[#181818] p-2 border border-indigo-200/60 dark:border-[#292929]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Calculated Points</span>
+                          <p className="font-bold text-slate-900 dark:text-[#F5F5F5] text-sm">{selectedSubmission.component_metadata.points} pts</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.stage_tier && (
+                        <div className="rounded-lg bg-white dark:bg-[#181818] p-2 border border-indigo-200/60 dark:border-[#292929]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Stage / Award</span>
+                          <p className="font-bold text-slate-900 dark:text-[#F5F5F5] truncate">{selectedSubmission.component_metadata.stage_tier}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.component_metadata.certificate_type && (
+                        <div className="rounded-lg bg-white dark:bg-[#181818] p-2 border border-indigo-200/60 dark:border-[#292929]">
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Certificate Type</span>
+                          <p className="font-bold text-slate-900 dark:text-[#F5F5F5] truncate">{selectedSubmission.component_metadata.certificate_type}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Event Details Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Activity Type</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5]">{selectedSubmission.activity_type || "Standard"}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Organizer / Host</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5] truncate block">{selectedSubmission.organizer || "—"}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Event Date</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5]">{formatDate(selectedSubmission.event_date)}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Outcome / Score</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5]">{selectedSubmission.outcome || "Completed"}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Date Submitted</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5]">{formatDate(selectedSubmission.submitted_at || selectedSubmission.created_at)}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
+                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Submission State</span>
+                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5] capitalize">{selectedSubmission.status}</span>
+                  </div>
+                </div>
+
+                {/* Certificate Status Banner */}
+                {selectedSubmission.certificate_status === "yet_to_receive" && (
+                  <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+                    <svg className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="font-bold">Certificate Pending Issuance</p>
+                      <p className="mt-0.5 text-[11px] text-amber-800 dark:text-amber-300">
+                        Student completed this activity; the organizer has not yet issued the official certificate. Student can upload it later once received.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedSubmission.certificate_status === "not_provided" && (
+                  <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] p-3 text-xs text-slate-700 dark:text-[#A3A3A3] flex items-start gap-2.5">
+                    <svg className="h-4 w-4 text-slate-500 dark:text-[#A3A3A3] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="font-bold text-slate-900 dark:text-[#F5F5F5]">No Certificate Provided</p>
+                      <p className="mt-0.5 text-[11px] text-slate-600 dark:text-[#A3A3A3]">
+                        No certificate is issued for this activity. Verify participation based on the event details and student remarks.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Student Remarks */}
+                {selectedSubmission.remarks && (
+                  <div>
+                    <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] text-[11px] mb-1">
+                      Student Remarks
+                    </p>
+                    <div className="rounded-xl border border-blue-200/80 dark:border-[#337418]/60 p-3 bg-blue-50/40 dark:bg-[#337418]/20 text-slate-800 dark:text-[#F5F5F5] leading-relaxed font-medium text-xs">
+                      {selectedSubmission.remarks}
+                    </div>
+                  </div>
+                )}
+
+                {/* Description */}
+                {selectedSubmission.description && (
+                  <div>
+                    <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] text-[11px] mb-1">
+                      Summary & Description
+                    </p>
+                    <div className="rounded-xl border border-slate-200/80 dark:border-[#292929] p-3 bg-slate-50/50 dark:bg-[#181818] text-slate-700 dark:text-[#A3A3A3] leading-relaxed">
+                      {selectedSubmission.description}
+                    </div>
+                  </div>
+                )}
+
+                {/* Evidence Files */}
+                <div>
+                  <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] text-[11px] mb-1.5">
+                    Supporting Evidence ({selectedSubmission.files?.length || 0})
+                  </p>
+                  {selectedSubmission.files && selectedSubmission.files.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedSubmission.files.map((file) => (
+                        <div
+                          key={file.id}
+                          className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xs"
+                        >
+                          <div className="flex items-center gap-2.5 truncate">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-[#337418]/25 text-blue-600 dark:text-[#5DD62C] shrink-0">
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                            <div className="truncate">
+                              <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] truncate">{file.original_filename}</p>
+                              <p className="text-[11px] text-slate-400 dark:text-[#A3A3A3]">
+                                {(file.size_bytes / 1024).toFixed(1)} KB &bull; {file.mime_type}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleViewEvidence(file.id)}
+                            disabled={isOpeningFile === file.id}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1.5 transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                          >
+                            {isOpeningFile === file.id ? (
+                              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            ) : (
+                              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            )}
+                            <span>Open Document</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 dark:text-[#A3A3A3] italic">No evidence files were attached to this submission.</p>
+                  )}
+
+                  {fileError && (
+                    <p className="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium">{fileError}</p>
+                  )}
+                </div>
+
+                {/* Mentor Review & Verification Decision Box */}
+                <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/70 dark:bg-[#181818]/70 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-slate-900 dark:text-[#F5F5F5] text-xs flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-[#5DD62C]" />
+                        Faculty Evaluation &amp; Verification Action
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-0.5">
+                        Inspect evidence and record formal decision with authoritative rubric evaluation.
+                      </p>
+                    </div>
+                    {renderStatusBadge(selectedSubmission.status)}
+                  </div>
+
+                  {reviewSuccessMsg && (
+                    <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
+                      {reviewSuccessMsg}
+                    </div>
+                  )}
+
+                  {reviewError && (
+                    <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-semibold">
+                      {reviewError}
+                    </div>
+                  )}
+
+                  {selectedSubmission.status === "pending" || selectedSubmission.status === "under_review" ? (
+                    <div className="space-y-3 pt-1">
+                      {/* Rubric Points & Grade Confirmation */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#292929]">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                            Awarded Points (Table 7.1 / Rubric)
+                          </label>
+                          <input
+                            type="number"
+                            step="1"
+                            value={awardedPoints}
+                            onChange={(e) => setAwardedPoints(e.target.value)}
+                            placeholder="e.g. 100, 200, 500"
+                            disabled={isSubmittingReview}
+                            className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                            Awarded Grade (O, A+, A, B+, B, C)
+                          </label>
+                          <input
+                            type="text"
+                            value={awardedGrade}
+                            onChange={(e) => setAwardedGrade(e.target.value)}
+                            placeholder="e.g. O, A+, A"
+                            disabled={isSubmittingReview}
+                            className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                          Review Remarks / Feedback (Required for Rejection or Changes)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={reviewRemarks}
+                          onChange={(e) => setReviewRemarks(e.target.value)}
+                          placeholder="e.g., Verified against official certificate or portal record."
+                          disabled={isSubmittingReview}
+                          className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#111111] p-2.5 text-xs text-slate-900 dark:text-[#F5F5F5] placeholder-slate-400 dark:placeholder-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        {/* 1. Approve */}
+                        <button
+                          type="button"
+                          onClick={() => handleReviewSubmission("approved")}
+                          disabled={isSubmittingReview}
+                          id="btn-mentor-approve"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[38px]"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>Approve</span>
+                        </button>
+
+                        {/* 2. Under Review */}
+                        <button
+                          type="button"
+                          onClick={() => handleReviewSubmission("under_review")}
+                          disabled={isSubmittingReview}
+                          id="btn-mentor-under-review"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 dark:bg-[#FFD84D] dark:hover:bg-[#FACC15] text-white dark:text-black font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[38px]"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Under Review</span>
+                        </button>
+
+                        {/* 3. Reject */}
+                        <button
+                          type="button"
+                          onClick={() => handleReviewSubmission("rejected")}
+                          disabled={isSubmittingReview}
+                          id="btn-mentor-reject"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[38px]"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          <span>Reject</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 pt-1">
+                      <div className="p-3 bg-white dark:bg-[#111111] rounded-xl border border-slate-200/80 dark:border-[#292929] text-[11px] text-slate-600 dark:text-[#A3A3A3] flex items-center justify-between">
+                        <span>This activity has already been evaluated and is currently marked as <strong className="capitalize text-slate-800 dark:text-[#F5F5F5]">{selectedSubmission.status}</strong>.</span>
+                        {selectedSubmission.updated_at && (
+                          <span className="text-slate-400 dark:text-[#A3A3A3] font-mono text-[10px]">Updated: {formatDate(selectedSubmission.updated_at)}</span>
+                        )}
+                      </div>
+
+                      {/* Revert to Pending Action */}
+                      {(selectedSubmission.status === "approved" || selectedSubmission.status === "rejected") && (
+                        <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 p-3.5 space-y-2.5">
+                          <div className="flex items-start gap-2">
+                            <svg className="h-4 w-4 text-amber-600 dark:text-[#FFD84D] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <div className="text-xs">
+                              <p className="font-bold text-amber-900 dark:text-[#FFD84D]">Revert Verification / Return to Pending</p>
+                              <p className="text-[11px] text-amber-800 dark:text-[#A3A3A3] mt-0.5">
+                                If this submission was approved or rejected by mistake, you can revert it back to Pending. This will recalculate the student's verified PGPA score and restore the submission to the pending review queue.
+                              </p>
+                            </div>
+                          </div>
+
+                          {!showRevertConfirm ? (
+                            <button
+                              type="button"
+                              onClick={() => setShowRevertConfirm(true)}
+                              disabled={isSubmittingReview}
+                              id="btn-mentor-revert-trigger"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 dark:bg-[#FFD84D] dark:hover:bg-[#FACC15] text-white dark:text-black font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[36px]"
+                            >
+                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+                              </svg>
+                              <span>Revert Verification to Pending</span>
+                            </button>
+                          ) : (
+                            <div className="p-3 bg-white dark:bg-[#111111] rounded-xl border border-amber-300 dark:border-amber-700/80 space-y-2">
+                              <p className="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5]">
+                                Are you sure you want to revert this submission back to Pending?
+                              </p>
+                              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3]">
+                                Verified points and grading results for this activity will be reset and recalculated.
+                              </p>
+                              <input
+                                type="text"
+                                value={revertRemarks}
+                                onChange={(e) => setRevertRemarks(e.target.value)}
+                                placeholder="Reason for reversion (e.g. Need re-examination of document)"
+                                className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-amber-500"
+                              />
+                              <div className="flex items-center gap-2 pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleReviewSubmission("revert")}
+                                  disabled={isSubmittingReview}
+                                  id="btn-mentor-revert-confirm"
+                                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition cursor-pointer disabled:opacity-50"
+                                >
+                                  {isSubmittingReview ? (
+                                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                  ) : (
+                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                  <span>Yes, Revert to Pending</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowRevertConfirm(false)}
+                                  disabled={isSubmittingReview}
+                                  className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-[#292929] text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] hover:bg-slate-100 dark:hover:bg-[#181818] transition cursor-pointer"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-[#292929] flex items-center justify-between gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sub = selectedSubmission;
+                    setSelectedSubmission(null);
+                    setDrawerAchievement(sub);
+                    setDrawerStudent({
+                      id: sub.student_id,
+                      name: sub.student_name || "Mentee",
+                      register_number: sub.student_register_number || undefined,
+                    });
+                    setIsMessageDrawerOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                  </svg>
+                  <span>Send Remarks / Message</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedSubmission(null)}
+                  className="rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] transition-colors cursor-pointer"
+                >
+                  Close Inspection
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Messages Conversation Drawer */}
       {isMessageDrawerOpen && drawerStudent && (

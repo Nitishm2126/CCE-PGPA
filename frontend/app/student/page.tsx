@@ -29,7 +29,6 @@ import { PGPAPerformanceTracker } from "@/components/student/PGPAPerformanceTrac
 import { ManualPointsSection } from "@/components/student/ManualPointsSection";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
-import { ActivityInspectionModal } from "@/components/shared/ActivityInspectionModal";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
@@ -62,10 +61,9 @@ export default function StudentDashboardPage() {
   const [submittingReviewId, setSubmittingReviewId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Edit, Delete, and Inspect Modals state
+  // Edit and Delete Modals state
   const [editingAchievement, setEditingAchievement] = useState<AchievementResponse | null>(null);
   const [deletingAchievement, setDeletingAchievement] = useState<AchievementResponse | null>(null);
-  const [inspectAchievement, setInspectAchievement] = useState<AchievementResponse | null>(null);
 
   // Messages & Remarks state
   const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
@@ -80,7 +78,7 @@ export default function StudentDashboardPage() {
       return;
     }
     if (!authLoading && user && user.role !== "student") {
-      router.replace(`/${user.role}`);
+      router.replace("/login/student");
       return;
     }
     if (!authLoading && user && user.must_change_password) {
@@ -472,8 +470,8 @@ export default function StudentDashboardPage() {
         unreadMessagesCount={unreadMessagesCount}
       />
 
-      {/* 3. Main Dashboard Body Container with Harmonious Spacing and Viewport Clearance */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-8 md:pb-10 space-y-6">
+      {/* 3. Main Dashboard Body Container with Harmonious Spacing, Safe-Area Clearance, and Zero Horizontal Overflow */}
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] md:pb-10 space-y-6 overflow-x-hidden min-w-0">
         {/* Desktop Segment Navigation (md+) */}
         <StudentDesktopNav
           activeTab={activeTab}
@@ -517,7 +515,7 @@ export default function StudentDashboardPage() {
               <button
                 type="button"
                 onClick={() => handleOpenSubmitModal(null)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] text-white dark:text-[#0F0F0F] font-semibold text-xs shadow-2xs active:scale-95 transition-all cursor-pointer self-start sm:self-auto"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#337418] dark:hover:bg-[#275913] dark:text-[#F8F8F8] dark:border-[#337418] font-bold text-xs shadow-xs active:scale-95 transition-all cursor-pointer self-start sm:self-auto"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -668,7 +666,6 @@ export default function StudentDashboardPage() {
               onSubmitClick={() => handleOpenSubmitModal(null)}
               onViewAll={() => setActiveTab("activity")}
               onSubmitForReview={handleSubmitForReview}
-              onInspectAchievement={(item) => setInspectAchievement(item)}
               onEditAchievement={(item) => setEditingAchievement(item)}
               onDeleteAchievement={(item) => setDeletingAchievement(item)}
               onOpenMessages={(item) => {
@@ -712,7 +709,6 @@ export default function StudentDashboardPage() {
               onRetry={loadAchievements}
               onSubmitClick={() => handleOpenSubmitModal(null)}
               onSubmitForReview={handleSubmitForReview}
-              onInspectAchievement={(item) => setInspectAchievement(item)}
               onEditAchievement={(item) => setEditingAchievement(item)}
               onDeleteAchievement={(item) => setDeletingAchievement(item)}
               onOpenMessages={(item) => {
@@ -808,23 +804,6 @@ export default function StudentDashboardPage() {
           onClose={() => setDeletingAchievement(null)}
           achievement={deletingAchievement}
           onConfirmDelete={handleConfirmDeleteAchievement}
-        />
-      )}
-
-      {/* Activity Inspection Modal */}
-      {inspectAchievement && (
-        <ActivityInspectionModal
-          isOpen={!!inspectAchievement}
-          onClose={() => setInspectAchievement(null)}
-          achievement={inspectAchievement}
-          userRole="student"
-          canReview={false}
-          token={token}
-          onOpenMessages={(ach) => {
-            setInspectAchievement(null);
-            setActiveAchievementForMessages(ach);
-            setIsMessageDrawerOpen(true);
-          }}
         />
       )}
 

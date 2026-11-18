@@ -599,7 +599,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
           />
 
           <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
-            <div className="relative w-full max-w-4xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-slate-900 p-5 sm:p-7 text-left shadow-2xl transition-all border border-slate-200/90 dark:border-slate-800 my-auto max-h-[90vh] overflow-y-auto">
+            <div className="relative w-full max-w-4xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-slate-900 p-4 sm:p-7 pb-[calc(2.5rem+env(safe-area-inset-bottom,0px))] sm:pb-7 text-left shadow-2xl transition-all border border-slate-200/90 dark:border-slate-800 my-auto max-h-[90dvh] overflow-y-auto">
               {/* Modal Header */}
               <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
                 <div>

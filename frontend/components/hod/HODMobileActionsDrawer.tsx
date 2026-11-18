@@ -62,7 +62,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label="HOD Actions & Tools"
-        className="relative z-10 w-full max-h-[85vh] bg-white dark:bg-[#111111] rounded-t-3xl border-t border-slate-200/90 dark:border-white/10 shadow-2xl p-5 safe-pb flex flex-col overflow-y-auto animate-apple-sheet-up transition-colors"
+        className="relative z-10 w-full max-h-[90dvh] bg-white dark:bg-[#111111] rounded-t-3xl border-t border-slate-200/90 dark:border-white/10 shadow-2xl p-5 pb-[max(2rem,env(safe-area-inset-bottom,0px))] flex flex-col overflow-y-auto animate-apple-sheet-up transition-colors"
       >
         {/* Apple Drag Handle */}
         <div className="w-10 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mb-4" />

@@ -10,83 +10,17 @@
   --surface-elevated: #F2F5F7;
   --surface-hover: #F2F5F7;
   --border: #C9D3DC;
-  --border-subtle: #C9D3DC;
+  --border-subtle: #E2E8F0;
   --text-primary: #1E2A33;
   --text-secondary: #5C6B77;
-  --text-muted: #8899A6;
-  --accent: #FFB347; /* Warm Amber */
+  --text-muted: #82929E;
+  --accent: #FFB347; /* Official Warm Amber primary accent */
   --accent-hover: #FFA21A;
+  --accent-active: #E69528;
   --accent-subtle: rgba(255, 179, 71, 0.15);
   --accent-gold: #FFB347;
   --accent-gold-hover: #FFA21A;
-  --accent-gold-subtle: rgba(255, 179, 71, 0.15);
-
-  /* Light Theme Official Institutional ERP Palette Mapping */
-  --color-slate-950: #10171D;
-  --color-slate-900: #1E2A33; /* Deep Charcoal */
-  --color-slate-850: #1E2A33;
-  --color-slate-800: #1E2A33;
-  --color-slate-700: #2B3A44;
-  --color-slate-600: #5C6B77; /* Muted Charcoal */
-  --color-slate-500: #5C6B77;
-  --color-slate-400: #8899A6;
-  --color-slate-300: #C9D3DC; /* Blue Grey */
-  --color-slate-200: #C9D3DC; /* Blue Grey */
-  --color-slate-100: #F2F5F7; /* Cool Grey */
-  --color-slate-50: #FFFFFF;
-
-  /* Neutralize Blue/Indigo/Sky/Purple scales in Light Theme to Official Palette */
-  --color-blue-950: #10171D;
-  --color-blue-900: #1E2A33;
-  --color-blue-800: #1E2A33;
-  --color-blue-700: #131B21;
-  --color-blue-600: #1E2A33; /* Primary action button: Deep Charcoal */
-  --color-blue-500: #1E2A33;
-  --color-blue-400: #5C6B77;
-  --color-blue-300: #C9D3DC;
-  --color-blue-200: #C9D3DC; /* Blue Grey borders */
-  --color-blue-100: #F2F5F7; /* Cool Grey */
-  --color-blue-50: #F2F5F7;  /* Cool Grey secondary surfaces / dropzones */
-
-  --color-indigo-950: #10171D;
-  --color-indigo-900: #1E2A33;
-  --color-indigo-800: #1E2A33;
-  --color-indigo-700: #131B21;
-  --color-indigo-600: #1E2A33;
-  --color-indigo-500: #1E2A33;
-  --color-indigo-400: #5C6B77;
-  --color-indigo-300: #C9D3DC;
-  --color-indigo-200: #C9D3DC;
-  --color-indigo-100: #F2F5F7;
-  --color-indigo-50: #F2F5F7;
-
-  --color-sky-950: #10171D;
-  --color-sky-900: #1E2A33;
-  --color-sky-800: #1E2A33;
-  --color-sky-700: #131B21;
-  --color-sky-600: #1E2A33;
-  --color-sky-500: #1E2A33;
-  --color-sky-400: #5C6B77;
-  --color-sky-300: #C9D3DC;
-  --color-sky-200: #C9D3DC;
-  --color-sky-100: #F2F5F7;
-  --color-sky-50: #F2F5F7;
-
-  --color-purple-950: #10171D;
-  --color-purple-900: #1E2A33;
-  --color-purple-800: #1E2A33;
-  --color-purple-700: #131B21;
-  --color-purple-600: #1E2A33;
-  --color-purple-500: #1E2A33;
-  --color-purple-400: #5C6B77;
-  --color-purple-300: #C9D3DC;
-  --color-purple-200: #C9D3DC;
-  --color-purple-100: #F2F5F7;
-  --color-purple-50: #F2F5F7;
-
-  /* Warm Amber Accent Scale */
-  --color-amber-500: #FFB347;
-  --color-amber-600: #E69528;
+  --accent-gold-subtle: rgba(255, 179, 71, 0.18);
 }
 
 .dark {
@@ -336,169 +270,6 @@ html {
   --tw-ring-color: #5DD62C !important;
 }
 
-/* ==========================================================================
-   OFFICIAL LIGHT THEME SYSTEM ENFORCEMENT
-   Palette:
-   - White: #FFFFFF
-   - Cool Grey: #F2F5F7
-   - Blue Grey: #C9D3DC
-   - Warm Amber: #FFB347
-   - Deep Charcoal: #1E2A33
-   Strictly active when NOT in dark mode.
-   Dark theme (.dark) remains 100% UNTOUCHED and strictly protected.
-   ========================================================================== */
-
-/* Main canvas background and primary typography */
-html:not(.dark),
-html:not(.dark) body {
-  background-color: #FFFFFF !important;
-  color: #1E2A33 !important;
-}
-
-/* Secondary sections and light surfaces */
-html:not(.dark) [class*="bg-slate-50"],
-html:not(.dark) [class*="bg-slate-100"],
-html:not(.dark) [class*="bg-blue-50"],
-html:not(.dark) [class*="bg-sky-50"],
-html:not(.dark) [class*="bg-indigo-50"],
-html:not(.dark) [class*="bg-purple-50"] {
-  background-color: #F2F5F7 !important;
-}
-
-/* Cards and subtle surfaces: crisp white with Blue Grey borders */
-html:not(.dark) [class*="bg-white"] {
-  background-color: #FFFFFF !important;
-}
-
-/* Primary action buttons across all portals: Deep Charcoal #1E2A33 with white text */
-html:not(.dark) button[class*="bg-blue-600"],
-html:not(.dark) button[class*="bg-blue-700"],
-html:not(.dark) button[class*="bg-sky-600"],
-html:not(.dark) button[class*="bg-sky-700"],
-html:not(.dark) button[class*="bg-indigo-600"],
-html:not(.dark) button[class*="bg-indigo-700"],
-html:not(.dark) button[class*="bg-purple-600"],
-html:not(.dark) button[class*="bg-purple-700"],
-html:not(.dark) a[class*="bg-blue-600"],
-html:not(.dark) a[class*="bg-sky-600"],
-html:not(.dark) a[class*="bg-indigo-600"],
-html:not(.dark) a[class*="bg-purple-600"] {
-  background-color: #1E2A33 !important;
-  color: #FFFFFF !important;
-  border-color: transparent !important;
-}
-
-html:not(.dark) button[class*="hover:bg-blue-700"]:hover,
-html:not(.dark) button[class*="hover:bg-blue-800"]:hover,
-html:not(.dark) button[class*="hover:bg-sky-700"]:hover,
-html:not(.dark) button[class*="hover:bg-indigo-700"]:hover,
-html:not(.dark) button[class*="hover:bg-purple-700"]:hover,
-html:not(.dark) button[class*="hover:bg-blue-600"]:hover,
-html:not(.dark) a[class*="hover:bg-blue-700"]:hover,
-html:not(.dark) a[class*="hover:bg-sky-700"]:hover,
-html:not(.dark) a[class*="hover:bg-indigo-700"]:hover,
-html:not(.dark) a[class*="hover:bg-purple-700"]:hover {
-  background-color: #131B21 !important;
-  color: #FFFFFF !important;
-}
-
-html:not(.dark) button[class*="active:bg-blue-800"]:active,
-html:not(.dark) button[class*="active:bg-indigo-800"]:active,
-html:not(.dark) button[class*="active:bg-purple-800"]:active {
-  background-color: #0E1419 !important;
-}
-
-/* Section number indicators: Deep Charcoal with white text */
-html:not(.dark) span[class*="bg-blue-600"][class*="rounded-full"] {
-  background-color: #1E2A33 !important;
-  color: #FFFFFF !important;
-}
-
-/* Text: Deep Charcoal #1E2A33 and Muted Charcoal #5C6B77 */
-html:not(.dark) [class*="text-blue-900"],
-html:not(.dark) [class*="text-indigo-900"],
-html:not(.dark) [class*="text-slate-900"],
-html:not(.dark) [class*="text-slate-800"] {
-  color: #1E2A33 !important;
-}
-
-html:not(.dark) [class*="text-blue-700"],
-html:not(.dark) [class*="text-blue-600"],
-html:not(.dark) [class*="text-indigo-700"],
-html:not(.dark) [class*="text-indigo-600"],
-html:not(.dark) [class*="text-purple-700"],
-html:not(.dark) [class*="text-purple-600"],
-html:not(.dark) [class*="text-sky-700"],
-html:not(.dark) [class*="text-sky-600"] {
-  color: #1E2A33 !important;
-}
-
-html:not(.dark) [class*="text-slate-500"],
-html:not(.dark) [class*="text-slate-600"],
-html:not(.dark) [class*="text-blue-500"],
-html:not(.dark) [class*="text-indigo-500"] {
-  color: #5C6B77 !important;
-}
-
-/* Borders and dividers: Blue Grey #C9D3DC */
-html:not(.dark) [class*="border-blue-200"],
-html:not(.dark) [class*="border-blue-300"],
-html:not(.dark) [class*="border-indigo-200"],
-html:not(.dark) [class*="border-indigo-300"],
-html:not(.dark) [class*="border-sky-200"],
-html:not(.dark) [class*="border-purple-200"],
-html:not(.dark) [class*="border-slate-200"],
-html:not(.dark) [class*="border-slate-300"] {
-  border-color: #C9D3DC !important;
-}
-
-/* Focus and active input states: Warm Amber subtle ring & border */
-html:not(.dark) input:focus,
-html:not(.dark) select:focus,
-html:not(.dark) textarea:focus,
-html:not(.dark) [class*="focus:border-blue-500"]:focus,
-html:not(.dark) [class*="focus:border-indigo-500"]:focus,
-html:not(.dark) [class*="focus:border-sky-500"]:focus {
-  border-color: #FFB347 !important;
-  outline-color: #FFB347 !important;
-  --tw-ring-color: rgba(255, 179, 71, 0.35) !important;
-  box-shadow: 0 0 0 2px rgba(255, 179, 71, 0.35) !important;
-}
-
-/* Upload dropzones: Cool Grey #F2F5F7 background with Blue Grey #C9D3DC border, Amber hover */
-html:not(.dark) [class*="border-dashed"] {
-  background-color: #F2F5F7 !important;
-  border-color: #C9D3DC !important;
-}
-html:not(.dark) [class*="border-dashed"]:hover {
-  border-color: #FFB347 !important;
-}
-
-/* Active navigation indicators: Charcoal text with subtle Warm Amber indicator */
-html:not(.dark) nav button[class*="bg-blue-50"],
-html:not(.dark) nav a[class*="bg-blue-50"] {
-  background-color: #F2F5F7 !important;
-  color: #1E2A33 !important;
-  border-color: #C9D3DC !important;
-  box-shadow: inset 3px 0 0 0 #FFB347 !important;
-}
-
-/* Selected option states / Radio buttons: Charcoal with subtle ring */
-html:not(.dark) button[class*="border-blue-600"][class*="bg-blue-50"] {
-  background-color: #F2F5F7 !important;
-  border-color: #1E2A33 !important;
-  box-shadow: 0 0 0 1px #1E2A33 !important;
-}
-html:not(.dark) div[class*="bg-blue-600"][class*="rounded-full"] {
-  background-color: #1E2A33 !important;
-}
-
-/* Highlighted tabs / badge states */
-html:not(.dark) [class*="bg-blue-100"] {
-  background-color: #F2F5F7 !important;
-  color: #1E2A33 !important;
-}
-
 /* Safe area padding utilities & mobile navigation architecture */
 .safe-pb {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
@@ -565,14 +336,14 @@ textarea {
 }
 
 
-/* Ensure mobile bottom navigation bars across all portals are permanently docked at viewport bottom with GPU acceleration, z-[60], and 0 margins */
+/* Ensure mobile bottom navigation bars across all portals are permanently docked at viewport bottom with GPU acceleration, z-[70], and 0 margins */
 nav[aria-label$="Mobile Navigation"] {
   position: fixed !important;
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
   width: 100% !important;
-  z-index: 60 !important;
+  z-index: 70 !important;
   margin: 0 !important;
   margin-bottom: 0 !important;
   transform: translateZ(0) !important;
@@ -581,6 +352,68 @@ nav[aria-label$="Mobile Navigation"] {
   -webkit-backface-visibility: hidden !important;
   will-change: transform !important;
   padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+
+/* ==========================================================================
+   LIGHT THEME: OFFICIAL WARM AMBER + CHARCOAL PALETTE ENFORCEMENT
+   Applies only when .dark is NOT present.
+   - White: #FFFFFF
+   - Cool Grey: #F2F5F7
+   - Blue Grey: #C9D3DC
+   - Warm Amber: #FFB347 (Primary Accent)
+   - Deep Charcoal: #1E2A33 (High-Contrast Text / Action Labels)
+   - Muted Charcoal: #5C6B77
+   Dark Theme (.dark) remains 100% untouched.
+   ========================================================================== */
+html:not(.dark) [class*="bg-blue-600"],
+html:not(.dark) [class*="bg-blue-500"],
+html:not(.dark) [class*="bg-blue-700"],
+html:not(.dark) [class*="bg-indigo-600"],
+html:not(.dark) [class*="bg-indigo-500"] {
+  background-color: #FFB347 !important;
+  color: #1E2A33 !important;
+  font-weight: 700 !important;
+  border-color: #FFA21A !important;
+}
+
+html:not(.dark) [class*="hover:bg-blue-700"]:hover,
+html:not(.dark) [class*="hover:bg-blue-600"]:hover,
+html:not(.dark) [class*="hover:bg-indigo-700"]:hover {
+  background-color: #FFA21A !important;
+}
+
+html:not(.dark) [class*="active:bg-blue-800"]:active,
+html:not(.dark) [class*="active:bg-blue-700"]:active {
+  background-color: #E69528 !important;
+}
+
+html:not(.dark) [class*="bg-blue-50"],
+html:not(.dark) [class*="bg-blue-100"],
+html:not(.dark) [class*="bg-indigo-50"],
+html:not(.dark) [class*="bg-purple-50"] {
+  background-color: rgba(255, 179, 71, 0.15) !important;
+  color: #1E2A33 !important;
+  border-color: rgba(255, 179, 71, 0.4) !important;
+}
+
+html:not(.dark) [class*="text-blue-600"],
+html:not(.dark) [class*="text-blue-700"],
+html:not(.dark) [class*="text-indigo-600"],
+html:not(.dark) [class*="text-purple-600"],
+html:not(.dark) [class*="text-purple-700"] {
+  color: #1E2A33 !important;
+}
+
+html:not(.dark) [class*="border-blue-200"],
+html:not(.dark) [class*="border-blue-300"],
+html:not(.dark) [class*="border-purple-200"] {
+  border-color: #C9D3DC !important;
+}
+
+html:not(.dark) [class*="focus:ring-blue-"]:focus,
+html:not(.dark) [class*="focus:ring-purple-"]:focus,
+html:not(.dark) [class*="focus:ring-indigo-"]:focus {
+  --tw-ring-color: #FFB347 !important;
 }
 
 /* Apple touch manipulation & tap feedback */

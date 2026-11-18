@@ -65,12 +65,12 @@ export const StudentPGPASummaryCard: React.FC<StudentPGPASummaryCardProps> = ({
   const pgpa = pgpaData?.pgpa ?? null;
 
   return (
-    <div className="bg-white dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-[#292929] p-5 sm:p-6 shadow-xs space-y-5 transition-colors">
+    <div className="bg-white dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-[#292929] p-4 sm:p-6 shadow-xs space-y-5 transition-colors overflow-x-hidden min-w-0 max-w-full">
       {/* 1. Header & Semester Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-[#292929]">
         <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="p-1.5 rounded-lg bg-[#FFB347]/20 dark:bg-blue-950/60 text-[#1E2A33] dark:text-blue-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
@@ -84,11 +84,11 @@ export const StudentPGPASummaryCard: React.FC<StudentPGPASummaryCardProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap self-start sm:self-auto w-full sm:w-auto">
           <select
             value={selectedSemesterId}
             onChange={(e) => setSelectedSemesterId(e.target.value)}
-            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-800 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-800 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#FFB347] cursor-pointer max-w-full"
           >
             {semesters.map((s) => (
               <option key={s.id} value={s.id}>
@@ -101,7 +101,7 @@ export const StudentPGPASummaryCard: React.FC<StudentPGPASummaryCardProps> = ({
             <button
               type="button"
               onClick={onNavigateComponents}
-              className="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-semibold text-xs hover:bg-blue-100 transition cursor-pointer"
+              className="px-3 py-1.5 rounded-xl border border-[#FFB347]/40 dark:border-blue-900/60 bg-[#FFB347]/15 dark:bg-blue-950/40 text-[#1E2A33] dark:text-blue-300 font-bold text-xs hover:bg-[#FFB347]/25 transition cursor-pointer shrink-0"
             >
               Browse 14 Components
             </button>
