@@ -209,9 +209,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsProvisioned(false);
 
     let normalizedEmail = email.trim().toLowerCase();
-    // Normalize student ID e.g. SEC25CO001 -> sec25co001@sairamtap.edu.in
+    // Normalize user ID: Students -> @sairamtap.edu.in, Mentors/HOD -> @sairam.edu.in
     if (!normalizedEmail.includes("@")) {
-      normalizedEmail = `${normalizedEmail}@sairamtap.edu.in`;
+      if (portalRole === "mentor" || portalRole === "hod") {
+        normalizedEmail = `${normalizedEmail}@sairam.edu.in`;
+      } else {
+        normalizedEmail = `${normalizedEmail}@sairamtap.edu.in`;
+      }
     }
 
     // Authentication: Firebase Email/Password Authentication ONLY
