@@ -78,6 +78,7 @@ export interface AchievementResponse {
   semester_id?: number | string | null;
   semester_number?: number | null;
   semester_display_name?: string | null;
+  semester_name?: string | null;
   semester?: SemesterResponse | null;
   title: string;
   activity_type?: string | null;

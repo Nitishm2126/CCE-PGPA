@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { AchievementResponse, AchievementCreate, AchievementFileResponse } from "@/types/achievement";
 import { api } from "@/lib/api-client";
+import { formatSemester } from "@/lib/format-semester";
 
 interface EditAchievementModalProps {
   isOpen: boolean;
@@ -183,7 +184,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           return;
         }
 
-        const semDisplay = achievement.semester?.display_name || (achievement.semester_id ? `Semester ${achievement.semester_id}` : "Current Semester");
+        const semDisplay = formatSemester(achievement.semester_id, achievement.semester?.display_name || achievement.semester_name) || "Current Semester";
         await onSave(achievement.id, {
           title: `${semDisplay} GPA: ${gpaNum.toFixed(2)}`,
           activity_type: "Academic GPA",

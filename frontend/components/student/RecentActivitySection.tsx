@@ -2,6 +2,7 @@
 
 import React from "react";
 import { AchievementResponse } from "@/types/achievement";
+import { formatSemester } from "@/lib/format-semester";
 
 interface RecentActivitySectionProps {
   achievements: AchievementResponse[];
@@ -44,7 +45,10 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
     if (selectedSemester === "all") return achievements;
     if (selectedSemester === "legacy") return achievements.filter((a) => !a.semester_id && !a.semester);
     return achievements.filter(
-      (a) => a.semester?.semester_number?.toString() === selectedSemester
+      (a) =>
+        a.semester?.semester_number?.toString() === selectedSemester ||
+        a.semester_number?.toString() === selectedSemester ||
+        formatSemester(a.semester_id, a.semester_name) === `Semester ${selectedSemester}`
     );
   }, [achievements, selectedSemester]);
 
@@ -277,15 +281,11 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                         <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-[#111111] px-2 py-0.5 text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] border border-slate-200 dark:border-[#292929]">
                           {item.component_name || "PGPA Component"}
                         </span>
-                        {item.semester ? (
+                        {(item.semester || item.semester_id || item.semester_name) && (
                           <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                            {item.semester.display_name}
+                            {formatSemester(item.semester_id, item.semester?.display_name || item.semester_name)}
                           </span>
-                        ) : item.semester_id ? (
-                          <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                            Semester {item.semester_id}
-                          </span>
-                        ) : null}
+                        )}
                         <span className="text-xs text-slate-400 dark:text-[#A3A3A3] font-medium">
                           {formatDate(item.event_date || item.created_at)}
                         </span>

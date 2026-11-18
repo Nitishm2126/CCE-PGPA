@@ -20,6 +20,7 @@ import { PGPAComponentPointsConfig } from "@/components/shared/PGPAComponentPoin
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { HODBottomNav } from "@/components/hod/HODBottomNav";
 import { HODMobileActionsDrawer } from "@/components/hod/HODMobileActionsDrawer";
+import { formatSemester } from "@/lib/format-semester";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 
@@ -860,15 +861,11 @@ export default function HODDashboardPage() {
                           <span className="inline-flex items-center rounded-md bg-white dark:bg-[#111111] px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5] border border-slate-200 dark:border-[#292929]">
                             {sub.component_name || "PGPA Component"}
                           </span>
-                          {sub.semester ? (
+                          {(sub.semester || sub.semester_id || sub.semester_name) && (
                             <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.5 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                              {sub.semester.display_name}
+                              {formatSemester(sub.semester_id, sub.semester?.display_name || sub.semester_name)}
                             </span>
-                          ) : sub.semester_id ? (
-                            <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.5 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                              Semester {sub.semester_id}
-                            </span>
-                          ) : null}
+                          )}
                         </div>
 
                         {/* Title & Organizer */}
@@ -1000,15 +997,11 @@ export default function HODDashboardPage() {
                               <span className="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 text-[11px] font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                                 {sub.component_name || "PGPA Component"}
                               </span>
-                              {sub.semester ? (
+                              {(sub.semester || sub.semester_id || sub.semester_name) && (
                                 <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                                  {sub.semester.display_name}
+                                  {formatSemester(sub.semester_id, sub.semester?.display_name || sub.semester_name)}
                                 </span>
-                              ) : sub.semester_id ? (
-                                <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                                  Semester {sub.semester_id}
-                                </span>
-                              ) : null}
+                              )}
                             </div>
                           </td>
 
@@ -1387,15 +1380,11 @@ export default function HODDashboardPage() {
                     <span className="rounded-md bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                       {selectedSubmission.component_name || "PGPA Component"}
                     </span>
-                    {selectedSubmission.semester ? (
+                    {(selectedSubmission.semester || selectedSubmission.semester_id || selectedSubmission.semester_name) && (
                       <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                        {selectedSubmission.semester.display_name}
+                        {formatSemester(selectedSubmission.semester_id, selectedSubmission.semester?.display_name || selectedSubmission.semester_name)}
                       </span>
-                    ) : selectedSubmission.semester_id ? (
-                      <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                        Semester {selectedSubmission.semester_id}
-                      </span>
-                    ) : null}
+                    )}
                     {renderStatusBadge(selectedSubmission.status)}
                   </div>
                   <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-[#F5F5F5] leading-snug">

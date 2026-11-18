@@ -32,6 +32,7 @@ import { PGPAComponentPointsConfig } from "@/components/shared/PGPAComponentPoin
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { AdminBottomNav } from "@/components/admin/AdminBottomNav";
 import { useBodyLock } from "@/lib/use-body-lock";
+import { formatSemester } from "@/lib/format-semester";
 
 type AdminNavigationSection =
   | "overview"
@@ -363,7 +364,8 @@ export default function AdminDashboardPage() {
         (submissionSemesterFilter === "legacy"
           ? !s.semester_id && !s.semester_number
           : (s.semester_number?.toString() === submissionSemesterFilter ||
-             s.semester_id?.toString() === submissionSemesterFilter));
+             s.semester_id?.toString() === submissionSemesterFilter ||
+             formatSemester(s.semester_id, s.semester_name) === `Semester ${submissionSemesterFilter}`));
 
       return matchSearch && matchStatus && matchComponent && matchSemester;
     });
@@ -1603,9 +1605,9 @@ export default function AdminDashboardPage() {
                                 <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px]">
                                   {s.component_name}
                                 </span>
-                                {(s.semester_name || s.semester_number) ? (
+                                {(s.semester_name || s.semester_number || s.semester_id) ? (
                                   <span className="inline-flex items-center px-1.5 py-0.2 rounded bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 text-[10px] font-bold border border-cyan-200 dark:border-cyan-800">
-                                    {s.semester_name || `Semester ${s.semester_number}`}
+                                    {formatSemester(s.semester_id, s.semester_name || (s.semester_number ? `Semester ${s.semester_number}` : null))}
                                   </span>
                                 ) : null}
                               </div>
@@ -2142,8 +2144,8 @@ export default function AdminDashboardPage() {
                 </h3>
                 <p className="text-xs text-slate-500 font-mono">
                   ID: {selectedSubmission.id} &bull; Component: {selectedSubmission.component_name}
-                  {(selectedSubmission.semester_name || selectedSubmission.semester_number) && (
-                    <span> &bull; {selectedSubmission.semester_name || `Semester ${selectedSubmission.semester_number}`}</span>
+                  {(selectedSubmission.semester_name || selectedSubmission.semester_number || selectedSubmission.semester_id) && (
+                    <span> &bull; {formatSemester(selectedSubmission.semester_id, selectedSubmission.semester_name || (selectedSubmission.semester_number ? `Semester ${selectedSubmission.semester_number}` : null))}</span>
                   )}
                 </p>
               </div>

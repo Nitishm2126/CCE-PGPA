@@ -18,6 +18,7 @@ import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { MentorBottomNav } from "@/components/mentor/MentorBottomNav";
 import { MentorMobileActionsDrawer } from "@/components/mentor/MentorMobileActionsDrawer";
 import { ManualPointsModal } from "@/components/mentor/ManualPointsModal";
+import { formatSemester } from "@/lib/format-semester";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 
@@ -249,16 +250,11 @@ export default function MentorDashboardPage() {
     setRevertRemarks("");
   };
 
-  const handleReviewSubmission = async (action: "approved" | "rejected" | "requested_changes" | "under_review" | "revert") => {
+  const handleReviewSubmission = async (action: "approved" | "under_review" | "rejected") => {
     if (!selectedSubmission || !token) return;
 
     if (action === "rejected" && !reviewRemarks.trim()) {
       setReviewError("Please provide feedback remarks explaining the reason for rejection so the student can rectify and resubmit.");
-      return;
-    }
-
-    if (action === "requested_changes" && !reviewRemarks.trim()) {
-      setReviewError("Please specify what changes are required before moving this submission back to draft.");
       return;
     }
 
@@ -268,7 +264,7 @@ export default function MentorDashboardPage() {
 
     try {
       const parsedPoints = awardedPoints.trim() ? parseFloat(awardedPoints.trim()) : undefined;
-      const remarksToSend = action === "revert" ? (revertRemarks.trim() || reviewRemarks.trim() || undefined) : (reviewRemarks.trim() || undefined);
+      const remarksToSend = reviewRemarks.trim() || undefined;
       const updated = await api.reviewMenteeAchievement(
         selectedSubmission.id,
         {
@@ -286,19 +282,13 @@ export default function MentorDashboardPage() {
       );
       setSelectedSubmission(updated);
       setReviewRemarks("");
-      setRevertRemarks("");
-      setShowRevertConfirm(false);
       setReviewSuccessMsg(
         `Submission marked as ${
           action === "approved"
-            ? "Verified & Approved"
+            ? "Approved"
             : action === "rejected"
             ? "Rejected"
-            : action === "under_review"
-            ? "Under Review (Pending further evaluation)"
-            : action === "revert"
-            ? "Reverted back to Pending (Verified score reset)"
-            : "Changes Requested (Returned to Draft)"
+            : "Under Review"
         }.`
       );
       loadData();
@@ -787,15 +777,11 @@ export default function MentorDashboardPage() {
                           <span className="inline-flex items-center rounded-md bg-white dark:bg-[#111111] px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5] border border-slate-200 dark:border-[#292929]">
                             {sub.component_name || "PGPA Component"}
                           </span>
-                          {sub.semester ? (
+                          {(sub.semester || sub.semester_id || sub.semester_name) && (
                             <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.5 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                              {sub.semester.display_name}
+                              {formatSemester(sub.semester_id, sub.semester?.display_name || sub.semester_name)}
                             </span>
-                          ) : sub.semester_id ? (
-                            <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.5 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                              Semester {sub.semester_id}
-                            </span>
-                          ) : null}
+                          )}
                         </div>
 
                         {/* Title & Organizer */}
@@ -921,15 +907,11 @@ export default function MentorDashboardPage() {
                               <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-[#181818] px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5]">
                                 {sub.component_name || "PGPA Component"}
                               </span>
-                              {sub.semester ? (
+                              {(sub.semester || sub.semester_id || sub.semester_name) && (
                                 <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                                  {sub.semester.display_name}
+                                  {formatSemester(sub.semester_id, sub.semester?.display_name || sub.semester_name)}
                                 </span>
-                              ) : sub.semester_id ? (
-                                <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                                  Semester {sub.semester_id}
-                                </span>
-                              ) : null}
+                              )}
                             </div>
                           </td>
 
@@ -1180,15 +1162,11 @@ export default function MentorDashboardPage() {
                     <span className="rounded-md bg-blue-50 dark:bg-[#337418]/25 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:text-[#5DD62C] border border-blue-200 dark:border-[#337418]">
                       {selectedSubmission.component_name || "PGPA Component"}
                     </span>
-                    {selectedSubmission.semester ? (
+                    {(selectedSubmission.semester || selectedSubmission.semester_id || selectedSubmission.semester_name) && (
                       <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                        {selectedSubmission.semester.display_name}
+                        {formatSemester(selectedSubmission.semester_id, selectedSubmission.semester?.display_name || selectedSubmission.semester_name)}
                       </span>
-                    ) : selectedSubmission.semester_id ? (
-                      <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                        Semester {selectedSubmission.semester_id}
-                      </span>
-                    ) : null}
+                    )}
                     {renderStatusBadge(selectedSubmission.status)}
                   </div>
                   <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-[#F5F5F5] leading-snug">
@@ -1454,181 +1432,105 @@ export default function MentorDashboardPage() {
                     </div>
                   )}
 
-                  {selectedSubmission.status === "pending" || selectedSubmission.status === "under_review" ? (
-                    <div className="space-y-3 pt-1">
-                      {/* Rubric Points & Grade Confirmation */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#292929]">
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                            Awarded Points (Table 7.1 / Rubric)
-                          </label>
-                          <input
-                            type="number"
-                            step="1"
-                            value={awardedPoints}
-                            onChange={(e) => setAwardedPoints(e.target.value)}
-                            placeholder="e.g. 100, 200, 500"
-                            disabled={isSubmittingReview}
-                            className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                            Awarded Grade (O, A+, A, B+, B, C)
-                          </label>
-                          <input
-                            type="text"
-                            value={awardedGrade}
-                            onChange={(e) => setAwardedGrade(e.target.value)}
-                            placeholder="e.g. O, A+, A"
-                            disabled={isSubmittingReview}
-                            className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                          Review Remarks / Feedback (Required for Rejection or Changes)
-                        </label>
-                        <textarea
-                          rows={2}
-                          value={reviewRemarks}
-                          onChange={(e) => setReviewRemarks(e.target.value)}
-                          placeholder="e.g., Verified against official certificate or portal record."
-                          disabled={isSubmittingReview}
-                          className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#111111] p-2.5 text-xs text-slate-900 dark:text-[#F5F5F5] placeholder-slate-400 dark:placeholder-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        {/* 1. Approve */}
-                        <button
-                          type="button"
-                          onClick={() => handleReviewSubmission("approved")}
-                          disabled={isSubmittingReview}
-                          id="btn-mentor-approve"
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[38px]"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span>Approve</span>
-                        </button>
-
-                        {/* 2. Under Review */}
-                        <button
-                          type="button"
-                          onClick={() => handleReviewSubmission("under_review")}
-                          disabled={isSubmittingReview}
-                          id="btn-mentor-under-review"
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 dark:bg-[#FFD84D] dark:hover:bg-[#FACC15] text-white dark:text-black font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[38px]"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>Under Review</span>
-                        </button>
-
-                        {/* 3. Reject */}
-                        <button
-                          type="button"
-                          onClick={() => handleReviewSubmission("rejected")}
-                          disabled={isSubmittingReview}
-                          id="btn-mentor-reject"
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[38px]"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                          <span>Reject</span>
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3 pt-1">
+                  <div className="space-y-3 pt-1">
+                    {selectedSubmission.status !== "pending" && selectedSubmission.status !== "under_review" && (
                       <div className="p-3 bg-white dark:bg-[#111111] rounded-xl border border-slate-200/80 dark:border-[#292929] text-[11px] text-slate-600 dark:text-[#A3A3A3] flex items-center justify-between">
-                        <span>This activity has already been evaluated and is currently marked as <strong className="capitalize text-slate-800 dark:text-[#F5F5F5]">{selectedSubmission.status}</strong>.</span>
+                        <span>This activity is currently evaluated as <strong className="capitalize text-slate-800 dark:text-[#F5F5F5]">{selectedSubmission.status}</strong>. You may update your review decision below.</span>
                         {selectedSubmission.updated_at && (
                           <span className="text-slate-400 dark:text-[#A3A3A3] font-mono text-[10px]">Updated: {formatDate(selectedSubmission.updated_at)}</span>
                         )}
                       </div>
+                    )}
 
-                      {/* Revert to Pending Action */}
-                      {(selectedSubmission.status === "approved" || selectedSubmission.status === "rejected") && (
-                        <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 p-3.5 space-y-2.5">
-                          <div className="flex items-start gap-2">
-                            <svg className="h-4 w-4 text-amber-600 dark:text-[#FFD84D] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            <div className="text-xs">
-                              <p className="font-bold text-amber-900 dark:text-[#FFD84D]">Revert Verification / Return to Pending</p>
-                              <p className="text-[11px] text-amber-800 dark:text-[#A3A3A3] mt-0.5">
-                                If this submission was approved or rejected by mistake, you can revert it back to Pending. This will recalculate the student's verified PGPA score and restore the submission to the pending review queue.
-                              </p>
-                            </div>
-                          </div>
-
-                          {!showRevertConfirm ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowRevertConfirm(true)}
-                              disabled={isSubmittingReview}
-                              id="btn-mentor-revert-trigger"
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 dark:bg-[#FFD84D] dark:hover:bg-[#FACC15] text-white dark:text-black font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[36px]"
-                            >
-                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-                              </svg>
-                              <span>Revert Verification to Pending</span>
-                            </button>
-                          ) : (
-                            <div className="p-3 bg-white dark:bg-[#111111] rounded-xl border border-amber-300 dark:border-amber-700/80 space-y-2">
-                              <p className="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5]">
-                                Are you sure you want to revert this submission back to Pending?
-                              </p>
-                              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3]">
-                                Verified points and grading results for this activity will be reset and recalculated.
-                              </p>
-                              <input
-                                type="text"
-                                value={revertRemarks}
-                                onChange={(e) => setRevertRemarks(e.target.value)}
-                                placeholder="Reason for reversion (e.g. Need re-examination of document)"
-                                className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-amber-500"
-                              />
-                              <div className="flex items-center gap-2 pt-1">
-                                <button
-                                  type="button"
-                                  onClick={() => handleReviewSubmission("revert")}
-                                  disabled={isSubmittingReview}
-                                  id="btn-mentor-revert-confirm"
-                                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition cursor-pointer disabled:opacity-50"
-                                >
-                                  {isSubmittingReview ? (
-                                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                  ) : (
-                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  )}
-                                  <span>Yes, Revert to Pending</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setShowRevertConfirm(false)}
-                                  disabled={isSubmittingReview}
-                                  className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-[#292929] text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] hover:bg-slate-100 dark:hover:bg-[#181818] transition cursor-pointer"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                    {/* Rubric Points & Grade Confirmation */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#292929]">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                          Awarded Points (Table 7.1 / Rubric)
+                        </label>
+                        <input
+                          type="number"
+                          step="1"
+                          value={awardedPoints}
+                          onChange={(e) => setAwardedPoints(e.target.value)}
+                          placeholder="e.g. 100, 200, 500"
+                          disabled={isSubmittingReview}
+                          className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                          Awarded Grade (O, A+, A, B+, B, C)
+                        </label>
+                        <input
+                          type="text"
+                          value={awardedGrade}
+                          onChange={(e) => setAwardedGrade(e.target.value)}
+                          placeholder="e.g. O, A+, A"
+                          disabled={isSubmittingReview}
+                          className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
                     </div>
-                  )}
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                        Review Remarks / Feedback <span className="text-rose-500 font-bold">* Required for Rejection</span>
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={reviewRemarks}
+                        onChange={(e) => setReviewRemarks(e.target.value)}
+                        placeholder="e.g., Verified against official certificate or portal record. Mandatory if rejecting."
+                        disabled={isSubmittingReview}
+                        className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#111111] p-2.5 text-xs text-slate-900 dark:text-[#F5F5F5] placeholder-slate-400 dark:placeholder-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      {/* 1. Approve */}
+                      <button
+                        type="button"
+                        onClick={() => handleReviewSubmission("approved")}
+                        disabled={isSubmittingReview}
+                        id="btn-mentor-approve"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[38px]"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Approve</span>
+                      </button>
+
+                      {/* 2. Under Review */}
+                      <button
+                        type="button"
+                        onClick={() => handleReviewSubmission("under_review")}
+                        disabled={isSubmittingReview}
+                        id="btn-mentor-under-review"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 dark:bg-[#FFD84D] dark:hover:bg-[#FACC15] text-white dark:text-black font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[38px]"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Under Review</span>
+                      </button>
+
+                      {/* 3. Reject */}
+                      <button
+                        type="button"
+                        onClick={() => handleReviewSubmission("rejected")}
+                        disabled={isSubmittingReview}
+                        id="btn-mentor-reject"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[38px]"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>Reject</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
