@@ -29,6 +29,7 @@ import { PGPAPerformanceTracker } from "@/components/student/PGPAPerformanceTrac
 import { ManualPointsSection } from "@/components/student/ManualPointsSection";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
+import { ActivityInspectionModal } from "@/components/shared/ActivityInspectionModal";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
@@ -61,9 +62,10 @@ export default function StudentDashboardPage() {
   const [submittingReviewId, setSubmittingReviewId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Edit and Delete Modals state
+  // Edit, Delete, and Inspect Modals state
   const [editingAchievement, setEditingAchievement] = useState<AchievementResponse | null>(null);
   const [deletingAchievement, setDeletingAchievement] = useState<AchievementResponse | null>(null);
+  const [inspectAchievement, setInspectAchievement] = useState<AchievementResponse | null>(null);
 
   // Messages & Remarks state
   const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
@@ -666,6 +668,7 @@ export default function StudentDashboardPage() {
               onSubmitClick={() => handleOpenSubmitModal(null)}
               onViewAll={() => setActiveTab("activity")}
               onSubmitForReview={handleSubmitForReview}
+              onInspectAchievement={(item) => setInspectAchievement(item)}
               onEditAchievement={(item) => setEditingAchievement(item)}
               onDeleteAchievement={(item) => setDeletingAchievement(item)}
               onOpenMessages={(item) => {
@@ -709,6 +712,7 @@ export default function StudentDashboardPage() {
               onRetry={loadAchievements}
               onSubmitClick={() => handleOpenSubmitModal(null)}
               onSubmitForReview={handleSubmitForReview}
+              onInspectAchievement={(item) => setInspectAchievement(item)}
               onEditAchievement={(item) => setEditingAchievement(item)}
               onDeleteAchievement={(item) => setDeletingAchievement(item)}
               onOpenMessages={(item) => {
@@ -804,6 +808,23 @@ export default function StudentDashboardPage() {
           onClose={() => setDeletingAchievement(null)}
           achievement={deletingAchievement}
           onConfirmDelete={handleConfirmDeleteAchievement}
+        />
+      )}
+
+      {/* Activity Inspection Modal */}
+      {inspectAchievement && (
+        <ActivityInspectionModal
+          isOpen={!!inspectAchievement}
+          onClose={() => setInspectAchievement(null)}
+          achievement={inspectAchievement}
+          userRole="student"
+          canReview={false}
+          token={token}
+          onOpenMessages={(ach) => {
+            setInspectAchievement(null);
+            setActiveAchievementForMessages(ach);
+            setIsMessageDrawerOpen(true);
+          }}
         />
       )}
 

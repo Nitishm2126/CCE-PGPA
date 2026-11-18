@@ -71,7 +71,7 @@ import {
   ComponentPointSettingsUpdatePayload,
 } from "@/types/point-settings";
 
-const API_BASE_URL =
+export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   (typeof window !== "undefined" &&
   !["localhost", "127.0.0.1", "::1"].includes(window.location.hostname)
@@ -79,6 +79,19 @@ const API_BASE_URL =
         ? "https://cce-pgpa-prod.nitishms007.workers.dev/api/v1"
         : "https://cce-pgpa-staging.nitishms007.workers.dev/api/v1")
     : "https://cce-pgpa-prod.nitishms007.workers.dev/api/v1");
+
+export const getFileContentUrl = (fileId: string, token?: string | null, isDownload: boolean = false): string => {
+  const base = API_BASE_URL.replace(/\/api\/v1\/?$/, "") + `/api/v1/files/${fileId}/content`;
+  const params = new URLSearchParams();
+  if (token) {
+    params.set("token", token);
+  }
+  if (isDownload) {
+    params.set("download", "1");
+  }
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
+};
 
 const TOKEN_STORAGE_KEY = "cce_achieve_token";
 
@@ -620,6 +633,10 @@ export const api = {
 
   getMenteeAchievement: async (achievementId: string, token?: string | null): Promise<AchievementResponse> => {
     return request<AchievementResponse>(`/mentor/achievements/${achievementId}`, { method: "GET" }, token);
+  },
+
+  getAchievementDetail: async (achievementId: string, token?: string | null): Promise<AchievementResponse> => {
+    return request<AchievementResponse>(`/achievements/${achievementId}`, { method: "GET" }, token);
   },
 
   reviewMenteeAchievement: async (

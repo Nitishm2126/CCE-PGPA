@@ -23,6 +23,7 @@ import { HODMobileActionsDrawer } from "@/components/hod/HODMobileActionsDrawer"
 import { formatSemester } from "@/lib/format-semester";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
+import { ActivityInspectionModal } from "@/components/shared/ActivityInspectionModal";
 
 
 export default function HODDashboardPage() {
@@ -70,6 +71,20 @@ export default function HODDashboardPage() {
   const [selectedSubmission, setSelectedSubmission] = useState<AchievementResponse | null>(null);
   const [isOpeningFile, setIsOpeningFile] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+
+  const handleOpenSubmission = async (sub: AchievementResponse) => {
+    setSelectedSubmission(sub);
+    if (token) {
+      try {
+        const full = await api.getAchievementDetail(sub.id, token);
+        if (full) {
+          setSelectedSubmission(full);
+        }
+      } catch {
+        // Fallback
+      }
+    }
+  };
 
   // Messages & Remarks Drawer state
   const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
@@ -837,7 +852,7 @@ export default function HODDashboardPage() {
                     return (
                       <div
                         key={sub.id}
-                        onClick={() => setSelectedSubmission(sub)}
+                        onClick={() => handleOpenSubmission(sub)}
                         className="rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818] p-4 shadow-2xs space-y-3 active:scale-[0.99] transition-all cursor-pointer"
                       >
                         {/* Student Name & Status */}
@@ -935,7 +950,7 @@ export default function HODDashboardPage() {
 
                           <button
                             type="button"
-                            onClick={() => setSelectedSubmission(sub)}
+                            onClick={() => handleOpenSubmission(sub)}
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-700 hover:bg-purple-800 text-white font-semibold text-xs active:scale-95 transition-all cursor-pointer shadow-2xs"
                           >
                             <span>Inspect</span>
@@ -974,7 +989,7 @@ export default function HODDashboardPage() {
                         <tr
                           key={sub.id}
                           className="hover:bg-slate-50/70 dark:hover:bg-[#222222]/70 transition-colors group cursor-pointer"
-                          onClick={() => setSelectedSubmission(sub)}
+                          onClick={() => handleOpenSubmission(sub)}
                         >
                           {/* Student Details */}
                           <td className="py-3 px-4">
@@ -1083,7 +1098,7 @@ export default function HODDashboardPage() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedSubmission(sub);
+                                handleOpenSubmission(sub);
                               }}
                               className="rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] transition-colors cursor-pointer"
                             >
@@ -1363,247 +1378,25 @@ export default function HODDashboardPage() {
         )}
       </main>
 
-      {/* Read-Only Activity Inspector Modal */}
-      {selectedSubmission && (
-        <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
-          <div
-            onClick={() => setSelectedSubmission(null)}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
-          />
-
-          <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
-            <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#111111] p-5 sm:p-7 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] text-left shadow-2xl transition-all border border-slate-200/90 dark:border-[#292929] my-auto">
-              {/* Modal Header */}
-              <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-[#292929]">
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="rounded-md bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                      {selectedSubmission.component_name || "PGPA Component"}
-                    </span>
-                    {(selectedSubmission.semester || selectedSubmission.semester_id || selectedSubmission.semester_name) && (
-                      <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                        {formatSemester(selectedSubmission.semester_id, selectedSubmission.semester?.display_name || selectedSubmission.semester_name)}
-                      </span>
-                    )}
-                    {renderStatusBadge(selectedSubmission.status)}
-                  </div>
-                  <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-[#F5F5F5] leading-snug">
-                    {selectedSubmission.title}
-                  </h3>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedSubmission(null)}
-                  className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#181818] transition-colors cursor-pointer"
-                >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Modal Content */}
-              <div className="mt-4 space-y-4 text-xs">
-                {/* Student Identity Card */}
-                <div className="rounded-xl border border-slate-100 dark:border-[#292929] bg-slate-50/70 dark:bg-[#181818] p-3.5 flex items-center justify-between">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3]">
-                      Submitting Student
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] mt-0.5">
-                      {selectedSubmission.student_name || "Student"}
-                    </p>
-                    <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-0.5">
-                      Assigned Mentor: {studentMentorMap.get(selectedSubmission.student_id) || "—"}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-mono text-xs font-semibold text-purple-700 dark:text-purple-400">
-                      {selectedSubmission.student_register_number || "—"}
-                    </p>
-                    <p className="text-[11px] text-slate-400 dark:text-[#A3A3A3]">Department of CCE</p>
-                  </div>
-                </div>
-
-                {/* Event Details Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Activity Type</span>
-                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5]">{selectedSubmission.activity_type || "Standard"}</span>
-                  </div>
-                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Organizer / Host</span>
-                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5] truncate block">{selectedSubmission.organizer || "—"}</span>
-                  </div>
-                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Event Date</span>
-                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5]">{formatDate(selectedSubmission.event_date)}</span>
-                  </div>
-                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Outcome / Score</span>
-                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5]">{selectedSubmission.outcome || "Completed"}</span>
-                  </div>
-                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Date Submitted</span>
-                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5]">{formatDate(selectedSubmission.submitted_at || selectedSubmission.created_at)}</span>
-                  </div>
-                  <div className="rounded-lg border border-slate-200/70 dark:border-[#292929] bg-slate-50/40 dark:bg-[#181818] p-2.5">
-                    <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Submission State</span>
-                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5] capitalize">{selectedSubmission.status}</span>
-                  </div>
-                </div>
-
-                {/* Certificate Status Banner */}
-                {selectedSubmission.certificate_status === "yet_to_receive" && (
-                  <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
-                    <svg className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                      <p className="font-bold">Certificate Pending Issuance</p>
-                      <p className="mt-0.5 text-[11px] text-amber-800 dark:text-amber-300">
-                        Student completed this activity; the organizer has not yet issued the official certificate. Student can upload it later once received.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {selectedSubmission.certificate_status === "not_provided" && (
-                  <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] p-3 text-xs text-slate-700 dark:text-[#A3A3A3] flex items-start gap-2.5">
-                    <svg className="h-4 w-4 text-slate-500 dark:text-[#A3A3A3] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                      <p className="font-bold text-slate-900 dark:text-[#F5F5F5]">No Certificate Provided</p>
-                      <p className="mt-0.5 text-[11px] text-slate-600 dark:text-[#A3A3A3]">
-                        No certificate is issued for this activity. Verify participation based on the event details and student remarks.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Student Remarks */}
-                {selectedSubmission.remarks && (
-                  <div>
-                    <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] text-[11px] mb-1">
-                      Student Remarks
-                    </p>
-                    <div className="rounded-xl border border-purple-200/80 dark:border-purple-800 p-3 bg-purple-50/40 dark:bg-purple-950/30 text-slate-800 dark:text-[#F5F5F5] leading-relaxed font-medium text-xs">
-                      {selectedSubmission.remarks}
-                    </div>
-                  </div>
-                )}
-
-                {/* Description */}
-                {selectedSubmission.description && (
-                  <div>
-                    <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] text-[11px] mb-1">
-                      Summary & Description
-                    </p>
-                    <div className="rounded-xl border border-slate-200/80 dark:border-[#292929] p-3 bg-slate-50/50 dark:bg-[#181818] text-slate-700 dark:text-[#A3A3A3] leading-relaxed">
-                      {selectedSubmission.description}
-                    </div>
-                  </div>
-                )}
-
-                {/* Evidence Files */}
-                <div>
-                  <p className="font-semibold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] text-[11px] mb-1.5">
-                    Supporting Evidence ({selectedSubmission.files?.length || 0})
-                  </p>
-                  {selectedSubmission.files && selectedSubmission.files.length > 0 ? (
-                    <div className="space-y-2">
-                      {selectedSubmission.files.map((file) => (
-                        <div
-                          key={file.id}
-                          className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xs"
-                        >
-                          <div className="flex items-center gap-2.5 truncate">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 shrink-0">
-                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                            <div className="truncate">
-                              <p className="font-semibold text-slate-900 dark:text-[#F5F5F5] truncate">{file.original_filename}</p>
-                              <p className="text-[11px] text-slate-400 dark:text-[#A3A3A3]">
-                                {(file.size_bytes / 1024).toFixed(1)} KB &bull; {file.mime_type}
-                              </p>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => handleViewEvidence(file.id)}
-                            disabled={isOpeningFile === file.id}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-purple-700 hover:bg-purple-800 text-white font-semibold px-3 py-1.5 transition-colors cursor-pointer shrink-0 disabled:opacity-50"
-                          >
-                            {isOpeningFile === file.id ? (
-                              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            ) : (
-                              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                              </svg>
-                            )}
-                            <span>Open Document</span>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-slate-400 dark:text-[#A3A3A3] italic">No evidence files were attached to this submission.</p>
-                  )}
-
-                  {fileError && (
-                    <p className="mt-2 text-xs text-rose-600 font-medium">{fileError}</p>
-                  )}
-                </div>
-
-                {/* Audit & Workflow Notice */}
-                <div className="rounded-xl border border-purple-200/70 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30 p-3.5 text-slate-600 dark:text-[#A3A3A3] leading-relaxed text-[11px]">
-                  <p className="font-bold text-purple-900 dark:text-purple-300 mb-0.5">Department Head Oversight Access</p>
-                  <p>
-                    Student submissions are directly recorded upon submission and made viewable to faculty mentors and the Head of Department. No approval action is required.
-                  </p>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-[#292929] flex items-center justify-between gap-3 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const sub = selectedSubmission;
-                    setSelectedSubmission(null);
-                    setDrawerAchievement(sub);
-                    setDrawerStudent({
-                      id: sub.student_id,
-                      name: sub.student_name || "Student",
-                      register_number: sub.student_register_number || undefined,
-                    });
-                    setIsMessageDrawerOpen(true);
-                  }}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-                >
-                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.974-.974 5.96 5.96 0 01.996-3.036A7.48 7.48 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-                  </svg>
-                  <span>Send Remarks / Message</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedSubmission(null)}
-                  className="rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] transition-colors cursor-pointer"
-                >
-                  Close Inspection
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Activity Inspection Modal */}
+      <ActivityInspectionModal
+        isOpen={!!selectedSubmission}
+        onClose={() => setSelectedSubmission(null)}
+        achievement={selectedSubmission}
+        userRole="hod"
+        canReview={false}
+        onOpenMessages={(ach) => {
+          setSelectedSubmission(null);
+          setDrawerAchievement(ach);
+          setDrawerStudent({
+            id: ach.student_id,
+            name: ach.student_name || "Student",
+            register_number: ach.student_register_number || "",
+          });
+          setIsMessageDrawerOpen(true);
+        }}
+        token={token}
+      />
 
       {/* Messages Conversation Drawer */}
       {isMessageDrawerOpen && drawerStudent && (

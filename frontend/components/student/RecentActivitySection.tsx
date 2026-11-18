@@ -16,6 +16,7 @@ interface RecentActivitySectionProps {
   onDeleteAchievement?: (achievement: AchievementResponse) => void;
   onOpenMessages?: (achievement: AchievementResponse) => void;
   unreadCountsByAchievement?: Record<string, number>;
+  onInspectAchievement?: (achievement: AchievementResponse) => void;
   onShowLockDetails?: (achievement: AchievementResponse) => void;
   isSubmittingId?: string | null;
   maxDisplay?: number;
@@ -34,6 +35,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
   onDeleteAchievement,
   onOpenMessages,
   unreadCountsByAchievement,
+  onInspectAchievement,
   onShowLockDetails: _onShowLockDetails,
   isSubmittingId,
   maxDisplay = 4,
@@ -421,6 +423,22 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
 
                   {/* Actions Bar: Full row on mobile for comfortable tap targets */}
                   <div className="pt-2 border-t border-slate-100 dark:border-[#292929]/60 flex items-center gap-2 flex-wrap justify-end">
+                    {/* Inspect Submission & Evidence Button */}
+                    {onInspectAchievement && (
+                      <button
+                        type="button"
+                        onClick={() => onInspectAchievement(item)}
+                        title="Inspect full activity details and supporting evidence files"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/70 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 px-2.5 py-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300 transition-colors cursor-pointer min-h-[36px]"
+                      >
+                        <svg className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Inspect</span>
+                      </button>
+                    )}
+
                     {/* Messages & Remarks Button */}
                     {onOpenMessages && (
                       <button
