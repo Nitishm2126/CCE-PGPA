@@ -316,8 +316,8 @@ export const api = {
     });
   },
 
-  loginWithGoogle: async (idToken: string, role?: string): Promise<TokenResponse> => {
-    return request<TokenResponse>("/auth/google/sso", {
+  loginWithFirebase: async (idToken: string, role?: string): Promise<TokenResponse> => {
+    return request<TokenResponse>("/auth/firebase/session", {
       method: "POST",
       body: JSON.stringify({ id_token: idToken, role }),
     });

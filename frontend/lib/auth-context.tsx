@@ -30,7 +30,6 @@ export interface AuthContextType {
   reloadFirebaseUser: () => Promise<boolean>;
 
   login: (email: string, password: string, portalRole?: UserRole) => Promise<UserResponse | null>;
-  loginWithGoogle: (idToken: string, portalRole?: UserRole) => Promise<UserResponse | null>;
   logout: () => Promise<void>;
   updateUser: (updated: UserResponse) => void;
   refreshUser: () => Promise<UserResponse | null>;
@@ -209,98 +208,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setFirebaseUser(null);
     setIsProvisioned(false);
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const isAdminAccount =
-      portalRole === "admin" || normalizedEmail === "cce.pgpa@gmail.com";
-
-    // Primary Authentication: Direct via Backend API (POST /api/v1/auth/login)
-    try {
-      const tokenResponse = await api.login(email, password, portalRole);
-      setStoredToken(tokenResponse.access_token);
-      setToken(tokenResponse.access_token);
-
-      const userData = await api.getMe(tokenResponse.access_token);
-      setUser(userData);
-      setIsProvisioned(true);
-      return userData;
-    } catch (err: unknown) {
-      // If admin direct login fails and Firebase is configured, attempt Firebase fallback
-      if (isAdminAccount && isFirebaseConfigured()) {
-        const activeAuth = getFirebaseAuth() || firebaseAuth;
-        if (activeAuth) {
-          try {
-            const userCredential = await signInWithEmailAndPassword(activeAuth, normalizedEmail, password);
-            const fbUser = userCredential.user;
-            setFirebaseUser(fbUser);
-            const idToken = await fbUser.getIdToken();
-            setStoredToken(idToken);
-            setToken(idToken);
-            const userData = await api.getMe(idToken);
-            setUser(userData);
-            setIsProvisioned(true);
-            return userData;
-          } catch (fbErr: unknown) {
-            console.warn("Firebase admin fallback failed:", fbErr);
-          }
-        }
-      }
-
-      let message = "Invalid email or password. Please verify your credentials.";
-      if (err instanceof ApiError) {
-        if (err.status === 408) {
-          message = "Login request timed out. Please retry.";
-        } else if (err.status === 0) {
-          message = "Cannot connect to server. Please check your network connection.";
-        } else if (err.status === 403) {
-          message = err.message || "Account is deactivated or unauthorized.";
-        } else if (err.status === 401) {
-          message = "Incorrect email/ID or password.";
-        } else if (err.message) {
-          message = err.message;
-        }
-      } else if (err instanceof Error) {
-        message = err.message;
-      }
-      setError(message);
-      throw new Error(message);
-    } finally {
-      setIsLoading(false);
-      isLoggingInRef.current = false;
+    let normalizedEmail = email.trim().toLowerCase();
+    // Normalize student ID e.g. SEC25CO001 -> sec25co001@sairamtap.edu.in
+    if (!normalizedEmail.includes("@")) {
+      normalizedEmail = `${normalizedEmail}@sairamtap.edu.in`;
     }
-  };
 
-  const loginWithGoogle = async (
-    idToken: string,
-    portalRole?: UserRole
-  ): Promise<UserResponse | null> => {
-    setError(null);
-    isLoggingInRef.current = true;
-    setIsLoading(true);
-
-    // Flush any preexisting session credentials to guarantee complete role isolation
-    clearStoredToken();
-    clearApiCache();
-    setUser(null);
-    setToken(null);
-    setFirebaseUser(null);
-    setIsProvisioned(false);
-
+    // Authentication: Firebase Email/Password Authentication ONLY
     try {
-      const tokenResponse = await api.loginWithGoogle(idToken, portalRole);
-      setStoredToken(tokenResponse.access_token);
-      setToken(tokenResponse.access_token);
+      const activeAuth = getFirebaseAuth() || firebaseAuth;
+      if (!activeAuth || !isFirebaseConfigured()) {
+        throw new Error("Firebase Authentication is not configured.");
+      }
 
-      const userData = await api.getMe(tokenResponse.access_token);
+      const userCredential = await signInWithEmailAndPassword(activeAuth, normalizedEmail, password);
+      const fbUser = userCredential.user;
+      setFirebaseUser(fbUser);
+
+      // Acquire Firebase ID Token (RS256 JWT)
+      const idToken = await fbUser.getIdToken();
+
+      // Exchange / Verify with Cloudflare backend via POST /api/v1/auth/firebase/session
+      const sessionResponse = await api.loginWithFirebase(idToken, portalRole);
+      setStoredToken(sessionResponse.access_token);
+      setToken(sessionResponse.access_token);
+
+      // Fetch user profile from Cloudflare D1
+      const userData = await api.getMe(sessionResponse.access_token);
       setUser(userData);
       setIsProvisioned(true);
       return userData;
     } catch (err: unknown) {
-      let message = "Google Sign-In failed. Please verify your institutional account.";
-      if (err instanceof ApiError) {
+      let message = "Invalid email/ID or password. Please verify your credentials.";
+      const errObj = err as { code?: string; message?: string };
+
+      if (errObj.code === "auth/invalid-credential" || errObj.code === "auth/wrong-password") {
+        message = "Incorrect email/ID or password. Please verify your credentials.";
+      } else if (errObj.code === "auth/user-not-found") {
+        message = "Account not found in Firebase Authentication.";
+      } else if (errObj.code === "auth/too-many-requests") {
+        message = "Too many failed login attempts. Please wait a few minutes before trying again.";
+      } else if (errObj.code === "auth/user-disabled") {
+        message = "This account has been disabled. Please contact an administrator.";
+      } else if (errObj.code === "auth/network-request-failed") {
+        message = "Network error: Unable to connect to Firebase Authentication.";
+      } else if (err instanceof ApiError) {
         message = err.message || message;
       } else if (err instanceof Error) {
         message = err.message;
       }
+
       setError(message);
       throw new Error(message);
     } finally {
@@ -470,7 +427,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sendVerificationEmail,
         reloadFirebaseUser,
         login,
-        loginWithGoogle,
         logout,
         updateUser,
         refreshUser,
