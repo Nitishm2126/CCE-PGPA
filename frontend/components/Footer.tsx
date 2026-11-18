@@ -15,7 +15,8 @@ export const Footer: React.FC = () => {
     pathname?.startsWith("/mentor") ||
     pathname?.startsWith("/hod") ||
     pathname?.startsWith("/admin") ||
-    pathname?.startsWith("/change-password")
+    pathname?.startsWith("/change-password") ||
+    pathname?.startsWith("/forgot-password")
   ) {
     return null;
   }

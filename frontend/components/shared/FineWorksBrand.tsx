@@ -75,9 +75,14 @@ export const FineWorksBrand: React.FC<FineWorksBrandProps> = ({
         content
       )}
       {showDepartment && (
-        <span className="hidden sm:inline-block text-[11px] text-slate-500 dark:text-[#A3A3A3] font-medium tracking-normal mt-0.5 truncate">
-          Department of Computer and Communication Engineering (CCE)
-        </span>
+        <>
+          <span className="sm:hidden text-[10px] text-slate-500 dark:text-[#A3A3A3] font-medium tracking-normal mt-0.5 truncate">
+            Dept. of CCE
+          </span>
+          <span className="hidden sm:inline-block text-[11px] text-slate-500 dark:text-[#A3A3A3] font-medium tracking-normal mt-0.5 truncate">
+            Department of Computer and Communication Engineering (CCE)
+          </span>
+        </>
       )}
     </div>
   );
