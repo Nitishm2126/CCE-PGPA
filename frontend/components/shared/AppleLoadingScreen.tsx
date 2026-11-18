@@ -65,7 +65,7 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
     >
       {/* Subtle radial ambient backdrop */}
       <div
-        className={`absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(124,58,237,0.08)_0%,transparent_65%)] ${
+        className={`absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(255,179,71,0.12)_0%,transparent_65%)] ${
           isLoginVariant
             ? "dark:bg-[radial-gradient(circle_at_center,rgba(93,214,44,0.10)_0%,transparent_65%)]"
             : "dark:bg-[radial-gradient(circle_at_center,rgba(93,214,44,0.08)_0%,transparent_65%)]"
@@ -76,9 +76,9 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
       <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-sm w-full animate-apple-fade">
         {/* Brand Mark with Smooth Progress Halo */}
         <div className="relative mb-6 flex items-center justify-center">
-          {/* Breathing ambient halo: subtle purple in light mode, yellow or indigo in dark mode */}
+          {/* Breathing ambient halo: subtle amber in light mode, yellow or indigo in dark mode */}
           <div
-            className={`absolute -inset-2 rounded-3xl bg-purple-500/15 blur-xl animate-apple-halo pointer-events-none ${
+            className={`absolute -inset-2 rounded-3xl bg-[#FFB347]/20 blur-xl animate-apple-halo pointer-events-none ${
               "dark:bg-[#5DD62C]/15"
             }`}
             aria-hidden="true"
@@ -87,7 +87,7 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
           {/* Rotating progress indicator ring */}
           <div className="relative flex items-center justify-center">
             <svg
-              className={`h-20 w-20 animate-apple-spin text-purple-600/20 ${
+              className={`h-20 w-20 animate-apple-spin text-[#FFB347]/25 ${
                 "dark:text-[#5DD62C]/20"
               }`}
               viewBox="0 0 80 80"
@@ -103,7 +103,7 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
                 strokeLinecap="round"
                 className="opacity-20"
               />
-              {/* Light mode: refined subtle purple/neutral progress stroke */}
+              {/* Light mode: refined subtle amber progress stroke */}
               <circle
                 cx="40"
                 cy="40"
@@ -134,9 +134,9 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
                   y2="80"
                   gradientUnits="userSpaceOnUse"
                 >
-                  <stop stopColor="#7c3aed" />
-                  <stop offset="0.6" stopColor="#a78bfa" />
-                  <stop offset="1" stopColor="#c4b5fd" stopOpacity="0.2" />
+                  <stop stopColor="#FFB347" />
+                  <stop offset="0.6" stopColor="#FFA21A" />
+                  <stop offset="1" stopColor="#FFB347" stopOpacity="0.2" />
                 </linearGradient>
                 <linearGradient
                   id="appleProgressGradDarkGreen"
@@ -154,8 +154,8 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
             </svg>
 
             {/* Centered Clean CCE Brand Monogram */}
-            <div className="absolute inset-2 rounded-2xl bg-white dark:bg-[#202020] border border-purple-200/80 dark:border-[#2e2e2e] shadow-sm flex items-center justify-center p-1.5 overflow-hidden">
-              <span className="font-extrabold text-base tracking-wider text-purple-700 dark:text-[#5DD62C] select-none">
+            <div className="absolute inset-2 rounded-2xl bg-white dark:bg-[#202020] border border-[#FFB347]/40 dark:border-[#2e2e2e] shadow-sm flex items-center justify-center p-1.5 overflow-hidden">
+              <span className="font-extrabold text-base tracking-wider text-[#1E2A33] dark:text-[#5DD62C] select-none">
                 CCE
               </span>
             </div>

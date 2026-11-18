@@ -18,8 +18,8 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({ role, size = "md" }) => {
     },
     mentor: {
       label: "Faculty Mentor",
-      classes: "bg-purple-500/15 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/40 border-purple-500/30",
-      dot: "bg-purple-500 dark:bg-purple-400",
+      classes: "bg-[#FFB347]/15 text-[#1E2A33] dark:bg-[#337418]/30 dark:text-[#5DD62C] dark:border-[#5DD62C]/40 border-[#FFB347]/40",
+      dot: "bg-[#FFB347] dark:bg-[#5DD62C]",
     },
     hod: {
       label: "Head of Department",

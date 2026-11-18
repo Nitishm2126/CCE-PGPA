@@ -30,7 +30,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       className={`inline-flex items-center justify-center gap-1.5 rounded-lg border transition-all duration-150 cursor-pointer ${
         isDark
           ? "border-[#2e2e2e] bg-[#202020] text-[#5DD62C] hover:bg-[#282828] hover:text-[#5DD62C] shadow-2xs"
-          : "border-purple-200/80 bg-purple-50/60 text-purple-700 hover:bg-purple-100 hover:text-purple-900 shadow-2xs"
+          : "border-[#FFB347]/50 bg-[#FFB347]/15 text-[#1E2A33] hover:bg-[#FFB347]/25 hover:text-[#1E2A33] shadow-2xs"
       } ${btnSize} ${className}`}
     >
       {isDark ? (

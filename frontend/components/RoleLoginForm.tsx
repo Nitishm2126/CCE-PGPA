@@ -21,23 +21,23 @@ interface RoleLoginFormProps {
 const ROLE_THEME_DETAILS = {
   student: {
     ringColor: "focus:border-[#FFB347] focus:ring-[#FFB347]/30 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
-    buttonBg: "bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
-    dotColor: "bg-[#1E2A33] dark:bg-[#5DD62C]",
+    buttonBg: "bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] dark:border-transparent font-bold shadow-xs",
+    dotColor: "bg-[#FFB347] dark:bg-[#5DD62C]",
   },
   mentor: {
     ringColor: "focus:border-[#FFB347] focus:ring-[#FFB347]/30 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
-    buttonBg: "bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
-    dotColor: "bg-[#1E2A33] dark:bg-[#5DD62C]",
+    buttonBg: "bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] dark:border-transparent font-bold shadow-xs",
+    dotColor: "bg-[#FFB347] dark:bg-[#5DD62C]",
   },
   hod: {
     ringColor: "focus:border-[#FFB347] focus:ring-[#FFB347]/30 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
-    buttonBg: "bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
-    dotColor: "bg-[#1E2A33] dark:bg-[#5DD62C]",
+    buttonBg: "bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] dark:border-transparent font-bold shadow-xs",
+    dotColor: "bg-[#FFB347] dark:bg-[#5DD62C]",
   },
   admin: {
     ringColor: "focus:border-[#FFB347] focus:ring-[#FFB347]/30 dark:focus:border-[#5DD62C] dark:focus:ring-[#5DD62C]/20",
-    buttonBg: "bg-[#1E2A33] hover:bg-[#131B21] active:bg-[#0E1419] text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] font-bold shadow-xs",
-    dotColor: "bg-[#1E2A33] dark:bg-[#5DD62C]",
+    buttonBg: "bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:active:bg-[#44a81f] dark:text-[#0F0F0F] dark:border-transparent font-bold shadow-xs",
+    dotColor: "bg-[#FFB347] dark:bg-[#5DD62C]",
   },
 };
 
@@ -181,7 +181,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         <div className="w-full flex items-center justify-between mb-2 sm:mb-2.5 text-xs shrink-0">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 font-semibold text-purple-600 dark:text-[#5DD62C] hover:text-purple-800 dark:hover:text-[#4ec224] transition-colors"
+            className="inline-flex items-center gap-1.5 font-semibold text-[#1E2A33] hover:text-[#FFA21A] dark:text-[#5DD62C] dark:hover:text-[#4ec224] transition-colors"
           >
             <span>&larr;</span>
             <span>All Portals</span>
@@ -213,7 +213,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
         {/* Main Heading centered above the Login Card */}
         <div className="text-center mb-2.5 sm:mb-3.5 shrink-0">
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-            CCE-PGPA <span className="text-purple-600 dark:text-[#5DD62C]">Management System</span>
+            CCE-PGPA <span className="text-[#FFB347] dark:text-[#5DD62C]">Management System</span>
           </h2>
         </div>
 
@@ -328,7 +328,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs font-medium text-purple-600 dark:text-[#5DD62C] hover:text-purple-800 dark:hover:text-[#4ec224] transition-colors"
+                  className="text-xs font-medium text-[#1E2A33] hover:text-[#FFA21A] dark:text-[#5DD62C] dark:hover:text-[#4ec224] transition-colors"
                 >
                   Forgot password?
                 </Link>

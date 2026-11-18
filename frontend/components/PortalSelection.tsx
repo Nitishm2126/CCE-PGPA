@@ -27,36 +27,36 @@ interface PortalCardTheme {
 const PORTAL_CARD_THEMES: Record<string, PortalCardTheme> = {
   student: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-purple-400 dark:hover:border-[#5DD62C]/70",
-    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-[#5DD62C]",
-    badgeBg: "bg-purple-50 dark:bg-[#337418]/25 border-purple-200 dark:border-[#5DD62C]/30",
-    badgeText: "text-purple-700 dark:text-[#5DD62C]",
-    iconBg: "bg-purple-50 dark:bg-[#337418]/25",
-    iconText: "text-purple-600 dark:text-[#5DD62C]",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:text-[#0F0F0F] font-bold",
-    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-[#4ec224]",
+    hoverBorder: "hover:border-[#FFB347] dark:hover:border-[#5DD62C]/70",
+    focusRing: "focus-visible:ring-[#FFB347] dark:focus-visible:ring-[#5DD62C]",
+    badgeBg: "bg-[#FFB347]/15 dark:bg-[#337418]/25 border-[#FFB347]/40 dark:border-[#5DD62C]/30",
+    badgeText: "text-[#1E2A33] dark:text-[#5DD62C] font-bold",
+    iconBg: "bg-[#FFB347]/15 dark:bg-[#337418]/25",
+    iconText: "text-[#1E2A33] dark:text-[#5DD62C]",
+    buttonBg: "bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:text-[#0F0F0F] dark:border-transparent font-bold",
+    buttonHoverBg: "hover:bg-[#FFA21A] dark:hover:bg-[#4ec224]",
   },
   mentor: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-purple-400 dark:hover:border-[#5DD62C]/70",
-    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-[#5DD62C]",
-    badgeBg: "bg-purple-50/70 dark:bg-[#337418]/25 border-purple-200 dark:border-[#5DD62C]/30",
-    badgeText: "text-purple-700 dark:text-[#5DD62C]",
-    iconBg: "bg-purple-50 dark:bg-[#337418]/25",
-    iconText: "text-purple-600 dark:text-[#5DD62C]",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:text-[#0F0F0F] font-bold",
-    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-[#4ec224]",
+    hoverBorder: "hover:border-[#FFB347] dark:hover:border-[#5DD62C]/70",
+    focusRing: "focus-visible:ring-[#FFB347] dark:focus-visible:ring-[#5DD62C]",
+    badgeBg: "bg-[#FFB347]/15 dark:bg-[#337418]/25 border-[#FFB347]/40 dark:border-[#5DD62C]/30",
+    badgeText: "text-[#1E2A33] dark:text-[#5DD62C] font-bold",
+    iconBg: "bg-[#FFB347]/15 dark:bg-[#337418]/25",
+    iconText: "text-[#1E2A33] dark:text-[#5DD62C]",
+    buttonBg: "bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:text-[#0F0F0F] dark:border-transparent font-bold",
+    buttonHoverBg: "hover:bg-[#FFA21A] dark:hover:bg-[#4ec224]",
   },
   hod: {
     cardBorder: "border-slate-200/90 dark:border-slate-800",
-    hoverBorder: "hover:border-purple-400 dark:hover:border-[#5DD62C]/70",
-    focusRing: "focus-visible:ring-purple-500 dark:focus-visible:ring-[#5DD62C]",
-    badgeBg: "bg-purple-50 dark:bg-[#337418]/25 border-purple-200 dark:border-[#5DD62C]/30",
-    badgeText: "text-purple-700 dark:text-[#5DD62C]",
-    iconBg: "bg-purple-50 dark:bg-[#337418]/25",
-    iconText: "text-purple-600 dark:text-[#5DD62C]",
-    buttonBg: "bg-purple-600 hover:bg-purple-700 text-white dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:text-[#0F0F0F] font-bold",
-    buttonHoverBg: "hover:bg-purple-700 dark:hover:bg-[#4ec224]",
+    hoverBorder: "hover:border-[#FFB347] dark:hover:border-[#5DD62C]/70",
+    focusRing: "focus-visible:ring-[#FFB347] dark:focus-visible:ring-[#5DD62C]",
+    badgeBg: "bg-[#FFB347]/15 dark:bg-[#337418]/25 border-[#FFB347]/40 dark:border-[#5DD62C]/30",
+    badgeText: "text-[#1E2A33] dark:text-[#5DD62C] font-bold",
+    iconBg: "bg-[#FFB347]/15 dark:bg-[#337418]/25",
+    iconText: "text-[#1E2A33] dark:text-[#5DD62C]",
+    buttonBg: "bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#5DD62C] dark:hover:bg-[#4ec224] dark:text-[#0F0F0F] dark:border-transparent font-bold",
+    buttonHoverBg: "hover:bg-[#FFA21A] dark:hover:bg-[#4ec224]",
   },
 };
 
@@ -124,12 +124,12 @@ function PortalSelectionContent() {
         {/* Department Title & Institutional Intro */}
         <section className="text-center w-full max-w-3xl mx-auto space-y-2 shrink-0">
           <div className="inline-flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-purple-600 dark:bg-indigo-500" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#FFB347] dark:bg-indigo-500" />
             <span>Department of Computer and Communication Engineering</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-            CCE PGPA <span className="text-purple-600 dark:text-[#5DD62C]">Management System</span>
+            CCE PGPA <span className="text-[#FFB347] dark:text-[#5DD62C]">Management System</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-normal">

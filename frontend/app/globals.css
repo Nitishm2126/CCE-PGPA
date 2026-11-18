@@ -365,6 +365,10 @@ nav[aria-label$="Mobile Navigation"] {
    - Muted Charcoal: #5C6B77
    Dark Theme (.dark) remains 100% untouched.
    ========================================================================== */
+html:not(.dark) [class*="bg-purple-600"],
+html:not(.dark) [class*="bg-purple-500"],
+html:not(.dark) [class*="bg-purple-700"],
+html:not(.dark) [class*="bg-purple-800"],
 html:not(.dark) [class*="bg-blue-600"],
 html:not(.dark) [class*="bg-blue-500"],
 html:not(.dark) [class*="bg-blue-700"],
@@ -376,44 +380,68 @@ html:not(.dark) [class*="bg-indigo-500"] {
   border-color: #FFA21A !important;
 }
 
+html:not(.dark) [class*="hover:bg-purple-700"]:hover,
+html:not(.dark) [class*="hover:bg-purple-600"]:hover,
+html:not(.dark) [class*="hover:bg-purple-800"]:hover,
 html:not(.dark) [class*="hover:bg-blue-700"]:hover,
 html:not(.dark) [class*="hover:bg-blue-600"]:hover,
 html:not(.dark) [class*="hover:bg-indigo-700"]:hover {
   background-color: #FFA21A !important;
+  color: #1E2A33 !important;
 }
 
+html:not(.dark) [class*="active:bg-purple-800"]:active,
+html:not(.dark) [class*="active:bg-purple-700"]:active,
 html:not(.dark) [class*="active:bg-blue-800"]:active,
 html:not(.dark) [class*="active:bg-blue-700"]:active {
   background-color: #E69528 !important;
 }
 
+html:not(.dark) [class*="bg-purple-50"],
+html:not(.dark) [class*="bg-purple-100"],
+html:not(.dark) [class*="bg-purple-200"],
 html:not(.dark) [class*="bg-blue-50"],
 html:not(.dark) [class*="bg-blue-100"],
-html:not(.dark) [class*="bg-indigo-50"],
-html:not(.dark) [class*="bg-purple-50"] {
+html:not(.dark) [class*="bg-indigo-50"] {
   background-color: rgba(255, 179, 71, 0.15) !important;
   color: #1E2A33 !important;
   border-color: rgba(255, 179, 71, 0.4) !important;
 }
 
+html:not(.dark) [class*="text-purple-600"],
+html:not(.dark) [class*="text-purple-700"],
+html:not(.dark) [class*="text-purple-800"],
+html:not(.dark) [class*="text-purple-500"],
 html:not(.dark) [class*="text-blue-600"],
 html:not(.dark) [class*="text-blue-700"],
-html:not(.dark) [class*="text-indigo-600"],
-html:not(.dark) [class*="text-purple-600"],
-html:not(.dark) [class*="text-purple-700"] {
+html:not(.dark) [class*="text-indigo-600"] {
   color: #1E2A33 !important;
 }
 
+html:not(.dark) [class*="hover:text-purple-600"]:hover,
+html:not(.dark) [class*="hover:text-purple-700"]:hover,
+html:not(.dark) [class*="hover:text-purple-800"]:hover {
+  color: #FFA21A !important;
+}
+
+html:not(.dark) [class*="border-purple-200"],
+html:not(.dark) [class*="border-purple-300"],
+html:not(.dark) [class*="border-purple-500"],
 html:not(.dark) [class*="border-blue-200"],
-html:not(.dark) [class*="border-blue-300"],
-html:not(.dark) [class*="border-purple-200"] {
-  border-color: #C9D3DC !important;
+html:not(.dark) [class*="border-blue-300"] {
+  border-color: rgba(255, 179, 71, 0.5) !important;
+}
+
+html:not(.dark) [class*="hover:border-purple-300"]:hover {
+  border-color: #FFB347 !important;
 }
 
 html:not(.dark) [class*="focus:ring-blue-"]:focus,
 html:not(.dark) [class*="focus:ring-purple-"]:focus,
-html:not(.dark) [class*="focus:ring-indigo-"]:focus {
+html:not(.dark) [class*="focus:ring-indigo-"]:focus,
+html:not(.dark) [class*="focus:border-purple-"]:focus {
   --tw-ring-color: #FFB347 !important;
+  border-color: #FFB347 !important;
 }
 
 /* Apple touch manipulation & tap feedback */
