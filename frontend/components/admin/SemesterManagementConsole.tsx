@@ -18,8 +18,8 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
   const [semesters, setSemesters] = useState<SemesterResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [togglingId, setTogglingId] = useState<string | null>(null);
-  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
-  const [pendingDefaultSemester, setPendingDefaultSemester] = useState<SemesterResponse | null>(null);
+  const [selectedDefaultId, setSelectedDefaultId] = useState<string>("");
+  const [isSavingDefault, setIsSavingDefault] = useState<boolean>(false);
   const [actionMessage, setActionMessage] = useState<{
     type: "success" | "error" | "warning";
     text: string;
@@ -44,6 +44,12 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
       setLoading(true);
       const data = await api.adminGetSemesters(token);
       setSemesters(data);
+      const currentDefault = data.find((s) => s.is_default);
+      if (currentDefault) {
+        setSelectedDefaultId(currentDefault.id);
+      } else if (data.length > 0) {
+        setSelectedDefaultId(data[0].id);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load semesters.";
       setActionMessage({ type: "error", text: msg });
@@ -55,6 +61,31 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
   useEffect(() => {
     fetchSemesters();
   }, [fetchSemesters]);
+
+  const handleSaveDefaultSemester = async () => {
+    if (!selectedDefaultId) return;
+    try {
+      setIsSavingDefault(true);
+      setActionMessage(null);
+      await api.adminSetDefaultSemester(selectedDefaultId, token);
+      setSemesters((prev) =>
+        prev.map((s) => ({
+          ...s,
+          is_default: s.id === selectedDefaultId,
+        }))
+      );
+      const targetSem = semesters.find((s) => s.id === selectedDefaultId);
+      setActionMessage({
+        type: "success",
+        text: `Default semester set to ${targetSem?.display_name || "selected semester"}. Student submission forms will now automatically select this semester.`,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to save default semester.";
+      setActionMessage({ type: "error", text: msg });
+    } finally {
+      setIsSavingDefault(false);
+    }
+  };
 
   const handleToggleStatus = async (semester: SemesterResponse, targetStatus: boolean) => {
     if (!targetStatus && semester.is_enabled) {
@@ -71,7 +102,7 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
       setActionMessage(null);
       const updated = await api.adminUpdateSemesterStatus(semesterId, isEnabled, token);
       setSemesters((prev) =>
-        prev.map((s) => (s.id === updated.id ? updated : s))
+        prev.map((s) => (s.id === updated.id ? { ...s, is_enabled: updated.is_enabled } : s))
       );
       setActionMessage({
         type: "success",
@@ -85,42 +116,6 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
     } finally {
       setTogglingId(null);
       setPendingToggle(null);
-    }
-  };
-
-  const handleSetDefault = (sem: SemesterResponse) => {
-    if (!sem.is_enabled) {
-      setActionMessage({
-        type: "warning",
-        text: `Cannot set ${sem.display_name} as default because it is currently closed. Open the semester first.`,
-      });
-      return;
-    }
-    setPendingDefaultSemester(sem);
-  };
-
-  const executeSetDefault = async (semesterId: string) => {
-    try {
-      setSettingDefaultId(semesterId);
-      setActionMessage(null);
-      await api.adminSetDefaultSemester(semesterId, token);
-      setSemesters((prev) =>
-        prev.map((s) => ({
-          ...s,
-          is_default: s.id === semesterId,
-        }))
-      );
-      const targetSem = semesters.find((s) => s.id === semesterId);
-      setActionMessage({
-        type: "success",
-        text: `Default semester set to ${targetSem?.display_name || "selected semester"}. Student submission forms will now automatically select this semester.`,
-      });
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to set default semester.";
-      setActionMessage({ type: "error", text: msg });
-    } finally {
-      setSettingDefaultId(null);
-      setPendingDefaultSemester(null);
     }
   };
 
@@ -228,6 +223,101 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
           </div>
         )}
 
+        {/* Default Semester Configuration Bar — TOP of Semester Management */}
+        <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-[#F2F5F7] dark:bg-slate-800/60 border border-[#C9D3DC] dark:border-slate-700/80 shadow-xs">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FFB347] text-[#1E2A33] tracking-wide uppercase border border-[#FFA21A]">
+                  ★ Default Semester
+                </span>
+                <h3 className="text-sm font-bold text-[#1E2A33] dark:text-white">
+                  Default Semester Configuration
+                </h3>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                Choose the default semester preselected for student achievement submissions. Any of the 8 academic semesters can be configured as default.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+              <div className="relative min-w-[220px]">
+                <select
+                  value={selectedDefaultId}
+                  onChange={(e) => setSelectedDefaultId(e.target.value)}
+                  disabled={loading || isSavingDefault || semesters.length === 0}
+                  aria-label="Select default semester"
+                  className="w-full appearance-none rounded-xl border border-[#C9D3DC] dark:border-slate-600 bg-white dark:bg-slate-900 px-3.5 py-2.5 pr-8 text-xs font-bold text-[#1E2A33] dark:text-white shadow-2xs focus:border-[#FFB347] focus:ring-2 focus:ring-[#FFB347]/30 transition outline-none cursor-pointer"
+                >
+                  {semesters.length === 0 ? (
+                    <option value="">Loading semesters...</option>
+                  ) : (
+                    semesters.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.display_name} {s.is_enabled ? "(Open)" : "(Closed)"} {s.is_default ? "★ [Current Default]" : ""}
+                      </option>
+                    ))
+                  )}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveDefaultSemester}
+                disabled={isSavingDefault || loading || !selectedDefaultId}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#FFB347] hover:bg-[#FFA21A] active:scale-95 text-[#1E2A33] shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSavingDefault ? (
+                  <>
+                    <span className="w-3.5 h-3.5 animate-spin rounded-full border-2 border-[#1E2A33] border-t-transparent" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Save Default Semester</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Current active default info footer */}
+          {(() => {
+            const currentDefault = semesters.find((s) => s.is_default);
+            if (!currentDefault) return null;
+            return (
+              <div className="mt-3 pt-3 border-t border-[#C9D3DC]/60 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-600 dark:text-slate-300">
+                <span className="flex items-center gap-1.5 font-medium flex-wrap">
+                  Active Default: <strong className="text-[#1E2A33] dark:text-white font-bold">{currentDefault.display_name}</strong>
+                  <span
+                    className={`inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                      currentDefault.is_enabled
+                        ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                        : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                    }`}
+                  >
+                    {currentDefault.is_enabled ? "Open" : "Closed"}
+                  </span>
+                  {!currentDefault.is_enabled && (
+                    <span className="text-amber-700 dark:text-amber-400 font-semibold">
+                      (⚠️ Default semester is closed. Student submissions will pause until an open default is set or this semester is opened.)
+                    </span>
+                  )}
+                </span>
+                <span className="text-slate-400 text-[10px]">Persisted in Cloudflare D1</span>
+              </div>
+            );
+          })()}
+        </div>
+
         {/* Semesters Grid */}
         <div className="mt-6">
           {loading ? (
@@ -239,11 +329,14 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {semesters.map((sem) => {
                 const isToggling = togglingId === sem.id;
+                const isDefault = Boolean(sem.is_default);
                 return (
                   <div
                     key={sem.id}
                     className={`p-4 rounded-xl border transition-all ${
-                      sem.is_enabled
+                      isDefault
+                        ? "border-[#FFB347] ring-2 ring-[#FFB347]/30 dark:ring-[#FFB347]/20 bg-white dark:bg-slate-900 shadow-xs"
+                        : sem.is_enabled
                         ? "bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-950/20 dark:to-slate-800/50 border-emerald-200 dark:border-emerald-800/60 shadow-xs"
                         : "bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 opacity-90"
                     }`}
@@ -254,9 +347,9 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
                           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                             Semester {sem.semester_number}
                           </span>
-                          {sem.is_default && (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-[#FFB347]/20 text-[#1E2A33] dark:text-[#FFB347] border border-[#FFB347]/50 shadow-2xs">
-                              ★ Default Semester
+                          {isDefault && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FFB347] text-[#1E2A33] border border-[#FFA21A] shadow-2xs">
+                              DEFAULT SEMESTER
                             </span>
                           )}
                         </div>
@@ -281,46 +374,28 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
                     </div>
 
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                      {sem.is_enabled
-                        ? sem.is_default
-                          ? "Default semester: Automatically selected for all new student submissions."
-                          : "Currently selectable by students on the achievement submission form."
+                      {isDefault
+                        ? sem.is_enabled
+                          ? "Default semester: Automatically preselected for student achievement submissions."
+                          : "⚠️ Default semester is closed. Student submissions will be paused until an open default semester is set or this semester is opened."
+                        : sem.is_enabled
+                        ? "Open for student achievement submissions."
                         : "Closed for new submissions. Historical records remain fully accessible."}
                     </p>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
-                      {/* Set as Default Option */}
-                      {sem.is_enabled ? (
-                        sem.is_default ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg bg-[#FFB347]/25 text-[#1E2A33] dark:text-[#FFB347] border border-[#FFB347]/40 shadow-2xs">
-                            <span>★ Default Active</span>
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            disabled={settingDefaultId === sem.id || isToggling}
-                            onClick={() => handleSetDefault(sem)}
-                            className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-[#FFB347] text-[#1E2A33] dark:text-[#FFB347] hover:bg-[#FFB347]/15 transition cursor-pointer flex items-center gap-1 shadow-2xs"
-                            title="Set as the default semester for student submissions"
-                          >
-                            {settingDefaultId === sem.id ? (
-                              <span className="w-3 h-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            ) : null}
-                            <span>Set as Default</span>
-                          </button>
-                        )
-                      ) : (
-                        <span className="text-[10px] text-slate-400 italic">Open semester to set default</span>
-                      )}
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono font-semibold text-slate-400 uppercase">
+                        SEM-{sem.semester_number}
+                      </span>
 
                       <button
                         type="button"
-                        disabled={isToggling || settingDefaultId === sem.id}
+                        disabled={isToggling}
                         onClick={() => handleToggleStatus(sem, !sem.is_enabled)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 active:scale-95 ${
                           sem.is_enabled
                             ? "border border-red-200 text-red-700 hover:bg-red-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
-                            : "bg-[#0a192f] hover:bg-slate-800 text-white shadow-2xs"
+                            : "bg-[#1E2A33] hover:bg-slate-800 text-white shadow-2xs"
                         }`}
                       >
                         {isToggling ? (
@@ -505,7 +580,7 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
             {pendingToggle.semester.is_default && (
               <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300 font-semibold space-y-1">
                 <p>⚠️ <strong>Default Semester Notice:</strong></p>
-                <p>This semester is currently set as the Default Semester. Closing it will clear its default status and automatically designate the next open semester as default.</p>
+                <p>This semester is currently set as the Default Semester. Closing it will pause student achievement submissions until an open default semester is saved above or this semester is re-opened.</p>
               </div>
             )}
 
@@ -523,48 +598,6 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
                 className="px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 hover:bg-red-700 text-white"
               >
                 Confirm Disable
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirmation Modal for Setting Default Semester */}
-      {pendingDefaultSemester && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-[#FFB347]/20 text-[#1E2A33] dark:text-[#FFB347] border border-[#FFB347]/40">
-                <span className="text-xl">★</span>
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Set {pendingDefaultSemester.display_name} as Default?
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Confirm default semester for student submissions
-                </p>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              This will configure <strong>{pendingDefaultSemester.display_name}</strong> as the default semester automatically preselected when any student opens the achievement submission form. Students can still manually choose any other currently open semester.
-            </p>
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={() => setPendingDefaultSemester(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => executeSetDefault(pendingDefaultSemester.id)}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#FFB347] hover:bg-[#FFA21A] text-[#1E2A33] shadow-xs cursor-pointer flex items-center gap-1.5"
-              >
-                <span>Confirm & Set as Default</span>
               </button>
             </div>
           </div>

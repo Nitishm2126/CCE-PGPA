@@ -1274,6 +1274,7 @@ export const api = {
     isEnabled: boolean,
     token?: string | null
   ): Promise<SemesterResponse> => {
+    cachedSemesters = null;
     return request<SemesterResponse>(
       `/admin/semesters/${semesterId}`,
       {
@@ -1288,6 +1289,7 @@ export const api = {
     semesterId: string,
     token?: string | null
   ): Promise<SemesterResponse> => {
+    cachedSemesters = null;
     return request<SemesterResponse>(
       `/admin/semesters/${semesterId}/set-default`,
       {

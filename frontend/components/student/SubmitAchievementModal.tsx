@@ -244,26 +244,44 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submissionStep, setSubmissionStep] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [isDefaultDisabled, setIsDefaultDisabled] = useState<boolean>(false);
+  const [defaultSemesterName, setDefaultSemesterName] = useState<string>("");
 
-  // Load available semesters on mount (force fresh enabled-only list)
+  // Load available semesters on mount (force fresh enabled-only list with default semester first)
   useEffect(() => {
     let isMounted = true;
     setSemesterLoading(true);
     api.studentGetSemesters(null, true)
       .then((sems) => {
         if (!isMounted) return;
-        const activeSems = (sems || []).filter((s) => s.is_enabled !== false);
-        setSemesters(activeSems);
-        if (activeSems.length > 0) {
-          // Top priority: Admin-configured default semester
-          const defaultSem = activeSems.find((s) => s.is_default);
-          const found = initialSemesterId ? activeSems.find((s) => s.id === initialSemesterId) : null;
-          if (defaultSem) {
+        const allSems = sems || [];
+        const defaultSem = allSems.find((s) => s.is_default);
+        const defaultDisabled = Boolean(defaultSem && !defaultSem.is_enabled);
+        setIsDefaultDisabled(defaultDisabled);
+        setDefaultSemesterName(defaultSem?.display_name || "Configured Default");
+
+        // Filter out disabled semesters so they cannot be selected
+        const enabledSems = allSems.filter((s) => s.is_enabled !== false);
+        // Sort enabled semesters: Default semester first, followed by others in numerical order
+        const sortedEnabledSems = [...enabledSems].sort((a, b) => {
+          if (a.is_default && !b.is_default) return -1;
+          if (!a.is_default && b.is_default) return 1;
+          return a.semester_number - b.semester_number;
+        });
+
+        setSemesters(sortedEnabledSems);
+
+        if (defaultDisabled) {
+          // If default semester is disabled, pause submissions and do not preselect
+          setSemesterId("");
+        } else if (sortedEnabledSems.length > 0) {
+          // Automatically preselect the configured default semester
+          if (defaultSem && defaultSem.is_enabled) {
             setSemesterId(defaultSem.id);
-          } else if (found) {
-            setSemesterId(found.id);
+          } else if (initialSemesterId && sortedEnabledSems.some((s) => s.id === initialSemesterId)) {
+            setSemesterId(initialSemesterId);
           } else {
-            setSemesterId(activeSems[0].id);
+            setSemesterId(sortedEnabledSems[0].id);
           }
         } else {
           setSemesterId("");
@@ -764,6 +782,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   };
 
   const handleSubmit = async (submitImmediately: boolean) => {
+    if (isDefaultDisabled) {
+      setError(
+        `Submissions are temporarily paused because the default academic semester (${defaultSemesterName || "Default Semester"}) is currently closed. Please contact the administrator to choose an open default semester.`
+      );
+      return;
+    }
     if (!semesterId) {
       setError("Please select an academic semester.");
       return;
@@ -901,6 +925,21 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           </div>
         )}
 
+        {/* Notice when Default Semester is Closed */}
+        {isDefaultDisabled && (
+          <div className="rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 p-3.5 text-xs text-amber-900 dark:text-amber-200 space-y-1 shadow-2xs">
+            <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+              <svg className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>Submissions Temporarily Paused</span>
+            </div>
+            <p className="leading-relaxed">
+              The administrator-configured default semester (<strong>{defaultSemesterName}</strong>) is currently closed. Student achievement submissions are paused until the administrator enables this semester or designates an open default semester in the Administrator Console.
+            </p>
+          </div>
+        )}
+
         {/* ==================================================================== */}
         {/* Section 1 — Basic Details                                           */}
         {/* ==================================================================== */}
@@ -929,23 +968,29 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <select
                 value={semesterId}
                 onChange={(e) => setSemesterId(e.target.value)}
-                disabled={isSubmitting || semesterLoading || semesters.length === 0}
+                disabled={isSubmitting || semesterLoading || isDefaultDisabled || semesters.length === 0}
                 required
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {semesterLoading ? (
                   <option value="">Loading active semesters...</option>
+                ) : isDefaultDisabled ? (
+                  <option value="">Default semester is closed — submissions paused</option>
                 ) : semesters.length === 0 ? (
                   <option value="">No semesters currently open</option>
                 ) : (
                   semesters.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {formatSemester(s.id, s.display_name)}{s.is_default ? " ★ (Default)" : ""}
+                      {formatSemester(s.id, s.display_name)}{s.is_default ? " ★ (Default Semester)" : ""}
                     </option>
                   ))
                 )}
               </select>
-              {semesters.length === 0 && !semesterLoading && (
+              {isDefaultDisabled ? (
+                <p className="mt-1 text-[11px] text-amber-600 dark:text-amber-400 font-medium leading-tight">
+                  ⚠️ Default semester ({defaultSemesterName}) is currently closed.
+                </p>
+              ) : semesters.length === 0 && !semesterLoading && (
                 <p className="mt-1 text-[11px] text-amber-600 dark:text-amber-400 font-medium leading-tight">
                   ⚠️ No academic semesters are currently open for achievement submission.
                 </p>
@@ -2505,7 +2550,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           <button
             type="button"
             onClick={() => handleSubmit(false)}
-            disabled={isSubmitting || semesterLoading || isComponentLocked}
+            disabled={isSubmitting || semesterLoading || isComponentLocked || isDefaultDisabled || !semesterId}
             className="rounded-xl border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#181818] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] transition-colors cursor-pointer min-h-[38px] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Save as Draft
@@ -2513,14 +2558,23 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
           <button
             type="submit"
-            disabled={isSubmitting || semesterLoading || isComponentLocked}
+            disabled={isSubmitting || semesterLoading || isComponentLocked || isDefaultDisabled || !semesterId}
             id="btn-submit-achievement"
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-bold shadow-xs transition-colors min-h-[38px] ${isComponentLocked
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-bold shadow-xs transition-colors min-h-[38px] ${
+              isDefaultDisabled || isComponentLocked
                 ? "bg-slate-400 dark:bg-slate-600 text-white cursor-not-allowed opacity-60"
                 : "bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#337418] dark:hover:bg-[#275913] dark:text-[#F8F8F8] dark:border-[#337418] cursor-pointer"
-              }`}
+            }`}
           >
-            {isComponentLocked ? (
+            {isDefaultDisabled ? (
+              <>
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <span>Default Semester Closed</span>
+              </>
+            ) : isComponentLocked ? (
               <>
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
