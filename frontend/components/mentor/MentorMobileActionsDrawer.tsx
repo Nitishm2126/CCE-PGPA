@@ -112,20 +112,20 @@ export const MentorMobileActionsDrawer: React.FC<MentorMobileActionsDrawerProps>
                 onClose();
                 onSwitchToHOD();
               }}
-              className="w-full flex items-center justify-between p-3.5 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/70 dark:bg-purple-950/40 hover:bg-purple-100 text-purple-900 dark:text-purple-200 transition-all font-semibold text-xs active:scale-98 cursor-pointer"
+              className="w-full flex items-center justify-between p-3.5 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-900 dark:text-amber-200 transition-all font-semibold text-xs active:scale-98 cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-700 text-white shadow-2xs">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-white shadow-2xs">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                   </svg>
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-purple-900 dark:text-purple-100 text-xs">Go to HOD Dashboard</p>
-                  <p className="text-[10px] text-purple-700 dark:text-purple-300">Department Administration &amp; Approvals</p>
+                  <p className="font-bold text-amber-900 dark:text-amber-100 text-xs">Go to HOD Dashboard</p>
+                  <p className="text-[10px] text-amber-700 dark:text-amber-300">Department Administration &amp; Approvals</p>
                 </div>
               </div>
-              <svg className="h-4 w-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <svg className="h-4 w-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </button>

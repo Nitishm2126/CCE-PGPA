@@ -643,7 +643,7 @@ export const ComponentManagementConsole: React.FC<ComponentManagementConsoleProp
                           HOD Excel Only
                         </span>
                       ) : comp.submission_mode === "both" ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                           Student & HOD
                         </span>
                       ) : (

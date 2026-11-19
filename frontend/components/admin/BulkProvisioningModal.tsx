@@ -489,7 +489,7 @@ export const BulkProvisioningModal: React.FC<BulkProvisioningModalProps> = ({
                                   : item.role === "mentor"
                                   ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
                                   : item.role === "hod"
-                                  ? "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300"
+                                  ? "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300"
                                   : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                               }`}
                             >

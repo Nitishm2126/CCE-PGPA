@@ -77,7 +77,7 @@ export const ViewHODModal: React.FC<ViewHODModalProps> = ({ hod, onClose }) => {
       <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
         <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+            <span className="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
               Department Head (HOD) Profile
             </span>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">
@@ -122,20 +122,20 @@ export const ViewHODModal: React.FC<ViewHODModalProps> = ({ hod, onClose }) => {
               {hod.department}
             </p>
           </div>
-          <div className="p-3 bg-purple-50/60 dark:bg-purple-950/20 rounded-xl border border-purple-100 dark:border-purple-900/30">
-            <span className="text-purple-600 dark:text-purple-400 text-[11px]">Review Approvals</span>
-            <p className="font-bold text-lg text-purple-700 dark:text-purple-300 mt-0.5">
+          <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/30">
+            <span className="text-amber-600 dark:text-amber-400 text-[11px]">Review Approvals</span>
+            <p className="font-bold text-lg text-amber-700 dark:text-amber-300 mt-0.5">
               {hod.reviews_count}
             </p>
           </div>
         </div>
 
         {/* Firebase Email Verification Action Card */}
-        <div className="p-3.5 bg-purple-50/60 dark:bg-purple-950/30 rounded-xl border border-purple-200/70 dark:border-purple-900/40 flex flex-col gap-2">
+        <div className="p-3.5 bg-amber-50/60 dark:bg-amber-950/30 rounded-xl border border-amber-200/70 dark:border-amber-900/40 flex flex-col gap-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div>
-              <p className="text-xs font-bold text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <p className="text-xs font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 Firebase Authentication &bull; Email Verification
@@ -150,7 +150,7 @@ export const ViewHODModal: React.FC<ViewHODModalProps> = ({ hod, onClose }) => {
               type="button"
               onClick={handleSendVerification}
               disabled={sendingEmail}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition disabled:opacity-50 cursor-pointer"
             >
               {sendingEmail ? (
                 <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -164,20 +164,20 @@ export const ViewHODModal: React.FC<ViewHODModalProps> = ({ hod, onClose }) => {
           </div>
 
           {verificationMsg && (
-            <div className="pt-2 border-t border-purple-100 dark:border-purple-900/40 space-y-1.5 text-[11px]">
-              <p className="text-purple-800 dark:text-purple-300 font-semibold">{verificationMsg.message}</p>
+            <div className="pt-2 border-t border-amber-100 dark:border-amber-900/40 space-y-1.5 text-[11px]">
+              <p className="text-amber-800 dark:text-amber-300 font-semibold">{verificationMsg.message}</p>
               {verificationMsg.link && (
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     readOnly
                     value={verificationMsg.link}
-                    className="flex-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800 text-[10px] font-mono text-slate-800 dark:text-slate-200 select-all"
+                    className="flex-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800 text-[10px] font-mono text-slate-800 dark:text-slate-200 select-all"
                   />
                   <button
                     type="button"
                     onClick={handleCopyLink}
-                    className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded font-bold text-[10px] shrink-0 cursor-pointer shadow-2xs"
+                    className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded font-bold text-[10px] shrink-0 cursor-pointer shadow-2xs"
                   >
                     {verificationMsg.copied ? "Copied!" : "Copy Link"}
                   </button>
@@ -316,7 +316,7 @@ export const AddHODModal: React.FC<AddHODModalProps> = ({
               placeholder="e.g. Dr. K. Ramesh"
               value={formData.full_name}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
 
@@ -331,7 +331,7 @@ export const AddHODModal: React.FC<AddHODModalProps> = ({
                 placeholder="hod.aids@cce.edu.in"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
             <div>
@@ -343,7 +343,7 @@ export const AddHODModal: React.FC<AddHODModalProps> = ({
                 placeholder="CCE-HOD-01"
                 value={formData.staff_id || ""}
                 onChange={(e) => setFormData({ ...formData, staff_id: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
@@ -356,7 +356,7 @@ export const AddHODModal: React.FC<AddHODModalProps> = ({
               <select
                 value={formData.department}
                 onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 {existingDepartments.map((dept) => (
                   <option key={dept} value={dept}>
@@ -374,7 +374,7 @@ export const AddHODModal: React.FC<AddHODModalProps> = ({
                 placeholder="Professor & Head"
                 value={formData.designation || ""}
                 onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
@@ -388,7 +388,7 @@ export const AddHODModal: React.FC<AddHODModalProps> = ({
               placeholder="Leave blank for auto-generated password"
               value={formData.password || ""}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
 
@@ -408,7 +408,7 @@ export const AddHODModal: React.FC<AddHODModalProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium shadow-md shadow-purple-600/20 transition disabled:opacity-50"
+              className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium shadow-md shadow-amber-600/20 transition disabled:opacity-50"
             >
               {loading ? "Creating..." : "Create HOD"}
             </button>
@@ -499,7 +499,7 @@ export const EditHODModal: React.FC<EditHODModalProps> = ({
               type="text"
               value={formData.full_name || ""}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
 
@@ -512,7 +512,7 @@ export const EditHODModal: React.FC<EditHODModalProps> = ({
                 type="email"
                 value={formData.email || ""}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
             <div>
@@ -523,7 +523,7 @@ export const EditHODModal: React.FC<EditHODModalProps> = ({
                 type="text"
                 value={formData.staff_id || ""}
                 onChange={(e) => setFormData({ ...formData, staff_id: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
@@ -536,7 +536,7 @@ export const EditHODModal: React.FC<EditHODModalProps> = ({
               <select
                 value={formData.department}
                 onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 {existingDepartments.map((dept) => (
                   <option key={dept} value={dept}>
@@ -553,7 +553,7 @@ export const EditHODModal: React.FC<EditHODModalProps> = ({
                 type="text"
                 value={formData.designation || ""}
                 onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
@@ -565,7 +565,7 @@ export const EditHODModal: React.FC<EditHODModalProps> = ({
               id="hod_is_active"
               checked={formData.is_active}
               onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-              className="w-4 h-4 text-purple-600 rounded border-slate-300 dark:border-slate-700 focus:ring-purple-500"
+              className="w-4 h-4 text-amber-600 rounded border-slate-300 dark:border-slate-700 focus:ring-amber-500"
             />
             <label
               htmlFor="hod_is_active"
@@ -587,7 +587,7 @@ export const EditHODModal: React.FC<EditHODModalProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium shadow-md shadow-purple-600/20 transition disabled:opacity-50"
+              className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium shadow-md shadow-amber-600/20 transition disabled:opacity-50"
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>

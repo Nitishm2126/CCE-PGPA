@@ -50,7 +50,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
     roleNormalized === "mentor"
       ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200 dark:border-blue-900/60"
       : roleNormalized === "hod"
-      ? "bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200 dark:border-purple-900/60"
+      ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-900/60"
       : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-900/60";
 
   const handleGeneratePassword = () => {

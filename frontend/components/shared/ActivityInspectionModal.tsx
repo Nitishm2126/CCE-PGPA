@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { AchievementResponse, AchievementFileResponse } from "@/types/achievement";
 import { formatSemester } from "@/lib/format-semester";
-import { getFileContentUrl } from "@/lib/api-client";
+import { getFileContentUrl, api } from "@/lib/api-client";
 
 interface ActivityInspectionModalProps {
   isOpen: boolean;
@@ -35,6 +35,35 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [showRevertPrompt, setShowRevertPrompt] = useState<boolean>(false);
   const [revertRemarks, setRevertRemarks] = useState<string>("");
+  const [previousSubmissions, setPreviousSubmissions] = useState<AchievementResponse[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false);
+
+  // Fetch complete submissions history for this student
+  useEffect(() => {
+    if (!isOpen || !achievement?.student_id) {
+      setPreviousSubmissions([]);
+      return;
+    }
+    let isMounted = true;
+    setIsLoadingHistory(true);
+    api.getStudentAchievementsForHod(achievement.student_id, token)
+      .then((history) => {
+        if (!isMounted) return;
+        const sorted = (history || [])
+          .filter((a) => a.id !== achievement.id)
+          .sort((a, b) => new Date(b.created_at || b.submitted_at || "").getTime() - new Date(a.created_at || a.submitted_at || "").getTime());
+        setPreviousSubmissions(sorted);
+      })
+      .catch((err) => {
+        console.warn("Could not load student previous submissions:", err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingHistory(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, achievement?.student_id, achievement?.id, token]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -90,8 +119,8 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
         );
       case "pending":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 dark:bg-purple-950/50 px-2.5 py-0.5 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
             Pending Review
           </span>
         );
@@ -181,7 +210,7 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
           <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-[#292929] pb-4">
             <div className="space-y-1.5 flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="rounded-md bg-purple-50 dark:bg-purple-950/60 px-2.5 py-0.5 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                <span className="rounded-md bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                   {achievement.component_name || "PGPA Component"}
                 </span>
                 {(achievement.semester_number || achievement.semester_name || achievement.semester) && (
@@ -212,7 +241,7 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
             {(userRole !== "student" || achievement.student_name) && (
               <div className="rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#161616] p-4 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-amber-600 text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
                     {achievement.student_name ? achievement.student_name.charAt(0).toUpperCase() : "S"}
                   </div>
                   <div>
@@ -220,7 +249,7 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
                       {achievement.student_name || "Student"}
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-[#A3A3A3]">
-                      Register No: <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">{achievement.student_register_number || "—"}</span>
+                      Register No: <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">{achievement.student_register_number || "—"}</span>
                     </p>
                   </div>
                 </div>
@@ -284,7 +313,7 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
                 <span className="block text-[11px] uppercase font-semibold text-slate-500 dark:text-[#A3A3A3] mb-1">
                   Student Remarks / Note
                 </span>
-                <div className="rounded-xl border border-purple-200/60 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 p-3 text-xs text-purple-900 dark:text-purple-200 leading-relaxed break-words whitespace-pre-wrap">
+                <div className="rounded-xl border border-amber-200/60 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 p-3 text-xs text-amber-900 dark:text-amber-200 leading-relaxed break-words whitespace-pre-wrap">
                   {achievement.remarks}
                 </div>
               </div>
@@ -367,7 +396,7 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
                                 onClick={() => setActivePreviewFileId(isPreviewActive ? null : file.id)}
                                 className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                                   isPreviewActive
-                                    ? "bg-purple-600 text-white"
+                                    ? "bg-amber-600 text-white"
                                     : "border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#111111] text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#181818]"
                                 }`}
                               >
@@ -481,7 +510,7 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
                           {log.reviewer_name || "Faculty Reviewer"}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold capitalize text-purple-600 dark:text-purple-400">
+                          <span className="font-semibold capitalize text-amber-600 dark:text-amber-400">
                             {log.action.replace(/_/g, " ")}
                           </span>
                           <span className="text-slate-400 dark:text-[#A3A3A3] text-[10px]">
@@ -500,15 +529,73 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
               </div>
             )}
 
+            {/* Student Previous Submissions History */}
+            <div className="rounded-xl border border-slate-200/80 dark:border-[#292929] bg-slate-50/50 dark:bg-[#141414] p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] uppercase font-bold tracking-wider text-slate-500 dark:text-[#A3A3A3] flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  Student Previous Submissions History ({previousSubmissions.length})
+                </span>
+                {isLoadingHistory && (
+                  <span className="text-[10px] text-slate-400 animate-pulse">Loading history...</span>
+                )}
+              </div>
+
+              {previousSubmissions.length === 0 ? (
+                <p className="text-xs text-slate-400 dark:text-[#A3A3A3] italic">
+                  {isLoadingHistory ? "Fetching submission records..." : "No previous submissions found for this student."}
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                  {previousSubmissions.map((prev) => (
+                    <div
+                      key={prev.id}
+                      className="rounded-lg border border-slate-200/70 dark:border-[#252525] bg-white dark:bg-[#1a1a1a] p-2.5 text-xs space-y-1 hover:border-amber-400 transition-colors"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-[#FFB347]">
+                            {formatSemester(prev.semester_id, prev.semester_name)}
+                          </span>
+                          <span className="font-semibold text-slate-900 dark:text-[#F5F5F5] truncate">
+                            {prev.component_name || prev.title}
+                          </span>
+                        </div>
+                        {renderStatusBadge(prev.status)}
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#A3A3A3]">
+                        <span className="truncate max-w-[200px]">{prev.title}</span>
+                        <span>{formatDate(prev.submitted_at || prev.created_at)}</span>
+                      </div>
+
+                      {((prev as any).awarded_points !== undefined || (prev as any).points !== undefined || prev.outcome || prev.remarks) && (
+                        <div className="pt-1 border-t border-slate-100 dark:border-[#252525] flex items-center justify-between text-[11px]">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">
+                            {prev.outcome || ((prev as any).awarded_points !== undefined ? `${(prev as any).awarded_points} pts` : ((prev as any).points !== undefined ? `${(prev as any).points} pts` : ""))}
+                          </span>
+                          {prev.remarks && (
+                            <span className="text-slate-500 dark:text-[#A3A3A3] italic truncate max-w-[180px]">
+                              &ldquo;{prev.remarks}&rdquo;
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Review Decision Console (Mentor & HOD Access) */}
             {canReview && onReviewDecision && (
-              <div className="rounded-2xl border-2 border-purple-200 dark:border-purple-900 bg-purple-50/20 dark:bg-purple-950/20 p-4 sm:p-5 space-y-4">
+              <div className="rounded-2xl border-2 border-amber-200 dark:border-amber-900/60 bg-amber-50/20 dark:bg-amber-950/10 p-4 sm:p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] flex items-center gap-2">
-                    <span className="flex h-2 w-2 rounded-full bg-purple-600" />
+                    <span className="flex h-2 w-2 rounded-full bg-amber-500" />
                     Record Verification Decision
                   </h4>
-                  <span className="text-[11px] text-purple-700 dark:text-purple-300 font-medium">
+                  <span className="text-[11px] text-amber-700 dark:text-[#FFB347] font-medium">
                     Points calculate automatically
                   </span>
                 </div>
@@ -530,7 +617,7 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
                     onChange={(e) => setReviewRemarks(e.target.value)}
                     disabled={isSubmittingReview}
                     placeholder="Enter verification remarks, suggestions for student, or reason for decision..."
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#111111] p-3 text-xs text-slate-900 dark:text-[#F5F5F5] placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-purple-500"
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#111111] p-3 text-xs text-slate-900 dark:text-[#F5F5F5] placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-amber-500"
                   />
                 </div>
 

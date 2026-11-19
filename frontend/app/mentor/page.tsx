@@ -339,8 +339,8 @@ export default function MentorDashboardPage() {
         );
       case "pending":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 dark:bg-purple-950/40 px-2.5 py-0.5 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60">
-            <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
             Submitted
           </span>
         );
@@ -463,7 +463,7 @@ export default function MentorDashboardPage() {
                   href="/hod"
                   id="btn-goto-hod-dashboard"
                   prefetch={true}
-                  className="rounded-lg border border-purple-500 bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                  className="rounded-lg border border-amber-500 bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                   title="Navigate directly to department-wide Head of Department dashboard"
                 >
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -510,7 +510,7 @@ export default function MentorDashboardPage() {
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
                 id="btn-mentor-settings"
-                className="rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                className="rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer inline-flex items-center gap-1.5"
                 title="Account Settings & Email Verification"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -547,8 +547,8 @@ export default function MentorDashboardPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               {user?.role === "hod" ? (
-                <div className="inline-flex items-center gap-2 rounded-full bg-purple-50 dark:bg-purple-950/60 px-3 py-1 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 mb-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-purple-600" />
+                <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 dark:bg-amber-950/60 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 mb-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
                   HOD Assigned Mentee Portal &bull; {students.length} Assigned Students
                 </div>
               ) : (
@@ -571,7 +571,7 @@ export default function MentorDashboardPage() {
                     href="/hod"
                     id="btn-goto-hod-dashboard-banner"
                     prefetch={true}
-                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-sm transition cursor-pointer"
+                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm transition cursor-pointer"
                   >
                     <span>Go to HOD Dashboard &rarr;</span>
                   </Link>
@@ -863,9 +863,9 @@ export default function MentorDashboardPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenSubmission(sub)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs active:scale-95 transition-all cursor-pointer shadow-2xs"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#FFB347] hover:bg-[#FFA21A] text-slate-950 font-bold text-xs active:scale-95 transition-all cursor-pointer shadow-2xs"
                           >
-                            <span>Inspect</span>
+                            <span>Verify</span>
                             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                             </svg>
@@ -1013,7 +1013,7 @@ export default function MentorDashboardPage() {
                               }}
                               className="rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] transition-colors cursor-pointer"
                             >
-                              Inspect
+                              Verify
                             </button>
                           </td>
                         </tr>
@@ -1063,83 +1063,207 @@ export default function MentorDashboardPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                {students.map((st) => {
-                  const menteeSubmissions = submissions.filter((s) => s.student_id === st.student_id);
-                  const displayCount = st.submission_count !== undefined ? st.submission_count : menteeSubmissions.length;
-                  return (
-                    <div
-                      key={st.student_id}
-                      className="rounded-xl border border-slate-200/80 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818] p-4 hover:border-blue-300 dark:hover:border-[#5DD62C] hover:bg-white dark:hover:bg-[#222222] transition-all shadow-2xs space-y-3"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] leading-snug">
-                            {st.full_name}
-                          </p>
-                          <p className="font-mono text-xs font-semibold text-blue-600 dark:text-[#5DD62C] mt-0.5">
-                            {st.register_number || "Registration Pending"}
-                          </p>
-                        </div>
-                        <span className="inline-flex items-center rounded-md bg-white dark:bg-[#111111] px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-[#A3A3A3] border border-slate-200 dark:border-[#292929]">
-                          Sec {st.section || "A"}
-                        </span>
-                      </div>
+              <>
+                {/* Mobile Responsive Cards (< md) */}
+                <div className="block md:hidden space-y-3">
+                  {students.map((st) => {
+                    const menteeSubmissions = submissions.filter((s) => s.student_id === st.student_id);
+                    const displayCount = st.submission_count !== undefined ? st.submission_count : menteeSubmissions.length;
+                    const comps = (st as any).components || {};
+                    const acad = comps["academics-gpa"]?.grade || (comps["academics-gpa"]?.points ? `${comps["academics-gpa"]?.points} pts` : "—");
+                    const clubs = comps["clubs-and-cells"]?.points !== undefined ? `${comps["clubs-and-cells"]?.points} pts` : (comps["clubs-and-cells"]?.grade || "—");
+                    const skill = comps["skillrack"]?.points !== undefined ? `${comps["skillrack"]?.points} pts` : (comps["skillrack"]?.grade || "—");
+                    const courses = comps["nptel-certifications"]?.grade || comps["online-courses"]?.grade || "—";
+                    const extra = comps["sports-and-games"]?.points !== undefined ? `${comps["sports-and-games"]?.points} pts` : (comps["sports-and-games"]?.grade || comps["value-added-courses"]?.grade || "—");
 
-                      <div className="text-[11px] text-slate-500 dark:text-[#A3A3A3] space-y-0.5">
-                        <p className="truncate">{st.email}</p>
-                        <p>Year {st.year} &bull; {st.department}</p>
-                      </div>
+                    return (
+                      <div
+                        key={st.student_id}
+                        className="rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818] p-4 shadow-2xs space-y-3"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-bold text-slate-900 dark:text-[#F5F5F5] text-sm leading-snug truncate">
+                              {st.full_name}
+                            </p>
+                            <p className="font-mono text-xs font-semibold text-amber-600 dark:text-[#FFB347] mt-0.5">
+                              {st.register_number || "—"}
+                            </p>
+                          </div>
+                          <span className="inline-flex items-center rounded-md bg-white dark:bg-[#111111] px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-[#A3A3A3] border border-slate-200 dark:border-[#292929]">
+                            Sec {st.section || "A"}
+                          </span>
+                        </div>
 
-                      <div className="pt-2 border-t border-slate-200/60 dark:border-[#292929] flex items-center justify-between text-xs">
-                        <span className="font-medium text-slate-600 dark:text-[#A3A3A3]">
-                          {displayCount} submissions
-                        </span>
-                        <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setManualPointsStudent(st);
-                              setIsManualPointsModalOpen(true);
-                            }}
-                            className="font-semibold text-purple-600 hover:text-purple-800 dark:text-[#FFD84D] dark:hover:text-[#FACC15] transition-colors cursor-pointer inline-flex items-center gap-1"
-                            title="Award or inspect manual component points for this student"
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                            <span>Manual Points</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setExportStudentId(st.student_id);
-                              setIsExportModalOpen(true);
-                            }}
-                            className="font-semibold text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors cursor-pointer inline-flex items-center gap-1"
-                            title="Export individual student report"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                            </svg>
-                            Export
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedMenteeId(st.student_id);
-                              setActiveTab("submissions");
-                            }}
-                            className="font-semibold text-blue-600 dark:text-[#5DD62C] hover:text-blue-800 dark:hover:text-blue-300 transition-colors cursor-pointer"
-                          >
-                            Filter Activities &rarr;
-                          </button>
+                        {/* 5-Component Matrix Grid */}
+                        <div className="grid grid-cols-3 gap-1.5 p-2 rounded-lg bg-white dark:bg-[#111111] border border-slate-200/70 dark:border-[#292929] text-[10px]">
+                          <div>
+                            <span className="text-slate-400 block text-[9px]">Academics</span>
+                            <span className="font-bold text-slate-800 dark:text-[#F5F5F5]">{acad}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[9px]">Clubs/Cells</span>
+                            <span className="font-bold text-slate-800 dark:text-[#F5F5F5]">{clubs}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[9px]">Skillrack</span>
+                            <span className="font-bold text-slate-800 dark:text-[#F5F5F5]">{skill}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[9px]">Courses</span>
+                            <span className="font-bold text-slate-800 dark:text-[#F5F5F5]">{courses}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[9px]">Extra/Co-Curr</span>
+                            <span className="font-bold text-slate-800 dark:text-[#F5F5F5]">{extra}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[9px]">Submissions</span>
+                            <span className="font-bold text-slate-800 dark:text-[#F5F5F5]">{displayCount}</span>
+                          </div>
+                        </div>
+
+                        {/* Total Points & Overall Grade Bar */}
+                        <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/60 dark:border-[#292929]">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 text-xs font-bold text-amber-700 dark:text-[#FFB347] border border-amber-200/60 dark:border-amber-900/60">
+                              {(st as any).total_points ?? 0} pts
+                            </span>
+                            <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-[#202020] px-2 py-0.5 text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">
+                              Grade: {(st as any).overall_grade || "—"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setManualPointsStudent(st);
+                                setIsManualPointsModalOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg border border-slate-200 dark:border-[#292929] text-amber-600 dark:text-[#FFB347] hover:bg-slate-50 dark:hover:bg-[#222222] transition-colors"
+                              title="Award manual points"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedMenteeId(st.student_id);
+                                setActiveTab("submissions");
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-[#FFB347] hover:bg-[#FFA21A] text-slate-950 font-bold text-xs transition-colors"
+                            >
+                              Verify &rarr;
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop Table View (>= md) */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200/80 dark:border-[#292929] text-[11px] font-semibold text-slate-500 dark:text-[#A3A3A3] uppercase tracking-wider bg-slate-50/50 dark:bg-[#181818]">
+                        <th className="py-3 px-3">#</th>
+                        <th className="py-3 px-3">Student Info</th>
+                        <th className="py-3 px-3">Academics</th>
+                        <th className="py-3 px-3">Clubs &amp; Cells</th>
+                        <th className="py-3 px-3">Skillrack</th>
+                        <th className="py-3 px-3">Courses</th>
+                        <th className="py-3 px-3">Co-Curricular</th>
+                        <th className="py-3 px-3 text-center">Total Pts</th>
+                        <th className="py-3 px-3 text-center">Grade</th>
+                        <th className="py-3 px-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-[#292929]">
+                      {students.map((st, idx) => {
+                        const menteeSubmissions = submissions.filter((s) => s.student_id === st.student_id);
+                        const displayCount = st.submission_count !== undefined ? st.submission_count : menteeSubmissions.length;
+                        const comps = (st as any).components || {};
+                        const acad = comps["academics-gpa"]?.grade || (comps["academics-gpa"]?.points ? `${comps["academics-gpa"]?.points} pts` : "—");
+                        const clubs = comps["clubs-and-cells"]?.points !== undefined ? `${comps["clubs-and-cells"]?.points} pts` : (comps["clubs-and-cells"]?.grade || "—");
+                        const skill = comps["skillrack"]?.points !== undefined ? `${comps["skillrack"]?.points} pts` : (comps["skillrack"]?.grade || "—");
+                        const courses = comps["nptel-certifications"]?.grade || comps["online-courses"]?.grade || "—";
+                        const extra = comps["sports-and-games"]?.points !== undefined ? `${comps["sports-and-games"]?.points} pts` : (comps["sports-and-games"]?.grade || comps["value-added-courses"]?.grade || "—");
+
+                        return (
+                          <tr
+                            key={st.student_id}
+                            className="hover:bg-slate-50/70 dark:hover:bg-[#181818]/60 transition-colors"
+                          >
+                            <td className="py-3 px-3 font-mono text-slate-400">{idx + 1}</td>
+                            <td className="py-3 px-3">
+                              <p className="font-bold text-slate-900 dark:text-[#F5F5F5] leading-snug">{st.full_name}</p>
+                              <p className="font-mono text-[11px] font-semibold text-amber-600 dark:text-[#FFB347]">
+                                {st.register_number || "—"} &bull; Sec {st.section || "A"}
+                              </p>
+                              <p className="text-[10px] text-slate-400 truncate max-w-[160px]">{st.email}</p>
+                            </td>
+                            <td className="py-3 px-3 font-semibold text-slate-700 dark:text-[#E0E0E0]">{acad}</td>
+                            <td className="py-3 px-3 font-semibold text-slate-700 dark:text-[#E0E0E0]">{clubs}</td>
+                            <td className="py-3 px-3 font-semibold text-slate-700 dark:text-[#E0E0E0]">{skill}</td>
+                            <td className="py-3 px-3 font-semibold text-slate-700 dark:text-[#E0E0E0]">{courses}</td>
+                            <td className="py-3 px-3 font-semibold text-slate-700 dark:text-[#E0E0E0]">{extra}</td>
+                            <td className="py-3 px-3 text-center">
+                              <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 text-xs font-bold text-amber-700 dark:text-[#FFB347] border border-amber-200/60 dark:border-amber-900/60">
+                                {(st as any).total_points ?? 0} pts
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-center">
+                              <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-[#202020] px-2 py-0.5 text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">
+                                {(st as any).overall_grade || "—"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setManualPointsStudent(st);
+                                    setIsManualPointsModalOpen(true);
+                                  }}
+                                  className="rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2 py-1 text-[11px] font-semibold text-amber-600 dark:text-[#FFB347] hover:bg-slate-50 dark:hover:bg-[#222222] transition-colors cursor-pointer"
+                                  title="Award manual points"
+                                >
+                                  Points
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setExportStudentId(st.student_id);
+                                    setIsExportModalOpen(true);
+                                  }}
+                                  className="rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2 py-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-slate-50 dark:hover:bg-[#222222] transition-colors cursor-pointer"
+                                  title="Export individual student report"
+                                >
+                                  Export
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedMenteeId(st.student_id);
+                                    setActiveTab("submissions");
+                                  }}
+                                  className="rounded-lg bg-[#FFB347] hover:bg-[#FFA21A] px-2.5 py-1 text-[11px] font-bold text-slate-950 transition-colors cursor-pointer"
+                                  title={`Inspect submissions for ${st.full_name} (${displayCount} total)`}
+                                >
+                                  Verify ({displayCount})
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -1420,12 +1544,8 @@ export default function MentorDashboardPage() {
                 <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/70 dark:bg-[#181818]/70 p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-slate-900 dark:text-[#F5F5F5] text-xs flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-[#5DD62C]" />
-                        Faculty Evaluation &amp; Verification Action
-                      </p>
-                      <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-0.5">
-                        Inspect evidence and record formal decision with authoritative rubric evaluation.
+                      <p className="font-bold text-slate-900 dark:text-[#F5F5F5] text-xs">
+                        Verification Decision &amp; Feedback
                       </p>
                     </div>
                     {renderStatusBadge(selectedSubmission.status)}
@@ -1478,7 +1598,7 @@ export default function MentorDashboardPage() {
 
                       <div>
                         <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                          Review Remarks / Feedback (Required for Rejection or Changes)
+                          Remarks / Feedback <span className="text-slate-400 font-normal">(Optional for approval, required for rejection)</span>
                         </label>
                         <textarea
                           rows={2}
@@ -1486,7 +1606,7 @@ export default function MentorDashboardPage() {
                           onChange={(e) => setReviewRemarks(e.target.value)}
                           placeholder="e.g., Verified against official certificate or portal record."
                           disabled={isSubmittingReview}
-                          className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#111111] p-2.5 text-xs text-slate-900 dark:text-[#F5F5F5] placeholder-slate-400 dark:placeholder-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#111111] p-2.5 text-xs text-slate-900 dark:text-[#F5F5F5] placeholder-slate-400 dark:placeholder-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-[#FFB347]"
                         />
                       </div>
 
@@ -1649,7 +1769,7 @@ export default function MentorDashboardPage() {
                   onClick={() => setSelectedSubmission(null)}
                   className="rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] transition-colors cursor-pointer"
                 >
-                  Close Inspection
+                  Close Verification
                 </button>
               </div>
             </div>

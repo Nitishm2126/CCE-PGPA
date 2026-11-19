@@ -302,7 +302,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
+              <span className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -323,7 +323,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
               onClick={() => setSubTab("import")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 subTab === "import"
-                  ? "bg-purple-700 text-white shadow-xs"
+                  ? "bg-amber-700 text-white shadow-xs"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
@@ -334,7 +334,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
               onClick={() => setSubTab("results")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 subTab === "results"
-                  ? "bg-purple-700 text-white shadow-xs"
+                  ? "bg-amber-700 text-white shadow-xs"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
@@ -345,7 +345,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
               onClick={() => setSubTab("history")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 subTab === "history"
-                  ? "bg-purple-700 text-white shadow-xs"
+                  ? "bg-amber-700 text-white shadow-xs"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
@@ -394,7 +394,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                     setPreviewData(null);
                     setConfirmResult(null);
                   }}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
                 >
                   {components.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -415,7 +415,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                     setPreviewData(null);
                     setConfirmResult(null);
                   }}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
                 >
                   {semesters.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -430,7 +430,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                   type="button"
                   onClick={handleDownloadTemplate}
                   disabled={downloadingTemplate}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-xs font-bold transition cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-bold transition cursor-pointer disabled:opacity-50"
                 >
                   <svg className={`w-4 h-4 ${downloadingTemplate ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -446,7 +446,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-slate-900 dark:text-white">{activeCompObj.name}</span>
                   <span className="text-slate-400">&bull;</span>
-                  <span className="text-purple-600 dark:text-purple-400 font-semibold">{activeCompObj.credit_value ?? 3} Credits</span>
+                  <span className="text-amber-600 dark:text-amber-400 font-semibold">{activeCompObj.credit_value ?? 3} Credits</span>
                   <span className="text-slate-400">&bull;</span>
                   <span className="text-slate-500 capitalize">{activeCompObj.grading_strategy || "Table B"}</span>
                 </div>
@@ -470,8 +470,8 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
               onDrop={handleDrop}
               className={`border-2 border-dashed rounded-2xl p-8 text-center transition cursor-pointer ${
                 dragActive
-                  ? "border-purple-600 bg-purple-50/50 dark:bg-purple-950/20"
-                  : "border-slate-200 dark:border-slate-700 hover:border-purple-400 bg-slate-50/50 dark:bg-slate-800/20"
+                  ? "border-amber-600 bg-amber-50/50 dark:bg-amber-950/20"
+                  : "border-slate-200 dark:border-slate-700 hover:border-amber-400 bg-slate-50/50 dark:bg-slate-800/20"
               }`}
             >
               <input
@@ -482,7 +482,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                 className="hidden"
               />
               <label htmlFor="file-upload-input" className="cursor-pointer block">
-                <div className="mx-auto w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-950/80 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-3">
+                <div className="mx-auto w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
@@ -517,7 +517,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                 type="button"
                 onClick={handleUploadAndPreview}
                 disabled={!selectedFile || isUploading}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50"
               >
                 <svg className={`w-4 h-4 ${isUploading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -681,7 +681,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                 placeholder="Search by student or register #..."
                 value={resultsSearch}
                 onChange={(e) => setResultsSearch(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-60 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-60 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -691,7 +691,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
 
           {loadingResults ? (
             <div className="py-12 text-center text-xs text-slate-500">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent mb-2" />
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-amber-600 border-t-transparent mb-2" />
               <p>Loading results...</p>
             </div>
           ) : filteredResults.length === 0 ? (
@@ -735,7 +735,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                         </span>
                       </td>
                       <td className="py-2.5 px-3 text-center">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-extrabold bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-extrabold bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                           {r.grade || "—"}
                         </span>
                       </td>
@@ -751,7 +751,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                         <button
                           type="button"
                           onClick={() => openCorrection(r)}
-                          className="px-2.5 py-1 rounded-lg border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950 text-purple-700 dark:text-purple-300 font-semibold text-[11px] transition cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950 text-amber-700 dark:text-amber-300 font-semibold text-[11px] transition cursor-pointer"
                         >
                           Correct
                         </button>
@@ -879,7 +879,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                 <select
                   value={correctGrade}
                   onChange={(e) => setCorrectGrade(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 font-bold"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold"
                 >
                   <option value="O">O &mdash; Outstanding (10 Points)</option>
                   <option value="A+">A+ &mdash; Excellent (9 Points)</option>
@@ -900,7 +900,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                   value={correctScore}
                   onChange={(e) => setCorrectScore(e.target.value)}
                   placeholder="e.g. 8.75 or 550"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
@@ -913,7 +913,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                   value={correctReason}
                   onChange={(e) => setCorrectReason(e.target.value)}
                   placeholder="State the institutional reason for grade adjustment (e.g. university re-evaluation, verified physical certificate)..."
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
             </div>
@@ -930,7 +930,7 @@ export const HODExcelImportConsole: React.FC<HODExcelImportConsoleProps> = ({
                 type="button"
                 onClick={handleSaveCorrection}
                 disabled={isSavingCorrection || !correctReason.trim()}
-                className="px-4 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-xs transition cursor-pointer disabled:opacity-50"
               >
                 {isSavingCorrection ? "Saving & Recalculating..." : "Apply & Recalculate PGPA"}
               </button>

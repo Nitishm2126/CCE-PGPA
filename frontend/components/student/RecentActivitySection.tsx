@@ -81,8 +81,8 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
         );
       case "pending":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 dark:bg-[#181818] px-2.5 py-0.5 text-xs font-semibold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-[#292929]">
-            <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-[#181818] px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-[#292929]">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
             Pending Mentor Review
           </span>
         );
@@ -310,7 +310,7 @@ export const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
                             </span>
                           )}
                           {item.component_metadata.club_name && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-medium border border-purple-200 dark:border-purple-800">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-medium border border-amber-200 dark:border-amber-800">
                               {item.component_metadata.club_name}
                             </span>
                           )}

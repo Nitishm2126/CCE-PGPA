@@ -153,9 +153,21 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
               </defs>
             </svg>
 
-            {/* Centered Clean CCE Brand Monogram */}
-            <div className="absolute inset-2 rounded-2xl bg-white dark:bg-[#202020] border border-[#FFB347]/40 dark:border-[#2e2e2e] shadow-sm flex items-center justify-center p-1.5 overflow-hidden">
-              <span className="font-extrabold text-base tracking-wider text-[#1E2A33] dark:text-[#5DD62C] select-none">
+            {/* Centered Clean CCE Brand Logo */}
+            <div className="absolute inset-2 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-[#FFB347]/40 dark:border-[#2e2e2e] shadow-sm flex items-center justify-center p-1.5 overflow-hidden">
+              <img
+                src="/websitelogo.png"
+                alt="CCE Logo"
+                className="w-full h-full object-contain filter drop-shadow-xs"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = "none";
+                  if (target.nextElementSibling) {
+                    (target.nextElementSibling as HTMLElement).style.display = "block";
+                  }
+                }}
+              />
+              <span className="hidden font-extrabold text-base tracking-wider text-[#1E2A33] dark:text-[#FFB347] select-none">
                 CCE
               </span>
             </div>

@@ -45,8 +45,21 @@ export const FineWorksBrand: React.FC<FineWorksBrandProps> = ({
     lg: "text-lg sm:text-xl",
   };
 
+  const logoSizes = {
+    sm: "h-7 w-auto",
+    md: "h-8 w-auto sm:h-9",
+    lg: "h-10 w-auto sm:h-11",
+  };
+
   const content = (
-    <div className={`inline-flex items-center gap-2 shrink-0 ${className}`}>
+    <div className={`inline-flex items-center gap-2 sm:gap-2.5 shrink-0 ${className}`}>
+      {/* Official Website Logo */}
+      <img
+        src="/websitelogo.png"
+        alt="CCE Logo"
+        className={`${logoSizes[size]} object-contain shrink-0 drop-shadow-2xs`}
+      />
+
       {/* Clean CCE Wordmark */}
       <div className="flex items-center gap-1.5 shrink-0">
         <span className={`font-extrabold tracking-tight text-slate-900 dark:text-[#F5F5F5] ${textSizes[size]}`}>

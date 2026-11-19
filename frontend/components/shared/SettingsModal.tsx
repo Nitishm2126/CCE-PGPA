@@ -117,7 +117,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200/80 dark:border-purple-800/80">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800/80">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path
                   strokeLinecap="round"
@@ -227,7 +227,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={handleSendVerification}
                 disabled={sendingEmail || cooldownSeconds > 0}
                 id="btn-send-verification-email"
-                className="inline-flex items-center gap-2 rounded-xl bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-semibold text-xs px-4 py-2.5 transition shadow-2xs disabled:opacity-50 cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-semibold text-xs px-4 py-2.5 transition shadow-2xs disabled:opacity-50 cursor-pointer"
               >
                 {sendingEmail ? (
                   <>

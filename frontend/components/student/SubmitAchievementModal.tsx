@@ -3,12 +3,14 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { PGPAComponentResponse, AchievementCreate, SemesterResponse } from "@/types/achievement";
 import { api } from "@/lib/api-client";
+import { formatSemester } from "@/lib/format-semester";
 
 interface SubmitAchievementModalProps {
   isOpen: boolean;
   onClose: () => void;
   components: PGPAComponentResponse[];
   initialComponentId?: string | null;
+  initialSemesterId?: string | null;
   onSubmit: (
     data: AchievementCreate,
     evidenceFile: File | null,
@@ -19,6 +21,7 @@ interface SubmitAchievementModalProps {
 export interface SubmitAchievementFormContentProps {
   components: PGPAComponentResponse[];
   initialComponentId?: string | null;
+  initialSemesterId?: string | null;
   onSubmit: (
     data: AchievementCreate,
     evidenceFile: File | null,
@@ -131,6 +134,7 @@ export const scoreToGradeTableB = (score: number): { grade: string; points: numb
 export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   components,
   initialComponentId,
+  initialSemesterId,
   onSubmit,
   onClose,
   isModal = true,
@@ -250,7 +254,15 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         const activeSems = (sems || []).filter((s) => s.is_enabled !== false);
         setSemesters(activeSems);
         if (activeSems.length > 0) {
-          setSemesterId(activeSems[0].id);
+          // If initialSemesterId was provided and exists in activeSems, use it
+          const found = initialSemesterId ? activeSems.find((s) => s.id === initialSemesterId) : null;
+          if (found) {
+            setSemesterId(found.id);
+          } else {
+            // Default to currently active configured semester (e.g. Semester 3 or highest enabled)
+            const targetSem = activeSems.find((s) => s.semester_number === 3 || s.display_name?.includes("3")) || activeSems[activeSems.length - 1] || activeSems[0];
+            setSemesterId(targetSem.id);
+          }
         }
       })
       .catch((err) => {
@@ -262,7 +274,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [initialSemesterId]);
 
   // When semesterId changes, load components and availability for that semester
   useEffect(() => {
@@ -426,11 +438,15 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
       case "clubs-and-cells": {
         const effectiveClub = clubName.trim();
         const clubDisplay = effectiveClub || "Extracurricular / Club Activity";
-        const effectiveTitle = clubActivityTitle.trim() || `${clubDisplay} (${clubRoleCategory})`;
+        const effectiveTitle = clubActivityTitle.trim();
+        if ((clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && !effectiveTitle) {
+          throw new Error(`Activity Title is required for ${clubRoleCategory}. Please enter the title.`);
+        }
+        const finalTitle = effectiveTitle || `${clubDisplay} (${clubRoleCategory})`;
         payload = {
           component_id: componentId,
           semester_id: semesterId,
-          title: effectiveTitle,
+          title: finalTitle,
           activity_type: clubRoleCategory,
           organizer: effectiveClub || undefined,
           event_date: clubDate || undefined,
@@ -439,7 +455,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             club_name: effectiveClub,
             role_category: clubRoleCategory,
             event_level: (clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") ? clubEventLevel : undefined,
-            activity_title: clubActivityTitle.trim(),
+            activity_title: effectiveTitle,
             points: clubsCalculatedPoints,
           },
         };
@@ -886,7 +902,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         {/* ==================================================================== */}
         <div className="space-y-3 pt-1">
           <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-[#292929]/60">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-bold">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FFB347] text-slate-900 text-[10px] font-bold">
               1
             </span>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-[#F5F5F5]">
@@ -906,7 +922,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 onChange={(e) => setSemesterId(e.target.value)}
                 disabled={isSubmitting || semesterLoading || semesters.length === 0}
                 required
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
               >
                 {semesterLoading ? (
                   <option value="">Loading active semesters...</option>
@@ -915,7 +931,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 ) : (
                   semesters.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.display_name} (Semester {s.semester_number})
+                      {formatSemester(s.id, s.display_name)}
                     </option>
                   ))
                 )}
@@ -932,13 +948,13 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 onChange={(e) => setComponentId(e.target.value)}
                 disabled={isSubmitting}
                 required
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
               >
                 {activeComponents.map((c) => {
                   const isLocked = c.is_enabled_for_semester === false || c.submission_mode === "hod_excel_import";
                   return (
                     <option key={c.id} value={c.id}>
-                      #{String(c.display_order).padStart(2, "0")} — {c.name} {isLocked ? `🔒 [Locked for ${selectedSemester?.display_name || "Semester"}]` : `(${c.credit_value ?? 3} Cr)`}
+                      #{String(c.display_order).padStart(2, "0")} — {c.name} {isLocked ? `🔒 [Locked for ${formatSemester(selectedSemester?.id, selectedSemester?.display_name)}]` : `(${c.credit_value ?? 3} Cr)`}
                     </option>
                   );
                 })}
@@ -2086,27 +2102,29 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Event / Activity Title (Optional)
+                    Activity Title <span className="text-amber-500">*</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Inter-College Hackathon / Quiz"
+                    required
+                    placeholder="e.g. Inter-College Hackathon / Technical Quiz"
                     value={clubActivityTitle}
                     onChange={(e) => setClubActivityTitle(e.target.value)}
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Event Date
+                    Event Date *
                   </label>
                   <input
                     type="date"
+                    required
                     value={clubDate}
                     onChange={(e) => setClubDate(e.target.value)}
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
                   />
                 </div>
               </div>
@@ -2436,8 +2454,8 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
 
         {/* Progress Step while Submitting */}
         {isSubmitting && submissionStep && (
-          <div className="rounded-xl border border-purple-200 dark:border-amber-900/60 bg-purple-50/60 dark:bg-amber-950/30 p-3 flex items-center gap-2.5 text-xs text-purple-800 dark:text-amber-300">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-purple-600 dark:border-amber-400 border-t-transparent shrink-0" />
+          <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/60 dark:bg-amber-950/30 p-3 flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-amber-600 dark:border-amber-400 border-t-transparent shrink-0" />
             <span className="font-medium">{submissionStep}</span>
           </div>
         )}
@@ -2522,6 +2540,7 @@ export const SubmitAchievementModal: React.FC<SubmitAchievementModalProps> = ({
   onClose,
   components,
   initialComponentId,
+  initialSemesterId,
   onSubmit,
 }) => {
   if (!isOpen) return null;
@@ -2536,6 +2555,7 @@ export const SubmitAchievementModal: React.FC<SubmitAchievementModalProps> = ({
         <SubmitAchievementFormContent
           components={components}
           initialComponentId={initialComponentId}
+          initialSemesterId={initialSemesterId}
           onSubmit={onSubmit}
           onClose={onClose}
         />

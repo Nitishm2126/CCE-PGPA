@@ -226,7 +226,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
     const grade = (score.grade || "").toUpperCase();
     let badgeStyle = "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300";
     if (grade === "O") {
-      badgeStyle = "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950/70 dark:text-purple-200 dark:border-purple-800";
+      badgeStyle = "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/70 dark:text-amber-200 dark:border-amber-800";
     } else if (grade === "A+") {
       badgeStyle = "bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950/70 dark:text-indigo-200 dark:border-indigo-800";
     } else if (grade === "A") {
@@ -256,8 +256,8 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
       {/* Header and Summary */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
         <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 dark:bg-purple-950/50 px-2.5 py-0.5 text-xs font-bold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 mb-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-purple-600 animate-pulse" />
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/50 px-2.5 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 mb-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-600 animate-pulse" />
             CCE Five-Component PGPA Matrix
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
@@ -277,7 +277,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
           >
             <svg
-              className={`h-3.5 w-3.5 ${loading ? "animate-spin text-purple-600" : "text-slate-500"}`}
+              className={`h-3.5 w-3.5 ${loading ? "animate-spin text-amber-600" : "text-slate-500"}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -304,7 +304,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
               placeholder="Search by student name or register number..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 px-3.5 py-2 pl-9 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 shadow-2xs"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 px-3.5 py-2 pl-9 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-2xs"
             />
             <svg
               className="absolute left-3 top-2.5 h-4 w-4 text-slate-400"
@@ -323,7 +323,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
               value={semesterFilter}
               onChange={(e) => setSemesterFilter(e.target.value)}
               aria-label="Filter by semester"
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:border-purple-500 shadow-2xs"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:border-amber-500 shadow-2xs"
             >
               <option value="all">All Semesters</option>
               <option value="1">Semester 1</option>
@@ -343,7 +343,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
               value={sectionFilter}
               onChange={(e) => setSectionFilter(e.target.value)}
               aria-label="Filter by section"
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:border-purple-500 shadow-2xs"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:border-amber-500 shadow-2xs"
             >
               <option value="all">All Sections</option>
               <option value="A">Section A</option>
@@ -357,7 +357,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
               value={mentorFilter}
               onChange={(e) => setMentorFilter(e.target.value)}
               aria-label="Filter by mentor"
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:border-purple-500 shadow-2xs truncate"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:border-amber-500 shadow-2xs truncate"
             >
               <option value="all">All Mentors</option>
               {uniqueMentors.map((m) => (
@@ -374,7 +374,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
               value={gradeFilter}
               onChange={(e) => setGradeFilter(e.target.value)}
               aria-label="Filter by grade"
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:border-purple-500 shadow-2xs"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:border-amber-500 shadow-2xs"
             >
               <option value="all">All Grades</option>
               <option value="O">Grade O (Outstanding)</option>
@@ -398,7 +398,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
               onClick={() => setComponentSlugFilter("all")}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 componentSlugFilter === "all"
-                  ? "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 font-bold"
+                  ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
               }`}
             >
@@ -411,7 +411,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                 onClick={() => setComponentSlugFilter(tc.slug)}
                 className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1 ${
                   componentSlugFilter === tc.slug
-                    ? "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 font-bold"
+                    ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
                 }`}
               >
@@ -425,7 +425,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
             <button
               type="button"
               onClick={resetFilters}
-              className="text-xs font-semibold text-purple-700 dark:text-purple-400 hover:underline cursor-pointer"
+              className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline cursor-pointer"
             >
               Reset All Filters
             </button>
@@ -472,7 +472,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
             <button
               type="button"
               onClick={resetFilters}
-              className="mt-3 text-xs font-bold text-purple-700 dark:text-purple-400 hover:underline"
+              className="mt-3 text-xs font-bold text-amber-700 dark:text-amber-400 hover:underline"
             >
               Clear all filters
             </button>
@@ -513,7 +513,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                   <tr
                     key={row.student_id}
                     onClick={() => setSelectedStudent(row)}
-                    className="hover:bg-purple-50/40 dark:hover:bg-slate-800/60 transition-colors cursor-pointer group"
+                    className="hover:bg-amber-50/40 dark:hover:bg-slate-800/60 transition-colors cursor-pointer group"
                   >
                     {/* Register Number */}
                     <td className="py-3.5 px-4 font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
@@ -523,7 +523,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                     {/* Student Name & Meta */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 dark:text-white group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors">
+                        <span className="font-bold text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
                           {row.student_name}
                         </span>
                         {hasPendingCriteria && (
@@ -574,7 +574,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                           e.stopPropagation();
                           setSelectedStudent(row);
                         }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/50 dark:text-purple-300 dark:hover:bg-purple-900/60 font-semibold text-xs transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/50 dark:text-amber-300 dark:hover:bg-amber-900/60 font-semibold text-xs transition-colors cursor-pointer"
                       >
                         <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                           <path
@@ -609,7 +609,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
               <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="rounded-md bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 text-xs font-bold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                    <span className="rounded-md bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                       CCE-PGPA Student Audit
                     </span>
                     {selectedStudent.section && (
@@ -622,14 +622,14 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                     {selectedStudent.student_name}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
-                    Register Number: <span className="font-bold text-purple-700 dark:text-purple-400">{selectedStudent.register_number}</span> &bull; Mentor: {selectedStudent.mentor_name || "Unassigned"}
+                    Register Number: <span className="font-bold text-amber-700 dark:text-amber-400">{selectedStudent.register_number}</span> &bull; Mentor: {selectedStudent.mentor_name || "Unassigned"}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <span className="block text-[10px] uppercase font-bold text-slate-400">Total PGPA Points</span>
-                    <span className="text-lg font-black text-purple-700 dark:text-purple-400 font-mono">
+                    <span className="text-lg font-black text-amber-700 dark:text-amber-400 font-mono">
                       {selectedStudent.total_points} pts
                     </span>
                   </div>
@@ -708,7 +708,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                           <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex items-end justify-between">
                             <div>
                               <p className="text-[10px] font-semibold text-slate-400 uppercase">Grade</p>
-                              <p className="text-lg font-black text-purple-700 dark:text-purple-400">
+                              <p className="text-lg font-black text-amber-700 dark:text-amber-400">
                                 {grade}
                               </p>
                             </div>
@@ -754,21 +754,21 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                             return (
                               <div
                                 key={slug}
-                                className="rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/30 dark:bg-purple-950/20 p-3 flex flex-col justify-between"
+                                className="rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/30 dark:bg-amber-950/20 p-3 flex flex-col justify-between"
                               >
                                 <div className="flex items-center justify-between gap-1 mb-1.5">
                                   <span className="text-xs">📊</span>
-                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
                                     Evaluated
                                   </span>
                                 </div>
                                 <h6 className="font-bold text-slate-900 dark:text-white text-xs truncate">
                                   {label}
                                 </h6>
-                                <div className="mt-2 pt-2 border-t border-purple-100 dark:border-purple-900/40 flex items-end justify-between">
+                                <div className="mt-2 pt-2 border-t border-amber-100 dark:border-amber-900/40 flex items-end justify-between">
                                   <div>
                                     <span className="text-[9px] text-slate-400 uppercase block">Grade</span>
-                                    <span className="text-sm font-black text-purple-700 dark:text-purple-400">{grade}</span>
+                                    <span className="text-sm font-black text-amber-700 dark:text-amber-400">{grade}</span>
                                   </div>
                                   <div className="text-right">
                                     <span className="text-[9px] text-slate-400 uppercase block">Points</span>
@@ -824,14 +824,14 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                         return (
                           <div
                             key={sub.id}
-                            className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-xs hover:border-purple-200 transition-colors gap-3"
+                            className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-xs hover:border-amber-200 transition-colors gap-3"
                           >
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap mb-1">
                                 <span className="font-bold text-slate-900 dark:text-white">
                                   {sub.title}
                                 </span>
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
                                   {sub.component_name || "PGPA Component"}
                                 </span>
                                 <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 shrink-0">
@@ -863,7 +863,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                             <div className="shrink-0 flex items-center gap-3 self-end sm:self-center">
                               <div className="text-right">
                                 <span className="block text-[9px] uppercase font-bold text-slate-400">Awarded</span>
-                                <span className="text-xs font-mono font-bold text-purple-700 dark:text-purple-300">
+                                <span className="text-xs font-mono font-bold text-amber-700 dark:text-amber-300">
                                   {ptsDisplay} pts
                                 </span>
                               </div>
@@ -875,7 +875,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                                   className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold text-[11px] transition-colors cursor-pointer"
                                 >
                                   {openingFileId === sub.files[0].id ? (
-                                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
+                                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-amber-600 border-t-transparent" />
                                   ) : (
                                     <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                       <path

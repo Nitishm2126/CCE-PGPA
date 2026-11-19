@@ -58,7 +58,7 @@ export const ManualPointsSection: React.FC<ManualPointsSectionProps> = ({ token 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-[#2e2e2e]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-purple-600 dark:bg-[#5DD62C]" />
+            <span className="h-2 w-2 rounded-full bg-amber-600 dark:bg-[#5DD62C]" />
             <h2 className="text-base font-bold text-slate-900 dark:text-[#F5F5F5]">
               Mentor Manual Component Points
             </h2>
@@ -67,7 +67,7 @@ export const ManualPointsSection: React.FC<ManualPointsSectionProps> = ({ token 
             Special component points awarded directly by your faculty mentor
           </p>
         </div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-purple-50 dark:bg-[#202020] border border-purple-200/80 dark:border-[#2e2e2e] text-xs font-bold text-purple-700 dark:text-[#5DD62C] self-start sm:self-auto">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-50 dark:bg-[#202020] border border-amber-200/80 dark:border-[#2e2e2e] text-xs font-bold text-amber-700 dark:text-[#5DD62C] self-start sm:self-auto">
           <span>Total Awarded:</span>
           <span className="font-mono text-sm">{totalPoints.toFixed(1)} pts</span>
         </div>
@@ -84,11 +84,11 @@ export const ManualPointsSection: React.FC<ManualPointsSectionProps> = ({ token 
                 <h3 className="font-bold text-slate-900 dark:text-[#F5F5F5] text-xs">
                   {mp.component_name || "PGPA Component"}
                 </h3>
-                <span className="text-[10px] font-semibold text-purple-600 dark:text-[#5DD62C]">
+                <span className="text-[10px] font-semibold text-amber-600 dark:text-[#5DD62C]">
                   {mp.semester_name || `Semester ${mp.semester_number || ""}`}
                 </span>
               </div>
-              <span className="font-mono font-bold text-sm px-2 py-0.5 rounded-lg bg-white dark:bg-[#0F0F0F] border border-slate-200 dark:border-[#2e2e2e] text-purple-700 dark:text-[#5DD62C]">
+              <span className="font-mono font-bold text-sm px-2 py-0.5 rounded-lg bg-white dark:bg-[#0F0F0F] border border-slate-200 dark:border-[#2e2e2e] text-amber-700 dark:text-[#5DD62C]">
                 +{mp.points.toFixed(1)} pts
               </span>
             </div>

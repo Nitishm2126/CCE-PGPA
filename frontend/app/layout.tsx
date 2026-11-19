@@ -29,6 +29,11 @@ export const metadata: Metadata = {
   title: "CCE-PGPA - Student Achievement Management System",
   description:
     "Student Achievement and Point-Grade-Performance-Audit (PGPA) Management System for the Department of Computer and Communication Engineering, Sri Sairam Engineering College.",
+  icons: {
+    icon: "/websitelogo.png",
+    shortcut: "/websitelogo.png",
+    apple: "/websitelogo.png",
+  },
 };
 
 export default function RootLayout({

@@ -590,13 +590,13 @@ export default function AdminDashboardPage() {
                     }`}
                     title="Department HOD Management"
                   >
-                    <svg className="h-4 w-4 shrink-0 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="h-4 w-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                     {!sidebarCollapsed && (
                       <div className="flex-1 flex items-center justify-between">
                         <span>Department HOD</span>
-                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200">
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
                           {overviewData?.total_hods || 1}
                         </span>
                       </div>
@@ -1011,12 +1011,12 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* Card 3: Department HODs */}
-                  <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs hover:border-purple-300 transition">
+                  <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs hover:border-amber-300 transition">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Department HOD
                       </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-900/60">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60">
                         CCE Governance
                       </span>
                     </div>
@@ -1308,7 +1308,7 @@ export default function AdminDashboardPage() {
 
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-1.5">
                     <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
-                      <span className="text-base text-purple-600">📊</span>
+                      <span className="text-base text-amber-600">📊</span>
                       <span>Cloudflare D1 Preservation</span>
                     </div>
                     <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -1946,7 +1946,7 @@ export default function AdminDashboardPage() {
                     </div>
                     <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
                       <span className="text-[11px] text-slate-500">Legacy student_ folders</span>
-                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400 mt-0.5">
+                      <p className="text-lg font-bold text-amber-600 dark:text-amber-400 mt-0.5">
                         {driveAuditReport?.legacy_folders_detected ?? 0}
                       </p>
                     </div>
@@ -2083,7 +2083,7 @@ export default function AdminDashboardPage() {
                         <td className="px-4 py-3">/api/v1/admin/*</td>
                       </tr>
                       <tr>
-                        <td className="px-4 py-3 font-semibold text-purple-600 dark:text-purple-400 font-sans">
+                        <td className="px-4 py-3 font-semibold text-amber-600 dark:text-amber-400 font-sans">
                           HOD
                         </td>
                         <td className="px-4 py-3 font-sans">

@@ -274,9 +274,9 @@ export const ViewStudentModal: React.FC<ViewStudentModalProps> = ({ student, onC
               {student.pending_count}
             </p>
           </div>
-          <div className="p-3 bg-purple-50/60 dark:bg-purple-950/20 rounded-xl border border-purple-100 dark:border-purple-900/30">
-            <span className="text-xs text-purple-600 dark:text-purple-400">Drive Files</span>
-            <p className="text-lg font-bold text-purple-700 dark:text-purple-300 mt-0.5">
+          <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/30">
+            <span className="text-xs text-amber-600 dark:text-amber-400">Drive Files</span>
+            <p className="text-lg font-bold text-amber-700 dark:text-amber-300 mt-0.5">
               {student.evidence_files_count}
             </p>
           </div>

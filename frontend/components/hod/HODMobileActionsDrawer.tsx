@@ -69,7 +69,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
 
         {/* Identity Header */}
         <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-[#292929]">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-700 text-white font-bold text-base shadow-sm">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-700 to-indigo-700 text-white font-bold text-base shadow-sm">
             {hodName
               .split(" ")
               .filter(Boolean)
@@ -85,7 +85,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
               {hodEmail}
             </p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 text-[10px] font-bold text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-900">
+              <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-900">
                 Head of Department &bull; {department} ({studentCount} Students)
               </span>
             </div>
@@ -139,7 +139,7 @@ export const HODMobileActionsDrawer: React.FC<HODMobileActionsDrawerProps> = ({
             className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-200/90 dark:border-[#292929] bg-slate-50/60 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#222222] text-slate-800 dark:text-[#F5F5F5] transition-all font-semibold text-xs active:scale-98 cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-700 text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-white">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>

@@ -560,7 +560,7 @@ export default function StudentDashboardPage() {
                   </span>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     <p className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5]">
-                      {studentData?.assigned_mentor?.full_name || profile?.original_mentor_name || "LURDHUMARY J"}
+                      {studentData?.assigned_mentor?.full_name || (studentData as any)?.mentor_name || profile?.original_mentor_name || "Assigned Faculty"}
                     </p>
                     <DesignationBadge designation="Torch Bearer" size="sm" />
                   </div>
@@ -783,6 +783,7 @@ export default function StudentDashboardPage() {
         }}
         components={components}
         initialComponentId={preselectedComponentId}
+        initialSemesterId={selectedCatalogueSemesterId}
         onSubmit={handleCreateAchievement}
       />
 
