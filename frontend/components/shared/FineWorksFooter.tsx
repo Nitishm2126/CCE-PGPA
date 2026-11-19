@@ -22,8 +22,9 @@ export const FineWorksFooter: React.FC<FineWorksFooterProps> = ({
           <span className="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5]">
             Designed and Developed by
           </span>
-          <span className="font-extrabold tracking-tight text-xs text-slate-900 dark:text-[#F5F5F5]">
-            Fine<span className="text-blue-600 dark:text-[#FFD84D]">Works</span>
+          <span className="font-extrabold tracking-tight text-xs">
+            <span className="text-[#000000] dark:text-[#F5F5F5]">Fine</span>
+            <span className="text-[#FFB347] dark:text-[#FFD84D]">Works</span>
           </span>
         </div>
 

@@ -806,7 +806,7 @@ export default function AdminDashboardPage() {
               {!sidebarCollapsed ? (
                 <div className="space-y-1 text-center">
                   <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                    Designed and Developed by Team FineWorks
+                    Designed and Developed by Team <span className="font-bold"><span className="text-[#000000] dark:text-[#F5F5F5]">Fine</span><span className="text-[#FFB347] dark:text-[#FFD84D]">Works</span></span>
                   </p>
                   <p className="text-[10px] text-slate-400 dark:text-slate-500">
                     Sri Sairam Engineering College &bull; v1.0.0
@@ -881,7 +881,7 @@ export default function AdminDashboardPage() {
 
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
                   <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                    Designed and Developed by Team FineWorks
+                    Designed and Developed by Team <span className="font-bold"><span className="text-[#000000] dark:text-[#F5F5F5]">Fine</span><span className="text-[#FFB347] dark:text-[#FFD84D]">Works</span></span>
                   </p>
                 </div>
               </div>

@@ -191,72 +191,93 @@ async function request<T>(
   token?: string | null
 ): Promise<T> {
   const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
-  const authToken = token !== undefined ? token : getStoredToken();
+  const authToken = token || getStoredToken();
+  const method = (options.method || "GET").toUpperCase();
 
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-    ...(options.headers as Record<string, string>),
-  };
+  const isDeduplicableGet = method === "GET" && !options.body;
+  const dedupKey = isDeduplicableGet ? `${url}::${authToken || "anon"}` : "";
 
-  if (!(options.body instanceof FormData)) {
-    headers["Content-Type"] = "application/json";
+  if (isDeduplicableGet && inflightGetRequests.has(dedupKey)) {
+    return inflightGetRequests.get(dedupKey) as Promise<T>;
   }
 
-  if (authToken) {
-    headers["Authorization"] = `Bearer ${authToken}`;
-  }
+  const execute = async (): Promise<T> => {
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      ...(options.headers as Record<string, string>),
+    };
 
-  const { timeoutMs = 45000, ...fetchOptions } = options;
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    if (!(options.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
 
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      ...fetchOptions,
-      headers,
-      signal: fetchOptions.signal || controller.signal,
-    });
-  } catch (err: unknown) {
-    if (err instanceof Error && err.name === "AbortError") {
+    if (authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
+    const { timeoutMs = 45000, ...fetchOptions } = options;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...fetchOptions,
+        headers,
+        signal: fetchOptions.signal || controller.signal,
+      });
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
+        throw new ApiError(
+          `Request timed out after ${timeoutMs}ms (${url}). The backend service took too long to respond. Please verify the backend is running and retry.`,
+          408
+        );
+      }
+      const errDetail = err instanceof Error ? ` (${err.message})` : "";
       throw new ApiError(
-        `Request timed out after ${timeoutMs}ms (${url}). The backend service took too long to respond. Please verify the backend is running and retry.`,
-        408
+        `Unable to connect to CCE-PGPA backend service at ${url}${errDetail}. Please check your network connection or verify that the backend is active.`,
+        0
+      );
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    if (!response.ok) {
+      let errorMessage = `Request failed with status ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.detail) {
+          errorMessage =
+            typeof errorData.detail === "string"
+              ? errorData.detail
+              : JSON.stringify(errorData.detail);
+        }
+      } catch {
+        // Use fallback error message
+      }
+      throw new ApiError(errorMessage, response.status);
+    }
+
+    try {
+      return (await response.json()) as T;
+    } catch {
+      throw new ApiError(
+        `Invalid response from CCE-PGPA backend for ${path}: Expected JSON payload but received non-JSON (status ${response.status}).`,
+        502
       );
     }
-    const errDetail = err instanceof Error ? ` (${err.message})` : "";
-    throw new ApiError(
-      `Unable to connect to CCE-PGPA backend service at ${url}${errDetail}. Please check your network connection or verify that the backend is active.`,
-      0
-    );
-  } finally {
-    clearTimeout(timeoutId);
+  };
+
+  const promise = execute();
+
+  if (isDeduplicableGet) {
+    inflightGetRequests.set(dedupKey, promise);
+    promise.finally(() => {
+      inflightGetRequests.delete(dedupKey);
+    });
   }
 
-  if (!response.ok) {
-    let errorMessage = `Request failed with status ${response.status}`;
-    try {
-      const errorData = await response.json();
-      if (errorData.detail) {
-        errorMessage =
-          typeof errorData.detail === "string"
-            ? errorData.detail
-            : JSON.stringify(errorData.detail);
-      }
-    } catch {
-      // Use fallback error message
-    }
-    throw new ApiError(errorMessage, response.status);
-  }
-
-  try {
-    return (await response.json()) as T;
-  } catch {
-    throw new ApiError(
-      `Invalid response from CCE-PGPA backend for ${path}: Expected JSON payload but received non-JSON (status ${response.status}).`,
-      502
-    );
-  }
+  return promise;
 }
 
 async function requestBlob(
@@ -317,10 +338,12 @@ async function downloadFileWithFilename(
 
 let cachedComponents: PGPAComponentResponse[] | null = null;
 let cachedSemesters: SemesterResponse[] | null = null;
+const inflightGetRequests = new Map<string, Promise<unknown>>();
 
 export const clearApiCache = (): void => {
   cachedComponents = null;
   cachedSemesters = null;
+  inflightGetRequests.clear();
 };
 
 export const api = {
@@ -449,13 +472,13 @@ export const api = {
       forceRefresh = forceRefreshParam;
     }
 
-    if (cachedComponents && !forceRefresh && !targetSemesterId) {
+    if (cachedComponents && cachedComponents.length > 0 && !forceRefresh && !targetSemesterId) {
       return cachedComponents;
     }
 
     const query = targetSemesterId ? `?semester_id=${encodeURIComponent(targetSemesterId)}` : "";
     const res = await request<PGPAComponentResponse[]>(`/students/components${query}`, { method: "GET" }, authToken);
-    if (!targetSemesterId) {
+    if (!targetSemesterId && res && res.length > 0) {
       cachedComponents = res;
     }
     return res;
@@ -1334,11 +1357,13 @@ export const api = {
     token?: string | null,
     forceRefresh: boolean = false
   ): Promise<SemesterResponse[]> => {
-    if (cachedSemesters && !forceRefresh) {
+    if (cachedSemesters && cachedSemesters.length > 0 && !forceRefresh) {
       return cachedSemesters;
     }
     const res = await request<SemesterResponse[]>("/students/semesters", { method: "GET" }, token);
-    cachedSemesters = res;
+    if (res && res.length > 0) {
+      cachedSemesters = res;
+    }
     return res;
   },
 
@@ -1538,11 +1563,13 @@ export const api = {
     token?: string | null,
     forceRefresh: boolean = false
   ): Promise<SemesterResponse[]> => {
-    if (cachedSemesters && !forceRefresh) {
+    if (cachedSemesters && cachedSemesters.length > 0 && !forceRefresh) {
       return cachedSemesters;
     }
     const res = await request<SemesterResponse[]>("/students/semesters", { method: "GET" }, token);
-    cachedSemesters = res;
+    if (res && res.length > 0) {
+      cachedSemesters = res;
+    }
     return res;
   },
 };

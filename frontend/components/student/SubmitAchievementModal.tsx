@@ -11,6 +11,7 @@ interface SubmitAchievementModalProps {
   components: PGPAComponentResponse[];
   initialComponentId?: string | null;
   initialSemesterId?: string | null;
+  token?: string | null;
   onSubmit: (
     data: AchievementCreate,
     evidenceFile: File | null,
@@ -22,6 +23,7 @@ export interface SubmitAchievementFormContentProps {
   components: PGPAComponentResponse[];
   initialComponentId?: string | null;
   initialSemesterId?: string | null;
+  token?: string | null;
   onSubmit: (
     data: AchievementCreate,
     evidenceFile: File | null,
@@ -135,6 +137,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   components,
   initialComponentId,
   initialSemesterId,
+  token,
   onSubmit,
   onClose,
   isModal = true,
@@ -251,10 +254,24 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   useEffect(() => {
     let isMounted = true;
     setSemesterLoading(true);
-    api.studentGetSemesters(null, true)
-      .then((sems) => {
+    const authToken = token || (typeof window !== "undefined" ? localStorage.getItem("cce_achieve_token") : null);
+    api.studentGetSemesters(authToken, true)
+      .then(async (sems) => {
         if (!isMounted) return;
-        const allSems = sems || [];
+        let allSems = sems || [];
+
+        // Resilience fallback: If studentGetSemesters returned empty, fetch default semester directly
+        if (allSems.length === 0) {
+          try {
+            const defSem = await api.getDefaultSemester(authToken);
+            if (defSem && defSem.id) {
+              allSems = [defSem];
+            }
+          } catch {
+            // ignore
+          }
+        }
+
         const defaultSem = allSems.find((s) => s.is_default);
         const defaultDisabled = Boolean(defaultSem && !defaultSem.is_enabled);
         setIsDefaultDisabled(defaultDisabled);
@@ -296,13 +313,14 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [initialSemesterId]);
+  }, [token, initialSemesterId]);
 
   // When semesterId changes, load components and availability for that semester
   useEffect(() => {
     if (!semesterId) return;
     let isMounted = true;
-    api.getComponents(semesterId)
+    const authToken = token || (typeof window !== "undefined" ? localStorage.getItem("cce_achieve_token") : null);
+    api.getComponents(semesterId, authToken)
       .then((comps) => {
         if (!isMounted) return;
         setActiveComponents(comps);
@@ -316,7 +334,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [semesterId]);
+  }, [semesterId, token]);
 
   const currentComponent = useMemo(() => {
     return activeComponents.find((c) => c.id === componentId) || activeComponents[0] || components[0];
@@ -2609,6 +2627,7 @@ export const SubmitAchievementModal: React.FC<SubmitAchievementModalProps> = ({
   components,
   initialComponentId,
   initialSemesterId,
+  token,
   onSubmit,
 }) => {
   if (!isOpen) return null;
@@ -2624,6 +2643,7 @@ export const SubmitAchievementModal: React.FC<SubmitAchievementModalProps> = ({
           components={components}
           initialComponentId={initialComponentId}
           initialSemesterId={initialSemesterId}
+          token={token}
           onSubmit={onSubmit}
           onClose={onClose}
         />

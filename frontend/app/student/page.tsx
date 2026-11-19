@@ -163,7 +163,7 @@ export default function StudentDashboardPage() {
       try {
         const [profileRes, compRes, achRes, unreadRes, semsRes] = await Promise.allSettled([
           api.getStudentDetail(token),
-          api.getComponents({ token, forceRefresh: true }),
+          api.getComponents({ token }),
           api.getMyAchievements(token),
           api.getUnreadMessageCount(token),
           api.studentGetSemesters(token),
@@ -381,7 +381,7 @@ export default function StudentDashboardPage() {
   };
 
   // Global Auth loading state
-  if (authLoading || !user || user.role !== "student" || (isLoadingProfile && !studentData && !profileError)) {
+  if (authLoading || !user || user.role !== "student") {
     return (
       <AppleLoadingScreen
         message="Preparing your dashboard..."
@@ -490,6 +490,8 @@ export default function StudentDashboardPage() {
               key={preselectedComponentId || "submit-form-active"}
               components={components}
               initialComponentId={preselectedComponentId}
+              initialSemesterId={selectedCatalogueSemesterId}
+              token={token}
               onSubmit={async (data, file, immediately) => {
                 await handleCreateAchievement(data, file, immediately);
                 if (immediately) {
@@ -788,6 +790,7 @@ export default function StudentDashboardPage() {
         components={components}
         initialComponentId={preselectedComponentId}
         initialSemesterId={selectedCatalogueSemesterId}
+        token={token}
         onSubmit={handleCreateAchievement}
       />
 
