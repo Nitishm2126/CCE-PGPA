@@ -203,6 +203,82 @@ html {
   }
 }
 
+/* Equalizer Bars Animation - Pure GPU-accelerated transforms */
+@keyframes equalizerBounce {
+  0%, 100% {
+    transform: scaleY(0.2);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Landing Page Word 3D Flip Animation */
+@keyframes wordFlipIn {
+  0% {
+    opacity: 0;
+    transform: translateY(50%) rotateX(-50deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+.animate-word-flip {
+  animation: wordFlipIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-word-flip {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+.animate-equalizer-1 {
+  animation: equalizerBounce 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 0s;
+  transform-origin: bottom;
+}
+.animate-equalizer-2 {
+  animation: equalizerBounce 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 0.22s;
+  transform-origin: bottom;
+}
+.animate-equalizer-3 {
+  animation: equalizerBounce 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 0.44s;
+  transform-origin: bottom;
+}
+.animate-equalizer-4 {
+  animation: equalizerBounce 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 0.15s;
+  transform-origin: bottom;
+}
+.animate-equalizer-5 {
+  animation: equalizerBounce 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 0.35s;
+  transform-origin: bottom;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-equalizer-1,
+  .animate-equalizer-2,
+  .animate-equalizer-3,
+  .animate-equalizer-4,
+  .animate-equalizer-5 {
+    animation: none;
+    transform: scaleY(0.65);
+    opacity: 0.85;
+  }
+}
+
 .animate-apple-halo {
   animation: appleHalo 0.8s ease-in-out infinite;
 }

@@ -248,21 +248,25 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   // Load available semesters on mount (force fresh enabled-only list)
   useEffect(() => {
     let isMounted = true;
+    setSemesterLoading(true);
     api.studentGetSemesters(null, true)
       .then((sems) => {
         if (!isMounted) return;
         const activeSems = (sems || []).filter((s) => s.is_enabled !== false);
         setSemesters(activeSems);
         if (activeSems.length > 0) {
-          // If initialSemesterId was provided and exists in activeSems, use it
+          // Top priority: Admin-configured default semester
+          const defaultSem = activeSems.find((s) => s.is_default);
           const found = initialSemesterId ? activeSems.find((s) => s.id === initialSemesterId) : null;
-          if (found) {
+          if (defaultSem) {
+            setSemesterId(defaultSem.id);
+          } else if (found) {
             setSemesterId(found.id);
           } else {
-            // Default to currently active configured semester (e.g. Semester 3 or highest enabled)
-            const targetSem = activeSems.find((s) => s.semester_number === 3 || s.display_name?.includes("3")) || activeSems[activeSems.length - 1] || activeSems[0];
-            setSemesterId(targetSem.id);
+            setSemesterId(activeSems[0].id);
           }
+        } else {
+          setSemesterId("");
         }
       })
       .catch((err) => {
@@ -914,8 +918,13 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Semester Selector */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider mb-1">
-                Academic Semester *
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider mb-1 flex items-center justify-between">
+                <span>Academic Semester *</span>
+                {selectedSemester?.is_default && (
+                  <span className="text-[10px] font-bold text-[#FFB347]">
+                    ★ Admin Default
+                  </span>
+                )}
               </label>
               <select
                 value={semesterId}
@@ -931,11 +940,16 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 ) : (
                   semesters.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {formatSemester(s.id, s.display_name)}
+                      {formatSemester(s.id, s.display_name)}{s.is_default ? " ★ (Default)" : ""}
                     </option>
                   ))
                 )}
               </select>
+              {semesters.length === 0 && !semesterLoading && (
+                <p className="mt-1 text-[11px] text-amber-600 dark:text-amber-400 font-medium leading-tight">
+                  ⚠️ No academic semesters are currently open for achievement submission.
+                </p>
+              )}
             </div>
 
             {/* Component Selector */}

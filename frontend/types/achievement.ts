@@ -40,6 +40,7 @@ export interface SemesterResponse {
   semester_number: number;
   display_name: string;
   is_enabled: boolean;
+  is_default?: boolean;
   created_at?: string;
   updated_at?: string;
 }

@@ -18,6 +18,8 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
   const [semesters, setSemesters] = useState<SemesterResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
+  const [pendingDefaultSemester, setPendingDefaultSemester] = useState<SemesterResponse | null>(null);
   const [actionMessage, setActionMessage] = useState<{
     type: "success" | "error" | "warning";
     text: string;
@@ -83,6 +85,42 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
     } finally {
       setTogglingId(null);
       setPendingToggle(null);
+    }
+  };
+
+  const handleSetDefault = (sem: SemesterResponse) => {
+    if (!sem.is_enabled) {
+      setActionMessage({
+        type: "warning",
+        text: `Cannot set ${sem.display_name} as default because it is currently closed. Open the semester first.`,
+      });
+      return;
+    }
+    setPendingDefaultSemester(sem);
+  };
+
+  const executeSetDefault = async (semesterId: string) => {
+    try {
+      setSettingDefaultId(semesterId);
+      setActionMessage(null);
+      await api.adminSetDefaultSemester(semesterId, token);
+      setSemesters((prev) =>
+        prev.map((s) => ({
+          ...s,
+          is_default: s.id === semesterId,
+        }))
+      );
+      const targetSem = semesters.find((s) => s.id === semesterId);
+      setActionMessage({
+        type: "success",
+        text: `Default semester set to ${targetSem?.display_name || "selected semester"}. Student submission forms will now automatically select this semester.`,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to set default semester.";
+      setActionMessage({ type: "error", text: msg });
+    } finally {
+      setSettingDefaultId(null);
+      setPendingDefaultSemester(null);
     }
   };
 
@@ -210,17 +248,24 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
                         : "bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 opacity-90"
                     }`}
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between gap-2">
                       <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                          Semester {sem.semester_number}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            Semester {sem.semester_number}
+                          </span>
+                          {sem.is_default && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-[#FFB347]/20 text-[#1E2A33] dark:text-[#FFB347] border border-[#FFB347]/50 shadow-2xs">
+                              ★ Default Semester
+                            </span>
+                          )}
+                        </div>
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
                           {sem.display_name}
                         </h3>
                       </div>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
                           sem.is_enabled
                             ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                             : "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
@@ -237,22 +282,45 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
 
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                       {sem.is_enabled
-                        ? "Currently selectable by students on the achievement submission form."
+                        ? sem.is_default
+                          ? "Default semester: Automatically selected for all new student submissions."
+                          : "Currently selectable by students on the achievement submission form."
                         : "Closed for new submissions. Historical records remain fully accessible."}
                     </p>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                      <span className="text-[10px] font-mono text-slate-400">
-                        SEM-{sem.semester_number}
-                      </span>
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+                      {/* Set as Default Option */}
+                      {sem.is_enabled ? (
+                        sem.is_default ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg bg-[#FFB347]/25 text-[#1E2A33] dark:text-[#FFB347] border border-[#FFB347]/40 shadow-2xs">
+                            <span>★ Default Active</span>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={settingDefaultId === sem.id || isToggling}
+                            onClick={() => handleSetDefault(sem)}
+                            className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-[#FFB347] text-[#1E2A33] dark:text-[#FFB347] hover:bg-[#FFB347]/15 transition cursor-pointer flex items-center gap-1 shadow-2xs"
+                            title="Set as the default semester for student submissions"
+                          >
+                            {settingDefaultId === sem.id ? (
+                              <span className="w-3 h-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            ) : null}
+                            <span>Set as Default</span>
+                          </button>
+                        )
+                      ) : (
+                        <span className="text-[10px] text-slate-400 italic">Open semester to set default</span>
+                      )}
+
                       <button
                         type="button"
-                        disabled={isToggling}
+                        disabled={isToggling || settingDefaultId === sem.id}
                         onClick={() => handleToggleStatus(sem, !sem.is_enabled)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
                           sem.is_enabled
                             ? "border border-red-200 text-red-700 hover:bg-red-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
-                            : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs"
+                            : "bg-[#0a192f] hover:bg-slate-800 text-white shadow-2xs"
                         }`}
                       >
                         {isToggling ? (
@@ -434,6 +502,13 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
               will remain completely intact and accessible.
             </p>
 
+            {pendingToggle.semester.is_default && (
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300 font-semibold space-y-1">
+                <p>⚠️ <strong>Default Semester Notice:</strong></p>
+                <p>This semester is currently set as the Default Semester. Closing it will clear its default status and automatically designate the next open semester as default.</p>
+              </div>
+            )}
+
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
@@ -448,6 +523,48 @@ export const SemesterManagementConsole: React.FC<SemesterManagementConsoleProps>
                 className="px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 hover:bg-red-700 text-white"
               >
                 Confirm Disable
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal for Setting Default Semester */}
+      {pendingDefaultSemester && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-[#FFB347]/20 text-[#1E2A33] dark:text-[#FFB347] border border-[#FFB347]/40">
+                <span className="text-xl">★</span>
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Set {pendingDefaultSemester.display_name} as Default?
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Confirm default semester for student submissions
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              This will configure <strong>{pendingDefaultSemester.display_name}</strong> as the default semester automatically preselected when any student opens the achievement submission form. Students can still manually choose any other currently open semester.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setPendingDefaultSemester(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => executeSetDefault(pendingDefaultSemester.id)}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#FFB347] hover:bg-[#FFA21A] text-[#1E2A33] shadow-xs cursor-pointer flex items-center gap-1.5"
+              >
+                <span>Confirm & Set as Default</span>
               </button>
             </div>
           </div>

@@ -48,6 +48,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} dark min-h-[100dvh] antialiased`}
     >
       <head>
+        <link rel="icon" href="/websitelogo.png" type="image/png" sizes="any" />
+        <link rel="shortcut icon" href="/websitelogo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/websitelogo.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('cce_theme')||'dark';if(t==='light'){document.documentElement.classList.remove('dark');document.documentElement.setAttribute('data-theme','light');}else{document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();`,

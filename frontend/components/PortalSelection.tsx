@@ -72,12 +72,34 @@ const PORTAL_CARD_METADATA: Record<string, { description: string }> = {
   },
 };
 
+const ROTATING_WORDS = [
+  "Management System",
+  "Academic Excellence",
+  "Point Matrix & Audit",
+  "Student Portfolios",
+  "Performance Tracking",
+];
+
 function PortalSelectionContent() {
   const router = useRouter();
   const { user, isLoading, isLoggingOut } = useAuth();
   const searchParams = useSearchParams();
   const [dismissed, setDismissed] = React.useState(false);
+  const [wordIndex, setWordIndex] = React.useState(0);
   const justSignedOut = searchParams?.get("signedOut") === "true" && !dismissed;
+
+  // Smooth rotating word animation timer for landing heading
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mediaQuery.matches) return;
+
+    const timer = setInterval(() => {
+      setWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
+    }, 2800);
+
+    return () => clearInterval(timer);
+  }, []);
 
   // CRITICAL: If authenticated, automatically redirect to role-specific dashboard
   React.useEffect(() => {
@@ -128,8 +150,13 @@ function PortalSelectionContent() {
             <span>Department of Computer and Communication Engineering</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-            CCE PGPA <span className="text-[#FFB347] dark:text-[#5DD62C]">Management System</span>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2.5">
+            <span className="shrink-0">CCE PGPA</span>
+            <span className="inline-block relative h-[1.3em] overflow-hidden text-[#FFB347] text-center sm:text-left min-w-[240px] sm:min-w-[320px]">
+              <span key={wordIndex} className="inline-block animate-word-flip">
+                {ROTATING_WORDS[wordIndex]}
+              </span>
+            </span>
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-normal">

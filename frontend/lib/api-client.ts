@@ -1284,6 +1284,29 @@ export const api = {
     );
   },
 
+  adminSetDefaultSemester: async (
+    semesterId: string,
+    token?: string | null
+  ): Promise<SemesterResponse> => {
+    return request<SemesterResponse>(
+      `/admin/semesters/${semesterId}/set-default`,
+      {
+        method: "POST",
+      },
+      token
+    );
+  },
+
+  getDefaultSemester: async (
+    token?: string | null
+  ): Promise<SemesterResponse> => {
+    return request<SemesterResponse>(
+      "/semesters/default",
+      { method: "GET" },
+      token
+    );
+  },
+
   adminGetSemesterDriveAudit: async (
     token?: string | null
   ): Promise<SemesterDriveAuditReport> => {

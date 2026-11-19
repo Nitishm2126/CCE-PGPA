@@ -172,8 +172,10 @@ export default function StudentDashboardPage() {
         if (ignore) return;
 
         if (semsRes.status === "fulfilled") {
-          const sems = semsRes.value;
+          const sems = (semsRes.value || []).filter((s) => s.is_enabled !== false);
           setSemesters(sems);
+          // Prioritize admin-controlled default semester
+          const defaultSem = sems.find((s) => s.is_default);
           const studentSemStr = profileRes.status === "fulfilled" ? profileRes.value.profile?.semester : null;
           const matchedSem = studentSemStr
             ? sems.find(
@@ -182,7 +184,9 @@ export default function StudentDashboardPage() {
                   s.semester_number.toString() === studentSemStr.replace(/\D/g, "")
               )
             : null;
-          if (matchedSem) {
+          if (defaultSem) {
+            setSelectedCatalogueSemesterId(defaultSem.id);
+          } else if (matchedSem) {
             setSelectedCatalogueSemesterId(matchedSem.id);
           } else if (sems.length > 0) {
             setSelectedCatalogueSemesterId(sems[0].id);

@@ -18,47 +18,40 @@ export const CCELogoLoader: React.FC<CCELogoLoaderProps> = ({
   if (size === "fullscreen") {
     return (
       <div
-        className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-white dark:bg-[#0A0A0A] p-4 transition-colors select-none ${className}`}
+        className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md p-4 transition-colors select-none ${className}`}
         role="status"
         aria-live="polite"
       >
         <div className="relative flex flex-col items-center">
-          {/* Subtle Ambient Amber Glow */}
-          <div className="absolute -inset-4 rounded-full bg-[#FFB347]/15 dark:bg-[#FFB347]/10 blur-xl animate-pulse motion-reduce:animate-none" />
-
-          {/* Animated Spinner Ring */}
+          {/* Circular Logo Presentation - Strictly NO white square/card */}
           <div className="relative flex items-center justify-center h-24 w-24 sm:h-28 sm:w-28">
-            <svg
-              className="absolute inset-0 h-full w-full animate-spin motion-reduce:animate-none text-[#FFB347]"
-              viewBox="0 0 100 100"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <circle
-                cx="50"
-                cy="50"
-                r="44"
-                stroke="currentColor"
-                strokeOpacity="0.15"
-              />
-              <path
-                d="M50 6 A44 44 0 0 1 94 50"
-                stroke="currentColor"
-                strokeLinecap="round"
-              />
-            </svg>
+            {/* Ambient Amber Glow */}
+            <div className="absolute inset-1 rounded-full bg-[#FFB347]/15 dark:bg-[#FFB347]/10 blur-xl pointer-events-none" />
 
-            {/* Official Website Logo */}
-            <img
-              src="/websitelogo.png"
-              alt="CCE-PGPA Logo"
-              className="h-16 w-16 sm:h-20 sm:w-20 object-contain drop-shadow-sm animate-pulse motion-reduce:animate-none"
-            />
+            {/* Smooth Subtle Circular Ring */}
+            <div className="absolute inset-0 rounded-full border-2 border-[#FFB347]/20 border-t-[#FFB347] animate-spin [animation-duration:2.5s] motion-reduce:animate-none pointer-events-none" />
+
+            {/* Original Clean Logo */}
+            <div className="relative flex items-center justify-center h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-transparent overflow-hidden">
+              <img
+                src="/websitelogo.png"
+                alt="CCE-PGPA Logo"
+                className="h-16 w-16 sm:h-20 sm:w-20 object-contain drop-shadow-md select-none"
+              />
+            </div>
+          </div>
+
+          {/* Animated Equalizer Bars directly BELOW the logo */}
+          <div className="flex items-end justify-center gap-1.5 h-6 mt-4 mb-3 select-none" aria-label="Loading animation" role="presentation">
+            <span className="w-1.5 h-6 rounded-full bg-[#FFB347] shadow-[0_0_8px_rgba(255,179,71,0.4)] animate-equalizer-1" />
+            <span className="w-1.5 h-6 rounded-full bg-[#FFB347] shadow-[0_0_8px_rgba(255,179,71,0.4)] animate-equalizer-2" />
+            <span className="w-1.5 h-6 rounded-full bg-[#FFB347] shadow-[0_0_8px_rgba(255,179,71,0.4)] animate-equalizer-3" />
+            <span className="w-1.5 h-6 rounded-full bg-[#FFB347] shadow-[0_0_8px_rgba(255,179,71,0.4)] animate-equalizer-4" />
+            <span className="w-1.5 h-6 rounded-full bg-[#FFB347] shadow-[0_0_8px_rgba(255,179,71,0.4)] animate-equalizer-5" />
           </div>
 
           {/* Institutional Label */}
-          <div className="mt-5 text-center space-y-1">
+          <div className="mt-2 text-center space-y-1">
             <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
               {message}
             </h3>
@@ -78,13 +71,13 @@ export const CCELogoLoader: React.FC<CCELogoLoaderProps> = ({
 
   // Section / Card / Inline loader
   const dimensionMap = {
-    sm: "h-10 w-10",
+    sm: "h-12 w-12",
     md: "h-16 w-16",
     lg: "h-20 w-20",
   };
 
   const imgDimensionMap = {
-    sm: "h-7 w-7",
+    sm: "h-8 w-8",
     md: "h-11 w-11",
     lg: "h-14 w-14",
   };
@@ -95,39 +88,29 @@ export const CCELogoLoader: React.FC<CCELogoLoaderProps> = ({
       role="status"
       aria-live="polite"
     >
-      <div className={`relative flex items-center justify-center ${dimensionMap[size]}`}>
-        {/* Subtle Rotating Amber Arc */}
-        <svg
-          className="absolute inset-0 h-full w-full animate-spin motion-reduce:animate-none text-[#FFB347]"
-          viewBox="0 0 100 100"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="3"
-        >
-          <circle
-            cx="50"
-            cy="50"
-            r="44"
-            stroke="currentColor"
-            strokeOpacity="0.15"
-          />
-          <path
-            d="M50 6 A44 44 0 0 1 94 50"
-            stroke="currentColor"
-            strokeLinecap="round"
-          />
-        </svg>
+      <div className={`relative flex items-center justify-center rounded-full ${dimensionMap[size]}`}>
+        {/* Subtle Rotating Amber Ring */}
+        <div className="absolute inset-0 rounded-full border border-[#FFB347]/25 border-t-[#FFB347] animate-spin [animation-duration:2.5s] motion-reduce:animate-none pointer-events-none" />
 
         {/* Official Website Logo */}
         <img
           src="/websitelogo.png"
           alt="CCE Logo"
-          className={`${imgDimensionMap[size]} object-contain animate-pulse motion-reduce:animate-none`}
+          className={`${imgDimensionMap[size]} object-contain select-none`}
         />
       </div>
 
+      {/* Inline Equalizer Bars directly below logo */}
+      <div className="flex items-end justify-center gap-1 h-4 mt-2.5 mb-1.5 select-none" aria-hidden="true">
+        <span className="w-1 h-4 rounded-full bg-[#FFB347] animate-equalizer-1" />
+        <span className="w-1 h-4 rounded-full bg-[#FFB347] animate-equalizer-2" />
+        <span className="w-1 h-4 rounded-full bg-[#FFB347] animate-equalizer-3" />
+        <span className="w-1 h-4 rounded-full bg-[#FFB347] animate-equalizer-4" />
+        <span className="w-1 h-4 rounded-full bg-[#FFB347] animate-equalizer-5" />
+      </div>
+
       {message && (
-        <p className="mt-3 text-xs font-semibold text-slate-700 dark:text-slate-300">
+        <p className="mt-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
           {message}
         </p>
       )}

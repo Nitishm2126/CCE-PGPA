@@ -74,103 +74,33 @@ export const AppleLoadingScreen: React.FC<AppleLoadingScreenProps> = ({
       />
 
       <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-sm w-full animate-apple-fade">
-        {/* Brand Mark with Smooth Progress Halo */}
-        <div className="relative mb-6 flex items-center justify-center">
-          {/* Breathing ambient halo: subtle amber in light mode, yellow or indigo in dark mode */}
-          <div
-            className={`absolute -inset-2 rounded-3xl bg-[#FFB347]/20 blur-xl animate-apple-halo pointer-events-none ${
-              "dark:bg-[#5DD62C]/15"
-            }`}
-            aria-hidden="true"
-          />
+        {/* Brand Mark with Smooth Circular Ring */}
+        <div className="relative flex flex-col items-center justify-center">
+          {/* Circular Logo Presentation - Strictly NO white square/card */}
+          <div className="relative flex items-center justify-center h-24 w-24 sm:h-28 sm:w-28">
+            {/* Ambient subtle amber glow */}
+            <div className="absolute inset-1 rounded-full bg-[#FFB347]/15 dark:bg-[#FFB347]/10 blur-md pointer-events-none" />
 
-          {/* Rotating progress indicator ring */}
-          <div className="relative flex items-center justify-center">
-            <svg
-              className={`h-20 w-20 animate-apple-spin text-[#FFB347]/25 ${
-                "dark:text-[#5DD62C]/20"
-              }`}
-              viewBox="0 0 80 80"
-              fill="none"
-              aria-hidden="true"
-            >
-              <circle
-                cx="40"
-                cy="40"
-                r="36"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                className="opacity-20"
-              />
-              {/* Light mode: refined subtle amber progress stroke */}
-              <circle
-                cx="40"
-                cy="40"
-                r="36"
-                stroke="url(#appleProgressGradLight)"
-                strokeWidth="2.5"
-                strokeDasharray="160 80"
-                strokeLinecap="round"
-                className="dark:hidden"
-              />
-              {/* Dark mode: refined subtle yellow or indigo progress stroke */}
-              <circle
-                cx="40"
-                cy="40"
-                r="36"
-                stroke="url(#appleProgressGradDarkGreen)"
-                strokeWidth="2.5"
-                strokeDasharray="160 80"
-                strokeLinecap="round"
-                className="hidden dark:block"
-              />
-              <defs>
-                <linearGradient
-                  id="appleProgressGradLight"
-                  x1="0"
-                  y1="0"
-                  x2="80"
-                  y2="80"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stopColor="#FFB347" />
-                  <stop offset="0.6" stopColor="#FFA21A" />
-                  <stop offset="1" stopColor="#FFB347" stopOpacity="0.2" />
-                </linearGradient>
-                <linearGradient
-                  id="appleProgressGradDarkGreen"
-                  x1="0"
-                  y1="0"
-                  x2="80"
-                  y2="80"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stopColor="#5DD62C" />
-                  <stop offset="0.6" stopColor="#4ec224" />
-                  <stop offset="1" stopColor="#337418" stopOpacity="0.2" />
-                </linearGradient>
-              </defs>
-            </svg>
+            {/* Smooth subtle rotating circular ring */}
+            <div className="absolute inset-0 rounded-full border-2 border-[#FFB347]/20 border-t-[#FFB347] animate-spin [animation-duration:2.5s] motion-reduce:animate-none pointer-events-none" />
 
-            {/* Centered Clean CCE Brand Logo */}
-            <div className="absolute inset-2 rounded-2xl bg-white dark:bg-[#1a1a1a] border border-[#FFB347]/40 dark:border-[#2e2e2e] shadow-sm flex items-center justify-center p-1.5 overflow-hidden">
+            {/* Original Logo inside clean circular presentation */}
+            <div className="relative flex items-center justify-center h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-transparent overflow-hidden">
               <img
                 src="/websitelogo.png"
                 alt="CCE Logo"
-                className="w-full h-full object-contain filter drop-shadow-xs"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = "none";
-                  if (target.nextElementSibling) {
-                    (target.nextElementSibling as HTMLElement).style.display = "block";
-                  }
-                }}
+                className="h-16 w-16 sm:h-20 sm:w-20 object-contain drop-shadow-md select-none"
               />
-              <span className="hidden font-extrabold text-base tracking-wider text-[#1E2A33] dark:text-[#FFB347] select-none">
-                CCE
-              </span>
             </div>
+          </div>
+
+          {/* Animated Equalizer Bars directly BELOW the logo */}
+          <div className="flex items-end justify-center gap-1.5 h-6 mt-4 mb-3 select-none" aria-label="Loading animation" role="presentation">
+            <span className="w-1.5 h-6 rounded-full bg-[#FFB347] shadow-[0_0_8px_rgba(255,179,71,0.4)] animate-equalizer-1" />
+            <span className="w-1.5 h-6 rounded-full bg-[#FFB347] shadow-[0_0_8px_rgba(255,179,71,0.4)] animate-equalizer-2" />
+            <span className="w-1.5 h-6 rounded-full bg-[#FFB347] shadow-[0_0_8px_rgba(255,179,71,0.4)] animate-equalizer-3" />
+            <span className="w-1.5 h-6 rounded-full bg-[#FFB347] shadow-[0_0_8px_rgba(255,179,71,0.4)] animate-equalizer-4" />
+            <span className="w-1.5 h-6 rounded-full bg-[#FFB347] shadow-[0_0_8px_rgba(255,179,71,0.4)] animate-equalizer-5" />
           </div>
         </div>
 
