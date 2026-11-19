@@ -9,7 +9,7 @@ import { DesignationBadge } from "@/components/DesignationBadge";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { api, getStoredToken } from "@/lib/api-client";
 import { HODStudentItem, DepartmentOverviewResponse } from "@/types/auth";
-import { AchievementResponse, PGPAComponentResponse } from "@/types/achievement";
+import { AchievementResponse, PGPAComponentResponse, SemesterResponse } from "@/types/achievement";
 import { MessageDrawerModal } from "@/components/messages/MessageDrawerModal";
 import { MessagesHubView } from "@/components/messages/MessagesHubView";
 import { HODExcelImportConsole } from "@/components/hod/HODExcelImportConsole";
@@ -24,6 +24,7 @@ import { formatSemester } from "@/lib/format-semester";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 import { ActivityInspectionModal } from "@/components/shared/ActivityInspectionModal";
+import { ManualPointsModal } from "@/components/mentor/ManualPointsModal";
 
 
 export default function HODDashboardPage() {
@@ -96,6 +97,16 @@ export default function HODDashboardPage() {
   const [exportStudentId, setExportStudentId] = useState<string>("all");
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isPointsConfigOpen, setIsPointsConfigOpen] = useState<boolean>(false);
+
+  // Manual Points Modal state
+  const [isManualPointsModalOpen, setIsManualPointsModalOpen] = useState<boolean>(false);
+  const [manualPointsStudent, setManualPointsStudent] = useState<any>(null);
+  const [semesters, setSemesters] = useState<SemesterResponse[]>([]);
+
+  useEffect(() => {
+    if (!token) return;
+    api.getSemesters(token).then(setSemesters).catch(() => {});
+  }, [token]);
 
 
   // Auth Guard
@@ -407,7 +418,7 @@ export default function HODDashboardPage() {
 
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-6 md:pb-12 transition-colors">
+    <div className="min-h-screen bg-[#fafbfc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-12 transition-colors">
       {/* Sairam Institutional Header */}
       <header className="border-b border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs transition-colors">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
@@ -1209,7 +1220,25 @@ export default function HODDashboardPage() {
                           <span className="font-medium text-slate-600 dark:text-[#A3A3A3]">
                             {studentSubmissions.length} submissions
                           </span>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setManualPointsStudent({
+                                  id: st.student_id,
+                                  student_id: st.student_id,
+                                  full_name: st.full_name,
+                                  register_number: st.register_number,
+                                  department: "CCE",
+                                });
+                                setIsManualPointsModalOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1 rounded-md border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2 py-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors cursor-pointer"
+                              title="Manage SkillRack and manual component points"
+                            >
+                              <span>Points</span>
+                            </button>
+
                             <button
                               type="button"
                               onClick={() => {
@@ -1278,7 +1307,24 @@ export default function HODDashboardPage() {
                               {(st as any).overall_grade || "—"}
                             </span>
                           </td>
-                          <td className="py-2.5 px-4 text-right flex items-center justify-end gap-1.5">
+                          <td className="py-2.5 px-4 text-right flex items-center justify-end gap-1.5 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setManualPointsStudent({
+                                  id: st.student_id,
+                                  student_id: st.student_id,
+                                  full_name: st.full_name,
+                                  register_number: st.register_number,
+                                  department: "CCE",
+                                });
+                                setIsManualPointsModalOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1 rounded-md border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors cursor-pointer"
+                              title="Award or edit SkillRack and manual component points"
+                            >
+                              <span>Manual Points</span>
+                            </button>
                             <button
                               type="button"
                               onClick={() => {
@@ -1506,6 +1552,25 @@ export default function HODDashboardPage() {
         onLogout={handleLogout}
         onOpenPointsConfig={() => setIsPointsConfigOpen(true)}
       />
+
+      {/* Manual Component Points Modal */}
+      {isManualPointsModalOpen && manualPointsStudent && (
+        <ManualPointsModal
+          isOpen={isManualPointsModalOpen}
+          onClose={() => {
+            setIsManualPointsModalOpen(false);
+            setManualPointsStudent(null);
+          }}
+          student={manualPointsStudent}
+          students={students as any}
+          token={token}
+          components={components}
+          semesters={semesters}
+          onPointsChanged={() => {
+            loadStudents();
+          }}
+        />
+      )}
     </div>
   );
 }

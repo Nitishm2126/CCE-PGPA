@@ -748,6 +748,57 @@ export const api = {
     );
   },
 
+  deleteManualPoint: async (
+    pointId: string,
+    token?: string | null
+  ): Promise<{ message: string }> => {
+    return request<{ message: string }>(
+      `/mentor/manual-points/${pointId}`,
+      { method: "DELETE" },
+      token
+    );
+  },
+
+  updateManualPoint: async (
+    pointId: string,
+    data: { points: number; remarks: string },
+    token?: string | null
+  ): Promise<ManualComponentPointResponse> => {
+    return request<ManualComponentPointResponse>(
+      `/mentor/manual-points/${pointId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  createManualPoint: async (
+    data: ManualPointCreatePayload,
+    token?: string | null
+  ): Promise<ManualComponentPointResponse> => {
+    return request<ManualComponentPointResponse>(
+      "/mentor/manual-points",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      token
+    );
+  },
+
+  getManualPoints: async (
+    studentId: string,
+    token?: string | null
+  ): Promise<ManualComponentPointResponse[]> => {
+    return request<ManualComponentPointResponse[]>(
+      `/mentor/manual-points/${studentId}`,
+      { method: "GET" },
+      token
+    );
+  },
+
   getComponentPointSettings: async (
     token?: string | null
   ): Promise<ComponentPointSettingsResponse[]> => {

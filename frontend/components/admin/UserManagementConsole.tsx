@@ -45,6 +45,8 @@ import {
 import { BulkProvisioningModal } from "./BulkProvisioningModal";
 import { EditUserEmailModal, TargetUserInfo } from "./EditUserEmailModal";
 import { ResetPasswordModal, TargetPasswordResetUser } from "./ResetPasswordModal";
+import { ManualPointsModal } from "@/components/mentor/ManualPointsModal";
+import { PGPAComponentResponse, SemesterResponse } from "@/types/achievement";
 
 export type ActiveTab = "students" | "mentors" | "hods";
 
@@ -130,6 +132,18 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
 
   // Security - Reset Password Modal
   const [userToResetPassword, setUserToResetPassword] = useState<TargetPasswordResetUser | null>(null);
+
+  // Manual Points Modal state
+  const [showManualPointsModal, setShowManualPointsModal] = useState<boolean>(false);
+  const [studentForManualPoints, setStudentForManualPoints] = useState<any>(null);
+  const [components, setComponents] = useState<PGPAComponentResponse[]>([]);
+  const [semesters, setSemesters] = useState<SemesterResponse[]>([]);
+
+  useEffect(() => {
+    if (!token) return;
+    api.getComponents(null, token).then(setComponents).catch(() => {});
+    api.getSemesters(token).then(setSemesters).catch(() => {});
+  }, [token]);
 
   // Fetch all user lists
   const fetchAllData = useCallback(async () => {
@@ -969,7 +983,23 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
                           </button>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-right">
-                          <div className="flex items-center justify-end gap-1.5">
+                          <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                            <button
+                              onClick={() => {
+                                setStudentForManualPoints({
+                                  id: s.id,
+                                  student_id: s.id,
+                                  full_name: s.full_name,
+                                  register_number: s.register_number,
+                                  department: s.department || "CCE",
+                                });
+                                setShowManualPointsModal(true);
+                              }}
+                              className="px-2.5 py-1 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded font-medium transition cursor-pointer"
+                              title="Award or edit SkillRack and manual component points"
+                            >
+                              Manual Points
+                            </button>
                             <button
                               onClick={() => handleViewStudent(s.id)}
                               className="px-2.5 py-1 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded font-medium transition"
@@ -1577,6 +1607,24 @@ export const UserManagementConsole: React.FC<UserManagementConsoleProps> = ({
           fetchAllData();
         }}
       />
+
+      {/* Manual Component Points Modal */}
+      {showManualPointsModal && studentForManualPoints && (
+        <ManualPointsModal
+          isOpen={showManualPointsModal}
+          onClose={() => {
+            setShowManualPointsModal(false);
+            setStudentForManualPoints(null);
+          }}
+          student={studentForManualPoints}
+          token={token}
+          components={components}
+          semesters={semesters}
+          onPointsChanged={() => {
+            fetchAllData();
+          }}
+        />
+      )}
     </div>
   );
 };

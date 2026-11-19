@@ -2092,29 +2092,29 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         {/* Clubs & Organizations Participation (Positioned above certificate)   */}
         {/* ==================================================================== */}
         {currentSlug === "clubs-and-cells" && (
-          <div className="rounded-xl border border-blue-200 dark:border-[#337418]/60 bg-blue-50/40 dark:bg-[#337418]/15 p-4 space-y-3.5">
+          <div className="rounded-xl border border-slate-200 dark:border-[#337418]/60 bg-slate-50/70 dark:bg-[#337418]/15 p-4 space-y-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-blue-900 dark:text-[#5DD62C] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-800 dark:text-[#5DD62C] uppercase tracking-wider">
                 Clubs &amp; Organizations Participation
               </span>
-              <span className="text-[10px] font-semibold text-blue-700 dark:text-[#5DD62C]">
-                Optional Extracurricular Details
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-[#5DD62C]">
+                Extracurricular Details
               </span>
             </div>
 
-            {/* Club Name (Manual text input, completely optional) */}
+            {/* Club Name */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                Organization / Club Name (Optional)
+                Organization / Club Name
               </label>
               <input
                 type="text"
                 maxLength={150}
-                placeholder="e.g. Rotary Club, CSI, GDSC, Music Club or any external org"
+                placeholder="Enter organization or club name"
                 value={clubName}
                 onChange={(e) => setClubName(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-[#FFB347] focus:ring-1 focus:ring-[#FFB347] min-h-[38px]"
               />
             </div>
 

@@ -152,6 +152,7 @@ interface ManualPointsModalProps {
   token: string | null;
   components: PGPAComponentResponse[];
   semesters: SemesterResponse[];
+  onPointsChanged?: () => void;
 }
 
 export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
@@ -163,6 +164,7 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
   token,
   components,
   semesters,
+  onPointsChanged,
 }) => {
   // Current active student
   const activeStudent = student || (students.length > 0 ? students[0] : null);
@@ -354,6 +356,7 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
       }
       handleCancelEdit();
       await loadPoints();
+      onPointsChanged?.();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to record manual points.";
       setErrorMsg(msg);
@@ -364,7 +367,7 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
 
   const handleDelete = async (pointId: string) => {
     if (!token) return;
-    if (!confirm("Are you sure you want to deactivate this manual point record? This action will be recorded in audit logs.")) {
+    if (!confirm("Are you sure you want to delete this manual point record? Student total points and grade will be updated immediately.")) {
       return;
     }
 
@@ -377,6 +380,7 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
         handleCancelEdit();
       }
       await loadPoints();
+      onPointsChanged?.();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to delete manual point.";
       setErrorMsg(msg);
@@ -669,6 +673,11 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
                         <span className="font-bold text-slate-900 dark:text-[#F8F8F8] truncate">
                           {mp.component_name || "PGPA Component"}
                         </span>
+                        {(mp.component_slug === "skillrack" || mp.component_name?.toLowerCase().includes("skillrack")) && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 font-bold border border-amber-300 dark:border-amber-800">
+                            SkillRack Manual Entry
+                          </span>
+                        )}
                         <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-[#337418]/30 text-emerald-700 dark:text-[#5DD62C] font-semibold border border-emerald-200 dark:border-[#337418]">
                           {mp.semester_name || `Sem ${mp.semester_number || ""}`}
                         </span>

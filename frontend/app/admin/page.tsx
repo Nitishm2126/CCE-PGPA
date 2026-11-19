@@ -889,7 +889,7 @@ export default function AdminDashboardPage() {
           )}
 
           {/* B. Main Content View Area */}
-          <main className="flex-1 min-w-0 space-y-6 pb-8 lg:pb-8">
+          <main className="flex-1 min-w-0 space-y-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-8">
             {/* Contextual Institutional View Banner */}
             <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

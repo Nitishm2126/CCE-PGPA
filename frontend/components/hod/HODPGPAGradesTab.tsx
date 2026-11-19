@@ -7,8 +7,11 @@ import {
   StudentPGPAGradeRow,
   StudentPGPAComponentScore,
   AchievementResponse,
+  PGPAComponentResponse,
+  SemesterResponse,
 } from "@/types/achievement";
 import { HODStudentItem } from "@/types/auth";
+import { ManualPointsModal } from "@/components/mentor/ManualPointsModal";
 
 interface HODPGPAGradesTabProps {
   token?: string | null;
@@ -47,6 +50,20 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
   const [loadingAchievements, setLoadingAchievements] = useState<boolean>(false);
   const [achievementsError, setAchievementsError] = useState<string | null>(null);
   const [openingFileId, setOpeningFileId] = useState<string | null>(null);
+
+  // Manual points management state
+  const [components, setComponents] = useState<PGPAComponentResponse[]>([]);
+  const [semesters, setSemesters] = useState<SemesterResponse[]>([]);
+  const [isManualPointsModalOpen, setIsManualPointsModalOpen] = useState<boolean>(false);
+  const [manualPointsStudent, setManualPointsStudent] = useState<any>(null);
+  const [deletingPointId, setDeletingPointId] = useState<string | null>(null);
+
+  // Fetch components and semesters for manual points
+  useEffect(() => {
+    if (!token) return;
+    api.getComponents(null, token).then(setComponents).catch(() => {});
+    api.getSemesters(token).then(setSemesters).catch(() => {});
+  }, [token]);
 
   // Debounce search
   useEffect(() => {
@@ -106,13 +123,33 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
 
       const data = await api.getHodStudentPgpaGrades(filters, token);
       setRows(data);
+      if (selectedStudent) {
+        const updated = data.find((s) => s.student_id === selectedStudent.student_id);
+        if (updated) setSelectedStudent(updated);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load student PGPA grades.";
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [token, semesterFilter, sectionFilter, mentorFilter, componentSlugFilter, gradeFilter, debouncedSearch]);
+  }, [token, semesterFilter, sectionFilter, mentorFilter, componentSlugFilter, gradeFilter, debouncedSearch, selectedStudent]);
+
+  const handleDeleteManualPoint = async (pointId: string, label: string) => {
+    if (!token) return;
+    if (!confirm(`Are you sure you want to delete this manual point award for "${label}"? The student total points and grade will update immediately.`)) {
+      return;
+    }
+    try {
+      setDeletingPointId(pointId);
+      await api.deleteManualPoint(pointId, token);
+      await loadGrades();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to delete manual point.");
+    } finally {
+      setDeletingPointId(null);
+    }
+  };
 
   // Trigger load on filter changes
   useEffect(() => {
@@ -732,9 +769,27 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                     ([slug, comp]) => Boolean(comp && !TARGET_COMPONENTS.some((tc) => tc.slug === slug) && (((comp.points || 0) > 0) || ((comp.raw_score || 0) > 0) || comp.grade))
                   ) && (
                     <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-                      <h5 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5">
-                        Additional Component Evaluations & Manual Points
-                      </h5>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <h5 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Additional Component Evaluations & Manual Points
+                        </h5>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setManualPointsStudent({
+                              id: selectedStudent.student_id,
+                              student_id: selectedStudent.student_id,
+                              full_name: selectedStudent.student_name,
+                              register_number: selectedStudent.register_number,
+                              department: selectedStudent.department || "CCE",
+                            });
+                            setIsManualPointsModalOpen(true);
+                          }}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FFB347] hover:bg-[#FFA21A] text-slate-950 font-bold text-[10px] shadow-2xs transition-colors cursor-pointer"
+                        >
+                          <span>+ Manage Manual Points</span>
+                        </button>
+                      </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {Object.entries(selectedStudent.components || {})
                           .filter(
@@ -745,6 +800,8 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                           .map(([slug, comp]) => {
                             const pts = comp?.raw_score ?? comp?.points ?? 0;
                             const grade = comp?.grade || "—";
+                            const isManual = Boolean((comp as any)?.is_manual || (comp as any)?.manual_point_id || slug === "skillrack");
+                            const manualPointId = (comp as any)?.manual_point_id;
                             const label =
                               (comp as any)?.component_name ||
                               slug
@@ -754,26 +811,68 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                             return (
                               <div
                                 key={slug}
-                                className="rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/30 dark:bg-amber-950/20 p-3 flex flex-col justify-between"
+                                className={`rounded-xl border p-3 flex flex-col justify-between ${
+                                  isManual
+                                    ? "border-amber-300 dark:border-amber-700/80 bg-amber-50/50 dark:bg-amber-950/30"
+                                    : "border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/40"
+                                }`}
                               >
-                                <div className="flex items-center justify-between gap-1 mb-1.5">
-                                  <span className="text-xs">📊</span>
-                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                                    Evaluated
-                                  </span>
+                                <div>
+                                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                                    <span className="text-xs">📊</span>
+                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                      isManual
+                                        ? "bg-amber-200 text-amber-900 dark:bg-amber-900/80 dark:text-amber-200"
+                                        : "bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300"
+                                    }`}>
+                                      {isManual ? (slug === "skillrack" ? "SkillRack Manual" : "Manual Entry") : "Evaluated"}
+                                    </span>
+                                  </div>
+                                  <h6 className="font-bold text-slate-900 dark:text-white text-xs truncate">
+                                    {label}
+                                  </h6>
                                 </div>
-                                <h6 className="font-bold text-slate-900 dark:text-white text-xs truncate">
-                                  {label}
-                                </h6>
-                                <div className="mt-2 pt-2 border-t border-amber-100 dark:border-amber-900/40 flex items-end justify-between">
-                                  <div>
-                                    <span className="text-[9px] text-slate-400 uppercase block">Grade</span>
-                                    <span className="text-sm font-black text-amber-700 dark:text-amber-400">{grade}</span>
+                                <div className="mt-2 pt-2 border-t border-amber-100 dark:border-amber-900/40">
+                                  <div className="flex items-end justify-between">
+                                    <div>
+                                      <span className="text-[9px] text-slate-400 uppercase block">Grade</span>
+                                      <span className="text-sm font-black text-amber-700 dark:text-amber-400">{grade}</span>
+                                    </div>
+                                    <div className="text-right">
+                                      <span className="text-[9px] text-slate-400 uppercase block">Points</span>
+                                      <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">{pts} pts</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right">
-                                    <span className="text-[9px] text-slate-400 uppercase block">Points</span>
-                                    <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">{pts} pts</span>
-                                  </div>
+                                  {isManual && (
+                                    <div className="mt-2.5 pt-2 border-t border-amber-200/60 dark:border-amber-900/30 flex items-center justify-end gap-1.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setManualPointsStudent({
+                                            id: selectedStudent.student_id,
+                                            student_id: selectedStudent.student_id,
+                                            full_name: selectedStudent.student_name,
+                                            register_number: selectedStudent.register_number,
+                                            department: selectedStudent.department || "CCE",
+                                          });
+                                          setIsManualPointsModalOpen(true);
+                                        }}
+                                        className="px-2 py-0.5 rounded text-[10px] font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/50 hover:bg-amber-200 dark:hover:bg-amber-800/60 transition-colors cursor-pointer"
+                                      >
+                                        Edit
+                                      </button>
+                                      {manualPointId && (
+                                        <button
+                                          type="button"
+                                          disabled={deletingPointId === manualPointId}
+                                          onClick={() => handleDeleteManualPoint(manualPointId, label)}
+                                          className="px-2 py-0.5 rounded text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors cursor-pointer disabled:opacity-50"
+                                        >
+                                          {deletingPointId === manualPointId ? "..." : "Delete"}
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             );
@@ -912,6 +1011,25 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Manual Component Points Modal */}
+      {isManualPointsModalOpen && manualPointsStudent && (
+        <ManualPointsModal
+          isOpen={isManualPointsModalOpen}
+          onClose={() => {
+            setIsManualPointsModalOpen(false);
+            setManualPointsStudent(null);
+          }}
+          student={manualPointsStudent}
+          students={studentsList as any}
+          token={token || null}
+          components={components}
+          semesters={semesters}
+          onPointsChanged={async () => {
+            await loadGrades();
+          }}
+        />
       )}
     </div>
   );
