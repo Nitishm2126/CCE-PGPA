@@ -479,10 +479,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         const effectiveClub = clubName.trim();
         const clubDisplay = effectiveClub || "Extracurricular / Club Activity";
         const effectiveTitle = clubActivityTitle.trim();
-        if ((clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && !effectiveTitle) {
+        if ((clubRoleCategory === "Event Coordinator" || clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && !effectiveTitle) {
           throw new Error(`Activity Title is required for ${clubRoleCategory}. Please enter the title.`);
         }
-        const finalTitle = effectiveTitle || `${clubDisplay} (${clubRoleCategory})`;
+        const finalTitle = effectiveTitle
+          ? (clubRoleCategory === "Event Coordinator" ? `Event Coordinator — ${effectiveTitle}` : effectiveTitle)
+          : `${clubDisplay} (${clubRoleCategory})`;
         payload = {
           component_id: componentId,
           semester_id: semesterId,
@@ -975,13 +977,8 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Semester Selector */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider mb-1 flex items-center justify-between">
-                <span>Academic Semester *</span>
-                {selectedSemester?.is_default && (
-                  <span className="text-[10px] font-bold text-[#FFB347]">
-                    ★ Admin Default
-                  </span>
-                )}
+              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider mb-1">
+                Academic Semester *
               </label>
               <select
                 value={semesterId}
@@ -999,7 +996,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 ) : (
                   semesters.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {formatSemester(s.id, s.display_name)}{s.is_default ? " ★ (Default Semester)" : ""}
+                      {formatSemester(s.id, s.display_name)}
                     </option>
                   ))
                 )}
@@ -2174,7 +2171,25 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               )}
             </div>
 
-            {/* Event Title and Date for Participation / Winner */}
+            {/* Event Title and Date for Event Coordinator, Participation, or Winner */}
+            {clubRoleCategory === "Event Coordinator" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Activity Title <span className="text-amber-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Technical Symposium / Annual Hackathon / Workshop Coordinator"
+                    value={clubActivityTitle}
+                    onChange={(e) => setClubActivityTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
+                  />
+                </div>
+              </div>
+            )}
             {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>

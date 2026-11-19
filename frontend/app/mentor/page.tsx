@@ -268,15 +268,12 @@ export default function MentorDashboardPage() {
     setReviewSuccessMsg(null);
 
     try {
-      const parsedPoints = awardedPoints.trim() ? parseFloat(awardedPoints.trim()) : undefined;
       const remarksToSend = action === "revert" ? (revertRemarks.trim() || reviewRemarks.trim() || undefined) : (reviewRemarks.trim() || undefined);
       const updated = await api.reviewMenteeAchievement(
         selectedSubmission.id,
         {
           action,
           remarks: remarksToSend,
-          awarded_points: action === "approved" ? parsedPoints : undefined,
-          awarded_grade: action === "approved" && awardedGrade.trim() ? awardedGrade.trim() : undefined,
         },
         token
       );
@@ -865,7 +862,7 @@ export default function MentorDashboardPage() {
                             onClick={() => handleOpenSubmission(sub)}
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#FFB347] hover:bg-[#FFA21A] text-slate-950 font-bold text-xs active:scale-95 transition-all cursor-pointer shadow-2xs"
                           >
-                            <span>Verify</span>
+                            <span>{((sub.status as string) === "approved" || (sub.status as string) === "verified") ? "Inspect" : "Verify"}</span>
                             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                             </svg>
@@ -1013,7 +1010,7 @@ export default function MentorDashboardPage() {
                               }}
                               className="rounded-lg border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5] hover:bg-slate-50 dark:hover:bg-[#222222] transition-colors cursor-pointer"
                             >
-                              Verify
+                              {((sub.status as string) === "approved" || (sub.status as string) === "verified") ? "Inspect" : "Verify"}
                             </button>
                           </td>
                         </tr>
@@ -1155,7 +1152,7 @@ export default function MentorDashboardPage() {
                               }}
                               className="px-2.5 py-1 rounded-lg bg-[#FFB347] hover:bg-[#FFA21A] text-slate-950 font-bold text-xs transition-colors"
                             >
-                              Verify &rarr;
+                              Inspect &rarr;
                             </button>
                           </div>
                         </div>
@@ -1253,7 +1250,7 @@ export default function MentorDashboardPage() {
                                   className="rounded-lg bg-[#FFB347] hover:bg-[#FFA21A] px-2.5 py-1 text-[11px] font-bold text-slate-950 transition-colors cursor-pointer"
                                   title={`Inspect submissions for ${st.full_name} (${displayCount} total)`}
                                 >
-                                  Verify ({displayCount})
+                                  Inspect ({displayCount})
                                 </button>
                               </div>
                             </td>
@@ -1565,37 +1562,6 @@ export default function MentorDashboardPage() {
 
                   {selectedSubmission.status === "pending" || selectedSubmission.status === "under_review" ? (
                     <div className="space-y-3 pt-1">
-                      {/* Rubric Points & Grade Confirmation */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#292929]">
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                            Awarded Points (Table 7.1 / Rubric)
-                          </label>
-                          <input
-                            type="number"
-                            step="1"
-                            value={awardedPoints}
-                            onChange={(e) => setAwardedPoints(e.target.value)}
-                            placeholder="e.g. 100, 200, 500"
-                            disabled={isSubmittingReview}
-                            className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                            Awarded Grade (O, A+, A, B+, B, C)
-                          </label>
-                          <input
-                            type="text"
-                            value={awardedGrade}
-                            onChange={(e) => setAwardedGrade(e.target.value)}
-                            placeholder="e.g. O, A+, A"
-                            disabled={isSubmittingReview}
-                            className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-
                       <div>
                         <label className="block text-[11px] font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                           Remarks / Feedback <span className="text-slate-400 font-normal">(Optional for approval, required for rejection)</span>

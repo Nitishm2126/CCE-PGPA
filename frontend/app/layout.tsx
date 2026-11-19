@@ -62,7 +62,6 @@ export default function RootLayout({
           <AuthProvider>
             <SignOutOverlay />
             <Navbar />
-            <EmailVerificationBanner />
             <main className="flex-1 flex flex-col">{children}</main>
             <Footer />
           </AuthProvider>

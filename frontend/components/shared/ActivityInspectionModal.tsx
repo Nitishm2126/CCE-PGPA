@@ -270,6 +270,14 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
 
             {/* Submission Metadata Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              {achievement.component_metadata?.activity_title && (
+                <div className="rounded-xl border border-amber-200/80 dark:border-amber-900/40 bg-amber-50/30 dark:bg-[#141414] p-3 col-span-2 sm:col-span-4">
+                  <span className="block text-[10px] uppercase font-semibold text-amber-700 dark:text-amber-400">Activity Title</span>
+                  <span className="font-bold text-slate-900 dark:text-[#F5F5F5] mt-0.5 block text-xs sm:text-sm">
+                    {achievement.component_metadata.activity_title}
+                  </span>
+                </div>
+              )}
               <div className="rounded-xl border border-slate-200/80 dark:border-[#292929] bg-white dark:bg-[#141414] p-3">
                 <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Activity Type</span>
                 <span className="font-semibold text-slate-800 dark:text-[#F5F5F5] mt-0.5 block truncate">

@@ -74,7 +74,8 @@ export const MessageDrawerModal: React.FC<MessageDrawerModalProps> = ({
       const otherParty = messages.find((m) => m.sender_id !== user.id);
       if (otherParty) return otherParty.sender_id;
     }
-    return null;
+    // Default to "mentor" so the backend automatically routes to the student's assigned mentor
+    return "mentor";
   }, [propRecipientId, targetStudentId, user, messages]);
 
   const fetchMessages = useCallback(async () => {

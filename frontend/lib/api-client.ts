@@ -325,14 +325,33 @@ async function downloadFileWithFilename(
     throw new ApiError(errorMessage, response.status);
   }
   const disposition = response.headers.get("Content-Disposition");
-  let filename = "CCE_PGPA_Report";
+  const contentType = response.headers.get("Content-Type") || "";
+  const isExcel = path.includes("/excel") || contentType.includes("sheet") || contentType.includes("excel");
+  const isPdf = path.includes("/pdf") || contentType.includes("pdf");
+
+  let defaultName = isPdf ? "CCE_PGPA_Report.pdf" : (isExcel ? "CCE_PGPA_Report.xlsx" : "CCE_PGPA_Report");
+  let filename = defaultName;
   if (disposition && disposition.includes("filename=")) {
     const match = disposition.match(/filename="?([^";]+)"?/);
     if (match && match[1]) {
-      filename = match[1];
+      filename = match[1].trim();
     }
   }
-  const blob = await response.blob();
+  // Enforce genuine extension based on route / content-type
+  if (isExcel && !filename.endsWith(".xlsx")) {
+    filename = filename.replace(/\.xls[x]?$/, "") + ".xlsx";
+  } else if (isPdf && !filename.endsWith(".pdf")) {
+    filename = filename.replace(/\.pdf$/, "") + ".pdf";
+  }
+
+  const rawBlob = await response.blob();
+  const mimeType = isExcel
+    ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    : isPdf
+    ? "application/pdf"
+    : rawBlob.type;
+  const blob = new Blob([rawBlob], { type: mimeType });
+
   return { blob, filename };
 }
 
