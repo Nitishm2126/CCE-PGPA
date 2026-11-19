@@ -20,6 +20,7 @@ import { MentorMobileActionsDrawer } from "@/components/mentor/MentorMobileActio
 import { ManualPointsModal } from "@/components/mentor/ManualPointsModal";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
+import { formatSemester } from "@/lib/format-semester";
 
 
 export default function MentorDashboardPage() {
@@ -787,15 +788,11 @@ export default function MentorDashboardPage() {
                           <span className="inline-flex items-center rounded-md bg-white dark:bg-[#111111] px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5] border border-slate-200 dark:border-[#292929]">
                             {sub.component_name || "PGPA Component"}
                           </span>
-                          {sub.semester ? (
+                          {(sub.semester || sub.semester_id || sub.semester_name) && (
                             <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.5 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                              {sub.semester.display_name}
+                              {formatSemester(sub.semester_id, sub.semester?.display_name || sub.semester_name)}
                             </span>
-                          ) : sub.semester_id ? (
-                            <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.5 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                              Semester {sub.semester_id}
-                            </span>
-                          ) : null}
+                          )}
                         </div>
 
                         {/* Title & Organizer */}
@@ -921,15 +918,11 @@ export default function MentorDashboardPage() {
                               <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-[#181818] px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-[#F5F5F5]">
                                 {sub.component_name || "PGPA Component"}
                               </span>
-                              {sub.semester ? (
+                              {(sub.semester || sub.semester_id || sub.semester_name) && (
                                 <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                                  {sub.semester.display_name}
+                                  {formatSemester(sub.semester_id, sub.semester?.display_name || sub.semester_name)}
                                 </span>
-                              ) : sub.semester_id ? (
-                                <span className="inline-flex items-center rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-1.5 py-0.2 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                                  Semester {sub.semester_id}
-                                </span>
-                              ) : null}
+                              )}
                             </div>
                           </td>
 
@@ -1180,15 +1173,11 @@ export default function MentorDashboardPage() {
                     <span className="rounded-md bg-blue-50 dark:bg-[#337418]/25 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:text-[#5DD62C] border border-blue-200 dark:border-[#337418]">
                       {selectedSubmission.component_name || "PGPA Component"}
                     </span>
-                    {selectedSubmission.semester ? (
+                    {(selectedSubmission.semester || selectedSubmission.semester_id || selectedSubmission.semester_name) && (
                       <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                        {selectedSubmission.semester.display_name}
+                        {formatSemester(selectedSubmission.semester_id, selectedSubmission.semester?.display_name || selectedSubmission.semester_name)}
                       </span>
-                    ) : selectedSubmission.semester_id ? (
-                      <span className="rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2 py-0.5 text-xs font-bold text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
-                        Semester {selectedSubmission.semester_id}
-                      </span>
-                    ) : null}
+                    )}
                     {renderStatusBadge(selectedSubmission.status)}
                   </div>
                   <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-[#F5F5F5] leading-snug">

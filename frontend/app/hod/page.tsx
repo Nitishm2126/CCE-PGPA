@@ -239,21 +239,30 @@ export default function HODDashboardPage() {
   const studentMentorMap = useMemo(() => {
     const map = new Map<string, string>();
     students.forEach((st) => {
-      if (st.mentor_name) {
-        map.set(st.student_id, st.mentor_name);
+      const sid = st.student_id || st.id;
+      if (st.mentor_name && st.mentor_name !== "—" && sid) {
+        map.set(sid, st.mentor_name);
+      }
+    });
+    submissions.forEach((sub) => {
+      if (sub.mentor_name && sub.mentor_name !== "—" && sub.student_id) {
+        map.set(sub.student_id, sub.mentor_name);
       }
     });
     return map;
-  }, [students]);
+  }, [students, submissions]);
 
   // Unique Mentors
   const uniqueMentors = useMemo(() => {
     const mentorSet = new Set<string>();
     students.forEach((s) => {
-      if (s.mentor_name) mentorSet.add(s.mentor_name);
+      if (s.mentor_name && s.mentor_name !== "—") mentorSet.add(s.mentor_name);
+    });
+    submissions.forEach((sub) => {
+      if (sub.mentor_name && sub.mentor_name !== "—") mentorSet.add(sub.mentor_name);
     });
     return Array.from(mentorSet).sort();
-  }, [students]);
+  }, [students, submissions]);
 
   // Filtered Submissions
   const filteredSubmissions = useMemo(() => {
@@ -846,7 +855,7 @@ export default function HODDashboardPage() {
                 {/* Mobile Responsive Cards (< md) */}
                 <div className="block md:hidden space-y-3">
                   {filteredSubmissions.map((sub) => {
-                    const mentorName = studentMentorMap.get(sub.student_id) || "—";
+                    const mentorName = sub.mentor_name || studentMentorMap.get(sub.student_id) || "—";
                     const hasFiles = sub.files && sub.files.length > 0;
                     const unreadCount = unreadCountsByAchievement[sub.id] || 0;
                     return (
@@ -982,7 +991,7 @@ export default function HODDashboardPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-[#292929]">
                     {filteredSubmissions.map((sub) => {
-                      const mentorName = studentMentorMap.get(sub.student_id) || "—";
+                      const mentorName = sub.mentor_name || studentMentorMap.get(sub.student_id) || "—";
                       const hasFiles = sub.files && sub.files.length > 0;
                       const unreadCount = unreadCountsByAchievement[sub.id] || 0;
                       return (

@@ -241,15 +241,16 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   const [submissionStep, setSubmissionStep] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  // Load available semesters on mount
+  // Load available semesters on mount (force fresh enabled-only list)
   useEffect(() => {
     let isMounted = true;
-    api.studentGetSemesters()
+    api.studentGetSemesters(null, true)
       .then((sems) => {
         if (!isMounted) return;
-        setSemesters(sems);
-        if (sems.length > 0) {
-          setSemesterId(sems[0].id);
+        const activeSems = (sems || []).filter((s) => s.is_enabled !== false);
+        setSemesters(activeSems);
+        if (activeSems.length > 0) {
+          setSemesterId(activeSems[0].id);
         }
       })
       .catch((err) => {

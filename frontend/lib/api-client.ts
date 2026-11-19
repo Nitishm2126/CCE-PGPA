@@ -792,8 +792,9 @@ export const api = {
     return request<AchievementResponse[]>(`/hod/submissions${query}`, { method: "GET" }, token);
   },
 
-  getStudentAchievementsForHod: async (studentId: string, token?: string | null): Promise<AchievementResponse[]> => {
-    return request<AchievementResponse[]>(`/hod/students/${studentId}/achievements`, { method: "GET" }, token);
+  getStudentAchievementsForHod: async (studentId: string, token?: string | null, semesterId?: string | null): Promise<AchievementResponse[]> => {
+    const query = semesterId && semesterId !== "all" ? `?semester_id=${encodeURIComponent(semesterId)}` : "";
+    return request<AchievementResponse[]>(`/hod/students/${studentId}/achievements${query}`, { method: "GET" }, token);
   },
 
   getHodStudentPgpaGrades: async (

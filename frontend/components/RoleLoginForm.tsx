@@ -121,13 +121,8 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
         if (!isAuthorizedForRole) {
           await logout();
-          setRoleMismatch({
-            actualRole: authenticatedUser.role,
-            attemptedRole: role,
-          });
-          setLocalError(
-            `Unauthorized Role: You authenticated as "${ROLE_CONFIGS[authenticatedUser.role].shortTitle}". You cannot access the ${ROLE_CONFIGS[role].shortTitle} portal.`
-          );
+          setRoleMismatch(null);
+          setLocalError("Invalid Credentials");
           return;
         }
 
@@ -142,7 +137,16 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Authentication failed.";
-      setLocalError(msg);
+      if (
+        msg.includes("Access Denied") ||
+        msg.includes("Unauthorized Role") ||
+        msg.includes("portal using") ||
+        msg.includes("Invalid Credentials")
+      ) {
+        setLocalError("Invalid Credentials");
+      } else {
+        setLocalError(msg);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -251,45 +255,19 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
             </p>
           </div>
 
-          {/* Role Mismatch Warning */}
-          {roleMismatch && (
-            <div
-              role="alert"
-              className="mb-3 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/60 p-2.5 text-xs text-amber-900 dark:text-amber-200"
-            >
-              <p className="font-semibold text-xs">Role Mismatch</p>
-              <p className="mt-1 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-                You authenticated as <strong>{ROLE_CONFIGS[roleMismatch.actualRole].shortTitle}</strong>. Please switch to your authorized portal.
-              </p>
-              <div className="mt-2.5 flex gap-2">
-                <Link
-                  href={ROLE_CONFIGS[roleMismatch.actualRole].dashboardPath}
-                  className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-600 text-white text-xs font-semibold hover:bg-amber-700 transition"
-                >
-                  Open {ROLE_CONFIGS[roleMismatch.actualRole].shortTitle} Dashboard &rarr;
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRoleMismatch(null);
-                    setLocalError(null);
-                  }}
-                  className="inline-flex items-center px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 text-xs font-medium hover:bg-amber-100 dark:hover:bg-slate-800 transition"
-                >
-                  Dismiss
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Authentication Error Alert */}
-          {!roleMismatch && displayError && (
+          {displayError && (
             <div
               role="alert"
               className="mb-3 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/50 p-2.5 text-xs text-rose-800 dark:text-rose-200"
             >
               <p className="font-semibold text-xs">Invalid Credentials</p>
-              <p className="mt-0.5 text-rose-700 dark:text-rose-300 text-[11px] leading-tight">{displayError}</p>
+              {displayError !== "Invalid Credentials" &&
+                !displayError.includes("Access Denied") &&
+                !displayError.includes("Unauthorized Role") &&
+                !displayError.includes("portal using") && (
+                  <p className="mt-0.5 text-rose-700 dark:text-rose-300 text-[11px] leading-tight">{displayError}</p>
+                )}
             </div>
           )}
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { api } from "@/lib/api-client";
+import { formatSemester } from "@/lib/format-semester";
 import {
   StudentPGPAGradeRow,
   StudentPGPAComponentScore,
@@ -129,7 +130,11 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
       try {
         setLoadingAchievements(true);
         setAchievementsError(null);
-        const res = await api.getStudentAchievementsForHod(selectedStudent.student_id, token);
+        const res = await api.getStudentAchievementsForHod(
+          selectedStudent.student_id,
+          token,
+          semesterFilter !== "all" ? semesterFilter : undefined
+        );
         if (!ignore) {
           setStudentAchievements(res);
         }
@@ -657,10 +662,10 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                   </div>
                 )}
 
-                {/* 5 Component Breakdown Cards */}
+                {/* Component Breakdown Cards */}
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-                    Five-Component Performance Breakdown
+                    Evaluated PGPA Component Breakdown
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     {TARGET_COMPONENTS.map((tc) => {
@@ -721,6 +726,61 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                       );
                     })}
                   </div>
+
+                  {/* Render additional evaluated components (e.g. Skillrack, Hackathon, or manual points) */}
+                  {Object.entries(selectedStudent.components || {}).some(
+                    ([slug, comp]) => Boolean(comp && !TARGET_COMPONENTS.some((tc) => tc.slug === slug) && (((comp.points || 0) > 0) || ((comp.raw_score || 0) > 0) || comp.grade))
+                  ) && (
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <h5 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5">
+                        Additional Component Evaluations & Manual Points
+                      </h5>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {Object.entries(selectedStudent.components || {})
+                          .filter(
+                            ([slug, comp]) =>
+                              Boolean(comp && !TARGET_COMPONENTS.some((tc) => tc.slug === slug) &&
+                              (((comp.points || 0) > 0) || ((comp.raw_score || 0) > 0) || comp.grade))
+                          )
+                          .map(([slug, comp]) => {
+                            const pts = comp?.raw_score ?? comp?.points ?? 0;
+                            const grade = comp?.grade || "—";
+                            const label =
+                              (comp as any)?.component_name ||
+                              slug
+                                .split("-")
+                                .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                                .join(" ");
+                            return (
+                              <div
+                                key={slug}
+                                className="rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/30 dark:bg-purple-950/20 p-3 flex flex-col justify-between"
+                              >
+                                <div className="flex items-center justify-between gap-1 mb-1.5">
+                                  <span className="text-xs">📊</span>
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                    Evaluated
+                                  </span>
+                                </div>
+                                <h6 className="font-bold text-slate-900 dark:text-white text-xs truncate">
+                                  {label}
+                                </h6>
+                                <div className="mt-2 pt-2 border-t border-purple-100 dark:border-purple-900/40 flex items-end justify-between">
+                                  <div>
+                                    <span className="text-[9px] text-slate-400 uppercase block">Grade</span>
+                                    <span className="text-sm font-black text-purple-700 dark:text-purple-400">{grade}</span>
+                                  </div>
+                                  <div className="text-right">
+                                    <span className="text-[9px] text-slate-400 uppercase block">Points</span>
+                                    <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">{pts} pts</span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Student's Submissions List */}
@@ -746,64 +806,94 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                       No individual achievement submissions recorded for this student yet.
                     </div>
                   ) : (
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {studentAchievements.map((sub) => (
-                        <div
-                          key={sub.id}
-                          className="flex items-center justify-between p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-xs hover:border-purple-200 transition-colors"
-                        >
-                          <div className="truncate pr-3">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-slate-900 dark:text-white truncate">
-                                {sub.title}
-                              </span>
-                              <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
-                                {sub.component_name || "PGPA Component"}
-                              </span>
-                              {sub.status === "approved" ? (
-                                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                                  ✓ Verified
+                    <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                      {studentAchievements.map((sub) => {
+                        const semDisplay = formatSemester(
+                          sub.semester_id,
+                          sub.semester_name || (sub as any).semester?.display_name || (sub.semester_number ? `Semester ${sub.semester_number}` : undefined)
+                        );
+                        const dateDisplay = sub.event_date || (sub as any).activity_date || (sub.created_at ? new Date(sub.created_at).toLocaleDateString() : "—");
+                        const mentorDisplay = (sub as any).mentor_name || selectedStudent.mentor_name || "—";
+                        const ptsDisplay =
+                          sub.evaluated_points !== null && sub.evaluated_points !== undefined
+                            ? sub.evaluated_points
+                            : sub.points !== null && sub.points !== undefined
+                            ? sub.points
+                            : 0;
+
+                        return (
+                          <div
+                            key={sub.id}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-xs hover:border-purple-200 transition-colors gap-3"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                <span className="font-bold text-slate-900 dark:text-white">
+                                  {sub.title}
                                 </span>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
+                                  {sub.component_name || "PGPA Component"}
+                                </span>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 shrink-0">
+                                  {semDisplay}
+                                </span>
+                                {sub.status === "approved" ? (
+                                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                    ✓ Verified
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-semibold text-slate-400 capitalize">
+                                    {sub.status}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                                <span>📅 {dateDisplay}</span>
+                                <span>&bull;</span>
+                                <span>👤 Mentor: <span className="font-medium text-slate-700 dark:text-slate-300">{mentorDisplay}</span></span>
+                                {sub.organizer && (
+                                  <>
+                                    <span>&bull;</span>
+                                    <span>🏛️ {sub.organizer}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="shrink-0 flex items-center gap-3 self-end sm:self-center">
+                              <div className="text-right">
+                                <span className="block text-[9px] uppercase font-bold text-slate-400">Awarded</span>
+                                <span className="text-xs font-mono font-bold text-purple-700 dark:text-purple-300">
+                                  {ptsDisplay} pts
+                                </span>
+                              </div>
+                              {sub.files && sub.files.length > 0 ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEvidence(sub.files[0].id)}
+                                  disabled={openingFileId === sub.files[0].id}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold text-[11px] transition-colors cursor-pointer"
+                                >
+                                  {openingFileId === sub.files[0].id ? (
+                                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
+                                  ) : (
+                                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                      />
+                                    </svg>
+                                  )}
+                                  <span>Evidence</span>
+                                </button>
                               ) : (
-                                <span className="text-[10px] font-semibold text-slate-400 capitalize">
-                                  {sub.status}
-                                </span>
+                                <span className="text-[10px] text-slate-400 italic">No files</span>
                               )}
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                              {sub.activity_type && <span>{sub.activity_type} &bull; </span>}
-                              {sub.organizer && <span>{sub.organizer} &bull; </span>}
-                              {sub.outcome && <span>{sub.outcome}</span>}
-                            </p>
                           </div>
-
-                          <div className="shrink-0 flex items-center gap-2">
-                            {sub.files && sub.files.length > 0 ? (
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEvidence(sub.files[0].id)}
-                                disabled={openingFileId === sub.files[0].id}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold text-[11px] transition-colors cursor-pointer"
-                              >
-                                {openingFileId === sub.files[0].id ? (
-                                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
-                                ) : (
-                                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                    />
-                                  </svg>
-                                )}
-                                <span>Evidence</span>
-                              </button>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 italic">No files</span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>

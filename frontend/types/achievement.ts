@@ -72,6 +72,8 @@ export interface AchievementResponse {
   student_id: string;
   student_name?: string | null;
   student_register_number?: string | null;
+  mentor_name?: string | null;
+  points?: number | null;
   component_id: string;
   component_name?: string | null;
   component_slug?: string | null;

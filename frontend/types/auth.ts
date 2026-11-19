@@ -69,6 +69,7 @@ export interface MentorStudentItem {
 }
 
 export interface HODStudentItem {
+  id?: string;
   student_id: string;
   full_name: string;
   email: string;
