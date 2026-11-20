@@ -206,7 +206,8 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   // 10. Online Certifications
   const [onlineCourse, setOnlineCourse] = useState<string>("");
   const [onlineProvider, setOnlineProvider] = useState<string>("IITB Spoken Tutorials");
-  const [onlineCategory, setOnlineCategory] = useState<string>("Elite with Gold");
+  const [onlineCustomProvider, setOnlineCustomProvider] = useState<string>("");
+  const [onlineCategory, setOnlineCategory] = useState<string>("Completed");
   const [onlineDate, setOnlineDate] = useState<string>(() => new Date().toISOString().split("T")[0]);
 
   // 11. NPTEL
@@ -674,18 +675,30 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         if (!onlineCourse.trim()) {
           throw new Error("Please enter the certification course title.");
         }
-        const title = `${onlineCourse.trim()} (${onlineProvider})`;
+        let effectiveProvider = onlineProvider;
+        if (onlineProvider === "Other Approved Platform") {
+          const customTrimmed = onlineCustomProvider.trim();
+          if (!customTrimmed) {
+            throw new Error("Please enter the Platform / Provider Name.");
+          }
+          if (customTrimmed.length > 120) {
+            throw new Error("Platform / Provider Name cannot exceed 120 characters.");
+          }
+          effectiveProvider = customTrimmed;
+        }
+        const title = `${onlineCourse.trim()} (${effectiveProvider})`;
         payload = {
           component_id: componentId,
           semester_id: semesterId,
           title,
-          activity_type: onlineProvider,
-          organizer: onlineProvider,
+          activity_type: effectiveProvider,
+          organizer: effectiveProvider,
           event_date: onlineDate || undefined,
           outcome: onlineCategory,
           component_metadata: {
             course_name: onlineCourse.trim(),
             provider: onlineProvider,
+            custom_provider: onlineProvider === "Other Approved Platform" ? onlineCustomProvider.trim() : undefined,
             category: onlineCategory,
           },
         };
@@ -1735,7 +1748,13 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 </label>
                 <select
                   value={onlineProvider}
-                  onChange={(e) => setOnlineProvider(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setOnlineProvider(val);
+                    if (val !== "Other Approved Platform") {
+                      setOnlineCustomProvider("");
+                    }
+                  }}
                   disabled={isSubmitting}
                   className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
@@ -1747,6 +1766,24 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   <option value="Other Approved Platform">Other Approved Platform</option>
                 </select>
               </div>
+
+              {onlineProvider === "Other Approved Platform" && (
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Enter Platform / Provider Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={120}
+                    placeholder="Enter the approved platform name"
+                    value={onlineCustomProvider}
+                    onChange={(e) => setOnlineCustomProvider(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1761,9 +1798,6 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
                   <option value="Completed">Completed / Passed</option>
-                  <option value="Elite with Gold">Elite with Gold</option>
-                  <option value="Gold">Gold</option>
-                  <option value="Silver">Silver</option>
                   <option value="Elite">Elite</option>
                   <option value="Topper">Topper</option>
                   <option value="Course Completed">Course Completed</option>

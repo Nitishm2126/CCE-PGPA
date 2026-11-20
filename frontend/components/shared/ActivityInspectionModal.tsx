@@ -286,8 +286,11 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
               </div>
               <div className="rounded-xl border border-slate-200/80 dark:border-[#292929] bg-white dark:bg-[#141414] p-3">
                 <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-[#A3A3A3]">Organizer / Host</span>
-                <span className="font-semibold text-slate-800 dark:text-[#F5F5F5] mt-0.5 block truncate" title={achievement.organizer || "—"}>
-                  {achievement.organizer || "—"}
+                <span
+                  className="font-semibold text-slate-800 dark:text-[#F5F5F5] mt-0.5 block truncate"
+                  title={achievement.component_metadata?.custom_provider || achievement.organizer || "—"}
+                >
+                  {achievement.component_metadata?.custom_provider || achievement.organizer || "—"}
                 </span>
               </div>
               <div className="rounded-xl border border-slate-200/80 dark:border-[#292929] bg-white dark:bg-[#141414] p-3">
