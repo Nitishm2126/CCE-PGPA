@@ -366,6 +366,18 @@ export const clearApiCache = (): void => {
 };
 
 export const api = {
+  resolveStudentIdentifier: async (
+    identifier: string
+  ): Promise<{ success: boolean; email: string; register_number?: string; full_name?: string }> => {
+    return request<{ success: boolean; email: string; register_number?: string; full_name?: string }>(
+      "/auth/resolve-student-identifier",
+      {
+        method: "POST",
+        body: JSON.stringify({ identifier }),
+      }
+    );
+  },
+
   login: async (email: string, password: string, role?: string): Promise<TokenResponse> => {
     return request<TokenResponse>("/auth/login", {
       method: "POST",
@@ -1218,6 +1230,21 @@ export const api = {
     if (params?.component_id) searchParams.set("component_id", params.component_id);
     const query = searchParams.toString() ? `?${searchParams.toString()}` : "";
     return request<AdminSubmissionItem[]>(`/admin/submissions${query}`, { method: "GET" }, token);
+  },
+
+  adminDeleteSubmission: async (
+    submissionId: string,
+    reason: string,
+    token?: string | null
+  ): Promise<{ success: boolean; deleted: boolean; achievement_id: string; reason: string }> => {
+    return request<{ success: boolean; deleted: boolean; achievement_id: string; reason: string }>(
+      `/admin/submissions/${submissionId}`,
+      {
+        method: "DELETE",
+        body: JSON.stringify({ reason }),
+      },
+      token
+    );
   },
 
   adminGetMentorAllocations: async (

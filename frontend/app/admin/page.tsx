@@ -77,6 +77,12 @@ export default function AdminDashboardPage() {
   const [fileLoadingId, setFileLoadingId] = useState<string | null>(null);
   const [fileDownloadError, setFileDownloadError] = useState<string | null>(null);
 
+  // Admin Submission Deletion State
+  const [submissionToDelete, setSubmissionToDelete] = useState<AdminSubmissionItem | null>(null);
+  const [deleteReason, setDeleteReason] = useState("");
+  const [isDeletingSubmission, setIsDeletingSubmission] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   // Allocations Tab State
   const [allocations, setAllocations] = useState<AdminMentorAllocationItem[]>([]);
   const [allocationsLoading, setAllocationsLoading] = useState(false);
@@ -223,6 +229,28 @@ export default function AdminDashboardPage() {
       setSubmissionsLoading(false);
     }
   }, [token]);
+
+  const handleConfirmDeleteSubmission = async () => {
+    if (!submissionToDelete || !token) return;
+    if (!deleteReason.trim()) {
+      setDeleteError("Please provide a reason for deleting this submission.");
+      return;
+    }
+    try {
+      setIsDeletingSubmission(true);
+      setDeleteError(null);
+      await api.adminDeleteSubmission(submissionToDelete.id, deleteReason.trim(), token);
+      setSubmissionToDelete(null);
+      setDeleteReason("");
+      setSelectedSubmission(null);
+      await fetchSubmissions();
+      await fetchOverview();
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : "Failed to delete submission.");
+    } finally {
+      setIsDeletingSubmission(false);
+    }
+  };
 
   // ============================================================================
   // Data Fetching: Allocations & Mentors
@@ -1639,13 +1667,24 @@ export default function AdminDashboardPage() {
                                 {s.status}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-right">
+                            <td className="px-4 py-3 text-right space-x-2.5 whitespace-nowrap">
                               <button
                                 type="button"
                                 onClick={() => setSelectedSubmission(s)}
                                 className="text-xs font-semibold text-blue-600 hover:text-blue-800 dark:text-[#5DD62C] underline cursor-pointer"
                               >
                                 Inspect
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSubmissionToDelete(s);
+                                  setDeleteReason("");
+                                  setDeleteError(null);
+                                }}
+                                className="text-xs font-semibold text-rose-600 hover:text-rose-800 underline cursor-pointer"
+                              >
+                                Delete
                               </button>
                             </td>
                           </tr>
@@ -2220,13 +2259,100 @@ export default function AdminDashboardPage() {
               <p className="text-xs text-rose-600 font-semibold">{fileDownloadError}</p>
             )}
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setSubmissionToDelete(selectedSubmission);
+                  setDeleteReason("");
+                  setDeleteError(null);
+                }}
+                className="px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/50 dark:text-rose-300 dark:hover:bg-rose-900/60 text-xs font-bold transition-colors cursor-pointer"
+              >
+                Delete Submission
+              </button>
               <button
                 type="button"
                 onClick={() => setSelectedSubmission(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 cursor-pointer"
               >
                 Close Inspection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Delete Submission Confirmation Modal */}
+      {submissionToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl border border-rose-200 dark:border-rose-900 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600 dark:bg-rose-950/80 dark:text-rose-400">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Delete Student Submission</h3>
+                <p className="text-[11px] text-slate-500">This action will remove the submission and recalculate points.</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3.5 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Student:</span>
+                <span className="font-bold text-slate-900 dark:text-white">{submissionToDelete.student_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Register No:</span>
+                <span className="font-mono font-bold text-amber-700 dark:text-amber-400">{submissionToDelete.register_number}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Activity:</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px]">{submissionToDelete.title}</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Reason for deletion <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                value={deleteReason}
+                onChange={(e) => {
+                  setDeleteReason(e.target.value);
+                  if (deleteError) setDeleteError(null);
+                }}
+                placeholder="e.g. Erroneous submission or duplicate entry..."
+                rows={2}
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/30"
+              />
+              {deleteError && (
+                <p className="text-[11px] font-semibold text-rose-600 mt-1">{deleteError}</p>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                disabled={isDeletingSubmission}
+                onClick={() => {
+                  setSubmissionToDelete(null);
+                  setDeleteReason("");
+                  setDeleteError(null);
+                }}
+                className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingSubmission || !deleteReason.trim()}
+                onClick={handleConfirmDeleteSubmission}
+                className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-xs shadow-xs cursor-pointer"
+              >
+                {isDeletingSubmission ? "Deleting..." : "Confirm Delete"}
               </button>
             </div>
           </div>

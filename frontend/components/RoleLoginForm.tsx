@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { UserRole } from "@/types/auth";
 import { ROLE_CONFIGS } from "@/lib/role-config";
+import { api } from "@/lib/api-client";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
@@ -99,7 +100,11 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
     setRoleMismatch(null);
 
     const trimmed = email.trim();
-    if (!trimmed || !trimmed.includes("@")) {
+    if (!trimmed) {
+      setLocalError(role === "student" ? "Please enter your college email or register number." : "Please enter your college email address.");
+      return;
+    }
+    if (role !== "student" && !trimmed.includes("@")) {
       setLocalError("Please enter your college email address.");
       return;
     }
@@ -110,7 +115,21 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
 
     try {
       setIsSubmitting(true);
-      const authenticatedUser = await login(trimmed, password, role);
+      let targetLoginIdentifier = trimmed;
+      if (role === "student" && !trimmed.includes("@")) {
+        try {
+          const res = await api.resolveStudentIdentifier(trimmed);
+          if (res?.email) {
+            targetLoginIdentifier = res.email;
+          } else {
+            targetLoginIdentifier = `${trimmed.toLowerCase()}@sairamtap.edu.in`;
+          }
+        } catch {
+          targetLoginIdentifier = `${trimmed.toLowerCase()}@sairamtap.edu.in`;
+        }
+      }
+
+      const authenticatedUser = await login(targetLoginIdentifier, password, role);
 
       if (authenticatedUser) {
         // Verify database role matches requested portal
@@ -279,17 +298,24 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 htmlFor="login-email-input"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                College Email
+                {role === "student" ? "College Email or Register Number" : "College Email"}
               </label>
               <input
                 id="login-email-input"
                 name="email"
-                type="email"
-                autoComplete="email"
+                type={role === "student" ? "text" : "email"}
+                autoComplete={role === "student" ? "username" : "email"}
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your college email"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (localError) setLocalError(null);
+                }}
+                placeholder={
+                  role === "student"
+                    ? "e.g. SEC25CO031 or student@sairamtap.edu.in"
+                    : "Enter your college email"
+                }
                 disabled={isSubmitting}
                 className={`block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 disabled:opacity-60 transition duration-150 ${themeDetails.ringColor}`}
               />

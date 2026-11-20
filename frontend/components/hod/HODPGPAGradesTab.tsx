@@ -281,9 +281,13 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
         <span className={`inline-flex items-center justify-center min-w-[28px] px-1.5 py-0.5 rounded text-xs font-black border ${badgeStyle}`}>
           {grade}
         </span>
-        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 font-medium">
-          {points} pts
-        </span>
+        <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 font-medium whitespace-nowrap">
+          {score.grade_points !== undefined && score.grade_points !== null && (
+            <span className="text-amber-600 dark:text-amber-400 font-bold">GP: {score.grade_points}</span>
+          )}
+          {score.grade_points !== undefined && score.grade_points !== null && <span>•</span>}
+          <span>{points} pts</span>
+        </div>
       </div>
     );
   };
@@ -522,6 +526,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
               <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/70 dark:bg-slate-800/50">
                 <th className="py-3 px-4 font-bold">Register No.</th>
                 <th className="py-3 px-4 font-bold">Student Name</th>
+                <th className="py-3 px-3 text-center">SkillRack</th>
                 <th className="py-3 px-3 text-center">Clubs & Cells</th>
                 <th className="py-3 px-3 text-center">NPTEL</th>
                 <th className="py-3 px-3 text-center">Online Certs</th>
@@ -533,6 +538,15 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {rows.map((row) => {
+                const skillrack: StudentPGPAComponentScore | undefined = row.components["skillrack"] || ((row as any).skillrack_points ? {
+                  grade: (row as any).skillrack_grade || "—",
+                  grade_points: (row as any).skillrack_grade_points || 0,
+                  points: (row as any).skillrack_points,
+                  raw_score: (row as any).skillrack_points,
+                  credit_value: 3,
+                  is_verified: true,
+                  status: "verified",
+                } : undefined);
                 const clubs = row.components["clubs-and-cells"];
                 const nptel = row.components["nptel-non-credit-transfer"];
                 const certs = row.components["online-certifications"];
@@ -580,6 +594,9 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                         )}
                       </div>
                     </td>
+
+                    {/* SkillRack */}
+                    <td className="py-3.5 px-3 text-center">{renderGradeBadge(skillrack)}</td>
 
                     {/* Clubs & Cells */}
                     <td className="py-3.5 px-3 text-center">{renderGradeBadge(clubs)}</td>
