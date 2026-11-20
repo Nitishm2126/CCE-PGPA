@@ -123,17 +123,17 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
 
       const data = await api.getHodStudentPgpaGrades(filters, token);
       setRows(data);
-      if (selectedStudent) {
-        const updated = data.find((s) => s.student_id === selectedStudent.student_id);
-        if (updated) setSelectedStudent(updated);
-      }
+      setSelectedStudent((prev) => {
+        if (!prev) return null;
+        return data.find((s) => s.student_id === prev.student_id) || prev;
+      });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load student PGPA grades.";
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [token, semesterFilter, sectionFilter, mentorFilter, componentSlugFilter, gradeFilter, debouncedSearch, selectedStudent]);
+  }, [token, semesterFilter, sectionFilter, mentorFilter, componentSlugFilter, gradeFilter, debouncedSearch]);
 
   const handleDeleteManualPoint = async (pointId: string, label: string) => {
     if (!token) return;
@@ -157,9 +157,11 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
   }, [loadGrades]);
 
   // Load achievements when inspecting a student
+  const selectedStudentId = selectedStudent?.student_id;
   useEffect(() => {
-    if (!selectedStudent || !token) {
+    if (!selectedStudentId || !token) {
       setStudentAchievements([]);
+      setLoadingAchievements(false);
       return;
     }
     let ignore = false;
@@ -168,17 +170,18 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
         setLoadingAchievements(true);
         setAchievementsError(null);
         const res = await api.getStudentAchievementsForHod(
-          selectedStudent.student_id,
+          selectedStudentId,
           token,
           semesterFilter !== "all" ? semesterFilter : undefined
         );
         if (!ignore) {
-          setStudentAchievements(res);
+          setStudentAchievements(Array.isArray(res) ? res : []);
         }
       } catch (err: unknown) {
         if (!ignore) {
           const msg = err instanceof Error ? err.message : "Failed to load student activity submissions.";
           setAchievementsError(msg);
+          setStudentAchievements([]);
         }
       } finally {
         if (!ignore) {
@@ -190,7 +193,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
     return () => {
       ignore = true;
     };
-  }, [selectedStudent, token]);
+  }, [selectedStudentId, token, semesterFilter]);
 
   const handleOpenEvidence = async (fileId: string) => {
     try {
