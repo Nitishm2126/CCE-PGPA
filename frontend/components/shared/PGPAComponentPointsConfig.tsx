@@ -20,7 +20,7 @@ export const PGPAComponentPointsConfig: React.FC<PGPAComponentPointsConfigProps>
   isModal = false,
 }) => {
   const [configs, setConfigs] = useState<ComponentPointSettingsResponse[]>([]);
-  const [selectedSlug, setSelectedSlug] = useState<string>("skillrack");
+  const [selectedSlug, setSelectedSlug] = useState<string>("clubs-and-cells");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -46,9 +46,10 @@ export const PGPAComponentPointsConfig: React.FC<PGPAComponentPointsConfigProps>
       setIsLoading(true);
       setErrorMsg(null);
       const data = await api.getComponentPointSettings(activeToken);
-      setConfigs(data);
-      if (data.length > 0 && !data.some((c) => c.component_slug === selectedSlug)) {
-        setSelectedSlug(data[0].component_slug);
+      const visibleData = (data || []).filter((c) => c.component_slug !== "skillrack");
+      setConfigs(visibleData);
+      if (visibleData.length > 0 && !visibleData.some((c) => c.component_slug === selectedSlug)) {
+        setSelectedSlug(visibleData[0].component_slug);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to load point settings.";

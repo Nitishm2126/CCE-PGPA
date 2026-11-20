@@ -171,7 +171,7 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
 
   // Filter out components that should not be manually awarded (SkillRack is not a manual component)
   const availableComponents = useMemo(() => {
-    return components.filter((c) => c.slug !== "skillrack");
+    return components.filter((c) => c.slug !== "skillrack" && c.is_visible !== false && c.is_active !== false);
   }, [components]);
 
   const [manualPoints, setManualPoints] = useState<ManualComponentPointResponse[]>([]);

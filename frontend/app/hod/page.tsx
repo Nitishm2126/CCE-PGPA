@@ -1234,7 +1234,7 @@ export default function HODDashboardPage() {
                                 setIsManualPointsModalOpen(true);
                               }}
                               className="inline-flex items-center gap-1 rounded-md border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2 py-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors cursor-pointer"
-                              title="Manage SkillRack and manual component points"
+                              title="Manage manual component points"
                             >
                               <span>Points</span>
                             </button>
@@ -1321,7 +1321,7 @@ export default function HODDashboardPage() {
                                 setIsManualPointsModalOpen(true);
                               }}
                               className="inline-flex items-center gap-1 rounded-md border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors cursor-pointer"
-                              title="Award or edit SkillRack and manual component points"
+                              title="Award or edit manual component points"
                             >
                               <span>Manual Points</span>
                             </button>

@@ -33,9 +33,10 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
 }) => {
   const [format, setFormat] = useState<"excel" | "pdf">("excel");
   const [selectedStudentId, setSelectedStudentId] = useState<string>(initialStudentId || "all");
-  const [selectedSemesterId, setSelectedSemesterId] = useState<string>("all");
+  const [selectedSemesterId, setSelectedSemesterId] = useState<string>("");
   const [selectedComponentId, setSelectedComponentId] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [includeZero, setIncludeZero] = useState<boolean>(true);
 
   const [components, setComponents] = useState<PGPAComponentResponse[]>(propComponents || []);
   const [semesters, setSemesters] = useState<SemesterResponse[]>(propSemesters || []);
@@ -50,30 +51,49 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
     }
   }, [initialStudentId]);
 
-  // Fetch components/semesters if not supplied
+  // Fetch components/semesters if not supplied, and preselect default semester
   useEffect(() => {
     if (!isOpen) return;
     if (!propComponents || propComponents.length === 0) {
       api.getComponents({ token }).then(setComponents).catch(() => {});
     }
     if (!propSemesters || propSemesters.length === 0) {
-      api.getSemesters(token).then(setSemesters).catch(() => {});
+      api.getSemesters(token).then((data) => {
+        setSemesters(data);
+        if (data && data.length > 0) {
+          const def = data.find((s) => s.is_default) || data.find((s) => s.is_enabled) || data[0];
+          setSelectedSemesterId(def.id);
+        }
+      }).catch(() => {});
+    } else {
+      const def = propSemesters.find((s) => s.is_default) || propSemesters.find((s) => s.is_enabled) || propSemesters[0];
+      if (def) setSelectedSemesterId(def.id);
     }
   }, [isOpen, propComponents, propSemesters, token]);
 
   if (!isOpen) return null;
 
+  const activeComponents = components.filter(
+    (c) => c.slug !== "skillrack" && c.is_visible !== false && c.is_active !== false
+  );
+
   const handleExecuteExport = async () => {
     try {
+      if (!selectedSemesterId || selectedSemesterId === "all") {
+        setExportError("Please select a semester. Semester selection is mandatory.");
+        return;
+      }
+
       setIsExporting(true);
       setExportError(null);
       setDownloadSuccess(false);
 
       const filters = {
-        semester_id: selectedSemesterId !== "all" ? selectedSemesterId : undefined,
+        semester_id: selectedSemesterId,
         component_id: selectedComponentId !== "all" ? selectedComponentId : undefined,
         student_id: selectedStudentId !== "all" ? selectedStudentId : undefined,
         status: selectedStatus !== "all" ? selectedStatus : undefined,
+        include_zero: includeZero,
       };
 
       let result: { blob: Blob; filename: string };
@@ -190,7 +210,7 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                  4 separate worksheets: Summary, 8-Semester Matrix, 14 Component Breakdown, and Submissions.
+                  Multi-tab workbook: General student summary with individual active component columns, plus detailed worksheets for active components.
                 </p>
               </div>
             </div>
@@ -253,40 +273,59 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
             </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Semester Filter */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Semester Filter - Mandatory */}
             <div>
               <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                Semester
+                Academic Semester <span className="text-rose-500 font-bold">*</span>
               </label>
               <select
                 value={selectedSemesterId}
                 onChange={(e) => setSelectedSemesterId(e.target.value)}
                 disabled={isExporting}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                required
               >
-                <option value="all">All Semesters (1 to 8)</option>
+                {!selectedSemesterId && (
+                  <option value="">-- Select Academic Semester --</option>
+                )}
                 {semesters.map((sem) => (
                   <option key={sem.id} value={sem.id}>
-                    {sem.display_name}
+                    {sem.display_name} {sem.is_default ? "★ (Default)" : ""}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Component Filter */}
+            {/* Student Points Filter */}
             <div>
               <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                PGPA Component
+                Student Points Filter
+              </label>
+              <select
+                value={includeZero ? "include" : "exclude"}
+                onChange={(e) => setIncludeZero(e.target.value === "include")}
+                disabled={isExporting}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+              >
+                <option value="include">Include all students (including 0 points)</option>
+                <option value="exclude">Exclude students with 0 points</option>
+              </select>
+            </div>
+
+            {/* Component Filter - Dynamic Active Components Only */}
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                PGPA Component Scope
               </label>
               <select
                 value={selectedComponentId}
                 onChange={(e) => setSelectedComponentId(e.target.value)}
                 disabled={isExporting}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none truncate"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none truncate font-medium"
               >
-                <option value="all">All 14 Components</option>
-                {components.map((c) => (
+                <option value="all">All {activeComponents.length} Components</option>
+                {activeComponents.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>
@@ -303,7 +342,7 @@ export const ExportDataModal: React.FC<ExportDataModalProps> = ({
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 disabled={isExporting}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none font-medium"
               >
                 <option value="all">All Submissions</option>
                 <option value="approved">Approved Only</option>

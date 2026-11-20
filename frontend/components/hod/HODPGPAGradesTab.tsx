@@ -542,7 +542,6 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
               <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/70 dark:bg-slate-800/50">
                 <th className="py-3 px-4 font-bold">Register No.</th>
                 <th className="py-3 px-4 font-bold">Student Name</th>
-                <th className="py-3 px-3 text-center">SkillRack</th>
                 <th className="py-3 px-3 text-center">Clubs & Cells</th>
                 <th className="py-3 px-3 text-center">NPTEL</th>
                 <th className="py-3 px-3 text-center">Online Certs</th>
@@ -554,15 +553,6 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {rows.map((row) => {
-                const skillrack: StudentPGPAComponentScore | undefined = row.components["skillrack"] || ((row as any).skillrack_points ? {
-                  grade: (row as any).skillrack_grade || "—",
-                  grade_points: (row as any).skillrack_grade_points || 0,
-                  points: (row as any).skillrack_points,
-                  raw_score: (row as any).skillrack_points,
-                  credit_value: 3,
-                  is_verified: true,
-                  status: "verified",
-                } : undefined);
                 const clubs = row.components["clubs-and-cells"];
                 const nptel = row.components["nptel-non-credit-transfer"];
                 const certs = row.components["online-certifications"];
@@ -610,9 +600,6 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                         )}
                       </div>
                     </td>
-
-                    {/* SkillRack */}
-                    <td className="py-3.5 px-3 text-center">{renderGradeBadge(skillrack)}</td>
 
                     {/* Clubs & Cells */}
                     <td className="py-3.5 px-3 text-center">{renderGradeBadge(clubs)}</td>
@@ -800,9 +787,9 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                     })}
                   </div>
 
-                  {/* Render additional evaluated components (e.g. Skillrack, Hackathon, or manual points) */}
+                  {/* Render additional evaluated components (excluding disabled/skillrack) */}
                   {Object.entries(selectedStudent.components || {}).some(
-                    ([slug, comp]) => Boolean(comp && !TARGET_COMPONENTS.some((tc) => tc.slug === slug) && (((comp.points || 0) > 0) || ((comp.raw_score || 0) > 0) || comp.grade))
+                    ([slug, comp]) => Boolean(comp && slug !== "skillrack" && !TARGET_COMPONENTS.some((tc) => tc.slug === slug) && (((comp.points || 0) > 0) || ((comp.raw_score || 0) > 0) || comp.grade))
                   ) && (
                     <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
                       <div className="flex items-center justify-between mb-2.5">
@@ -830,7 +817,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                         {Object.entries(selectedStudent.components || {})
                           .filter(
                             ([slug, comp]) =>
-                              Boolean(comp && !TARGET_COMPONENTS.some((tc) => tc.slug === slug) &&
+                              Boolean(comp && slug !== "skillrack" && !TARGET_COMPONENTS.some((tc) => tc.slug === slug) &&
                               (((comp.points || 0) > 0) || ((comp.raw_score || 0) > 0) || comp.grade))
                           )
                           .map(([slug, comp]) => {

@@ -931,6 +931,7 @@ export const api = {
       component_id?: string;
       student_id?: string;
       status?: string;
+      include_zero?: boolean;
     },
     token?: string | null
   ): Promise<{ blob: Blob; filename: string }> => {
@@ -939,6 +940,7 @@ export const api = {
     if (filters?.component_id) params.set("component_id", filters.component_id);
     if (filters?.student_id) params.set("student_id", filters.student_id);
     if (filters?.status && filters.status !== "all") params.set("status", filters.status);
+    if (filters?.include_zero !== undefined) params.set("include_zero", String(filters.include_zero));
     const qs = params.toString() ? `?${params.toString()}` : "";
     return downloadFileWithFilename(`/hod/export/${format}${qs}`, { method: "GET" }, token);
   },
