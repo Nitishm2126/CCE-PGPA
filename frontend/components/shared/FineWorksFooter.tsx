@@ -29,7 +29,7 @@ export const FineWorksFooter: React.FC<FineWorksFooterProps> = ({
             className="font-extrabold tracking-tight text-xs hover:underline inline-flex items-center"
             title="FineWorks"
           >
-            <span className="text-black dark:text-black">Fine</span><span className="text-[#FFB347] dark:text-[#5DD62C]">Works</span>
+            <span className="text-[#111111] dark:text-[#FFB547]">Fine</span><span className="text-[#F59E0B] dark:text-[#5DD62C]">Works</span>
           </a>
         </div>
 
