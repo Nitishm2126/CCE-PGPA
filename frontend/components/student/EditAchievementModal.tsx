@@ -54,7 +54,6 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
   const [onlineCourse, setOnlineCourse] = useState("");
   const [onlineProvider, setOnlineProvider] = useState("IITB Spoken Tutorials");
   const [onlineCustomProvider, setOnlineCustomProvider] = useState("");
-  const [onlineCategory, setOnlineCategory] = useState("Completed");
 
   // Certificate Status and Remarks
   const [certificateStatus, setCertificateStatus] = useState<"uploaded" | "yet_to_receive" | "not_provided">("uploaded");
@@ -120,7 +119,6 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           setOnlineProvider("Other Approved Platform");
           setOnlineCustomProvider(meta.custom_provider || (achievement.organizer && !standardProviders.includes(achievement.organizer) ? achievement.organizer : ""));
         }
-        setOnlineCategory(meta.category || achievement.outcome || "Completed");
       }
 
       setAttachedFiles(achievement.files || []);
@@ -274,7 +272,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
           activity_type: effectiveProvider,
           organizer: effectiveProvider,
           event_date: eventDate || undefined,
-          outcome: onlineCategory,
+          outcome: achievement.outcome || "Completed",
           description: description.trim() || undefined,
           certificate_status: certificateStatus,
           remarks: remarks.trim() || undefined,
@@ -283,7 +281,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
             course_name: courseTrimmed,
             provider: onlineProvider,
             custom_provider: onlineProvider === "Other Approved Platform" ? effectiveProvider : undefined,
-            category: onlineCategory,
+            category: (achievement.component_metadata as any)?.category || achievement.outcome || "Completed",
           },
         });
       } else {
@@ -532,9 +530,11 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                     {onlineCourse || "Certification"} &bull; {onlineProvider === "Other Approved Platform" ? (onlineCustomProvider || "Other") : onlineProvider}
                   </p>
                 </div>
-                <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-white/80 dark:bg-[#181818] text-blue-800 dark:text-[#5DD62C]">
-                  {onlineCategory}
-                </span>
+                {achievement.outcome && (
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-white/80 dark:bg-[#181818] text-blue-800 dark:text-[#5DD62C]">
+                    {achievement.outcome}
+                  </span>
+                )}
               </div>
 
               <div>
@@ -606,24 +606,7 @@ export const EditAchievementModal: React.FC<EditAchievementModalProps> = ({
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Certification Outcome / Result <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  value={onlineCategory}
-                  onChange={(e) => setOnlineCategory(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[36px]"
-                >
-                  <option value="Completed">Completed / Passed</option>
-                  <option value="Elite">Elite</option>
-                  <option value="Topper">Topper</option>
-                  <option value="Course Completed">Course Completed</option>
-                  {["Gold", "Silver", "Elite with Gold"].includes(onlineCategory) && (
-                    <option value={onlineCategory}>{onlineCategory} (Historical)</option>
-                  )}
-                </select>
-              </div>
+
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">

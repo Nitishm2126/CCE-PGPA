@@ -207,7 +207,6 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
   const [onlineCourse, setOnlineCourse] = useState<string>("");
   const [onlineProvider, setOnlineProvider] = useState<string>("IITB Spoken Tutorials");
   const [onlineCustomProvider, setOnlineCustomProvider] = useState<string>("");
-  const [onlineCategory, setOnlineCategory] = useState<string>("Completed");
   const [onlineDate, setOnlineDate] = useState<string>(() => new Date().toISOString().split("T")[0]);
 
   // 11. NPTEL
@@ -694,12 +693,11 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
           activity_type: effectiveProvider,
           organizer: effectiveProvider,
           event_date: onlineDate || undefined,
-          outcome: onlineCategory,
+          outcome: undefined,
           component_metadata: {
             course_name: onlineCourse.trim(),
             provider: onlineProvider,
             custom_provider: onlineProvider === "Other Approved Platform" ? onlineCustomProvider.trim() : undefined,
-            category: onlineCategory,
           },
         };
         break;
@@ -1726,7 +1724,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                   Course Title *
@@ -1742,33 +1740,48 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Platform / Provider *
-                </label>
-                <select
-                  value={onlineProvider}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setOnlineProvider(val);
-                    if (val !== "Other Approved Platform") {
-                      setOnlineCustomProvider("");
-                    }
-                  }}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="IITB Spoken Tutorials">IITB Spoken Tutorials</option>
-                  <option value="Coursera">Coursera</option>
-                  <option value="edX">edX</option>
-                  <option value="Udemy">Udemy</option>
-                  <option value="AWS / Google Cloud / Microsoft">AWS / Google Cloud / Microsoft</option>
-                  <option value="Other Approved Platform">Other Approved Platform</option>
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Platform / Provider *
+                  </label>
+                  <select
+                    value={onlineProvider}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setOnlineProvider(val);
+                      if (val !== "Other Approved Platform") {
+                        setOnlineCustomProvider("");
+                      }
+                    }}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  >
+                    <option value="IITB Spoken Tutorials">IITB Spoken Tutorials</option>
+                    <option value="Coursera">Coursera</option>
+                    <option value="edX">edX</option>
+                    <option value="Udemy">Udemy</option>
+                    <option value="AWS / Google Cloud / Microsoft">AWS / Google Cloud / Microsoft</option>
+                    <option value="Other Approved Platform">Other Approved Platform</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Completion Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={onlineDate}
+                    onChange={(e) => setOnlineDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
               </div>
 
               {onlineProvider === "Other Approved Platform" && (
-                <div className="sm:col-span-2">
+                <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
                     Enter Platform / Provider Name *
                   </label>
@@ -1784,38 +1797,6 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   />
                 </div>
               )}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Certification Outcome / Result *
-                </label>
-                <select
-                  value={onlineCategory}
-                  onChange={(e) => setOnlineCategory(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="Completed">Completed / Passed</option>
-                  <option value="Elite">Elite</option>
-                  <option value="Topper">Topper</option>
-                  <option value="Course Completed">Course Completed</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Completion Date *
-                </label>
-                <input
-                  type="date"
-                  value={onlineDate}
-                  onChange={(e) => setOnlineDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
             </div>
           </div>
         )}
