@@ -313,7 +313,7 @@ export function RoleLoginForm({ role }: RoleLoginFormProps) {
                 }}
                 placeholder={
                   role === "student"
-                    ? "e.g. SEC25CO031 or student@sairamtap.edu.in"
+                    ? "Enter your SEC ID or college email"
                     : "Enter your college email"
                 }
                 disabled={isSubmitting}
