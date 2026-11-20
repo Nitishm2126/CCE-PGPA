@@ -225,13 +225,26 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
     gradeFilter !== "all";
 
   // Render Grade Badge helper
-  const renderGradeBadge = (score?: StudentPGPAComponentScore | null) => {
+  const renderGradeBadge = (score?: StudentPGPAComponentScore | null, isOnlineCert?: boolean) => {
     const points = score?.raw_score ?? score?.points ?? 0;
     if (!score || (!score.grade && points === 0 && !score.criteria_pending)) {
       return (
         <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 border border-slate-200 dark:border-slate-700">
           —
         </span>
+      );
+    }
+
+    if (isOnlineCert) {
+      return (
+        <div className="flex flex-col items-center">
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            {score.is_verified ? "Completed" : "In Review"}
+          </span>
+          {points > 0 && (
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 font-medium">{points} pts</span>
+          )}
+        </div>
       );
     }
 
@@ -608,7 +621,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                     <td className="py-3.5 px-3 text-center">{renderGradeBadge(nptel)}</td>
 
                     {/* Online Certifications */}
-                    <td className="py-3.5 px-3 text-center">{renderGradeBadge(certs)}</td>
+                    <td className="py-3.5 px-3 text-center">{renderGradeBadge(certs, true)}</td>
 
                     {/* Internship */}
                     <td className="py-3.5 px-3 text-center">{renderGradeBadge(internship)}</td>
@@ -727,7 +740,8 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     {TARGET_COMPONENTS.map((tc) => {
                       const comp = selectedStudent.components[tc.slug];
-                      const grade = comp?.grade || "—";
+                      const isOnlineCert = tc.slug === "online-certifications";
+                      const grade = isOnlineCert ? "—" : (comp?.grade || "—");
                       const pts = comp?.raw_score ?? comp?.points ?? 0;
                       const gp = comp?.grade_points ?? comp?.grade_point;
                       const isPending = Boolean(comp?.criteria_pending);
@@ -749,7 +763,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300">
                                   Verified
                                 </span>
-                              ) : comp?.grade ? (
+                              ) : comp?.grade || (isOnlineCert && pts > 0) ? (
                                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">
                                   Evaluated
                                 </span>
@@ -764,9 +778,11 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
 
                           <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex items-end justify-between">
                             <div>
-                              <p className="text-[10px] font-semibold text-slate-400 uppercase">Grade</p>
+                              <p className="text-[10px] font-semibold text-slate-400 uppercase">
+                                {isOnlineCert ? "Status" : "Grade"}
+                              </p>
                               <p className="text-lg font-black text-amber-700 dark:text-amber-400">
-                                {grade}
+                                {isOnlineCert ? (isVerified ? "Completed" : (pts > 0 ? "In Review" : "—")) : grade}
                               </p>
                             </div>
                             <div className="text-right">
@@ -774,7 +790,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                               <p className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">
                                 {pts} pts
                               </p>
-                              {gp !== undefined && gp !== null && (
+                              {!isOnlineCert && gp !== undefined && gp !== null && (
                                 <p className="text-[10px] text-slate-400 font-mono">GP: {gp}</p>
                               )}
                             </div>
@@ -820,8 +836,12 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                           .map(([slug, comp]) => {
                             const pts = comp?.raw_score ?? comp?.points ?? 0;
                             const grade = comp?.grade || "—";
-                            const isManual = Boolean((comp as any)?.is_manual || (comp as any)?.manual_point_id || slug === "skillrack");
-                            const manualPointId = (comp as any)?.manual_point_id;
+                            const isManual = Boolean(
+                              (comp as any)?.is_manual ||
+                              (comp as any)?.manual_point_id ||
+                              (comp as any)?.source === "manual_point_award"
+                            );
+                            const manualPointId = (comp as any)?.manual_point_id || (comp as any)?.id || (comp as any)?.result_id;
                             const label =
                               (comp as any)?.component_name ||
                               slug
@@ -845,7 +865,7 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                                         ? "bg-amber-200 text-amber-900 dark:bg-amber-900/80 dark:text-amber-200"
                                         : "bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300"
                                     }`}>
-                                      {isManual ? (slug === "skillrack" ? "SkillRack Manual" : "Manual Entry") : "Evaluated"}
+                                      {isManual ? "Manual Entry" : "Evaluated"}
                                     </span>
                                   </div>
                                   <h6 className="font-bold text-slate-900 dark:text-white text-xs truncate">
@@ -863,36 +883,34 @@ export const HODPGPAGradesTab: React.FC<HODPGPAGradesTabProps> = ({
                                       <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">{pts} pts</span>
                                     </div>
                                   </div>
-                                  {isManual && (
-                                    <div className="mt-2.5 pt-2 border-t border-amber-200/60 dark:border-amber-900/30 flex items-center justify-end gap-1.5">
+                                  <div className="mt-2.5 pt-2 border-t border-amber-200/60 dark:border-amber-900/30 flex items-center justify-end gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setManualPointsStudent({
+                                          id: selectedStudent.student_id,
+                                          student_id: selectedStudent.student_id,
+                                          full_name: selectedStudent.student_name,
+                                          register_number: selectedStudent.register_number,
+                                          department: selectedStudent.department || "CCE",
+                                        });
+                                        setIsManualPointsModalOpen(true);
+                                      }}
+                                      className="px-2 py-0.5 rounded text-[10px] font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/50 hover:bg-amber-200 dark:hover:bg-amber-800/60 transition-colors cursor-pointer"
+                                    >
+                                      Edit
+                                    </button>
+                                    {manualPointId && (
                                       <button
                                         type="button"
-                                        onClick={() => {
-                                          setManualPointsStudent({
-                                            id: selectedStudent.student_id,
-                                            student_id: selectedStudent.student_id,
-                                            full_name: selectedStudent.student_name,
-                                            register_number: selectedStudent.register_number,
-                                            department: selectedStudent.department || "CCE",
-                                          });
-                                          setIsManualPointsModalOpen(true);
-                                        }}
-                                        className="px-2 py-0.5 rounded text-[10px] font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/50 hover:bg-amber-200 dark:hover:bg-amber-800/60 transition-colors cursor-pointer"
+                                        disabled={deletingPointId === manualPointId}
+                                        onClick={() => handleDeleteManualPoint(manualPointId, label)}
+                                        className="px-2 py-0.5 rounded text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors cursor-pointer disabled:opacity-50"
                                       >
-                                        Edit
+                                        {deletingPointId === manualPointId ? "..." : "Delete"}
                                       </button>
-                                      {manualPointId && (
-                                        <button
-                                          type="button"
-                                          disabled={deletingPointId === manualPointId}
-                                          onClick={() => handleDeleteManualPoint(manualPointId, label)}
-                                          className="px-2 py-0.5 rounded text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors cursor-pointer disabled:opacity-50"
-                                        >
-                                          {deletingPointId === manualPointId ? "..." : "Delete"}
-                                        </button>
-                                      )}
-                                    </div>
-                                  )}
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             );

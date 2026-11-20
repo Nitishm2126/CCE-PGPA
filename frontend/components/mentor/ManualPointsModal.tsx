@@ -169,6 +169,11 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
   // Current active student
   const activeStudent = student || (students.length > 0 ? students[0] : null);
 
+  // Filter out components that should not be manually awarded (SkillRack is not a manual component)
+  const availableComponents = useMemo(() => {
+    return components.filter((c) => c.slug !== "skillrack");
+  }, [components]);
+
   const [manualPoints, setManualPoints] = useState<ManualComponentPointResponse[]>([]);
   const [pointConfigs, setPointConfigs] = useState<ComponentPointSettingsResponse[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -258,8 +263,8 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
   useEffect(() => {
     if (isOpen && activeStudent) {
       loadPoints();
-      if (components.length > 0 && !selectedComponentId) {
-        setSelectedComponentId(components[0].id);
+      if (availableComponents.length > 0 && !selectedComponentId) {
+        setSelectedComponentId(availableComponents[0].id);
       }
       if (semesters.length > 0 && !selectedSemesterId) {
         setSelectedSemesterId(semesters[0].id);
@@ -518,7 +523,7 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-[#B0B0B0] mb-1">
-                  PGPA Component * (14 Components)
+                  PGPA Component *
                 </label>
                 <select
                   value={selectedComponentId}
@@ -527,7 +532,7 @@ export const ManualPointsModal: React.FC<ManualPointsModalProps> = ({
                   required
                   className="w-full rounded-xl border border-slate-300 dark:border-[#2e2e2e] bg-white dark:bg-[#161616] px-3 py-2 text-xs text-slate-900 dark:text-[#F8F8F8] focus:outline-hidden focus:ring-1 focus:ring-emerald-500 dark:focus:ring-[#5DD62C] disabled:opacity-70"
                 >
-                  {components.map((c) => {
+                  {availableComponents.map((c) => {
                     const rule = OFFICIAL_COMPONENT_SCALES[c.slug];
                     const unitSuffix = rule ? ` [${rule.unit}]` : "";
                     return (

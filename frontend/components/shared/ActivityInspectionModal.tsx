@@ -473,13 +473,17 @@ export const ActivityInspectionModal: React.FC<ActivityInspectionModalProps> = (
 
               {achievement.status === "approved" ? (
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                    Grade: {achievement.evaluated_grade || "A+"}
-                  </span>
-                  {achievement.evaluated_grade_points !== null && achievement.evaluated_grade_points !== undefined && (
-                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                      Grade Points: {achievement.evaluated_grade_points}
-                    </span>
+                  {achievement.component_slug !== "online-certifications" && !achievement.component_name?.toLowerCase().includes("online certification") && (
+                    <>
+                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        Grade: {achievement.evaluated_grade || "A+"}
+                      </span>
+                      {achievement.evaluated_grade_points !== null && achievement.evaluated_grade_points !== undefined && (
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                          Grade Points: {achievement.evaluated_grade_points}
+                        </span>
+                      )}
+                    </>
                   )}
                   {achievement.evaluated_points !== null && achievement.evaluated_points !== undefined && (
                     <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 px-3 py-1.5 text-xs font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">

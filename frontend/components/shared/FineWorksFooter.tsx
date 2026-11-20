@@ -22,10 +22,14 @@ export const FineWorksFooter: React.FC<FineWorksFooterProps> = ({
           <span className="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5]">
             Designed and Developed by
           </span>
-          <span className="font-extrabold tracking-tight text-xs">
-            <span className="text-[#000000] dark:text-[#F5F5F5]">Fine</span>
-            <span className="text-[#FFB347] dark:text-[#FFD84D]">Works</span>
-          </span>
+          <a
+            href="https://fineworks-hub.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-extrabold tracking-tight text-xs hover:underline inline-flex items-center gap-0.5 text-[#FFB347] dark:text-[#FFD84D]"
+          >
+            fineworks-hub.vercel.app
+          </a>
         </div>
 
         {/* Department & Institution Identity */}

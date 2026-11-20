@@ -479,11 +479,11 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
         const effectiveClub = clubName.trim();
         const clubDisplay = effectiveClub || "Extracurricular / Club Activity";
         const effectiveTitle = clubActivityTitle.trim();
-        if ((clubRoleCategory === "Event Coordinator" || clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && !effectiveTitle) {
+        if ((clubRoleCategory === "Event Coordinator" || clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner" || clubRoleCategory === "Volunteer") && !effectiveTitle) {
           throw new Error(`Activity Title is required for ${clubRoleCategory}. Please enter the title.`);
         }
         const finalTitle = effectiveTitle
-          ? (clubRoleCategory === "Event Coordinator" ? `Event Coordinator — ${effectiveTitle}` : effectiveTitle)
+          ? (clubRoleCategory === "Event Coordinator" ? `Event Coordinator — ${effectiveTitle}` : (clubRoleCategory === "Volunteer" ? `Volunteer — ${effectiveTitle}` : effectiveTitle))
           : `${clubDisplay} (${clubRoleCategory})`;
         payload = {
           component_id: componentId,
@@ -1760,13 +1760,13 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   disabled={isSubmitting}
                   className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 >
-                  <option value="Topper">Topper (Grade O, 10 GP)</option>
-                  <option value="Elite with Gold">Elite with Gold (Grade O, 10 GP)</option>
-                  <option value="Gold">Gold (Grade A+, 9 GP)</option>
-                  <option value="Silver">Silver (Grade A, 7 GP)</option>
-                  <option value="Elite">Elite (Grade B+, 5 GP)</option>
-                  <option value="Completed">Completed / Pass (Grade B, 3 GP)</option>
-                  <option value="Attended">Attended (Grade C, 1 GP)</option>
+                  <option value="Completed">Completed / Passed</option>
+                  <option value="Elite with Gold">Elite with Gold</option>
+                  <option value="Gold">Gold</option>
+                  <option value="Silver">Silver</option>
+                  <option value="Elite">Elite</option>
+                  <option value="Topper">Topper</option>
+                  <option value="Course Completed">Course Completed</option>
                 </select>
               </div>
 
@@ -2171,7 +2171,7 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               )}
             </div>
 
-            {/* Event Title and Date for Event Coordinator, Participation, or Winner */}
+            {/* Event Title and Date for Event Coordinator, Volunteer, Participation, or Winner */}
             {clubRoleCategory === "Event Coordinator" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
@@ -2184,6 +2184,37 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                     placeholder="e.g. Technical Symposium / Annual Hackathon / Workshop Coordinator"
                     value={clubActivityTitle}
                     onChange={(e) => setClubActivityTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
+                  />
+                </div>
+              </div>
+            )}
+            {clubRoleCategory === "Volunteer" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Activity Title <span className="text-amber-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. National Conference Volunteer / Blood Donation Drive Volunteer"
+                    value={clubActivityTitle}
+                    onChange={(e) => setClubActivityTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Event Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={clubDate}
+                    onChange={(e) => setClubDate(e.target.value)}
                     disabled={isSubmitting}
                     className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
                   />
