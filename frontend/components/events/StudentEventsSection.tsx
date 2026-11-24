@@ -147,24 +147,68 @@ export const StudentEventsSection: React.FC = () => {
         </div>
       </div>
 
-      {error && (
-        <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-800 dark:text-rose-300 font-semibold">
-          ⚠️ {error}
-        </div>
-      )}
-
-      {/* Grid */}
+      {/* Events Grid / Listing with Adaptive Empty State, Skeletons and Retryable Error */}
       {loading ? (
-        <div className="p-12 text-center text-xs text-slate-400">Loading department events...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-4 space-y-3 animate-pulse"
+            >
+              <div className="h-4 bg-slate-200 dark:bg-[#262626] rounded-md w-1/4" />
+              <div className="h-5 bg-slate-200 dark:bg-[#262626] rounded-md w-3/4" />
+              <div className="h-14 bg-slate-100 dark:bg-[#202020] rounded-xl" />
+              <div className="h-9 bg-slate-100 dark:bg-[#202020] rounded-xl" />
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="p-8 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/30 text-center space-y-3 max-w-lg mx-auto my-6">
+          <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto text-lg font-bold">
+            ⚠️
+          </div>
+          <h3 className="text-sm font-bold text-rose-900 dark:text-rose-200">Unable to Load Events</h3>
+          <p className="text-xs text-rose-700 dark:text-rose-300/90">{error}</p>
+          <button
+            type="button"
+            onClick={loadEvents}
+            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs cursor-pointer inline-flex items-center gap-1.5 transition-colors"
+          >
+            <span>↻</span> Retry Request
+          </button>
+        </div>
       ) : filteredEvents.length === 0 ? (
-        <div className="p-12 rounded-2xl border border-dashed border-slate-300 dark:border-[#292929] text-center space-y-2">
+        <div className="p-12 rounded-2xl border border-dashed border-slate-300 dark:border-[#292929] text-center space-y-2 max-w-md mx-auto my-6">
           <span className="text-3xl">🗓</span>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5]">No Events in this Category</h3>
-          <p className="text-xs text-slate-500 dark:text-[#A3A3A3]">
-            {activeTab === "my_registrations"
-              ? "You haven't submitted any event registrations yet."
-              : "Check back soon for new department activities."}
+          <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5]">
+            {activeTab === "open"
+              ? "No Open Events Currently Available"
+              : activeTab === "my_registrations"
+              ? "No Registrations Submitted Yet"
+              : activeTab === "closed"
+              ? "No Closed Events"
+              : "No Events Found"}
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-[#A3A3A3] max-w-sm mx-auto">
+            {activeTab === "open"
+              ? "Check back soon for new department workshops, competitions, and opportunities."
+              : activeTab === "my_registrations"
+              ? "You haven't submitted any event registrations yet. Explore open events and submit your responses."
+              : activeTab === "closed"
+              ? "No closed events matching your filters."
+              : "No events are currently available for you. Check back later for new workshops, hackathons, and activities."}
           </p>
+          {activeTab !== "open" && (
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("open")}
+                className="text-xs font-semibold text-blue-600 dark:text-[#5DD62C] hover:underline cursor-pointer"
+              >
+                Browse Open Events →
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

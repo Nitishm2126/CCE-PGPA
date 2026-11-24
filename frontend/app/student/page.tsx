@@ -31,6 +31,7 @@ import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 import { SettingsModal } from "@/components/shared/SettingsModal";
 import { StudentEventsSection } from "@/components/events/StudentEventsSection";
+import { StudentNotificationPopup } from "@/components/notifications/StudentNotificationPopup";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
@@ -461,9 +462,13 @@ export default function StudentDashboardPage() {
         onSubmitClick={() => handleOpenSubmitModal(null)}
         onLogout={handleLogout}
         onOpenMessages={() => setActiveTab("messages")}
+        onNavigateToEvents={() => setActiveTab("events")}
         unreadMessagesCount={unreadMessagesCount}
         activeTab={activeTab}
       />
+
+      {/* In-App Notification Modal Popup for urgent & important broadcasts */}
+      <StudentNotificationPopup onNavigateToEvent={() => setActiveTab("events")} />
 
       {/* 2. Slide-Over Navigation Drawer */}
       <StudentDrawer

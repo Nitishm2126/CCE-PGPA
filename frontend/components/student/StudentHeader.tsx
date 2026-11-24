@@ -4,6 +4,7 @@ import React from "react";
 import { StudentDetailResponse } from "@/types/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
+import { StudentNotificationBell } from "@/components/notifications/StudentNotificationBell";
 
 interface StudentHeaderProps {
   studentData: StudentDetailResponse | null;
@@ -13,6 +14,7 @@ interface StudentHeaderProps {
   onSubmitClick: () => void;
   onLogout?: () => void;
   onOpenMessages?: () => void;
+  onNavigateToEvents?: (eventId?: string) => void;
   unreadMessagesCount?: number;
   activeTab?: string;
 }
@@ -25,6 +27,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
   onSubmitClick,
   onLogout,
   onOpenMessages,
+  onNavigateToEvents,
   unreadMessagesCount = 0,
   activeTab,
 }) => {
@@ -67,6 +70,9 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
               {studentData?.profile?.register_number || studentData?.email || "Student"}
             </span>
           </div>
+
+          {/* In-App Notifications Bell */}
+          <StudentNotificationBell onNavigateToEvent={onNavigateToEvents} />
 
           {/* Theme Toggle Button */}
           <ThemeToggle size="sm" />

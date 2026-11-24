@@ -1082,688 +1082,247 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
             </h3>
           </div>
 
-        {/* 1. ACADEMICS (GPA ONLY) */}
-        {currentSlug === "academics-gpa" && (
-          <div className="rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">
-                University Semester GPA Evaluation
-              </span>
-              <span className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-400">
-                Table B Scale &bull; 40% PGPA Weight
-              </span>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                Semester Grade Point Average (GPA) *
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0.00"
-                max="10.00"
-                required
-                disabled={isSubmitting}
-                placeholder="e.g. 8.75"
-                value={gpa}
-                onChange={(e) => setGpa(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-sm font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 min-h-[40px]"
-              />
-              <span className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-1 block">
-                Official university GPA on a 10.0 scale as published on your Anna University marksheet.
-              </span>
-            </div>
-
-            {/* Live Table B Preview */}
-            {gpa && !isNaN(parseFloat(gpa)) && parseFloat(gpa) >= 0 && parseFloat(gpa) <= 10 && (
-              <div className="p-3 rounded-lg bg-white dark:bg-[#181818] border border-indigo-200/80 dark:border-indigo-900/40 flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Table B Evaluation Grade:</span>
-                  <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
-                    Grade {scoreToGradeTableB(parseFloat(gpa)).grade} ({scoreToGradeTableB(parseFloat(gpa)).points} Grade Points)
-                  </span>
-                </div>
-                <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                  Valid Scale (0.00 – 10.00)
+          {/* 1. ACADEMICS (GPA ONLY) */}
+          {currentSlug === "academics-gpa" && (
+            <div className="rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">
+                  University Semester GPA Evaluation
+                </span>
+                <span className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-400">
+                  Table B Scale &bull; 40% PGPA Weight
                 </span>
               </div>
-            )}
-          </div>
-        )}
 
-        {/* 3. SKILLRACK */}
-        {currentSlug === "skillrack" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                Skillrack Coding Assessment (Table 1.1)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                3 Credits &bull; Semester Thresholds
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Cumulative Skillrack Points *
+                  Semester Grade Point Average (GPA) *
                 </label>
                 <input
                   type="number"
-                  min="0"
+                  step="0.01"
+                  min="0.00"
+                  max="10.00"
                   required
-                  placeholder="e.g. 2450"
-                  value={skillrackPoints}
-                  onChange={(e) => setSkillrackPoints(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  placeholder="e.g. 8.75"
+                  value={gpa}
+                  onChange={(e) => setGpa(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-sm font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 min-h-[40px]"
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Milestone / Assessment Date *
-                </label>
-                <input
-                  type="date"
-                  value={skillrackDate}
-                  onChange={(e) => setSkillrackDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                Assessment / Track Title (Optional)
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Daily Challenge 100-Day Streak & Advanced Track Tests"
-                value={skillrackMilestone}
-                onChange={(e) => setSkillrackMilestone(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* 4. AMCAT */}
-        {currentSlug === "amcat" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                AMCAT Employability Assessment (Table 2.1)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                3 Credits &bull; 0.0 – 10.0 Scale
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  AMCAT Overall Score (0.0 – 10.0) *
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0.0"
-                  max="10.0"
-                  required
-                  placeholder="e.g. 8.5"
-                  value={amcatScore}
-                  onChange={(e) => setAmcatScore(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Assessment Date *
-                </label>
-                <input
-                  type="date"
-                  value={amcatDate}
-                  onChange={(e) => setAmcatDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                Assessment Batch / Cycle Title
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. AMCAT Employability Assessment Cycle 1"
-                value={amcatTitle}
-                onChange={(e) => setAmcatTitle(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* 5. INTERNSHIP */}
-        {currentSlug === "internship" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                Industrial Internship Evaluation (Table 3.3)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                3 Credits &bull; Core / Others
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Host Company / Organization *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Zoho Corporation, L&T, BSNL"
-                  value={internCompany}
-                  onChange={(e) => setInternCompany(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Company Classification *
-                </label>
-                <select
-                  value={internClassification}
-                  onChange={(e) => setInternClassification(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="Core / with stipend">Core / with stipend (Min A+ Grade)</option>
-                  <option value="Others">Others (Upto A Grade)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Domain / Role
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Full-Stack Developer"
-                  value={internDomain}
-                  onChange={(e) => setInternDomain(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Duration
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 8 Weeks"
-                  value={internDuration}
-                  onChange={(e) => setInternDuration(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Completion Date *
-                </label>
-                <input
-                  type="date"
-                  value={internDate}
-                  onChange={(e) => setInternDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 6. SAIRAM SDG ACTION PROGRAMME */}
-        {currentSlug === "sairam-sdg-action-programme" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                Sairam SDG Action Programme (Table 4.1 &amp; 4.2)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                3 Credits &bull; Service &amp; Drill
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  SAP Activity Category *
-                </label>
-                <select
-                  value={sapCategory}
-                  onChange={(e) => setSapCategory(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="Member (10 pts)">Member (10 pts)</option>
-                  <option value="1 Activity (15 pts)">1 Activity (15 pts)</option>
-                  <option value="2 Activities (30 pts)">2 Activities (30 pts)</option>
-                  <option value="16h Drill (40 pts)">16h Drill (40 pts)</option>
-                  <option value="25h Drill (75 pts)">25h Drill (75 pts)</option>
-                  <option value="Best Unit / RD Parade (75 pts)">Best Unit / RD Parade (75 pts)</option>
-                  <option value="Other Approved SAP Action">Other Approved SAP Action</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  SAP Points Awarded *
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  value={sapPoints}
-                  onChange={(e) => setSapPoints(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Initiative / Project Details
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. SDG 6 Clean Water Community Outreach"
-                  value={sapTitle}
-                  onChange={(e) => setSapTitle(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Date of Activity *
-                </label>
-                <input
-                  type="date"
-                  value={sapDate}
-                  onChange={(e) => setSapDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 7. SAIRAM INNOVATION ECO-SYSTEM */}
-        {currentSlug === "sairam-innovation-eco-system" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                Innovation Eco-System (Table 5.1)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                4 Credits &bull; Stage Outcomes
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Innovation Event *
-                </label>
-                <select
-                  value={innovEventName}
-                  onChange={(e) => setInnovEventName(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="Ideathon">Ideathon</option>
-                  <option value="Solvethon">Solvethon</option>
-                  <option value="Innovathon">Innovathon</option>
-                  <option value="Inspirathon">Inspirathon</option>
-                  <option value="Other Innovation Challenge">Other Innovation Challenge</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Achievement Outcome (Table 5.1) *
-                </label>
-                <select
-                  value={innovCategory}
-                  onChange={(e) => setInnovCategory(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="Overall Winners 3 Teams">Overall Winners 3 Teams (Grade O, 10 GP)</option>
-                  <option value="SDG wise winners 51 teams">SDG wise winners 51 teams (Grade A+, 9 GP)</option>
-                  <option value="12 Teams eliminated out of top 15">Round 2 Finalist / Top 15 (Grade A, 7 GP)</option>
-                  <option value="10 Teams eliminated out of top 25">Round 1 Finalist / Top 25 (Grade B+, 5 GP)</option>
-                  <option value="Participants who will submit the proposal in time">Proposal Submitted In Time (Grade B, 3 GP)</option>
-                  <option value="Participants who will submit the proposal after the due date">Proposal Submitted After Due Date (Grade C, 1 GP)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Project / Innovation Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. IoT AI Precision Irrigation Controller"
-                  value={innovTitle}
-                  onChange={(e) => setInnovTitle(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Event / Presentation Date *
-                </label>
-                <input
-                  type="date"
-                  value={innovDate}
-                  onChange={(e) => setInnovDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 8. SAIL */}
-        {currentSlug === "sail" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                Sairam AI Learning — SAIL (Table 6.2)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                3 Credits &bull; Semester Milestones
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Cumulative SAIL Points *
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  placeholder="e.g. 210"
-                  value={sailPoints}
-                  onChange={(e) => setSailPoints(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Completion Date *
-                </label>
-                <input
-                  type="date"
-                  value={sailDate}
-                  onChange={(e) => setSailDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                AI Track / Module Name
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Deep Learning & Computer Vision Specialization Track"
-                value={sailModule}
-                onChange={(e) => setSailModule(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* 9. SPORTS & GAMES */}
-        {currentSlug === "sports-and-games" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                Sports &amp; Games Competition (Table 8.1 &amp; 8.2)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                3 Credits &bull; Table 8.1 Medal Matrix
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Sport / Game Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Cricket, Badminton, Athletics, Volleyball"
-                  value={sportName}
-                  onChange={(e) => setSportName(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Competition / Tournament Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Anna University Zonal Championship 2024"
-                  value={sportCompetitionName}
-                  onChange={(e) => setSportCompetitionName(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Competition Level (Table 8.1) *
-                </label>
-                <select
-                  value={sportLevel}
-                  onChange={(e) => setSportLevel(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="Sports Day (Intra-College)">Sports Day (Intra-College)</option>
-                  <option value="AU Zonal / District Level">AU Zonal / District Level</option>
-                  <option value="AU International / State Level">AU International / State Level</option>
-                  <option value="National / South University Level">National / South University Level</option>
-                  <option value="All India Level (Pending HOD Confirmation)">All India Level (Pending HOD Confirmation)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Position / Achievement (Table 8.1) *
-                </label>
-                <select
-                  value={sportPosition}
-                  onChange={(e) => setSportPosition(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="Gold / 1st Place">Gold / 1st Place</option>
-                  <option value="Silver / 2nd Place">Silver / 2nd Place</option>
-                  <option value="Bronze / 3rd Place">Bronze / 3rd Place</option>
-                  <option value="Participation">Participation</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                Event Date *
-              </label>
-              <input
-                type="date"
-                value={sportDate}
-                onChange={(e) => setSportDate(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-              />
-            </div>
-
-            {/* Live Table 8.1 Calculated Points Preview */}
-            <div className="p-3.5 rounded-xl bg-white dark:bg-[#181818] border border-blue-200/80 dark:border-[#292929] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] block">
-                  Table 8.1 Awarded Points Preview
+                <span className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-1 block">
+                  Official university GPA on a 10.0 scale as published on your Anna University marksheet.
                 </span>
-                {sportsCalculatedResult.criteriaPending ? (
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                      <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                      Pending HOD Confirmation
-                    </span>
-                    <span className="text-xs text-slate-500 dark:text-[#A3A3A3]">
-                      All India medal breakdown requires department review
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xl font-extrabold text-blue-600 dark:text-[#FFD84D]">
-                      {sportsCalculatedResult.points} Points
-                    </span>
-                    <span className="text-xs text-slate-500 dark:text-[#A3A3A3]">
-                      ({sportPosition} at {sportLevel})
-                    </span>
-                  </div>
-                )}
               </div>
 
-              {!sportsCalculatedResult.criteriaPending && (
-                <div className="text-right sm:border-l sm:border-slate-200 dark:sm:border-[#292929] sm:pl-4">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] block">
-                    Table 8.2 Grade
-                  </span>
-                  <span className="text-base font-bold text-slate-800 dark:text-[#F5F5F5]">
-                    {sportsCalculatedResult.points > 699
-                      ? "Grade O (10 GP)"
-                      : sportsCalculatedResult.points >= 401
-                        ? "Grade A+ (9 GP)"
-                        : sportsCalculatedResult.points >= 250
-                          ? "Grade A (7 GP)"
-                          : sportsCalculatedResult.points >= 91
-                            ? "Grade B+ (5 GP)"
-                            : sportsCalculatedResult.points >= 21
-                              ? "Grade B (3 GP)"
-                              : "Grade C (1 GP)"}
+              {/* Live Table B Preview */}
+              {gpa && !isNaN(parseFloat(gpa)) && parseFloat(gpa) >= 0 && parseFloat(gpa) <= 10 && (
+                <div className="p-3 rounded-lg bg-white dark:bg-[#181818] border border-indigo-200/80 dark:border-indigo-900/40 flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Table B Evaluation Grade:</span>
+                    <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                      Grade {scoreToGradeTableB(parseFloat(gpa)).grade} ({scoreToGradeTableB(parseFloat(gpa)).points} Grade Points)
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                    Valid Scale (0.00 – 10.00)
                   </span>
                 </div>
               )}
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3]">
-              ℹ️ Sports points are strictly evaluated from official Table 8.1 guidelines. Manual modification of point values is disabled.
-            </p>
-          </div>
-        )}
+          )}
 
-        {/* 10. ONLINE CERTIFICATIONS */}
-        {currentSlug === "online-certifications" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                Online Course Certifications (IITB Spoken Tutorials &amp; MOOCs)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                2 Credits &bull; Categorical
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Course Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Python for Data Science and Machine Learning"
-                  value={onlineCourse}
-                  onChange={(e) => setOnlineCourse(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
+          {/* 3. SKILLRACK */}
+          {currentSlug === "skillrack" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  Skillrack Coding Assessment (Table 1.1)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  3 Credits &bull; Semester Thresholds
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Platform / Provider *
+                    Cumulative Skillrack Points *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    placeholder="e.g. 2450"
+                    value={skillrackPoints}
+                    onChange={(e) => setSkillrackPoints(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Milestone / Assessment Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={skillrackDate}
+                    onChange={(e) => setSkillrackDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                  Assessment / Track Title (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Daily Challenge 100-Day Streak & Advanced Track Tests"
+                  value={skillrackMilestone}
+                  onChange={(e) => setSkillrackMilestone(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 4. AMCAT */}
+          {currentSlug === "amcat" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  AMCAT Employability Assessment (Table 2.1)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  3 Credits &bull; 0.0 – 10.0 Scale
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    AMCAT Overall Score (0.0 – 10.0) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0.0"
+                    max="10.0"
+                    required
+                    placeholder="e.g. 8.5"
+                    value={amcatScore}
+                    onChange={(e) => setAmcatScore(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Assessment Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={amcatDate}
+                    onChange={(e) => setAmcatDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                  Assessment Batch / Cycle Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. AMCAT Employability Assessment Cycle 1"
+                  value={amcatTitle}
+                  onChange={(e) => setAmcatTitle(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 5. INTERNSHIP */}
+          {currentSlug === "internship" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  Industrial Internship Evaluation (Table 3.3)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  3 Credits &bull; Core / Others
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Host Company / Organization *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Zoho Corporation, L&T, BSNL"
+                    value={internCompany}
+                    onChange={(e) => setInternCompany(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Company Classification *
                   </label>
                   <select
-                    value={onlineProvider}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setOnlineProvider(val);
-                      if (val !== "Other Approved Platform") {
-                        setOnlineCustomProvider("");
-                      }
-                    }}
+                    value={internClassification}
+                    onChange={(e) => setInternClassification(e.target.value)}
                     disabled={isSubmitting}
                     className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                   >
-                    <option value="IITB Spoken Tutorials">IITB Spoken Tutorials</option>
-                    <option value="Coursera">Coursera</option>
-                    <option value="edX">edX</option>
-                    <option value="Udemy">Udemy</option>
-                    <option value="AWS / Google Cloud / Microsoft">AWS / Google Cloud / Microsoft</option>
-                    <option value="Other Approved Platform">Other Approved Platform</option>
+                    <option value="Core / with stipend">Core / with stipend (Min A+ Grade)</option>
+                    <option value="Others">Others (Upto A Grade)</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Domain / Role
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Full-Stack Developer"
+                    value={internDomain}
+                    onChange={(e) => setInternDomain(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Duration
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 8 Weeks"
+                    value={internDuration}
+                    onChange={(e) => setInternDuration(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
                 </div>
 
                 <div>
@@ -1772,516 +1331,957 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                   </label>
                   <input
                     type="date"
-                    value={onlineDate}
-                    onChange={(e) => setOnlineDate(e.target.value)}
+                    value={internDate}
+                    onChange={(e) => setInternDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 6. SAIRAM SDG ACTION PROGRAMME */}
+          {currentSlug === "sairam-sdg-action-programme" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  Sairam SDG Action Programme (Table 4.1 &amp; 4.2)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  3 Credits &bull; Service &amp; Drill
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    SAP Activity Category *
+                  </label>
+                  <select
+                    value={sapCategory}
+                    onChange={(e) => setSapCategory(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  >
+                    <option value="Member (10 pts)">Member (10 pts)</option>
+                    <option value="1 Activity (15 pts)">1 Activity (15 pts)</option>
+                    <option value="2 Activities (30 pts)">2 Activities (30 pts)</option>
+                    <option value="16h Drill (40 pts)">16h Drill (40 pts)</option>
+                    <option value="25h Drill (75 pts)">25h Drill (75 pts)</option>
+                    <option value="Best Unit / RD Parade (75 pts)">Best Unit / RD Parade (75 pts)</option>
+                    <option value="Other Approved SAP Action">Other Approved SAP Action</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    SAP Points Awarded *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={sapPoints}
+                    onChange={(e) => setSapPoints(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Initiative / Project Details
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. SDG 6 Clean Water Community Outreach"
+                    value={sapTitle}
+                    onChange={(e) => setSapTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Date of Activity *
+                  </label>
+                  <input
+                    type="date"
+                    value={sapDate}
+                    onChange={(e) => setSapDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 7. SAIRAM INNOVATION ECO-SYSTEM */}
+          {currentSlug === "sairam-innovation-eco-system" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  Innovation Eco-System (Table 5.1)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  4 Credits &bull; Stage Outcomes
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Innovation Event *
+                  </label>
+                  <select
+                    value={innovEventName}
+                    onChange={(e) => setInnovEventName(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  >
+                    <option value="Ideathon">Ideathon</option>
+                    <option value="Solvethon">Solvethon</option>
+                    <option value="Innovathon">Innovathon</option>
+                    <option value="Inspirathon">Inspirathon</option>
+                    <option value="Other Innovation Challenge">Other Innovation Challenge</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Achievement Outcome (Table 5.1) *
+                  </label>
+                  <select
+                    value={innovCategory}
+                    onChange={(e) => setInnovCategory(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  >
+                    <option value="Overall Winners 3 Teams">Overall Winners 3 Teams (Grade O, 10 GP)</option>
+                    <option value="SDG wise winners 51 teams">SDG wise winners 51 teams (Grade A+, 9 GP)</option>
+                    <option value="12 Teams eliminated out of top 15">Round 2 Finalist / Top 15 (Grade A, 7 GP)</option>
+                    <option value="10 Teams eliminated out of top 25">Round 1 Finalist / Top 25 (Grade B+, 5 GP)</option>
+                    <option value="Participants who will submit the proposal in time">Proposal Submitted In Time (Grade B, 3 GP)</option>
+                    <option value="Participants who will submit the proposal after the due date">Proposal Submitted After Due Date (Grade C, 1 GP)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Project / Innovation Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. IoT AI Precision Irrigation Controller"
+                    value={innovTitle}
+                    onChange={(e) => setInnovTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Event / Presentation Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={innovDate}
+                    onChange={(e) => setInnovDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 8. SAIL */}
+          {currentSlug === "sail" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  Sairam AI Learning — SAIL (Table 6.2)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  3 Credits &bull; Semester Milestones
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Cumulative SAIL Points *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    placeholder="e.g. 210"
+                    value={sailPoints}
+                    onChange={(e) => setSailPoints(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Completion Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={sailDate}
+                    onChange={(e) => setSailDate(e.target.value)}
                     disabled={isSubmitting}
                     className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                   />
                 </div>
               </div>
 
-              {onlineProvider === "Other Approved Platform" && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                  AI Track / Module Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Deep Learning & Computer Vision Specialization Track"
+                  value={sailModule}
+                  onChange={(e) => setSailModule(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 9. SPORTS & GAMES */}
+          {currentSlug === "sports-and-games" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  Sports &amp; Games Competition (Table 8.1 &amp; 8.2)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  3 Credits &bull; Table 8.1 Medal Matrix
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Enter Platform / Provider Name *
+                    Sport / Game Name *
                   </label>
                   <input
                     type="text"
                     required
-                    maxLength={120}
-                    placeholder="Enter the approved platform name"
-                    value={onlineCustomProvider}
-                    onChange={(e) => setOnlineCustomProvider(e.target.value)}
+                    placeholder="e.g. Cricket, Badminton, Athletics, Volleyball"
+                    value={sportName}
+                    onChange={(e) => setSportName(e.target.value)}
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                   />
                 </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* 11. NPTEL */}
-        {currentSlug === "nptel-non-credit-transfer" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                NPTEL Non-Credit Transfer (Table 10.1)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                4 Credits &bull; Table 10.1 Tiers
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  NPTEL Course Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Cloud Computing / Developing Soft Skills"
-                  value={nptelCourse}
-                  onChange={(e) => setNptelCourse(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Course Duration *
-                </label>
-                <select
-                  value={nptelDuration}
-                  onChange={(e) => setNptelDuration(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="4 Weeks">4 Weeks</option>
-                  <option value="8 Weeks">8 Weeks</option>
-                  <option value="12 Weeks">12 Weeks</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Certificate Classification (Table 10.1) *
-                </label>
-                <select
-                  value={nptelCategory}
-                  onChange={(e) => setNptelCategory(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="Topper">Topper (Grade O, 10 GP)</option>
-                  <option value="Gold (>=90%)">Gold &gt;= 90% (Grade A+, 9 GP)</option>
-                  <option value="Silver (75-89%)">Silver 75%–89% (Grade A, 7 GP)</option>
-                  <option value="Elite (60-74%)">Elite 60%–74% (Grade B+, 5 GP)</option>
-                  <option value="Successfully Completed (40-59%)">Successfully Completed 40%–59% (Grade B, 3 GP)</option>
-                  <option value="Attended (<40%)">Attended &lt; 40% (Grade C, 1 GP)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Final Exam Date *
-                </label>
-                <input
-                  type="date"
-                  value={nptelDate}
-                  onChange={(e) => setNptelDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 12. GATE */}
-        {currentSlug === "gate" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                GATE Examination (Table 11.1)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                4 Credits &bull; Percentile / Score
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  GATE Registration / Roll Number *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. CS25S12345678"
-                  value={gateRegNumber}
-                  onChange={(e) => setGateRegNumber(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Exam Result Category (Table 11.1) *
-                </label>
-                <select
-                  value={gateCategory}
-                  onChange={(e) => setGateCategory(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="Percentile (>90)">Percentile &gt; 90 (Grade O, 10 GP)</option>
-                  <option value="Score (>400)">Score &gt; 400 (Grade A+, 9 GP)</option>
-                  <option value="Qualified">Qualified (Grade A, 7 GP)</option>
-                  <option value="Not Qualified">Not Qualified (Grade B+, 5 GP)</option>
-                  <option value="Attended">Attended (Grade B, 3 GP)</option>
-                  <option value="Registration">Registration (Grade C, 1 GP)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  GATE Score (Optional)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 485"
-                  value={gateScore}
-                  onChange={(e) => setGateScore(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Exam Date / Session *
-                </label>
-                <input
-                  type="date"
-                  value={gateDate}
-                  onChange={(e) => setGateDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 13. SCOUTS FOR SDGS */}
-        {currentSlug === "scouts-for-sdgs" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                Scouts for SDGs (Table 12.1)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                3 Credits &bull; Service Hours
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Activity Classification *
-                </label>
-                <select
-                  value={scoutsCategory}
-                  onChange={(e) => setScoutsCategory(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                >
-                  <option value="Service (20 hrs)">Service (20 hrs) (Grade O, 10 GP)</option>
-                  <option value="Scout Online Courses (2)">Scout Online Courses (2) (Grade A+, 9 GP)</option>
-                  <option value="Work on activity">Work on activity (Grade A, 7 GP)</option>
-                  <option value="Enroll">Enroll (Grade B, 3 GP)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Service Hours Logged
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 20"
-                  value={scoutsHours}
-                  onChange={(e) => setScoutsHours(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Initiative / Project Details
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Community Plastic Waste Audit &amp; Cleanup"
-                  value={scoutsTitle}
-                  onChange={(e) => setScoutsTitle(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Date of Activity *
-                </label>
-                <input
-                  type="date"
-                  value={scoutsDate}
-                  onChange={(e) => setScoutsDate(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 14. FIT INDIA */}
-        {currentSlug === "fit-india-certifications" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
-                Fit India Initiatives (Table 13.1)
-              </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
-                3 Credits &bull; Score &gt;= 100 for &apos;O&apos;
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Fitness Challenge / Quiz Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Fit India Freedom Run / School Fitness Assessment Quiz"
-                  value={fitIndiaTitle}
-                  onChange={(e) => setFitIndiaTitle(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  FIT INDIA Score (Table 13.1) *
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  required
-                  placeholder="e.g. 85"
-                  value={fitIndiaScore}
-                  onChange={(e) => setFitIndiaScore(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                Event / Quiz Date *
-              </label>
-              <input
-                type="date"
-                value={fitIndiaDate}
-                onChange={(e) => setFitIndiaDate(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* ==================================================================== */}
-        {/* Clubs & Organizations Participation (Positioned above certificate)   */}
-        {/* ==================================================================== */}
-        {currentSlug === "clubs-and-cells" && (
-          <div className="rounded-xl border border-slate-200 dark:border-[#337418]/60 bg-slate-50/70 dark:bg-[#337418]/15 p-4 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-800 dark:text-[#5DD62C] uppercase tracking-wider">
-                Clubs &amp; Organizations Participation
-              </span>
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-[#5DD62C]">
-                Extracurricular Details
-              </span>
-            </div>
-
-            {/* Club Name */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                Organization / Club Name
-              </label>
-              <input
-                type="text"
-                maxLength={150}
-                placeholder="Enter organization or club name"
-                value={clubName}
-                onChange={(e) => setClubName(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-[#FFB347] focus:ring-1 focus:ring-[#FFB347] min-h-[38px]"
-              />
-            </div>
-
-            {/* Role / Participation Category */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                  Participation Category
-                </label>
-                <select
-                  value={clubRoleCategory}
-                  onChange={(e) => setClubRoleCategory(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
-                >
-                  <option value="Member">Member (100 pts)</option>
-                  <option value="Event Participation">Event Participation (100–500 pts)</option>
-                  <option value="Winner">Winner (200–700 pts)</option>
-                  <option value="MAGIC">MAGIC (200 pts)</option>
-                  <option value="Event Coordinator">Event Coordinator (200 pts)</option>
-                  <option value="Volunteer">Volunteer (100 pts)</option>
-                </select>
-              </div>
-
-              {/* Event Level (conditionally displayed for Event Participation or Winner) */}
-              {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") ? (
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Event Level
+                    Competition / Tournament Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Anna University Zonal Championship 2024"
+                    value={sportCompetitionName}
+                    onChange={(e) => setSportCompetitionName(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Competition Level (Table 8.1) *
                   </label>
                   <select
-                    value={clubEventLevel}
-                    onChange={(e) => setClubEventLevel(e.target.value)}
+                    value={sportLevel}
+                    onChange={(e) => setSportLevel(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  >
+                    <option value="Sports Day (Intra-College)">Sports Day (Intra-College)</option>
+                    <option value="AU Zonal / District Level">AU Zonal / District Level</option>
+                    <option value="AU International / State Level">AU International / State Level</option>
+                    <option value="National / South University Level">National / South University Level</option>
+                    <option value="All India Level (Pending HOD Confirmation)">All India Level (Pending HOD Confirmation)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Position / Achievement (Table 8.1) *
+                  </label>
+                  <select
+                    value={sportPosition}
+                    onChange={(e) => setSportPosition(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  >
+                    <option value="Gold / 1st Place">Gold / 1st Place</option>
+                    <option value="Silver / 2nd Place">Silver / 2nd Place</option>
+                    <option value="Bronze / 3rd Place">Bronze / 3rd Place</option>
+                    <option value="Participation">Participation</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                  Event Date *
+                </label>
+                <input
+                  type="date"
+                  value={sportDate}
+                  onChange={(e) => setSportDate(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                />
+              </div>
+
+              {/* Live Table 8.1 Calculated Points Preview */}
+              <div className="p-3.5 rounded-xl bg-white dark:bg-[#181818] border border-blue-200/80 dark:border-[#292929] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] block">
+                    Table 8.1 Awarded Points Preview
+                  </span>
+                  {sportsCalculatedResult.criteriaPending ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                        <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                        Pending HOD Confirmation
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-[#A3A3A3]">
+                        All India medal breakdown requires department review
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xl font-extrabold text-blue-600 dark:text-[#FFD84D]">
+                        {sportsCalculatedResult.points} Points
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-[#A3A3A3]">
+                        ({sportPosition} at {sportLevel})
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {!sportsCalculatedResult.criteriaPending && (
+                  <div className="text-right sm:border-l sm:border-slate-200 dark:sm:border-[#292929] sm:pl-4">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] block">
+                      Table 8.2 Grade
+                    </span>
+                    <span className="text-base font-bold text-slate-800 dark:text-[#F5F5F5]">
+                      {sportsCalculatedResult.points > 699
+                        ? "Grade O (10 GP)"
+                        : sportsCalculatedResult.points >= 401
+                          ? "Grade A+ (9 GP)"
+                          : sportsCalculatedResult.points >= 250
+                            ? "Grade A (7 GP)"
+                            : sportsCalculatedResult.points >= 91
+                              ? "Grade B+ (5 GP)"
+                              : sportsCalculatedResult.points >= 21
+                                ? "Grade B (3 GP)"
+                                : "Grade C (1 GP)"}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3]">
+                ℹ️ Sports points are strictly evaluated from official Table 8.1 guidelines. Manual modification of point values is disabled.
+              </p>
+            </div>
+          )}
+
+          {/* 10. ONLINE CERTIFICATIONS */}
+          {currentSlug === "online-certifications" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  Online Course Certifications (IITB Spoken Tutorials &amp; MOOCs)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  2 Credits &bull; Categorical
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Course Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Python for Data Science and Machine Learning"
+                    value={onlineCourse}
+                    onChange={(e) => setOnlineCourse(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                      Platform / Provider *
+                    </label>
+                    <select
+                      value={onlineProvider}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setOnlineProvider(val);
+                        if (val !== "Other Approved Platform") {
+                          setOnlineCustomProvider("");
+                        }
+                      }}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                    >
+                      <option value="IITB Spoken Tutorials">IITB Spoken Tutorials</option>
+                      <option value="Coursera">Coursera</option>
+                      <option value="edX">edX</option>
+                      <option value="Udemy">Udemy</option>
+                      <option value="AWS / Google Cloud / Microsoft">AWS / Google Cloud / Microsoft</option>
+                      <option value="Other Approved Platform">Other Approved Platform</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                      Completion Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={onlineDate}
+                      onChange={(e) => setOnlineDate(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                    />
+                  </div>
+                </div>
+
+                {onlineProvider === "Other Approved Platform" && (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                      Enter Platform / Provider Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={120}
+                      placeholder="Enter the approved platform name"
+                      value={onlineCustomProvider}
+                      onChange={(e) => setOnlineCustomProvider(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 11. NPTEL */}
+          {currentSlug === "nptel-non-credit-transfer" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  NPTEL Non-Credit Transfer (Table 10.1)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  4 Credits &bull; Table 10.1 Tiers
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    NPTEL Course Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Cloud Computing / Developing Soft Skills"
+                    value={nptelCourse}
+                    onChange={(e) => setNptelCourse(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Course Duration *
+                  </label>
+                  <select
+                    value={nptelDuration}
+                    onChange={(e) => setNptelDuration(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  >
+                    <option value="4 Weeks">4 Weeks</option>
+                    <option value="8 Weeks">8 Weeks</option>
+                    <option value="12 Weeks">12 Weeks</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Certificate Classification (Table 10.1) *
+                  </label>
+                  <select
+                    value={nptelCategory}
+                    onChange={(e) => setNptelCategory(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  >
+                    <option value="Topper">Topper (Grade O, 10 GP)</option>
+                    <option value="Gold (>=90%)">Gold &gt;= 90% (Grade A+, 9 GP)</option>
+                    <option value="Silver (75-89%)">Silver 75%–89% (Grade A, 7 GP)</option>
+                    <option value="Elite (60-74%)">Elite 60%–74% (Grade B+, 5 GP)</option>
+                    <option value="Successfully Completed (40-59%)">Successfully Completed 40%–59% (Grade B, 3 GP)</option>
+                    <option value="Attended (<40%)">Attended &lt; 40% (Grade C, 1 GP)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Final Exam Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={nptelDate}
+                    onChange={(e) => setNptelDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 12. GATE */}
+          {currentSlug === "gate" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  GATE Examination (Table 11.1)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  4 Credits &bull; Percentile / Score
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    GATE Registration / Roll Number *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. CS25S12345678"
+                    value={gateRegNumber}
+                    onChange={(e) => setGateRegNumber(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Exam Result Category (Table 11.1) *
+                  </label>
+                  <select
+                    value={gateCategory}
+                    onChange={(e) => setGateCategory(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  >
+                    <option value="Percentile (>90)">Percentile &gt; 90 (Grade O, 10 GP)</option>
+                    <option value="Score (>400)">Score &gt; 400 (Grade A+, 9 GP)</option>
+                    <option value="Qualified">Qualified (Grade A, 7 GP)</option>
+                    <option value="Not Qualified">Not Qualified (Grade B+, 5 GP)</option>
+                    <option value="Attended">Attended (Grade B, 3 GP)</option>
+                    <option value="Registration">Registration (Grade C, 1 GP)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    GATE Score (Optional)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 485"
+                    value={gateScore}
+                    onChange={(e) => setGateScore(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Exam Date / Session *
+                  </label>
+                  <input
+                    type="date"
+                    value={gateDate}
+                    onChange={(e) => setGateDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 13. SCOUTS FOR SDGS */}
+          {currentSlug === "scouts-for-sdgs" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  Scouts for SDGs (Table 12.1)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  3 Credits &bull; Service Hours
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Activity Classification *
+                  </label>
+                  <select
+                    value={scoutsCategory}
+                    onChange={(e) => setScoutsCategory(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  >
+                    <option value="Service (20 hrs)">Service (20 hrs) (Grade O, 10 GP)</option>
+                    <option value="Scout Online Courses (2)">Scout Online Courses (2) (Grade A+, 9 GP)</option>
+                    <option value="Work on activity">Work on activity (Grade A, 7 GP)</option>
+                    <option value="Enroll">Enroll (Grade B, 3 GP)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Service Hours Logged
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 20"
+                    value={scoutsHours}
+                    onChange={(e) => setScoutsHours(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Initiative / Project Details
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Community Plastic Waste Audit &amp; Cleanup"
+                    value={scoutsTitle}
+                    onChange={(e) => setScoutsTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Date of Activity *
+                  </label>
+                  <input
+                    type="date"
+                    value={scoutsDate}
+                    onChange={(e) => setScoutsDate(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 14. FIT INDIA */}
+          {currentSlug === "fit-india-certifications" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#181818]/40 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-[#A3A3A3] uppercase tracking-wider">
+                  Fit India Initiatives (Table 13.1)
+                </span>
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-[#5DD62C]">
+                  3 Credits &bull; Score &gt;= 100 for &apos;O&apos;
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Fitness Challenge / Quiz Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Fit India Freedom Run / School Fitness Assessment Quiz"
+                    value={fitIndiaTitle}
+                    onChange={(e) => setFitIndiaTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    FIT INDIA Score (Table 13.1) *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    required
+                    placeholder="e.g. 85"
+                    value={fitIndiaScore}
+                    onChange={(e) => setFitIndiaScore(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                  Event / Quiz Date *
+                </label>
+                <input
+                  type="date"
+                  value={fitIndiaDate}
+                  onChange={(e) => setFitIndiaDate(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* ==================================================================== */}
+          {/* Clubs & Organizations Participation (Positioned above certificate)   */}
+          {/* ==================================================================== */}
+          {currentSlug === "clubs-and-cells" && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#337418]/60 bg-slate-50/70 dark:bg-[#337418]/15 p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-800 dark:text-[#5DD62C] uppercase tracking-wider">
+                  Clubs &amp; Organizations Participation
+                </span>
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-[#5DD62C]">
+                  Extracurricular Details
+                </span>
+              </div>
+
+              {/* Club Name */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                  Organization / Club Name
+                </label>
+                <input
+                  type="text"
+                  maxLength={150}
+                  placeholder="Enter organization or club name"
+                  value={clubName}
+                  onChange={(e) => setClubName(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] placeholder:text-slate-400 dark:placeholder:text-[#64748B] focus:border-[#FFB347] focus:ring-1 focus:ring-[#FFB347] min-h-[38px]"
+                />
+              </div>
+
+              {/* Role / Participation Category */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                    Participation Category
+                  </label>
+                  <select
+                    value={clubRoleCategory}
+                    onChange={(e) => setClubRoleCategory(e.target.value)}
                     disabled={isSubmitting}
                     className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
                   >
-                    <option value="Within College">Within College ({clubRoleCategory === "Winner" ? "200" : "100"} pts)</option>
-                    <option value="Within State (Other College)">Within State / Other College ({clubRoleCategory === "Winner" ? "300" : "200"} pts)</option>
-                    <option value="National Level (Other State)">National Level / Other State ({clubRoleCategory === "Winner" ? "500" : "300"} pts)</option>
-                    <option value="International Level (In College / Others)">International Level / In College ({clubRoleCategory === "Winner" ? "600" : "400"} pts)</option>
-                    <option value="International Level (Other Country)">International Level / Other Country ({clubRoleCategory === "Winner" ? "700" : "500"} pts)</option>
+                    <option value="Member">Member (100 pts)</option>
+                    <option value="Event Participation">Event Participation (100–500 pts)</option>
+                    <option value="Winner">Winner (200–700 pts)</option>
+                    <option value="MAGIC">MAGIC (200 pts)</option>
+                    <option value="Event Coordinator">Event Coordinator (200 pts)</option>
+                    <option value="Volunteer">Volunteer (100 pts)</option>
                   </select>
                 </div>
-              ) : (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Completion / Activity Date
-                  </label>
-                  <input
-                    type="date"
-                    value={clubDate}
-                    onChange={(e) => setClubDate(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
-                  />
+
+                {/* Event Level (conditionally displayed for Event Participation or Winner) */}
+                {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                      Event Level
+                    </label>
+                    <select
+                      value={clubEventLevel}
+                      onChange={(e) => setClubEventLevel(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-[#F5F5F5] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[38px]"
+                    >
+                      <option value="Within College">Within College ({clubRoleCategory === "Winner" ? "200" : "100"} pts)</option>
+                      <option value="Within State (Other College)">Within State / Other College ({clubRoleCategory === "Winner" ? "300" : "200"} pts)</option>
+                      <option value="National Level (Other State)">National Level / Other State ({clubRoleCategory === "Winner" ? "500" : "300"} pts)</option>
+                      <option value="International Level (In College / Others)">International Level / In College ({clubRoleCategory === "Winner" ? "600" : "400"} pts)</option>
+                      <option value="International Level (Other Country)">International Level / Other Country ({clubRoleCategory === "Winner" ? "700" : "500"} pts)</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                      Completion / Activity Date
+                    </label>
+                    <input
+                      type="date"
+                      value={clubDate}
+                      onChange={(e) => setClubDate(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Event Title and Date for Event Coordinator, Volunteer, Participation, or Winner */}
+              {clubRoleCategory === "Event Coordinator" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                      Activity Title <span className="text-amber-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Technical Symposium / Annual Hackathon / Workshop Coordinator"
+                      value={clubActivityTitle}
+                      onChange={(e) => setClubActivityTitle(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
+                    />
+                  </div>
                 </div>
               )}
-            </div>
+              {clubRoleCategory === "Volunteer" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                      Activity Title <span className="text-amber-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. National Conference Volunteer / Blood Donation Drive Volunteer"
+                      value={clubActivityTitle}
+                      onChange={(e) => setClubActivityTitle(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                      Event Date *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={clubDate}
+                      onChange={(e) => setClubDate(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
+                    />
+                  </div>
+                </div>
+              )}
+              {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                      Activity Title <span className="text-amber-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Inter-College Hackathon / Technical Quiz"
+                      value={clubActivityTitle}
+                      onChange={(e) => setClubActivityTitle(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
+                      Event Date *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={clubDate}
+                      onChange={(e) => setClubDate(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
+                    />
+                  </div>
+                </div>
+              )}
 
-            {/* Event Title and Date for Event Coordinator, Volunteer, Participation, or Winner */}
-            {clubRoleCategory === "Event Coordinator" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Activity Title <span className="text-amber-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Technical Symposium / Annual Hackathon / Workshop Coordinator"
-                    value={clubActivityTitle}
-                    onChange={(e) => setClubActivityTitle(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
-                  />
-                </div>
-              </div>
-            )}
-            {clubRoleCategory === "Volunteer" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Simple Credit Points Indicator */}
+              <div className="p-3 rounded-lg bg-white dark:bg-[#181818] border border-blue-200/80 dark:border-[#337418]/40 flex items-center justify-between">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Activity Title <span className="text-amber-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. National Conference Volunteer / Blood Donation Drive Volunteer"
-                    value={clubActivityTitle}
-                    onChange={(e) => setClubActivityTitle(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
-                  />
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Credit Points:</span>
+                  <span className="text-sm font-bold text-blue-700 dark:text-[#5DD62C]">
+                    {clubsCalculatedPoints} Points
+                  </span>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Event Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={clubDate}
-                    onChange={(e) => setClubDate(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
-                  />
-                </div>
-              </div>
-            )}
-            {(clubRoleCategory === "Event Participation" || clubRoleCategory === "Winner") && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Activity Title <span className="text-amber-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Inter-College Hackathon / Technical Quiz"
-                    value={clubActivityTitle}
-                    onChange={(e) => setClubActivityTitle(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#A3A3A3] mb-1">
-                    Event Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={clubDate}
-                    onChange={(e) => setClubDate(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[38px]"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Simple Credit Points Indicator */}
-            <div className="p-3 rounded-lg bg-white dark:bg-[#181818] border border-blue-200/80 dark:border-[#337418]/40 flex items-center justify-between">
-              <div>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Credit Points:</span>
-                <span className="text-sm font-bold text-blue-700 dark:text-[#5DD62C]">
-                  {clubsCalculatedPoints} Points
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 text-right">
+                  Mentor will verify details before final award
                 </span>
               </div>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 text-right">
-                Mentor will verify details before final award
-              </span>
             </div>
-          </div>
-        )}
+          )}
         </div>
 
         {/* ==================================================================== */}
@@ -2303,23 +2303,22 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 : "Certificate / Supporting Evidence"}
             </label>
             <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
-                certificateStatus === "uploaded"
-                  ? isPdfRequired
-                    ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
-                    : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-[#337418]/25 dark:text-[#5DD62C] dark:border-[#337418]"
-                  : certificateStatus === "yet_to_receive"
+              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${certificateStatus === "uploaded"
+                ? isPdfRequired
+                  ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
+                  : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-[#337418]/25 dark:text-[#5DD62C] dark:border-[#337418]"
+                : certificateStatus === "yet_to_receive"
                   ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
                   : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
-              }`}
+                }`}
             >
               {certificateStatus === "uploaded"
                 ? isPdfRequired
                   ? "Mandatory PDF • Up to 5 MB"
                   : "Optional PDF • Up to 5 MB"
                 : certificateStatus === "yet_to_receive"
-                ? "Pending Issuance • Submit Now"
-                : "No Certificate • Submit Now"}
+                  ? "Pending Issuance • Submit Now"
+                  : "No Certificate • Submit Now"}
             </span>
           </div>
 
@@ -2332,19 +2331,17 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 setFileError(null);
               }}
               disabled={isSubmitting}
-              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                certificateStatus === "uploaded"
-                  ? "border-blue-600 bg-blue-50/70 dark:bg-[#337418]/25 dark:border-[#5DD62C] shadow-2xs ring-1 ring-blue-500"
-                  : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-slate-600"
-              }`}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${certificateStatus === "uploaded"
+                ? "border-blue-600 bg-blue-50/70 dark:bg-[#337418]/25 dark:border-[#5DD62C] shadow-2xs ring-1 ring-blue-500"
+                : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-slate-600"
+                }`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <div
-                  className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
-                    certificateStatus === "uploaded"
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-slate-300 dark:border-slate-600"
-                  }`}
+                  className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${certificateStatus === "uploaded"
+                    ? "border-blue-600 bg-blue-600 text-white"
+                    : "border-slate-300 dark:border-slate-600"
+                    }`}
                 >
                   {certificateStatus === "uploaded" && (
                     <div className="h-1.5 w-1.5 rounded-full bg-white" />
@@ -2367,19 +2364,17 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 setEvidenceFile(null);
               }}
               disabled={isSubmitting}
-              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                certificateStatus === "yet_to_receive"
-                  ? "border-amber-600 bg-amber-50/70 dark:bg-amber-950/40 dark:border-amber-500 shadow-2xs ring-1 ring-amber-500"
-                  : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-slate-600"
-              }`}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${certificateStatus === "yet_to_receive"
+                ? "border-amber-600 bg-amber-50/70 dark:bg-amber-950/40 dark:border-amber-500 shadow-2xs ring-1 ring-amber-500"
+                : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-slate-600"
+                }`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <div
-                  className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
-                    certificateStatus === "yet_to_receive"
-                      ? "border-amber-600 bg-amber-600 text-white"
-                      : "border-slate-300 dark:border-slate-600"
-                  }`}
+                  className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${certificateStatus === "yet_to_receive"
+                    ? "border-amber-600 bg-amber-600 text-white"
+                    : "border-slate-300 dark:border-slate-600"
+                    }`}
                 >
                   {certificateStatus === "yet_to_receive" && (
                     <div className="h-1.5 w-1.5 rounded-full bg-white" />
@@ -2402,19 +2397,17 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                 setEvidenceFile(null);
               }}
               disabled={isSubmitting}
-              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                certificateStatus === "not_provided"
-                  ? "border-slate-700 bg-slate-100 dark:bg-[#181818] dark:border-slate-500 shadow-2xs ring-1 ring-slate-500"
-                  : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-slate-600"
-              }`}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${certificateStatus === "not_provided"
+                ? "border-slate-700 bg-slate-100 dark:bg-[#181818] dark:border-slate-500 shadow-2xs ring-1 ring-slate-500"
+                : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-slate-600"
+                }`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <div
-                  className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
-                    certificateStatus === "not_provided"
-                      ? "border-slate-700 bg-slate-700 text-white dark:border-slate-400 dark:bg-slate-400"
-                      : "border-slate-300 dark:border-slate-600"
-                  }`}
+                  className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${certificateStatus === "not_provided"
+                    ? "border-slate-700 bg-slate-700 text-white dark:border-slate-400 dark:bg-slate-400"
+                    : "border-slate-300 dark:border-slate-600"
+                    }`}
                 >
                   {certificateStatus === "not_provided" && (
                     <div className="h-1.5 w-1.5 rounded-full bg-white dark:bg-slate-900" />
@@ -2471,13 +2464,12 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
                           fileInputRef.current.click();
                         }
                       }}
-                      className={`rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${
-                        isDragging
-                          ? "border-blue-500 bg-blue-50/50 dark:bg-[#337418]/15"
-                          : fileError
-                            ? "border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20"
-                            : "border-slate-300 dark:border-[#292929] hover:border-blue-400 dark:hover:border-[#5DD62C] bg-slate-50/40 dark:bg-[#181818]/40"
-                      }`}
+                      className={`rounded-xl border-2 border-dashed p-4 text-center cursor-pointer transition-all ${isDragging
+                        ? "border-blue-500 bg-blue-50/50 dark:bg-[#337418]/15"
+                        : fileError
+                          ? "border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20"
+                          : "border-slate-300 dark:border-[#292929] hover:border-blue-400 dark:hover:border-[#5DD62C] bg-slate-50/40 dark:bg-[#181818]/40"
+                        }`}
                     >
                       <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-[#337418]/35 text-blue-600 dark:text-[#5DD62C] mb-2">
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -2626,56 +2618,55 @@ export const SubmitAchievementFormContent: React.FC<FormContentProps> = ({
               Cancel
             </button>
 
-          <button
-            type="button"
-            onClick={() => handleSubmit(false)}
-            disabled={isSubmitting || semesterLoading || isComponentLocked || isDefaultDisabled || !semesterId}
-            className="rounded-xl border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#181818] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] transition-colors cursor-pointer min-h-[38px] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Save as Draft
-          </button>
+            <button
+              type="button"
+              onClick={() => handleSubmit(false)}
+              disabled={isSubmitting || semesterLoading || isComponentLocked || isDefaultDisabled || !semesterId}
+              className="rounded-xl border border-slate-300 dark:border-[#292929] bg-slate-50 dark:bg-[#181818] hover:bg-slate-100 dark:hover:bg-[#181818] px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#F5F5F5] transition-colors cursor-pointer min-h-[38px] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Save as Draft
+            </button>
 
-          <button
-            type="submit"
-            disabled={isSubmitting || semesterLoading || isComponentLocked || isDefaultDisabled || !semesterId}
-            id="btn-submit-achievement"
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-bold shadow-xs transition-colors min-h-[38px] ${
-              isDefaultDisabled || isComponentLocked
+            <button
+              type="submit"
+              disabled={isSubmitting || semesterLoading || isComponentLocked || isDefaultDisabled || !semesterId}
+              id="btn-submit-achievement"
+              className={`inline-flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-bold shadow-xs transition-colors min-h-[38px] ${isDefaultDisabled || isComponentLocked
                 ? "bg-slate-400 dark:bg-slate-600 text-white cursor-not-allowed opacity-60"
                 : "bg-[#FFB347] hover:bg-[#FFA21A] active:bg-[#E69528] text-[#1E2A33] border border-[#FFA21A] dark:bg-[#337418] dark:hover:bg-[#275913] dark:text-[#F8F8F8] dark:border-[#337418] cursor-pointer"
-            }`}
-          >
-            {isDefaultDisabled ? (
-              <>
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-                <span>Default Semester Closed</span>
-              </>
-            ) : isComponentLocked ? (
-              <>
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-                <span>Component Locked</span>
-              </>
-            ) : isSubmitting ? (
-              <>
-                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                <span>Submitting...</span>
-              </>
-            ) : (
-              <>
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-                <span>Submit for Mentor Verification</span>
-              </>
-            )}
-          </button>
-        </div>
+                }`}
+            >
+              {isDefaultDisabled ? (
+                <>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  <span>Default Semester Closed</span>
+                </>
+              ) : isComponentLocked ? (
+                <>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  <span>Component Locked</span>
+                </>
+              ) : isSubmitting ? (
+                <>
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span>Submitting...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                  <span>Submit for Mentor Verification</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </form>
     </div>

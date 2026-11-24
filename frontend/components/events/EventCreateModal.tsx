@@ -8,8 +8,11 @@ import {
   AudienceType,
   FormLayoutMode,
   EventAttachment,
+  EventTemplate,
 } from "@/types/events";
 import { eventsApi } from "@/lib/events-api";
+import { notificationsApi } from "@/lib/notifications-api";
+import { EventTemplatesLibraryModal } from "@/components/events/EventTemplatesLibraryModal";
 import { api } from "@/lib/api-client";
 import { AdminStudentItem } from "@/types/auth";
 import { SemesterResponse } from "@/types/achievement";
@@ -94,6 +97,11 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
   const [uploadingPoster, setUploadingPoster] = useState(false);
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Template & Notification states
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<EventTemplate | null>(null);
+  const [notifyStudentsOnPublish, setNotifyStudentsOnPublish] = useState(false);
 
   // Reset or populate state when modal opens or initialEvent changes
   useEffect(() => {
@@ -363,6 +371,45 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
         savedEvent = await eventsApi.updateEvent(initialEvent.id, payload);
       } else {
         savedEvent = await eventsApi.createEvent(payload);
+
+        // If a starter template was selected, initialize the event's form configuration
+        if (
+          selectedTemplate &&
+          ((selectedTemplate.fields_config?.length ?? 0) > 0 ||
+            (selectedTemplate.sections_config?.length ?? 0) > 0)
+        ) {
+          try {
+            await eventsApi.saveEventForm(
+              savedEvent.id,
+              selectedTemplate.fields_config || [],
+              selectedTemplate.sections_config || []
+            );
+          } catch (tErr) {
+            console.warn("Could not auto-apply template form config", tErr);
+          }
+        }
+
+        // If broadcast notification is enabled, send in-app notification to eligible audience
+        if (notifyStudentsOnPublish) {
+          try {
+            await notificationsApi.createNotification({
+              title: `New Event: ${savedEvent.title}`,
+              short_message:
+                savedEvent.short_description || `Registration is now open for ${savedEvent.title}.`,
+              category: "event_announcement",
+              priority: "important",
+              event_id: savedEvent.id,
+              audience_type: savedEvent.audience_type || "all",
+              audience_payload: savedEvent.audience_payload,
+              cta_label: "View Event & Register",
+              cta_url: `/student?tab=events&eventId=${savedEvent.id}`,
+              status: "published",
+              display_mode: "both",
+            });
+          } catch (nErr) {
+            console.warn("Could not broadcast event creation notification", nErr);
+          }
+        }
       }
       onSuccess(savedEvent);
       onClose();
@@ -385,13 +432,24 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       <div className="relative w-full max-w-3xl max-h-[92vh] flex flex-col rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="px-5 py-4 border-b border-slate-100 dark:border-[#292929] flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-[#F5F5F5]">
-              {isEdit ? "Edit Event Details" : "Create New Event"}
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
-              Configure event metadata, media, audience, and registration controls.
-            </p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-[#F5F5F5]">
+                {isEdit ? "Edit Event Details" : "Create New Event"}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
+                Configure event metadata, media, audience, and registration controls.
+              </p>
+            </div>
+            {!isEdit && (
+              <button
+                type="button"
+                onClick={() => setIsTemplateModalOpen(true)}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer"
+              >
+                <span>⚡</span> Choose from Templates
+              </button>
+            )}
           </div>
           <button
             type="button"
@@ -1186,7 +1244,19 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
               Cancel
             </button>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {!isEdit && (
+                <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-700 dark:text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={notifyStudentsOnPublish}
+                    onChange={(e) => setNotifyStudentsOnPublish(e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span>Send notification to eligible students</span>
+                </label>
+              )}
+
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -1198,6 +1268,26 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
           </div>
         </form>
       </div>
+
+      {/* Templates Library Modal */}
+      {isTemplateModalOpen && (
+        <EventTemplatesLibraryModal
+          isOpen={isTemplateModalOpen}
+          onClose={() => setIsTemplateModalOpen(false)}
+          onSelectTemplate={(tpl) => {
+            setSelectedTemplate(tpl);
+            setTitle(tpl.name);
+            setSubtitle(tpl.description || "");
+            setShortDescription(tpl.description || "");
+            setDetailedDescription(tpl.purpose || "");
+            setCategory(tpl.category || "Workshop");
+            if (tpl.form_layout_mode) {
+              setFormLayoutMode(tpl.form_layout_mode);
+            }
+            setIsTemplateModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

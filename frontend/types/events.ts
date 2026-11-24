@@ -334,3 +334,22 @@ export interface EventSubmissionRequest {
     file_size: number;
   }>;
 }
+
+export interface EventTemplate {
+  id: string;
+  name: string;
+  category: string;
+  purpose: string;
+  description: string;
+  is_starter: number | boolean;
+  default_title?: string;
+  default_subtitle?: string;
+  default_mode?: EventMode;
+  form_layout_mode?: FormLayoutMode;
+  sections_config?: FormSection[];
+  fields_config?: EventFormField[];
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+

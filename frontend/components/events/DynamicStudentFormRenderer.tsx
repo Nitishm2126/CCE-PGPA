@@ -135,6 +135,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     setErrorMessage(null);
 
     if (!navigator.geolocation) {
+      // Browser doesn't support geolocation, fallback to standard upload
       handleFileUpload(key, file);
       setCapturingGeoKey(null);
       return;
@@ -174,6 +175,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
         }
       },
       async (err) => {
+        // Geolocation denied or unavailable -> Upload photo without metadata with notice
         console.warn("Geolocation prompt was denied or unavailable:", err.message);
         try {
           const res = await eventsApi.uploadEventFile(file);
@@ -425,6 +427,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     );
   }
 
+  // Active section fields for wizard
   const visibleSections = isMultiStep ? [sections[currentStepIndex]] : sections;
 
   return (

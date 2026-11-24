@@ -11,6 +11,7 @@ import {
   EventResponsesResponse,
   EventSubmissionItem,
   EventSubmissionRequest,
+  EventTemplate,
 } from "@/types/events";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -158,6 +159,8 @@ export const eventsApi = {
     original_filename: string;
     mime_type: string;
     file_size: number;
+    file_url?: string;
+    download_url?: string;
   }> => {
     const formData = new FormData();
     formData.append("file", file);
@@ -166,6 +169,8 @@ export const eventsApi = {
       original_filename: string;
       mime_type: string;
       file_size: number;
+      file_url?: string;
+      download_url?: string;
     }>("/events/upload", {
       method: "POST",
       body: formData,
@@ -197,5 +202,34 @@ export const eventsApi = {
 
   getStudentMySubmission: async (eventId: string): Promise<EventSubmissionItem> => {
     return request<EventSubmissionItem>(`/student/events/${eventId}/my-submission`);
+  },
+
+  // Templates Library (Phase 1.2)
+  listTemplates: async (filters?: {
+    category?: string;
+    search?: string;
+  }): Promise<{ templates: EventTemplate[]; count: number }> => {
+    const params = new URLSearchParams();
+    if (filters?.category && filters.category !== "all") params.set("category", filters.category);
+    if (filters?.search) params.set("search", filters.search);
+    const qs = params.toString();
+    return request<{ templates: EventTemplate[]; count: number }>(`/events/templates${qs ? `?${qs}` : ""}`);
+  },
+
+  getTemplate: async (templateId: string): Promise<EventTemplate> => {
+    return request<EventTemplate>(`/events/templates/${templateId}`);
+  },
+
+  saveCustomTemplate: async (data: Partial<EventTemplate>): Promise<EventTemplate> => {
+    return request<EventTemplate>("/events/templates", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteCustomTemplate: async (templateId: string): Promise<{ message: string }> => {
+    return request<{ message: string }>(`/events/templates/${templateId}`, {
+      method: "DELETE",
+    });
   },
 };
