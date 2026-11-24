@@ -757,7 +757,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                      {repCfg.fields.map((subF) => (
+                                      {(repCfg.fields || []).map((subF) => (
                                         <div key={subF.field_key}>
                                           <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">
                                             {subF.label} {subF.required && <span className="text-rose-500">*</span>}

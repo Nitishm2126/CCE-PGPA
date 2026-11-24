@@ -9,7 +9,6 @@ import { EventFormBuilder } from "@/components/events/EventFormBuilder";
 import { EventResponsesManager } from "@/components/events/EventResponsesManager";
 import { SemesterResponse } from "@/types/achievement";
 import { api } from "@/lib/api-client";
-import { AdminNotificationsConsole } from "@/components/notifications/AdminNotificationsConsole";
 
 interface AdminEventsConsoleProps {
   userRole?: string;
@@ -17,7 +16,6 @@ interface AdminEventsConsoleProps {
 }
 
 export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole = "admin", semesters = [] }) => {
-  const [mainSectionTab, setMainSectionTab] = useState<"events" | "notifications">("events");
   const [events, setEvents] = useState<EventItem[]>([]);
   const [semestersList, setSemestersList] = useState<SemesterResponse[]>(semesters);
   const [loading, setLoading] = useState<boolean>(true);
@@ -77,7 +75,15 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
 
   // Lifecycle actions
   const handlePublish = async (event: EventItem) => {
-    if (!confirm(`Are you sure you want to publish "${event.title}"? Eligible students will immediately be able to register.`)) return;
+    const notifyNotice = event.notify_students
+      ? "\n\n🔔 'Notify Students' is enabled: An in-app notification will automatically be dispatched to the eligible student audience."
+      : "";
+    if (
+      !confirm(
+        `Are you sure you want to publish "${event.title}"? Eligible students will immediately be able to view and register for this event.${notifyNotice}`
+      )
+    )
+      return;
     try {
       await eventsApi.publishEvent(event.id);
       loadEvents();
@@ -173,38 +179,8 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
 
   return (
     <div className="space-y-4">
-      {/* Primary Module Switcher: Events vs In-App Notifications */}
-      <div className="flex border-b border-slate-200 dark:border-[#292929] gap-2 pt-1">
-        <button
-          type="button"
-          onClick={() => setMainSectionTab("events")}
-          className={`pb-2.5 px-3.5 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
-            mainSectionTab === "events"
-              ? "border-blue-600 dark:border-[#5DD62C] text-blue-600 dark:text-[#5DD62C]"
-              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-          }`}
-        >
-          <span>📅</span> Events &amp; Registration Forms
-        </button>
-        <button
-          type="button"
-          onClick={() => setMainSectionTab("notifications")}
-          className={`pb-2.5 px-3.5 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
-            mainSectionTab === "notifications"
-              ? "border-blue-600 dark:border-[#5DD62C] text-blue-600 dark:text-[#5DD62C]"
-              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-          }`}
-        >
-          <span>🔔</span> Student In-App Notifications
-        </button>
-      </div>
-
-      {mainSectionTab === "notifications" ? (
-        <AdminNotificationsConsole />
-      ) : (
-        <>
-          {/* Module Title Banner */}
-          <div className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+      {/* Module Title Banner */}
+      <div className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
             <div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-[#5DD62C]" />
@@ -585,8 +561,6 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
             initialEvent={editingEvent}
             semesters={semestersList}
           />
-        </>
-      )}
     </div>
   );
 };

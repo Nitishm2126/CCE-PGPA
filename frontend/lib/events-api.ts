@@ -14,6 +14,8 @@ import {
   EventTemplate,
 } from "@/types/events";
 
+import { STARTER_EVENT_TEMPLATES } from "@/lib/starter-templates-data";
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
   const authToken = getStoredToken();
@@ -204,7 +206,7 @@ export const eventsApi = {
     return request<EventSubmissionItem>(`/student/events/${eventId}/my-submission`);
   },
 
-  // Templates Library (Phase 1.2)
+  // Templates Library (Phase 1.2 & Phase 2)
   listTemplates: async (filters?: {
     category?: string;
     search?: string;
@@ -213,11 +215,40 @@ export const eventsApi = {
     if (filters?.category && filters.category !== "all") params.set("category", filters.category);
     if (filters?.search) params.set("search", filters.search);
     const qs = params.toString();
-    return request<{ templates: EventTemplate[]; count: number }>(`/events/templates${qs ? `?${qs}` : ""}`);
+    try {
+      const res = await request<{ templates: EventTemplate[]; count: number }>(`/events/templates${qs ? `?${qs}` : ""}`);
+      if (res && Array.isArray(res.templates) && res.templates.length > 0) {
+        return res;
+      }
+    } catch (err) {
+      console.warn("Backend templates API unreachable, utilizing built-in starter templates:", err);
+    }
+
+    // High-reliability local fallback: 5 professional starter templates
+    let list = [...STARTER_EVENT_TEMPLATES];
+    if (filters?.category && filters.category !== "all") {
+      list = list.filter((t) => t.category.toLowerCase() === filters.category?.toLowerCase());
+    }
+    if (filters?.search) {
+      const s = filters.search.toLowerCase();
+      list = list.filter(
+        (t) =>
+          t.name.toLowerCase().includes(s) ||
+          t.description.toLowerCase().includes(s) ||
+          t.purpose.toLowerCase().includes(s)
+      );
+    }
+    return { templates: list, count: list.length };
   },
 
   getTemplate: async (templateId: string): Promise<EventTemplate> => {
-    return request<EventTemplate>(`/events/templates/${templateId}`);
+    try {
+      return await request<EventTemplate>(`/events/templates/${templateId}`);
+    } catch (err) {
+      const match = STARTER_EVENT_TEMPLATES.find((t) => t.id === templateId);
+      if (match) return match;
+      throw err;
+    }
   },
 
   saveCustomTemplate: async (data: Partial<EventTemplate>): Promise<EventTemplate> => {

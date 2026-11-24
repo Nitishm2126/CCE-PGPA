@@ -99,7 +99,7 @@ export interface RepeatableConfig {
   min_items?: number; // e.g. 1
   max_items?: number; // e.g. 4
   add_button_text?: string; // e.g. "+ Add Team Member"
-  fields: EventFormField[];
+  fields?: EventFormField[];
 }
 
 export interface GeoLocationData {
@@ -145,7 +145,7 @@ export interface EventFormField {
   validation_config?: FormFieldValidationConfig;
   options_config?: FormFieldOption[];
   display_order: number;
-  enabled: boolean;
+  enabled?: boolean;
   section_id?: string;
   conditions?: ConditionalRule[] | ConditionalConfig | any;
   rating_config?: RatingConfig;
@@ -215,6 +215,16 @@ export interface EventItem {
   terms_conditions?: string;
   form_layout_mode?: FormLayoutMode;
   registration_capacity?: number | null;
+  notify_students?: boolean | number;
+  notification_title?: string;
+  notification_message?: string;
+  notification_image_url?: string;
+  notification_priority?: "normal" | "important" | "urgent";
+  notification_display_mode?: "bell_only" | "both" | "popup_only";
+  notification_schedule?: string | null;
+  notification_cta_label?: string;
+  send_update_notification?: boolean;
+  update_message?: string;
   created_by: string;
   creator_name?: string;
   creator_email?: string;
@@ -319,6 +329,16 @@ export interface EventCreateRequest {
   terms_conditions?: string;
   form_layout_mode?: FormLayoutMode;
   registration_capacity?: number | null;
+  notify_students?: boolean | number;
+  notification_title?: string;
+  notification_message?: string;
+  notification_image_url?: string;
+  notification_priority?: "normal" | "important" | "urgent";
+  notification_display_mode?: "bell_only" | "both" | "popup_only";
+  notification_schedule?: string | null;
+  notification_cta_label?: string;
+  send_update_notification?: boolean;
+  update_message?: string;
   form_fields?: Array<Partial<EventFormField>>;
   sections_config?: FormSection[];
 }

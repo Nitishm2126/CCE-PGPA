@@ -34,8 +34,8 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
 }) => {
   const isEdit = !!initialEvent;
 
-  // Tabs: basic, media, audience, rules
-  const [activeTab, setActiveTab] = useState<"basic" | "media" | "audience" | "rules">("basic");
+  // Tabs: basic, media, audience, rules, notifications
+  const [activeTab, setActiveTab] = useState<"basic" | "media" | "audience" | "rules" | "notifications">("basic");
 
   // Section A: Basic Details & Schedule
   const [title, setTitle] = useState("");
@@ -92,16 +92,29 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
   const [closeAfterDeadline, setCloseAfterDeadline] = useState(true);
   const [isRegistrationEnabled, setIsRegistrationEnabled] = useState(true);
 
+  // Section E: Integrated Student Notification Settings
+  const [notifyStudents, setNotifyStudents] = useState<boolean>(false);
+  const [notificationTitle, setNotificationTitle] = useState<string>("");
+  const [notificationMessage, setNotificationMessage] = useState<string>("");
+  const [notificationImageUrl, setNotificationImageUrl] = useState<string>("");
+  const [notificationPriority, setNotificationPriority] = useState<"normal" | "important" | "urgent">("normal");
+  const [notificationDisplayMode, setNotificationDisplayMode] = useState<"bell_only" | "both">("bell_only");
+  const [notificationCtaLabel, setNotificationCtaLabel] = useState<string>("Register Now");
+  const [notificationTiming, setNotificationTiming] = useState<"with_event" | "scheduled">("with_event");
+  const [notificationScheduledDate, setNotificationScheduledDate] = useState<string>("");
+  const [notificationScheduledTime, setNotificationScheduledTime] = useState<string>("09:00");
+  const [sendUpdateNotification, setSendUpdateNotification] = useState<boolean>(false);
+  const [updateMessage, setUpdateMessage] = useState<string>("");
+
   // Status & error states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingPoster, setUploadingPoster] = useState(false);
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Template & Notification states
+  // Template states
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<EventTemplate | null>(null);
-  const [notifyStudentsOnPublish, setNotifyStudentsOnPublish] = useState(false);
 
   // Reset or populate state when modal opens or initialEvent changes
   useEffect(() => {
@@ -169,6 +182,26 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setAllowEditSubmission(Boolean(initialEvent.allow_edit_submission));
       setCloseAfterDeadline(initialEvent.close_after_deadline !== false);
       setIsRegistrationEnabled(initialEvent.is_registration_enabled !== false);
+
+      setNotifyStudents(Boolean(initialEvent.notify_students));
+      setNotificationTitle(initialEvent.notification_title || initialEvent.title || "");
+      setNotificationMessage(initialEvent.notification_message || initialEvent.short_description || "");
+      setNotificationImageUrl(initialEvent.notification_image_url || initialEvent.poster_url || "");
+      setNotificationPriority((initialEvent.notification_priority as any) || "normal");
+      setNotificationDisplayMode((initialEvent.notification_display_mode as any) || "bell_only");
+      setNotificationCtaLabel(initialEvent.notification_cta_label || "Register Now");
+      if (initialEvent.notification_schedule) {
+        setNotificationTiming("scheduled");
+        const [d, t] = initialEvent.notification_schedule.split("T");
+        setNotificationScheduledDate(d || "");
+        setNotificationScheduledTime(t ? t.substring(0, 5) : "09:00");
+      } else {
+        setNotificationTiming("with_event");
+        setNotificationScheduledDate("");
+        setNotificationScheduledTime("09:00");
+      }
+      setSendUpdateNotification(false);
+      setUpdateMessage("");
     } else {
       const today = new Date().toISOString().split("T")[0];
       const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
@@ -218,15 +251,28 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setAllowEditSubmission(false);
       setCloseAfterDeadline(true);
       setIsRegistrationEnabled(true);
+
+      setNotifyStudents(false);
+      setNotificationTitle("");
+      setNotificationMessage("");
+      setNotificationImageUrl("");
+      setNotificationPriority("normal");
+      setNotificationDisplayMode("bell_only");
+      setNotificationCtaLabel("Register Now");
+      setNotificationTiming("with_event");
+      setNotificationScheduledDate("");
+      setNotificationScheduledTime("09:00");
+      setSendUpdateNotification(false);
+      setUpdateMessage("");
     }
 
     setActiveTab("basic");
     setError(null);
   }, [isOpen, initialEvent, semesters]);
 
-  // Load students for audience picker
+  // Load students eagerly for live audience recipient count calculation
   useEffect(() => {
-    if (isOpen && audienceType === "specific_students" && allStudents.length === 0) {
+    if (isOpen && allStudents.length === 0) {
       setLoadingStudents(true);
       api
         .adminGetStudents()
@@ -238,7 +284,30 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
         })
         .finally(() => setLoadingStudents(false));
     }
-  }, [isOpen, audienceType, allStudents.length]);
+  }, [isOpen, allStudents.length]);
+
+  const recipientCount = React.useMemo(() => {
+    if (loadingStudents) return "...";
+    if (audienceType === "all") return allStudents.length || 61;
+    if (audienceType === "section") {
+      const cnt = allStudents.filter(
+        (s) => (s.section || "").trim().toUpperCase() === selectedSection.trim().toUpperCase()
+      ).length;
+      return cnt;
+    }
+    if (audienceType === "academic_year") {
+      const cnt = allStudents.filter(
+        (s) =>
+          String(s.year || "").trim() === selectedYear.trim() ||
+          String(s.batch || "").trim() === selectedYear.trim()
+      ).length;
+      return cnt;
+    }
+    if (audienceType === "specific_students") {
+      return selectedStudents.length;
+    }
+    return allStudents.length || 61;
+  }, [allStudents, audienceType, selectedSection, selectedYear, selectedStudents, loadingStudents]);
 
   if (!isOpen) return null;
 
@@ -362,6 +431,22 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       allow_edit_submission: allowEditSubmission,
       close_after_deadline: closeAfterDeadline,
       is_registration_enabled: isRegistrationEnabled,
+      notify_students: notifyStudents,
+      notification_title: notificationTitle.trim() || title.trim(),
+      notification_message:
+        notificationMessage.trim() ||
+        shortDescription.trim() ||
+        `Registration is now open for ${title.trim()}.`,
+      notification_image_url: notificationImageUrl.trim() || posterUrl || undefined,
+      notification_priority: notificationPriority,
+      notification_display_mode: notificationDisplayMode,
+      notification_cta_label: notificationCtaLabel.trim() || "Register Now",
+      notification_schedule:
+        notificationTiming === "scheduled" && notificationScheduledDate
+          ? `${notificationScheduledDate}T${notificationScheduledTime}:00`
+          : undefined,
+      send_update_notification: isEdit ? sendUpdateNotification : false,
+      update_message: isEdit && sendUpdateNotification ? updateMessage.trim() : undefined,
     };
 
     setIsSubmitting(true);
@@ -386,28 +471,6 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
             );
           } catch (tErr) {
             console.warn("Could not auto-apply template form config", tErr);
-          }
-        }
-
-        // If broadcast notification is enabled, send in-app notification to eligible audience
-        if (notifyStudentsOnPublish) {
-          try {
-            await notificationsApi.createNotification({
-              title: `New Event: ${savedEvent.title}`,
-              short_message:
-                savedEvent.short_description || `Registration is now open for ${savedEvent.title}.`,
-              category: "event_announcement",
-              priority: "important",
-              event_id: savedEvent.id,
-              audience_type: savedEvent.audience_type || "all",
-              audience_payload: savedEvent.audience_payload,
-              cta_label: "View Event & Register",
-              cta_url: `/student?tab=events&eventId=${savedEvent.id}`,
-              status: "published",
-              display_mode: "both",
-            });
-          } catch (nErr) {
-            console.warn("Could not broadcast event creation notification", nErr);
           }
         }
       }
@@ -467,18 +530,28 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
             { id: "media", label: "B: Media & Attachments" },
             { id: "audience", label: "C: Target Audience" },
             { id: "rules", label: "D: Rules & Guidelines" },
+            {
+              id: "notifications",
+              label: notifyStudents
+                ? `E: Notifications (${recipientCount})`
+                : "E: Student Notifications",
+              activeIndicator: notifyStudents,
+            },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as any)}
-              className={`pb-2.5 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              className={`pb-2.5 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === tab.id
                   ? "border-blue-600 dark:border-[#5DD62C] text-blue-600 dark:text-[#5DD62C]"
                   : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
               }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.id === "notifications" && notifyStudents && (
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              )}
             </button>
           ))}
         </div>
@@ -1233,6 +1306,287 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
             </div>
           )}
 
+          {/* TAB 5: STUDENT NOTIFICATION SETTINGS */}
+          {activeTab === "notifications" && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              {/* Main Toggle Card */}
+              <div className="p-4 rounded-2xl border border-slate-200 dark:border-[#292929] bg-gradient-to-br from-slate-50 to-white dark:from-[#202020] dark:to-[#181818] space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🔔</span>
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5]">
+                        Notify Eligible Students
+                      </h4>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          notifyStudents
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-[#5DD62C]"
+                            : "bg-slate-200 text-slate-600 dark:bg-neutral-800 dark:text-neutral-400"
+                        }`}
+                      >
+                        {notifyStudents ? "Enabled" : "Disabled (Default)"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
+                      Automatically dispatch an in-app event notification to eligible students when this event is published.
+                    </p>
+                  </div>
+
+                  {/* Toggle Switch */}
+                  <label className="relative inline-flex items-center cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={notifyStudents}
+                      onChange={(e) => setNotifyStudents(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-[#5DD62C]"></div>
+                  </label>
+                </div>
+
+                {/* Recipient Audience Summary Pill */}
+                <div className="pt-2 border-t border-slate-200/60 dark:border-[#292929] flex flex-wrap items-center justify-between text-xs gap-2">
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-[#A3A3A3]">
+                    <span className="font-semibold text-slate-800 dark:text-[#F5F5F5]">
+                      Target Audience:
+                    </span>
+                    <span className="capitalize px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#262626] font-mono text-[11px]">
+                      {audienceType === "all"
+                        ? "All CCE Students"
+                        : audienceType === "section"
+                        ? `Section ${selectedSection}`
+                        : audienceType === "academic_year"
+                        ? `Year ${selectedYear}`
+                        : `${selectedStudents.length} Specific Students`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 font-bold text-blue-600 dark:text-[#5DD62C]">
+                    <span>👥</span>
+                    <span>{recipientCount} eligible recipients</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Conditional Notification Configuration Fields */}
+              {notifyStudents && (
+                <div className="space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                  {/* Title & Message */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                        Notification Title <span className="text-slate-400 font-normal">(Default: Event Title)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={notificationTitle}
+                        onChange={(e) => setNotificationTitle(e.target.value)}
+                        placeholder={title ? `New Event: ${title}` : "e.g. Workshop Registration Open"}
+                        className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                        Notification Message <span className="text-slate-400 font-normal">(Default: Short Description)</span>
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={notificationMessage}
+                        onChange={(e) => setNotificationMessage(e.target.value)}
+                        placeholder={
+                          shortDescription ||
+                          "Registration is now open! Tap to review guidelines, requirements, and submit your application."
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Priority & Display Mode */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Priority Selector */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1.5">
+                        Priority Level
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: "normal", label: "Normal", badge: "Standard" },
+                          { id: "important", label: "Important", badge: "Highlighted" },
+                          { id: "urgent", label: "Urgent", badge: "Top Priority" },
+                        ].map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => setNotificationPriority(p.id as any)}
+                            className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                              notificationPriority === p.id
+                                ? "border-blue-600 dark:border-[#5DD62C] bg-blue-50/50 dark:bg-[#5DD62C]/10 text-slate-900 dark:text-[#F5F5F5] font-bold"
+                                : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-600 dark:text-[#A3A3A3]"
+                            }`}
+                          >
+                            <p className="text-xs">{p.label}</p>
+                            <span className="text-[9px] text-slate-400">{p.badge}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Display Mode Selector */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1.5">
+                        Student Display Mode
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setNotificationDisplayMode("bell_only")}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                            notificationDisplayMode === "bell_only"
+                              ? "border-blue-600 dark:border-[#5DD62C] bg-blue-50/50 dark:bg-[#5DD62C]/10 text-slate-900 dark:text-[#F5F5F5] font-bold"
+                              : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-600 dark:text-[#A3A3A3]"
+                          }`}
+                        >
+                          <p className="text-xs flex items-center gap-1.5">
+                            <span>🔔</span> Bell Drawer
+                          </p>
+                          <span className="text-[9px] text-slate-400">Header flyout only</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNotificationDisplayMode("both")}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                            notificationDisplayMode === "both"
+                              ? "border-blue-600 dark:border-[#5DD62C] bg-blue-50/50 dark:bg-[#5DD62C]/10 text-slate-900 dark:text-[#F5F5F5] font-bold"
+                              : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] text-slate-600 dark:text-[#A3A3A3]"
+                          }`}
+                        >
+                          <p className="text-xs flex items-center gap-1.5">
+                            <span>📱</span> Popup + Bell
+                          </p>
+                          <span className="text-[9px] text-slate-400">Modal popup on dashboard</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CTA Label & Auto Destination */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                        Call-to-Action (CTA) Button Label
+                      </label>
+                      <input
+                        type="text"
+                        value={notificationCtaLabel}
+                        onChange={(e) => setNotificationCtaLabel(e.target.value)}
+                        placeholder="Register Now"
+                        className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                        CTA Destination Route
+                      </label>
+                      <div className="w-full rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#202020]/50 px-3.5 py-2 text-xs text-slate-500 dark:text-[#A3A3A3] min-h-[38px] flex items-center justify-between">
+                        <span className="font-mono text-[11px] truncate">
+                          /student?tab=events&eventId=...
+                        </span>
+                        <span className="text-[10px] text-emerald-600 dark:text-[#5DD62C] font-semibold">
+                          Linked to Event
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Notification Timing */}
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 space-y-2.5">
+                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">
+                      Notification Publication Timing
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="notifTiming"
+                          checked={notificationTiming === "with_event"}
+                          onChange={() => setNotificationTiming("with_event")}
+                          className="text-blue-600"
+                        />
+                        <span>Publish immediately with event</span>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="notifTiming"
+                          checked={notificationTiming === "scheduled"}
+                          onChange={() => setNotificationTiming("scheduled")}
+                          className="text-blue-600"
+                        />
+                        <span>Schedule notification for future dispatch</span>
+                      </label>
+                    </div>
+
+                    {notificationTiming === "scheduled" && (
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/50 dark:border-[#292929]">
+                        <div>
+                          <label className="block text-[10px] text-slate-500 mb-0.5">Date</label>
+                          <input
+                            type="date"
+                            value={notificationScheduledDate}
+                            onChange={(e) => setNotificationScheduledDate(e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-2 py-1 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-slate-500 mb-0.5">Time</label>
+                          <input
+                            type="time"
+                            value={notificationScheduledTime}
+                            onChange={(e) => setNotificationScheduledTime(e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-2 py-1 text-xs"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Optional Event Update Notification when editing an existing event */}
+                  {isEdit && (
+                    <div className="p-3.5 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                            📢 Dispatch Event Update Notification
+                          </p>
+                          <p className="text-[11px] text-amber-700 dark:text-amber-300/80">
+                            Notify registered and eligible students that event details, venue, or timings were updated.
+                          </p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={sendUpdateNotification}
+                          onChange={(e) => setSendUpdateNotification(e.target.checked)}
+                          className="rounded text-amber-600"
+                        />
+                      </div>
+                      {sendUpdateNotification && (
+                        <textarea
+                          rows={2}
+                          value={updateMessage}
+                          onChange={(e) => setUpdateMessage(e.target.value)}
+                          placeholder="e.g. Schedule updated: The keynote session starts at 10:00 AM in Lab 3."
+                          className="w-full rounded-xl border border-amber-300 dark:border-amber-800 bg-white dark:bg-[#181818] p-2.5 text-xs text-slate-900 dark:text-[#F5F5F5] resize-none"
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Modal Footer */}
           <div className="pt-4 border-t border-slate-100 dark:border-[#292929] flex items-center justify-between">
             <button
@@ -1245,17 +1599,19 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
             </button>
 
             <div className="flex items-center gap-3">
-              {!isEdit && (
-                <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-700 dark:text-slate-300">
-                  <input
-                    type="checkbox"
-                    checked={notifyStudentsOnPublish}
-                    onChange={(e) => setNotifyStudentsOnPublish(e.target.checked)}
-                    className="rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>Send notification to eligible students</span>
-                </label>
-              )}
+              <button
+                type="button"
+                onClick={() => setActiveTab("notifications")}
+                className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-[#5DD62C] flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>🔔</span>
+                <span>
+                  Notify:{" "}
+                  <strong className={notifyStudents ? "text-emerald-600 dark:text-[#5DD62C]" : "text-slate-400"}>
+                    {notifyStudents ? `On (${recipientCount})` : "Off"}
+                  </strong>
+                </span>
+              </button>
 
               <button
                 type="submit"
