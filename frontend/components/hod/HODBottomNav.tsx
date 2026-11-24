@@ -3,8 +3,8 @@
 import React from "react";
 
 interface HODBottomNavProps {
-  activeTab: "submissions" | "students" | "overview" | "messages" | "excel-import" | "pgpa-grades";
-  onSelectTab: (tab: "submissions" | "students" | "overview" | "messages" | "excel-import" | "pgpa-grades") => void;
+  activeTab: "submissions" | "students" | "overview" | "messages" | "excel-import" | "pgpa-grades" | "events";
+  onSelectTab: (tab: "submissions" | "students" | "overview" | "messages" | "excel-import" | "pgpa-grades" | "events") => void;
   onOpenMore: () => void;
   unreadMessagesCount?: number;
 }
@@ -71,7 +71,7 @@ export const HODBottomNav: React.FC<HODBottomNavProps> = ({
     },
   ];
 
-  const isMoreActive = activeTab === "excel-import" || activeTab === "pgpa-grades";
+  const isMoreActive = activeTab === "excel-import" || activeTab === "pgpa-grades" || activeTab === "events";
 
   return (
     <nav

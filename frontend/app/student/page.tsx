@@ -30,6 +30,7 @@ import { ManualPointsSection } from "@/components/student/ManualPointsSection";
 import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 import { SettingsModal } from "@/components/shared/SettingsModal";
+import { StudentEventsSection } from "@/components/events/StudentEventsSection";
 
 export default function StudentDashboardPage() {
   const router = useRouter();
@@ -757,6 +758,11 @@ export default function StudentDashboardPage() {
               onSubmitClick={() => handleOpenSubmitModal(null)}
             />
           </div>
+        )}
+
+        {/* TAB: CCE EVENTS & FORMS */}
+        {activeTab === "events" && (
+          <StudentEventsSection />
         )}
 
         {/* TAB 6: PROFILE (Student & Mentor Academic Profile) */}

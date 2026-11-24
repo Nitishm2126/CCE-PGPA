@@ -33,6 +33,7 @@ import { AppleLoadingScreen } from "@/components/shared/AppleLoadingScreen";
 import { AdminBottomNav } from "@/components/admin/AdminBottomNav";
 import { useBodyLock } from "@/lib/use-body-lock";
 import { formatSemester } from "@/lib/format-semester";
+import { AdminEventsConsole } from "@/components/events/AdminEventsConsole";
 
 type AdminNavigationSection =
   | "overview"
@@ -46,7 +47,8 @@ type AdminNavigationSection =
   | "component-points"
   | "submissions"
   | "storage"
-  | "system";
+  | "system"
+  | "events";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -774,6 +776,29 @@ export default function AdminDashboardPage() {
                       </div>
                     )}
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection("events")}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
+                      activeSection === "events"
+                        ? "bg-[#0a192f] text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    }`}
+                    title="CCE Events & Dynamic Registration Forms"
+                  >
+                    <svg className="h-4 w-4 shrink-0 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {!sidebarCollapsed && (
+                      <div className="flex-1 flex items-center justify-between">
+                        <span>CCE Events &amp; Forms</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-pink-100 text-pink-800 dark:bg-pink-900/60 dark:text-pink-200 font-bold">
+                          Events
+                        </span>
+                      </div>
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -940,6 +965,7 @@ export default function AdminDashboardPage() {
                     {activeSection === "components" && "PGPA Components Catalogue & Semester Matrix"}
                     {activeSection === "component-points" && "PGPA Component & Semester Point Settings"}
                     {activeSection === "submissions" && "PGPA Student Achievements Audit"}
+                    {activeSection === "events" && "CCE Events & Forms Console"}
                     {activeSection === "storage" && "Google Drive OAuth & Binary Storage Health"}
                     {activeSection === "system" && "Institutional RBAC Permission Matrix"}
                   </h1>
@@ -1698,6 +1724,11 @@ export default function AdminDashboardPage() {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* VIEW: CCE EVENTS & FORMS CONSOLE (PHASE 1) */}
+            {activeSection === "events" && (
+              <AdminEventsConsole userRole="admin" />
             )}
 
             {/* VIEW 8: GOOGLE DRIVE STORAGE & OAUTH 2.0 */}

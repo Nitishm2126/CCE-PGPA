@@ -13,6 +13,7 @@ export type AdminNavigationSection =
   | "components"
   | "component-points"
   | "submissions"
+  | "events"
   | "storage"
   | "system";
 

@@ -25,6 +25,7 @@ import { FineWorksBrand } from "@/components/shared/FineWorksBrand";
 import { FineWorksFooter } from "@/components/shared/FineWorksFooter";
 import { ActivityInspectionModal } from "@/components/shared/ActivityInspectionModal";
 import { ManualPointsModal } from "@/components/mentor/ManualPointsModal";
+import { AdminEventsConsole } from "@/components/events/AdminEventsConsole";
 
 
 export default function HODDashboardPage() {
@@ -52,7 +53,7 @@ export default function HODDashboardPage() {
   const [submissionsError, setSubmissionsError] = useState<string | null>(null);
 
   // Tabs & Filters
-  const [activeTab, setActiveTab] = useState<"submissions" | "students" | "overview" | "messages" | "excel-import" | "pgpa-grades">("submissions");
+  const [activeTab, setActiveTab] = useState<"submissions" | "students" | "overview" | "messages" | "excel-import" | "pgpa-grades" | "events">("submissions");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
   const [selectedComponentId, setSelectedComponentId] = useState<string>("all");
@@ -712,6 +713,20 @@ export default function HODDashboardPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
               </svg>
               <span>PGPA Grades</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("events")}
+              className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTab === "events"
+                  ? "bg-[#FFB347] text-slate-950 font-bold shadow-2xs"
+                  : "bg-white dark:bg-[#181818] text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#222222] border border-slate-200 dark:border-[#292929]"
+              }`}
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>CCE Events &amp; Forms</span>
             </button>
           </div>
         </div>
@@ -1451,6 +1466,13 @@ export default function HODDashboardPage() {
         {/* Tab 6: Five-Component PGPA Grades Matrix & Audit */}
         {activeTab === "pgpa-grades" && (
           <HODPGPAGradesTab token={token} studentsList={students} />
+        )}
+
+        {/* Tab 7: CCE Events & Forms Console */}
+        {activeTab === "events" && (
+          <div className="pt-2">
+            <AdminEventsConsole userRole="hod" />
+          </div>
         )}
       </main>
 
