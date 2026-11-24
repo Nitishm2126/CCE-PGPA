@@ -1,5 +1,5 @@
 // ==============================================================================
-// CCE Events & Forms Type Definitions (Phase 1)
+// CCE Events & Forms Type Definitions (Advanced Form Builder & Publishing)
 // ==============================================================================
 
 export type EventMode = "Offline" | "Online" | "Hybrid";
@@ -8,20 +8,117 @@ export type EventStatus = "draft" | "published" | "closed" | "archived";
 
 export type AudienceType = "all" | "specific_students" | "section" | "academic_year" | "custom";
 
+export type FormLayoutMode = "single_page" | "multi_step";
+
 export type FormFieldType =
+  // Basic
   | "text"
   | "textarea"
   | "number"
   | "email"
   | "phone"
+  | "url"
+  | "rich_text"
+  // Date & Time
+  | "date"
+  | "time"
+  | "datetime"
+  | "date_range"
+  // Selection
   | "dropdown"
   | "radio"
   | "checkbox"
-  | "date"
-  | "time"
+  | "yes_no"
+  | "multi_select"
+  // Feedback & Rating
+  | "star_rating"
+  | "numeric_rating"
+  | "satisfaction_rating"
+  | "difficulty_rating"
+  | "custom_scale"
+  // Uploads
   | "file"
+  | "image_upload"
+  | "pdf_upload"
+  | "document_upload"
+  | "camera_capture"
+  | "gallery_upload"
+  // Geo Photo
+  | "geo_photo"
+  // Layout Blocks
   | "heading"
-  | "info";
+  | "subheading"
+  | "description"
+  | "rich_text_block"
+  | "divider"
+  | "info"
+  | "info_card"
+  | "image_block"
+  | "pdf_link"
+  | "notice"
+  // Repeatable
+  | "repeatable_group"
+  | (string & {});
+
+export type ConditionOperator =
+  | "equals"
+  | "not_equals"
+  | "contains"
+  | "greater_than"
+  | "less_than"
+  | "in"
+  | "is_empty"
+  | "is_not_empty";
+
+export interface ConditionalRule {
+  field: string; // source field key
+  operator: ConditionOperator;
+  value?: any;
+  target_value?: any;
+  action?: "show" | "hide";
+}
+
+export interface ConditionalConfig {
+  logic?: "and" | "or";
+  rules: ConditionalRule[];
+}
+
+export interface RatingConfig {
+  max_rating?: number; // e.g. 5 or 10
+  allow_half?: boolean;
+  min_label?: string; // e.g. "Poor" or "Beginner"
+  max_label?: string; // e.g. "Excellent" or "Advanced"
+  scale_type?: "stars" | "numbers" | "emojis" | "labels";
+  options?: string[]; // e.g. ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+  show_feedback_box?: boolean;
+  feedback_box_label?: string;
+}
+
+export interface RepeatableConfig {
+  entity_name?: string; // e.g. "Team Member", "Participant"
+  min_items?: number; // e.g. 1
+  max_items?: number; // e.g. 4
+  add_button_text?: string; // e.g. "+ Add Team Member"
+  fields: EventFormField[];
+}
+
+export interface GeoLocationData {
+  latitude?: number;
+  longitude?: number;
+  accuracy?: number;
+  timestamp?: string;
+  has_geo: boolean;
+  file_url?: string;
+  storage_reference?: string;
+  original_filename?: string;
+}
+
+export interface FormSection {
+  id: string;
+  title: string;
+  description?: string;
+  order: number;
+}
 
 export interface FormFieldValidationConfig {
   min_len?: number;
@@ -49,6 +146,15 @@ export interface EventFormField {
   options_config?: FormFieldOption[];
   display_order: number;
   enabled: boolean;
+  section_id?: string;
+  conditions?: ConditionalRule[] | ConditionalConfig | any;
+  rating_config?: RatingConfig;
+  repeatable_config?: RepeatableConfig;
+  default_value?: any;
+  min_len?: number;
+  max_len?: number;
+  min_val?: number;
+  max_val?: number;
 }
 
 export interface EventFormVersion {
@@ -56,6 +162,7 @@ export interface EventFormVersion {
   event_id: string;
   version_number: number;
   status: "draft" | "published" | "archived";
+  sections_config?: FormSection[];
   created_by: string;
   created_at: string;
   published_at?: string;
@@ -64,17 +171,31 @@ export interface EventFormVersion {
   fields_count?: number;
 }
 
+export interface EventAttachment {
+  id?: string;
+  name: string;
+  url: string;
+  type?: string;
+  size?: number;
+}
+
 export interface EventItem {
   id: string;
   title: string;
+  subtitle?: string;
+  custom_category?: string;
   short_description?: string;
   detailed_description?: string;
   category: string;
   poster_url?: string;
+  banner_image_url?: string;
   document_url?: string;
+  gallery_images?: string[];
+  attachments?: EventAttachment[];
   venue?: string;
   mode: EventMode;
   meeting_url?: string;
+  online_meeting_url?: string;
   event_start_at: string;
   event_end_at: string;
   registration_start_at: string;
@@ -87,6 +208,13 @@ export interface EventItem {
   allow_edit_submission: boolean;
   close_after_deadline: boolean;
   is_registration_enabled: boolean;
+  contact_person?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  instructions?: string;
+  terms_conditions?: string;
+  form_layout_mode?: FormLayoutMode;
+  registration_capacity?: number | null;
   created_by: string;
   creator_name?: string;
   creator_email?: string;
@@ -160,11 +288,15 @@ export interface EventResponsesResponse {
 
 export interface EventCreateRequest {
   title: string;
+  subtitle?: string;
+  custom_category?: string;
   short_description?: string;
   detailed_description?: string;
   category: string;
   poster_url?: string;
   document_url?: string;
+  gallery_images?: string[];
+  attachments?: EventAttachment[];
   venue?: string;
   mode: EventMode;
   meeting_url?: string;
@@ -180,7 +312,15 @@ export interface EventCreateRequest {
   allow_edit_submission?: boolean;
   close_after_deadline?: boolean;
   is_registration_enabled?: boolean;
+  contact_person?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  instructions?: string;
+  terms_conditions?: string;
+  form_layout_mode?: FormLayoutMode;
+  registration_capacity?: number | null;
   form_fields?: Array<Partial<EventFormField>>;
+  sections_config?: FormSection[];
 }
 
 export interface EventSubmissionRequest {

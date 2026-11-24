@@ -175,93 +175,169 @@ export const StudentEventsSection: React.FC = () => {
               (!evt.registration_start_at || nowIso >= evt.registration_start_at) &&
               (!evt.close_after_deadline || !evt.registration_deadline || nowIso <= evt.registration_deadline);
 
+            const hasCapacity = typeof evt.registration_capacity === "number" && evt.registration_capacity > 0;
+            const subCount = evt.total_submissions || 0;
+            const isFull = hasCapacity && subCount >= (evt.registration_capacity || 0);
+
             return (
               <div
                 key={evt.id}
-                className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-4 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
+                className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] overflow-hidden shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between"
               >
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-[#5DD62C]">
-                      {evt.category}
-                    </span>
-                    <EventModeBadge mode={evt.mode} />
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] line-clamp-1">
-                      {evt.title}
-                    </h3>
-                    {evt.short_description && (
-                      <p className="text-xs text-slate-500 dark:text-[#A3A3A3] line-clamp-2 mt-1">
-                        {evt.short_description}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-50/60 dark:bg-[#202020]/40 border border-slate-100 dark:border-[#262626] space-y-1 text-[11px] text-slate-600 dark:text-[#A3A3A3]">
-                    <div className="flex items-center justify-between">
-                      <span>📅 Date:</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">
-                        {new Date(evt.event_start_at).toLocaleDateString([], { month: "short", day: "numeric" })}
+                {/* Optional Banner Image */}
+                {evt.banner_image_url && (
+                  <div className="w-full h-36 bg-slate-100 dark:bg-[#121212] relative overflow-hidden border-b border-slate-100 dark:border-[#262626]">
+                    <img
+                      src={evt.banner_image_url}
+                      alt={evt.title}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute top-2 right-2">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-black/60 backdrop-blur-xs text-white uppercase">
+                        {evt.mode}
                       </span>
                     </div>
-                    {evt.venue && (
+                  </div>
+                )}
+
+                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-[#5DD62C]">
+                        {evt.custom_category || evt.category}
+                      </span>
+                      {!evt.banner_image_url && <EventModeBadge mode={evt.mode} />}
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] line-clamp-1">
+                        {evt.title}
+                      </h3>
+                      {evt.subtitle && (
+                        <p className="text-xs text-blue-600 dark:text-[#5DD62C] font-medium line-clamp-1">
+                          {evt.subtitle}
+                        </p>
+                      )}
+                      {evt.short_description && (
+                        <p className="text-xs text-slate-500 dark:text-[#A3A3A3] line-clamp-2 mt-1">
+                          {evt.short_description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-slate-50/60 dark:bg-[#202020]/40 border border-slate-100 dark:border-[#262626] space-y-1.5 text-[11px] text-slate-600 dark:text-[#A3A3A3]">
                       <div className="flex items-center justify-between">
-                        <span>📍 Venue:</span>
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]">
-                          {evt.venue}
+                        <span>📅 Date:</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {new Date(evt.event_start_at).toLocaleDateString([], { month: "short", day: "numeric" })}
                         </span>
                       </div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span>⏰ Deadline:</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">
-                        {new Date(evt.registration_deadline).toLocaleDateString([], { month: "short", day: "numeric" })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                      {evt.venue && (
+                        <div className="flex items-center justify-between">
+                          <span>📍 Venue:</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[140px]">
+                            {evt.venue}
+                          </span>
+                        </div>
+                      )}
+                      {evt.online_meeting_url && (
+                        <div className="flex items-center justify-between">
+                          <span>🌐 Meeting:</span>
+                          <a
+                            href={evt.online_meeting_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-[#5DD62C] hover:underline font-semibold"
+                          >
+                            Join Link ↗
+                          </a>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span>⏰ Deadline:</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {new Date(evt.registration_deadline).toLocaleDateString([], { month: "short", day: "numeric" })}
+                        </span>
+                      </div>
 
-                {/* Footer Action */}
-                <div className="pt-2 border-t border-slate-100 dark:border-[#292929]">
-                  {evt.has_submitted ? (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                        ✓ Registered
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleViewMySubmission(evt)}
-                          className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#202020] hover:bg-slate-200 text-slate-800 dark:text-[#F5F5F5] font-semibold text-xs cursor-pointer active:scale-95 transition-all"
-                        >
-                          View Details
-                        </button>
-                        {evt.allow_edit_submission && isRegOpen && (
+                      {hasCapacity && (
+                        <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-[#333]">
+                          <span>👥 Capacity:</span>
+                          <span
+                            className={`font-semibold ${
+                              isFull ? "text-rose-500 font-bold" : "text-slate-800 dark:text-slate-200"
+                            }`}
+                          >
+                            {isFull ? "Registration Full" : `${(evt.registration_capacity || 0) - subCount} spots left`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Attachments preview if available */}
+                    {evt.attachments && evt.attachments.length > 0 && (
+                      <div className="space-y-1 pt-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          Downloads / Guidelines
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {evt.attachments.map((att, idx) => (
+                            <a
+                              key={att.id || att.url || idx}
+                              href={att.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 dark:bg-[#262626] text-[10px] font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors"
+                            >
+                              📎 {att.name}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer Action */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-[#292929]">
+                    {evt.has_submitted ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                          ✓ Registered
+                        </span>
+                        <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => handleOpenRegistration(evt)}
-                            className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-[#5DD62C]/10 text-blue-600 dark:text-[#5DD62C] font-semibold text-xs cursor-pointer active:scale-95 transition-all"
+                            onClick={() => handleViewMySubmission(evt)}
+                            className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#202020] hover:bg-slate-200 text-slate-800 dark:text-[#F5F5F5] font-semibold text-xs cursor-pointer active:scale-95 transition-all"
                           >
-                            Edit
+                            View Details
                           </button>
-                        )}
+                          {evt.allow_edit_submission && isRegOpen && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenRegistration(evt)}
+                              className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-[#5DD62C]/10 text-blue-600 dark:text-[#5DD62C] font-semibold text-xs cursor-pointer active:scale-95 transition-all"
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ) : isRegOpen ? (
-                    <button
-                      type="button"
-                      onClick={() => handleOpenRegistration(evt)}
-                      className="w-full rounded-xl bg-blue-600 dark:bg-[#5DD62C] hover:bg-blue-700 dark:hover:bg-[#4cb824] text-white dark:text-black font-semibold text-xs py-2 shadow-2xs active:scale-95 transition-all cursor-pointer text-center"
-                    >
-                      Register / Fill Form →
-                    </button>
-                  ) : (
-                    <div className="w-full py-1.5 rounded-xl bg-slate-100 dark:bg-[#202020] text-slate-400 font-semibold text-xs text-center">
-                      Registration Closed
-                    </div>
-                  )}
+                    ) : isRegOpen && !isFull ? (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenRegistration(evt)}
+                        className="w-full rounded-xl bg-blue-600 dark:bg-[#5DD62C] hover:bg-blue-700 dark:hover:bg-[#4cb824] text-white dark:text-black font-semibold text-xs py-2 shadow-2xs active:scale-95 transition-all cursor-pointer text-center"
+                      >
+                        Register / Fill Form →
+                      </button>
+                    ) : (
+                      <div className="w-full py-1.5 rounded-xl bg-slate-100 dark:bg-[#202020] text-slate-400 font-semibold text-xs text-center">
+                        {isFull ? "Capacity Reached" : "Registration Closed"}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -282,6 +358,9 @@ export const StudentEventsSection: React.FC = () => {
                 <h3 className="text-base font-bold text-slate-900 dark:text-[#F5F5F5] mt-0.5">
                   {registeringEvent.title}
                 </h3>
+                {registeringEvent.subtitle && (
+                  <p className="text-xs text-slate-500 dark:text-[#A3A3A3]">{registeringEvent.subtitle}</p>
+                )}
               </div>
               <button
                 type="button"
@@ -293,7 +372,17 @@ export const StudentEventsSection: React.FC = () => {
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-5">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* Optional Instructions */}
+              {registeringEvent.instructions && (
+                <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 text-xs text-blue-900 dark:text-blue-200 space-y-1">
+                  <span className="font-bold flex items-center gap-1">📋 Instructions &amp; Guidelines:</span>
+                  <p className="whitespace-pre-line text-[11px] leading-relaxed text-blue-800 dark:text-blue-300">
+                    {registeringEvent.instructions}
+                  </p>
+                </div>
+              )}
+
               {loadingForm ? (
                 <div className="py-12 text-center text-xs text-slate-400">Loading registration form...</div>
               ) : eventForm ? (
@@ -363,6 +452,59 @@ export const StudentEventsSection: React.FC = () => {
                   Object.entries(viewingSubmission.values).map(([key, valObj]: [string, any]) => {
                     const label = valObj?.label || key;
                     const val = valObj?.value !== undefined ? valObj.value : valObj;
+
+                    // Repeatable group render
+                    if (Array.isArray(val) && val.length > 0 && typeof val[0] === "object") {
+                      return (
+                        <div
+                          key={key}
+                          className="p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] space-y-2"
+                        >
+                          <p className="text-[11px] font-semibold text-slate-500 dark:text-[#A3A3A3]">{label}</p>
+                          <div className="space-y-1.5">
+                            {val.map((item: any, idx: number) => (
+                              <div
+                                key={idx}
+                                className="p-2 rounded-lg bg-slate-50 dark:bg-[#202020] text-xs space-y-1"
+                              >
+                                <span className="text-[10px] font-bold text-blue-600 dark:text-[#5DD62C]">
+                                  #{idx + 1}
+                                </span>
+                                {Object.entries(item).map(([innerK, innerV]: [string, any]) => (
+                                  <div key={innerK} className="flex justify-between gap-2">
+                                    <span className="text-slate-400 capitalize">{innerK}:</span>
+                                    <span className="font-medium text-slate-800 dark:text-slate-200">
+                                      {String(innerV)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // Geo-photo render
+                    if (val && typeof val === "object" && "has_geo" in val) {
+                      return (
+                        <div
+                          key={key}
+                          className="p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] space-y-1"
+                        >
+                          <p className="text-[11px] font-semibold text-slate-500 dark:text-[#A3A3A3]">{label}</p>
+                          <div className="text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                            {val.photo_url && (
+                              <img src={val.photo_url} alt="Photo" className="h-24 w-auto rounded-lg object-cover" />
+                            )}
+                            <p className="text-[11px] text-emerald-600 font-medium">
+                              📍 Lat: {val.latitude}, Long: {val.longitude}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    }
+
                     return (
                       <div
                         key={key}

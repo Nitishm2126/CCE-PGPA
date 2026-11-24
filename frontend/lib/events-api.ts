@@ -119,11 +119,12 @@ export const eventsApi = {
 
   saveEventForm: async (
     eventId: string,
-    fields: Array<Partial<EventFormField>>
+    fields: Array<Partial<EventFormField>>,
+    sections_config?: any[]
   ): Promise<{ message: string; form: EventFormVersion }> => {
     return request<{ message: string; form: EventFormVersion }>(`/events/${eventId}/forms`, {
       method: "POST",
-      body: JSON.stringify({ fields }),
+      body: JSON.stringify({ fields, sections_config }),
     });
   },
 

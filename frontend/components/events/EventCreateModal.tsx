@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { EventItem, EventCreateRequest, EventMode, AudienceType } from "@/types/events";
+import {
+  EventItem,
+  EventCreateRequest,
+  EventMode,
+  AudienceType,
+  FormLayoutMode,
+  EventAttachment,
+} from "@/types/events";
 import { eventsApi } from "@/lib/events-api";
 import { api } from "@/lib/api-client";
 import { AdminStudentItem } from "@/types/auth";
@@ -24,16 +31,16 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
 }) => {
   const isEdit = !!initialEvent;
 
-  // Active section inside the modal
-  const [activeTab, setActiveTab] = useState<"basic" | "audience" | "rules">("basic");
+  // Tabs: basic, media, audience, rules
+  const [activeTab, setActiveTab] = useState<"basic" | "media" | "audience" | "rules">("basic");
 
-  // Section A: Basic Information
+  // Section A: Basic Details & Schedule
   const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [detailedDescription, setDetailedDescription] = useState("");
   const [category, setCategory] = useState("Workshop");
-  const [posterUrl, setPosterUrl] = useState("");
-  const [documentUrl, setDocumentUrl] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
   const [venue, setVenue] = useState("");
   const [mode, setMode] = useState<EventMode>("Offline");
   const [meetingUrl, setMeetingUrl] = useState("");
@@ -51,7 +58,15 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
   const [academicYear, setAcademicYear] = useState("2024-2025");
   const [semesterId, setSemesterId] = useState("");
 
-  // Section B: Target Audience
+  // Section B: Rich Media & Attachments
+  const [posterUrl, setPosterUrl] = useState("");
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [newGalleryUrl, setNewGalleryUrl] = useState("");
+  const [attachments, setAttachments] = useState<EventAttachment[]>([]);
+  const [newDocName, setNewDocName] = useState("");
+  const [newDocUrl, setNewDocUrl] = useState("");
+
+  // Section C: Target Audience
   const [audienceType, setAudienceType] = useState<AudienceType>("all");
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [selectedSection, setSelectedSection] = useState<string>("A");
@@ -60,7 +75,15 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
   const [allStudents, setAllStudents] = useState<AdminStudentItem[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
 
-  // Section C: Rules
+  // Section D: Contact Info, Guidelines & Rules
+  const [contactPerson, setContactPerson] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [instructions, setInstructions] = useState("");
+  const [termsConditions, setTermsConditions] = useState("");
+  const [formLayoutMode, setFormLayoutMode] = useState<FormLayoutMode>("single_page");
+  const [registrationCapacity, setRegistrationCapacity] = useState<string>("");
+
   const [allowMultipleResponses, setAllowMultipleResponses] = useState(false);
   const [allowEditSubmission, setAllowEditSubmission] = useState(false);
   const [closeAfterDeadline, setCloseAfterDeadline] = useState(true);
@@ -78,11 +101,11 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
 
     if (initialEvent) {
       setTitle(initialEvent.title || "");
+      setSubtitle(initialEvent.subtitle || "");
       setShortDescription(initialEvent.short_description || "");
       setDetailedDescription(initialEvent.detailed_description || "");
       setCategory(initialEvent.category || "Workshop");
-      setPosterUrl(initialEvent.poster_url || "");
-      setDocumentUrl(initialEvent.document_url || "");
+      setCustomCategory(initialEvent.custom_category || "");
       setVenue(initialEvent.venue || "");
       setMode(initialEvent.mode || "Offline");
       setMeetingUrl(initialEvent.meeting_url || "");
@@ -111,29 +134,44 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setAcademicYear(initialEvent.academic_year || "2024-2025");
       setSemesterId(initialEvent.semester_id || "");
 
+      setPosterUrl(initialEvent.poster_url || "");
+      setGalleryImages(initialEvent.gallery_images || []);
+      setAttachments(initialEvent.attachments || []);
+
       setAudienceType(initialEvent.audience_type || "all");
       if (initialEvent.audience_type === "specific_students" && Array.isArray(initialEvent.audience_payload)) {
         setSelectedStudents(initialEvent.audience_payload);
       } else if (initialEvent.audience_type === "section" && typeof initialEvent.audience_payload === "string") {
         setSelectedSection(initialEvent.audience_payload);
+      } else if (initialEvent.audience_type === "academic_year" && typeof initialEvent.audience_payload === "string") {
+        setSelectedYear(initialEvent.audience_payload);
       }
+
+      setContactPerson(initialEvent.contact_person || "");
+      setContactEmail(initialEvent.contact_email || "");
+      setContactPhone(initialEvent.contact_phone || "");
+      setInstructions(initialEvent.instructions || "");
+      setTermsConditions(initialEvent.terms_conditions || "");
+      setFormLayoutMode(initialEvent.form_layout_mode || "single_page");
+      setRegistrationCapacity(
+        initialEvent.registration_capacity != null ? String(initialEvent.registration_capacity) : ""
+      );
 
       setAllowMultipleResponses(Boolean(initialEvent.allow_multiple_responses));
       setAllowEditSubmission(Boolean(initialEvent.allow_edit_submission));
       setCloseAfterDeadline(initialEvent.close_after_deadline !== false);
       setIsRegistrationEnabled(initialEvent.is_registration_enabled !== false);
     } else {
-      // Default dates (today & tomorrow)
       const today = new Date().toISOString().split("T")[0];
       const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
       const eventDay = new Date(Date.now() + 10 * 86400000).toISOString().split("T")[0];
 
       setTitle("");
+      setSubtitle("");
       setShortDescription("");
       setDetailedDescription("");
       setCategory("Workshop");
-      setPosterUrl("");
-      setDocumentUrl("");
+      setCustomCategory("");
       setVenue("Auditorium / Seminar Hall");
       setMode("Offline");
       setMeetingUrl("");
@@ -150,10 +188,23 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
 
       setAcademicYear("2024-2025");
       setSemesterId(semesters[0]?.id || "");
+
+      setPosterUrl("");
+      setGalleryImages([]);
+      setAttachments([]);
+
       setAudienceType("all");
       setSelectedStudents([]);
       setSelectedSection("A");
       setSelectedYear("2");
+
+      setContactPerson("");
+      setContactEmail("");
+      setContactPhone("");
+      setInstructions("");
+      setTermsConditions("");
+      setFormLayoutMode("single_page");
+      setRegistrationCapacity("");
 
       setAllowMultipleResponses(false);
       setAllowEditSubmission(false);
@@ -183,7 +234,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Handle poster file upload
+  // Handle poster upload
   const handlePosterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -198,16 +249,24 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
     }
   };
 
-  // Handle document upload
-  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle document upload for attachments
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingDoc(true);
     try {
       const res = await eventsApi.uploadEventFile(file);
-      setDocumentUrl(res.storage_reference);
+      setAttachments((prev) => [
+        ...prev,
+        {
+          name: file.name,
+          url: res.storage_reference,
+          type: res.mime_type,
+          size: res.file_size,
+        },
+      ]);
     } catch (err: any) {
-      setError(err.message || "Failed to upload event document");
+      setError(err.message || "Failed to upload document");
     } finally {
       setUploadingDoc(false);
     }
@@ -225,7 +284,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
     }
 
     if (!eventStartDate || !eventEndDate || !regStartDate || !regDeadlineDate) {
-      setError("Please fill out all event and registration dates.");
+      setError("Please fill out all event schedule and registration dates.");
       setActiveTab("basic");
       return;
     }
@@ -261,13 +320,15 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       audiencePayload = selectedYear;
     }
 
+    const capNum = registrationCapacity.trim() ? parseInt(registrationCapacity.trim(), 10) : null;
+
     const payload: EventCreateRequest = {
       title: title.trim(),
+      subtitle: subtitle.trim() || undefined,
+      category: category === "Other" && customCategory.trim() ? customCategory.trim() : category,
+      custom_category: customCategory.trim() || undefined,
       short_description: shortDescription.trim() || undefined,
       detailed_description: detailedDescription.trim() || undefined,
-      category,
-      poster_url: posterUrl || undefined,
-      document_url: documentUrl || undefined,
       venue: venue.trim() || undefined,
       mode,
       meeting_url: mode !== "Offline" ? meetingUrl.trim() || undefined : undefined,
@@ -277,8 +338,18 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       registration_deadline: regDeadlineAt,
       academic_year: academicYear,
       semester_id: semesterId || undefined,
+      poster_url: posterUrl || undefined,
+      gallery_images: galleryImages.length > 0 ? galleryImages : undefined,
+      attachments: attachments.length > 0 ? attachments : undefined,
       audience_type: audienceType,
       audience_payload: audiencePayload,
+      contact_person: contactPerson.trim() || undefined,
+      contact_email: contactEmail.trim() || undefined,
+      contact_phone: contactPhone.trim() || undefined,
+      instructions: instructions.trim() || undefined,
+      terms_conditions: termsConditions.trim() || undefined,
+      form_layout_mode: formLayoutMode,
+      registration_capacity: capNum,
       allow_multiple_responses: allowMultipleResponses,
       allow_edit_submission: allowEditSubmission,
       close_after_deadline: closeAfterDeadline,
@@ -302,7 +373,6 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
     }
   };
 
-  // Filter students for search
   const filteredStudents = allStudents.filter(
     (s) =>
       (s.full_name || "").toLowerCase().includes(studentSearch.toLowerCase()) ||
@@ -320,7 +390,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
               {isEdit ? "Edit Event Details" : "Create New Event"}
             </h3>
             <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
-              Configure event schedule, target audience, and registration settings
+              Configure event metadata, media, audience, and registration controls.
             </p>
           </div>
           <button
@@ -333,73 +403,73 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-100 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 px-5 gap-2 pt-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab("basic")}
-            className={`pb-2.5 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
-              activeTab === "basic"
-                ? "border-blue-600 dark:border-[#5DD62C] text-blue-600 dark:text-[#5DD62C]"
-                : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-            }`}
-          >
-            Section A: Basic Details
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("audience")}
-            className={`pb-2.5 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
-              activeTab === "audience"
-                ? "border-blue-600 dark:border-[#5DD62C] text-blue-600 dark:text-[#5DD62C]"
-                : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-            }`}
-          >
-            Section B: Target Audience
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("rules")}
-            className={`pb-2.5 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
-              activeTab === "rules"
-                ? "border-blue-600 dark:border-[#5DD62C] text-blue-600 dark:text-[#5DD62C]"
-                : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-            }`}
-          >
-            Section C: Participation Rules
-          </button>
+        <div className="flex border-b border-slate-100 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 px-5 gap-2 pt-2 overflow-x-auto">
+          {[
+            { id: "basic", label: "A: Basic & Schedule" },
+            { id: "media", label: "B: Media & Attachments" },
+            { id: "audience", label: "C: Target Audience" },
+            { id: "rules", label: "D: Rules & Guidelines" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`pb-2.5 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "border-blue-600 dark:border-[#5DD62C] text-blue-600 dark:text-[#5DD62C]"
+                  : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Error Banner */}
         {error && (
           <div className="mx-5 mt-3 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-800 dark:text-rose-300 font-semibold flex items-center justify-between">
             <span>⚠️ {error}</span>
-            <button onClick={() => setError(null)} className="text-rose-500">×</button>
+            <button onClick={() => setError(null)} className="text-rose-500 cursor-pointer">×</button>
           </div>
         )}
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
-          {/* SECTION A: BASIC EVENT INFORMATION */}
+          {/* TAB 1: BASIC & SCHEDULE */}
           {activeTab === "basic" && (
             <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
-                  Event Title <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Generative AI & Cloud Hackathon 2025"
-                  className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px] font-semibold"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                    Event Title <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. AI & Cloud Architecture Workshop 2025"
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px] font-semibold"
+                  />
+                </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
-                    Event Category
+                    Subtitle / Tagline
+                  </label>
+                  <input
+                    type="text"
+                    value={subtitle}
+                    onChange={(e) => setSubtitle(e.target.value)}
+                    placeholder="e.g. Hands-on Agentic AI Lab"
+                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                    Category
                   </label>
                   <select
                     value={category}
@@ -414,9 +484,25 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                     <option value="Sports">Sports</option>
                     <option value="Placement">Placement &amp; Training</option>
                     <option value="Certification">Certification Drive</option>
-                    <option value="Other">Other Institutional Event</option>
+                    <option value="Internship">Internship / Industry</option>
+                    <option value="Other">Custom / Other</option>
                   </select>
                 </div>
+
+                {category === "Other" && (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                      Custom Category Name
+                    </label>
+                    <input
+                      type="text"
+                      value={customCategory}
+                      onChange={(e) => setCustomCategory(e.target.value)}
+                      placeholder="e.g. Alumni Interaction"
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
@@ -429,20 +515,20 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                   >
                     <option value="Offline">Offline (On Campus)</option>
                     <option value="Online">Online (Virtual)</option>
-                    <option value="Hybrid">Hybrid</option>
+                    <option value="Hybrid">Hybrid (In-Person + Stream)</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
-                  Short Description
+                  Short Description (Card Summary)
                 </label>
                 <input
                   type="text"
                   value={shortDescription}
                   onChange={(e) => setShortDescription(e.target.value)}
-                  placeholder="One-line summary for event cards"
+                  placeholder="One-line hook shown on student event card"
                   maxLength={180}
                   className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                 />
@@ -450,13 +536,13 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
-                  Detailed Event Overview
+                  Detailed Event Overview &amp; Agenda
                 </label>
                 <textarea
                   rows={3}
                   value={detailedDescription}
                   onChange={(e) => setDetailedDescription(e.target.value)}
-                  placeholder="Provide complete event agenda, speaker details, and guidelines..."
+                  placeholder="Provide complete event details, agenda, key takeaways, and prerequisites..."
                   className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] resize-none"
                 />
               </div>
@@ -464,13 +550,13 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
-                    Event Venue / Location
+                    Venue / Campus Room
                   </label>
                   <input
                     type="text"
                     value={venue}
                     onChange={(e) => setVenue(e.target.value)}
-                    placeholder="e.g. CCE Lab 3 / Sigma Auditorium"
+                    placeholder="e.g. CCE Computing Lab 3 / Sigma Auditorium"
                     className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3.5 py-2 text-xs text-slate-900 dark:text-[#F5F5F5] min-h-[38px]"
                   />
                 </div>
@@ -478,7 +564,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                 {mode !== "Offline" && (
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
-                      Meeting URL (Google Meet / Zoom)
+                      Online Meeting Link
                     </label>
                     <input
                       type="url"
@@ -494,7 +580,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
               {/* Event Schedule Dates */}
               <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 p-3.5 space-y-3">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-[#D4D4D4] block">
-                  Event Schedule Dates
+                  Event Schedule Window
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
@@ -541,15 +627,15 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                 </div>
               </div>
 
-              {/* Registration Window Dates */}
+              {/* Registration Window */}
               <div className="rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 p-3.5 space-y-3">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-[#D4D4D4] block">
-                  Registration Window Dates
+                  Registration Window
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-600 dark:text-[#A3A3A3] mb-1">
-                      Registration Start Date &amp; Time *
+                      Registration Opens *
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -570,7 +656,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
 
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-600 dark:text-[#A3A3A3] mb-1">
-                      Registration Deadline &amp; Time *
+                      Registration Closes *
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -608,7 +694,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
-                    Applicable Semester
+                    Semester
                   </label>
                   <select
                     value={semesterId}
@@ -617,50 +703,164 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                   >
                     <option value="">-- All Semesters --</option>
                     {semesters.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.display_name}
-                      </option>
+                      <option key={s.id} value={s.id}>{s.display_name}</option>
                     ))}
                   </select>
-                </div>
-              </div>
-
-              {/* Poster Upload */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
-                    Event Poster / Banner (Optional)
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePosterUpload}
-                    disabled={uploadingPoster}
-                    className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-[#202020] dark:file:text-[#5DD62C] cursor-pointer"
-                  />
-                  {uploadingPoster && <span className="text-[11px] text-blue-500 mt-1 block">Uploading poster...</span>}
-                  {posterUrl && <span className="text-[11px] text-emerald-600 mt-1 block">✓ Poster uploaded</span>}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
-                    Brochure / Guidelines (PDF)
-                  </label>
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleDocumentUpload}
-                    disabled={uploadingDoc}
-                    className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-[#202020] dark:file:text-[#5DD62C] cursor-pointer"
-                  />
-                  {uploadingDoc && <span className="text-[11px] text-blue-500 mt-1 block">Uploading document...</span>}
-                  {documentUrl && <span className="text-[11px] text-emerald-600 mt-1 block">✓ Document uploaded</span>}
                 </div>
               </div>
             </div>
           )}
 
-          {/* SECTION B: TARGET AUDIENCE */}
+          {/* TAB 2: RICH MEDIA & ATTACHMENTS */}
+          {activeTab === "media" && (
+            <div className="space-y-4">
+              {/* Event Poster / Banner */}
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 space-y-2">
+                <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Primary Event Poster / Hero Banner</span>
+                <div className="flex flex-col sm:flex-row gap-3 items-start">
+                  <div className="flex-1 w-full space-y-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePosterUpload}
+                      disabled={uploadingPoster}
+                      className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-[#252525] dark:file:text-[#5DD62C] cursor-pointer"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Or paste direct image URL (https://...)"
+                      value={posterUrl}
+                      onChange={(e) => setPosterUrl(e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5]"
+                    />
+                  </div>
+                  {posterUrl && (
+                    <div className="w-24 h-16 rounded-xl border border-slate-200 dark:border-[#292929] overflow-hidden bg-slate-100 flex items-center justify-center">
+                      <img src={posterUrl} alt="Poster preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Gallery Images */}
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Event Image Gallery</span>
+                  <span className="text-[11px] text-slate-400">{galleryImages.length} images</span>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    placeholder="Add gallery image URL (https://...)"
+                    value={newGalleryUrl}
+                    onChange={(e) => setNewGalleryUrl(e.target.value)}
+                    className="flex-1 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newGalleryUrl.trim()) {
+                        setGalleryImages([...galleryImages, newGalleryUrl.trim()]);
+                        setNewGalleryUrl("");
+                      }
+                    }}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black cursor-pointer"
+                  >
+                    + Add
+                  </button>
+                </div>
+
+                {galleryImages.length > 0 && (
+                  <div className="grid grid-cols-4 gap-2 pt-1">
+                    {galleryImages.map((img, idx) => (
+                      <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-[#292929] aspect-video">
+                        <img src={img} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setGalleryImages(galleryImages.filter((_, i) => i !== idx))}
+                          className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Document / PDF Attachments */}
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">PDF Guidelines / Rulebook Attachments</span>
+                  <span className="text-[11px] text-slate-400">{attachments.length} files</span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      placeholder="Document Title (e.g. Rulebook PDF)"
+                      value={newDocName}
+                      onChange={(e) => setNewDocName(e.target.value)}
+                      className="flex-1 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5]"
+                    />
+                    <input
+                      type="url"
+                      placeholder="URL (https://...)"
+                      value={newDocUrl}
+                      onChange={(e) => setNewDocUrl(e.target.value)}
+                      className="flex-1 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newDocName.trim() && newDocUrl.trim()) {
+                          setAttachments([...attachments, { name: newDocName.trim(), url: newDocUrl.trim(), type: "application/pdf" }]);
+                          setNewDocName("");
+                          setNewDocUrl("");
+                        }
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-200 dark:bg-[#292929] hover:bg-slate-300 cursor-pointer"
+                    >
+                      + Add Link
+                    </button>
+                  </div>
+
+                  <div className="pt-1">
+                    <label className="block text-[11px] text-slate-400 mb-1">Or upload PDF file directly:</label>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleDocUpload}
+                      disabled={uploadingDoc}
+                      className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-[#252525] dark:file:text-[#5DD62C] cursor-pointer"
+                    />
+                    {uploadingDoc && <span className="text-[11px] text-blue-500 mt-1 block">Uploading file...</span>}
+                  </div>
+                </div>
+
+                {attachments.length > 0 && (
+                  <div className="space-y-1.5 pt-1">
+                    {attachments.map((doc, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-[#181818] border border-slate-200 dark:border-[#292929] text-xs">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">📄 {doc.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setAttachments(attachments.filter((_, i) => i !== idx))}
+                          className="text-slate-400 hover:text-rose-500 text-xs px-2 cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: TARGET AUDIENCE */}
           {activeTab === "audience" && (
             <div className="space-y-4">
               <div>
@@ -670,8 +870,8 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {[
                     { id: "all", title: "All Department Students", desc: "Open to all enrolled students" },
-                    { id: "section", title: "Specific Section", desc: "Target section A or B specifically" },
-                    { id: "academic_year", title: "Specific Year / Batch", desc: "Target by student year (2nd Year)" },
+                    { id: "section", title: "Specific Section", desc: "Target section A, B, or C" },
+                    { id: "academic_year", title: "Specific Year / Batch", desc: "Target by student year (1st-4th Year)" },
                     { id: "specific_students", title: "Custom Student Selection", desc: "Select specific register numbers" },
                   ].map((aud) => (
                     <label
@@ -699,7 +899,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                 </div>
               </div>
 
-              {/* Audience Specific: Section */}
+              {/* Section Selector */}
               {audienceType === "section" && (
                 <div className="rounded-xl border border-slate-200 dark:border-[#292929] p-3.5 bg-slate-50/50 dark:bg-[#202020]/40">
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1.5">
@@ -722,7 +922,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                 </div>
               )}
 
-              {/* Audience Specific: Year */}
+              {/* Year Selector */}
               {audienceType === "academic_year" && (
                 <div className="rounded-xl border border-slate-200 dark:border-[#292929] p-3.5 bg-slate-50/50 dark:bg-[#202020]/40">
                   <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1.5">
@@ -745,7 +945,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                 </div>
               )}
 
-              {/* Audience Specific: Specific Students Multi-Select */}
+              {/* Specific Students Selection */}
               {audienceType === "specific_students" && (
                 <div className="space-y-3 rounded-xl border border-slate-200 dark:border-[#292929] p-3.5 bg-slate-50/50 dark:bg-[#202020]/40">
                   <div className="flex items-center justify-between">
@@ -819,76 +1019,163 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
             </div>
           )}
 
-          {/* SECTION C: RULES & PARTICIPATION SETTINGS */}
+          {/* TAB 4: RULES, CONTACT INFO & GUIDELINES */}
           {activeTab === "rules" && (
-            <div className="space-y-3.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3] block">
-                Submission &amp; Registration Constraints
-              </span>
-
-              <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={!allowMultipleResponses}
-                  onChange={(e) => setAllowMultipleResponses(!e.target.checked)}
-                  className="mt-0.5 rounded text-blue-600"
-                />
-                <div>
-                  <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">Limit to 1 Response per Student</p>
-                  <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3]">
-                    Recommended. Prevents duplicate registrations from the same authenticated student account.
-                  </p>
+            <div className="space-y-4">
+              {/* Coordinator Contact Details */}
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 space-y-2.5">
+                <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Coordinator / Contact Details</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-[11px] text-slate-500 mb-1">Coordinator Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Dr. Priya"
+                      value={contactPerson}
+                      onChange={(e) => setContactPerson(e.target.value)}
+                      className="w-full text-xs px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-500 mb-1">Contact Email</label>
+                    <input
+                      type="email"
+                      placeholder="cce.events@sairam.edu.in"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      className="w-full text-xs px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-500 mb-1">Contact Phone / Extension</label>
+                    <input
+                      type="tel"
+                      placeholder="e.g. +91 98400 12345"
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      className="w-full text-xs px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818]"
+                    />
+                  </div>
                 </div>
-              </label>
+              </div>
 
-              <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={allowEditSubmission}
-                  onChange={(e) => setAllowEditSubmission(e.target.checked)}
-                  className="mt-0.5 rounded text-blue-600"
-                />
+              {/* Instructions and Terms */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">Allow Students to Edit Submissions</p>
-                  <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3]">
-                    Allows students to modify their answers until the registration deadline passes.
-                  </p>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                    Student Instructions / Preparation
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={instructions}
+                    onChange={(e) => setInstructions(e.target.value)}
+                    placeholder="e.g. Please bring college ID card and laptop with Python 3.11 installed..."
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818]"
+                  />
                 </div>
-              </label>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                    Terms &amp; Conditions
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={termsConditions}
+                    onChange={(e) => setTermsConditions(e.target.value)}
+                    placeholder="e.g. Attendance is mandatory for all shortlisted teams..."
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818]"
+                  />
+                </div>
+              </div>
 
-              <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={closeAfterDeadline}
-                  onChange={(e) => setCloseAfterDeadline(e.target.checked)}
-                  className="mt-0.5 rounded text-blue-600"
-                />
-                <div>
-                  <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">Auto-Close on Registration Deadline</p>
-                  <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3]">
-                    Automatically disables new form submissions when the registration deadline arrives.
-                  </p>
+              {/* Layout Mode & Capacity */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                    Student Form Display Mode
+                  </label>
+                  <select
+                    value={formLayoutMode}
+                    onChange={(e) => setFormLayoutMode(e.target.value as FormLayoutMode)}
+                    className="w-full text-xs px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818]"
+                  >
+                    <option value="single_page">Single-Page Form (Continuous scroll)</option>
+                    <option value="multi_step">Multi-Step Wizard (Next / Back buttons)</option>
+                  </select>
                 </div>
-              </label>
 
-              <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isRegistrationEnabled}
-                  onChange={(e) => setIsRegistrationEnabled(e.target.checked)}
-                  className="mt-0.5 rounded text-blue-600"
-                />
-                <div>
-                  <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">Student Registration Active</p>
-                  <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3]">
-                    When unchecked, registration is paused and students cannot submit.
-                  </p>
+                <div className="p-3 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1">
+                    Registration Capacity Limit
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Leave blank for unlimited"
+                    value={registrationCapacity}
+                    onChange={(e) => setRegistrationCapacity(e.target.value)}
+                    className="w-full text-xs px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818]"
+                  />
                 </div>
-              </label>
+              </div>
+
+              {/* Toggles */}
+              <div className="space-y-2 pt-1">
+                <label className="flex items-start gap-3 p-2.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!allowMultipleResponses}
+                    onChange={(e) => setAllowMultipleResponses(!e.target.checked)}
+                    className="mt-0.5 rounded text-blue-600"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">Limit to 1 Response per Student</p>
+                    <p className="text-[10px] text-slate-400">Prevents duplicate submissions from the same student.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 p-2.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={allowEditSubmission}
+                    onChange={(e) => setAllowEditSubmission(e.target.checked)}
+                    className="mt-0.5 rounded text-blue-600"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">Allow Students to Edit Submissions</p>
+                    <p className="text-[10px] text-slate-400">Students can update their response before the deadline closes.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 p-2.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={closeAfterDeadline}
+                    onChange={(e) => setCloseAfterDeadline(e.target.checked)}
+                    className="mt-0.5 rounded text-blue-600"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">Auto-Close on Registration Deadline</p>
+                    <p className="text-[10px] text-slate-400">Automatically blocks responses when deadline passes.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 p-2.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isRegistrationEnabled}
+                    onChange={(e) => setIsRegistrationEnabled(e.target.checked)}
+                    className="mt-0.5 rounded text-blue-600"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">Student Registration Active</p>
+                    <p className="text-[10px] text-slate-400">Uncheck to pause registration at any time.</p>
+                  </div>
+                </label>
+              </div>
             </div>
           )}
 
-          {/* Modal Footer Controls */}
+          {/* Modal Footer */}
           <div className="pt-4 border-t border-slate-100 dark:border-[#292929] flex items-center justify-between">
             <button
               type="button"
@@ -900,22 +1187,12 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
             </button>
 
             <div className="flex items-center gap-2">
-              {activeTab !== "rules" ? (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab(activeTab === "basic" ? "audience" : "rules")}
-                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-[#202020] text-slate-800 dark:text-[#F5F5F5] hover:bg-slate-200 dark:hover:bg-[#282828] cursor-pointer"
-                >
-                  Next Section →
-                </button>
-              ) : null}
-
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className="rounded-xl bg-blue-600 dark:bg-[#5DD62C] hover:bg-blue-700 dark:hover:bg-[#4cb824] text-white dark:text-black font-semibold text-xs px-5 py-2 shadow-2xs active:scale-95 transition-all cursor-pointer disabled:opacity-50 min-h-[38px]"
               >
-                {isSubmitting ? "Saving Event..." : isEdit ? "Update Event" : "Create Event & Configure Form"}
+                {isSubmitting ? "Saving Event..." : isEdit ? "Update Event Details" : "Create Event & Configure Form"}
               </button>
             </div>
           </div>

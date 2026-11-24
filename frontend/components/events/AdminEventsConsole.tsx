@@ -104,13 +104,29 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
     }
   };
 
-  const handleDelete = async (event: EventItem) => {
-    if (!confirm(`Permanently delete draft event "${event.title}"? This cannot be undone.`)) return;
+  const handleDeleteOrArchive = async (event: EventItem) => {
+    const hasSubmissions = (event.total_submissions || 0) > 0;
+    const isPublishedOrClosed = event.status === "published" || event.status === "closed";
+
+    if (hasSubmissions || isPublishedOrClosed) {
+      if (
+        !confirm(
+          `Event "${event.title}" has ${event.total_submissions || 0} response(s) or has been active.\n\nTo preserve historical audit integrity and student response records, this event will be safely ARCHIVED instead of destroyed.\n\nProceed with Archiving?`
+        )
+      ) {
+        return;
+      }
+    } else {
+      if (!confirm(`Permanently delete draft event "${event.title}"? This cannot be undone.`)) {
+        return;
+      }
+    }
+
     try {
       await eventsApi.deleteEvent(event.id);
       loadEvents();
     } catch (err: any) {
-      alert("Delete failed: " + err.message);
+      alert("Action failed: " + err.message);
     }
   };
 
@@ -139,6 +155,7 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
       <EventFormBuilder
         event={activeEvent}
         initialFields={activeEvent.current_form?.fields}
+        initialSections={activeEvent.current_form?.sections_config}
         onBack={handleBackToList}
         onSaved={() => {
           loadEvents();
@@ -163,11 +180,11 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
               CCE Events &amp; Forms Console
             </h2>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 uppercase">
-              Phase 1
+              Phase 1.1 Pro
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
-            Create events, build dynamic registration forms, manage publication lifecycle, and inspect student submissions.
+            Create events with rich media, configure multi-section dynamic forms, conditional logic, and inspect submissions.
           </p>
         </div>
 
@@ -275,138 +292,207 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {events.map((evt) => (
-            <div
-              key={evt.id}
-              className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-4 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
-            >
-              <div className="space-y-2.5">
-                {/* Header row: Status & Mode */}
-                <div className="flex items-center justify-between gap-2">
-                  <EventStatusBadge status={evt.status} size="sm" />
-                  <EventModeBadge mode={evt.mode} />
-                </div>
+          {events.map((evt) => {
+            const hasCapacity = typeof evt.registration_capacity === "number" && evt.registration_capacity > 0;
+            const subCount = evt.total_submissions || 0;
+            const capacityRatio = hasCapacity ? Math.min(100, Math.round((subCount / (evt.registration_capacity || 1)) * 100)) : 0;
+            const isFull = hasCapacity && subCount >= (evt.registration_capacity || 0);
 
-                {/* Title & Category */}
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-[#5DD62C]">
-                    {evt.category}
-                  </span>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] line-clamp-1 mt-0.5">
-                    {evt.title}
-                  </h3>
-                  {evt.short_description && (
-                    <p className="text-xs text-slate-500 dark:text-[#A3A3A3] line-clamp-2 mt-1">
-                      {evt.short_description}
-                    </p>
-                  )}
-                </div>
+            return (
+              <div
+                key={evt.id}
+                className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] overflow-hidden shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between"
+              >
+                {/* Optional Poster Banner */}
+                {evt.banner_image_url && (
+                  <div className="w-full h-32 bg-slate-100 dark:bg-[#121212] relative overflow-hidden border-b border-slate-100 dark:border-[#262626]">
+                    <img
+                      src={evt.banner_image_url}
+                      alt={evt.title}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute top-2 right-2">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-black/60 backdrop-blur-xs text-white uppercase">
+                        {evt.mode}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-                {/* Key Details */}
-                <div className="p-2.5 rounded-xl bg-slate-50/60 dark:bg-[#202020]/40 border border-slate-100 dark:border-[#262626] space-y-1.5 text-[11px] text-slate-600 dark:text-[#A3A3A3]">
-                  <div className="flex items-center justify-between">
-                    <span>📅 Event Date:</span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      {new Date(evt.event_start_at).toLocaleDateString([], { month: "short", day: "numeric" })}
-                    </span>
+                <div className="p-4 space-y-2.5 flex-1 flex flex-col justify-between">
+                  <div className="space-y-2.5">
+                    {/* Header row: Status & Mode / Layout */}
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <EventStatusBadge status={evt.status} size="sm" />
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 dark:bg-[#262626] text-slate-600 dark:text-slate-300">
+                          {evt.form_layout_mode === "multi_step" ? "⚡ Wizard" : "📄 Single Page"}
+                        </span>
+                        {!evt.banner_image_url && <EventModeBadge mode={evt.mode} />}
+                      </div>
+                    </div>
+
+                    {/* Title & Category & Subtitle */}
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-[#5DD62C]">
+                          {evt.custom_category || evt.category}
+                        </span>
+                        {evt.attachments && evt.attachments.length > 0 && (
+                          <span className="text-[10px] text-slate-400 font-medium" title={`${evt.attachments.length} attachment(s)`}>
+                            📎 {evt.attachments.length}
+                          </span>
+                        )}
+                        {evt.gallery_images && evt.gallery_images.length > 0 && (
+                          <span className="text-[10px] text-slate-400 font-medium" title={`${evt.gallery_images.length} gallery image(s)`}>
+                            🖼️ {evt.gallery_images.length}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] line-clamp-1 mt-0.5">
+                        {evt.title}
+                      </h3>
+                      {evt.subtitle && (
+                        <p className="text-xs text-blue-600 dark:text-[#5DD62C] font-medium line-clamp-1">
+                          {evt.subtitle}
+                        </p>
+                      )}
+                      {evt.short_description && (
+                        <p className="text-xs text-slate-500 dark:text-[#A3A3A3] line-clamp-2 mt-1">
+                          {evt.short_description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Key Details */}
+                    <div className="p-2.5 rounded-xl bg-slate-50/60 dark:bg-[#202020]/40 border border-slate-100 dark:border-[#262626] space-y-1.5 text-[11px] text-slate-600 dark:text-[#A3A3A3]">
+                      <div className="flex items-center justify-between">
+                        <span>📅 Event Date:</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {new Date(evt.event_start_at).toLocaleDateString([], { month: "short", day: "numeric" })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>⏰ Reg Deadline:</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {new Date(evt.registration_deadline).toLocaleDateString([], { month: "short", day: "numeric" })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>🎯 Target Audience:</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 uppercase">
+                          {evt.audience_type?.replace("_", " ") || "All"}
+                        </span>
+                      </div>
+
+                      {/* Capacity & Submissions */}
+                      <div className="pt-1 border-t border-slate-200/60 dark:border-[#333] space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span>📝 Responses:</span>
+                          <span className="font-mono font-bold text-blue-600 dark:text-[#5DD62C]">
+                            {subCount} {hasCapacity ? `/ ${evt.registration_capacity}` : ""}
+                            {isFull && <span className="ml-1 text-[10px] text-rose-500 font-bold">(Full)</span>}
+                          </span>
+                        </div>
+                        {hasCapacity && (
+                          <div className="w-full bg-slate-200 dark:bg-[#262626] h-1.5 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                isFull
+                                  ? "bg-rose-500"
+                                  : capacityRatio > 80
+                                  ? "bg-amber-500"
+                                  : "bg-blue-600 dark:bg-[#5DD62C]"
+                              }`}
+                              style={{ width: `${capacityRatio}%` }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span>⏰ Reg Deadline:</span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      {new Date(evt.registration_deadline).toLocaleDateString([], { month: "short", day: "numeric" })}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>🎯 Target Audience:</span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200 uppercase">
-                      {evt.audience_type?.replace("_", " ") || "All"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-[#333]">
-                    <span>📝 Total Responses:</span>
-                    <span className="font-mono font-bold text-blue-600 dark:text-[#5DD62C]">
-                      {evt.total_submissions || 0}
-                    </span>
+
+                  {/* Action Buttons */}
+                  <div className="pt-3 border-t border-slate-100 dark:border-[#292929] space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenFormBuilder(evt)}
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#202020] hover:bg-slate-200 dark:hover:bg-[#282828] text-slate-800 dark:text-[#F5F5F5] font-semibold text-xs transition-all cursor-pointer text-center"
+                      >
+                        🛠 Form Builder
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenResponses(evt)}
+                        className="px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-[#5DD62C]/10 hover:bg-blue-100 text-blue-700 dark:text-[#5DD62C] font-semibold text-xs transition-all cursor-pointer text-center"
+                      >
+                        📊 Responses ({subCount})
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-1 pt-1 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingEvent(evt);
+                          setIsCreateModalOpen(true);
+                        }}
+                        className="text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900 dark:hover:text-white font-medium cursor-pointer"
+                      >
+                        Edit Details
+                      </button>
+
+                      <div className="flex items-center gap-1.5">
+                        {evt.status === "draft" && (
+                          <button
+                            type="button"
+                            onClick={() => handlePublish(evt)}
+                            className="px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] cursor-pointer"
+                          >
+                            Publish
+                          </button>
+                        )}
+
+                        {evt.status === "published" && (
+                          <button
+                            type="button"
+                            onClick={() => handleClose(evt)}
+                            className="px-2 py-0.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-[11px] cursor-pointer"
+                          >
+                            Close
+                          </button>
+                        )}
+
+                        {evt.status === "closed" && (
+                          <button
+                            type="button"
+                            onClick={() => handleReopen(evt)}
+                            className="px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] cursor-pointer"
+                          >
+                            Reopen
+                          </button>
+                        )}
+
+                        {/* Safe Delete / Archive Button */}
+                        {evt.status !== "archived" && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteOrArchive(evt)}
+                            className="px-1.5 py-0.5 text-rose-500 hover:text-rose-700 font-semibold text-[11px] cursor-pointer"
+                            title={evt.status === "draft" && subCount === 0 ? "Delete Draft" : "Archive Event"}
+                          >
+                            {evt.status === "draft" && subCount === 0 ? "Delete" : "Archive"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              <div className="pt-2 border-t border-slate-100 dark:border-[#292929] space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleOpenFormBuilder(evt)}
-                    className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#202020] hover:bg-slate-200 dark:hover:bg-[#282828] text-slate-800 dark:text-[#F5F5F5] font-semibold text-xs transition-all cursor-pointer text-center"
-                  >
-                    🛠 Build Form
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleOpenResponses(evt)}
-                    className="px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-[#5DD62C]/10 hover:bg-blue-100 text-blue-700 dark:text-[#5DD62C] font-semibold text-xs transition-all cursor-pointer text-center"
-                  >
-                    📊 Responses ({evt.total_submissions || 0})
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between gap-1 pt-1 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingEvent(evt);
-                      setIsCreateModalOpen(true);
-                    }}
-                    className="text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900 dark:hover:text-white font-medium cursor-pointer"
-                  >
-                    Edit Details
-                  </button>
-
-                  <div className="flex items-center gap-1.5">
-                    {evt.status === "draft" && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => handlePublish(evt)}
-                          className="px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] cursor-pointer"
-                        >
-                          Publish
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(evt)}
-                          className="px-1.5 py-0.5 text-rose-500 hover:text-rose-700 font-semibold text-[11px] cursor-pointer"
-                          title="Delete Draft"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-
-                    {evt.status === "published" && (
-                      <button
-                        type="button"
-                        onClick={() => handleClose(evt)}
-                        className="px-2 py-0.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-[11px] cursor-pointer"
-                      >
-                        Close
-                      </button>
-                    )}
-
-                    {evt.status === "closed" && (
-                      <button
-                        type="button"
-                        onClick={() => handleReopen(evt)}
-                        className="px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] cursor-pointer"
-                      >
-                        Reopen
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
