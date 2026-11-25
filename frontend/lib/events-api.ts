@@ -16,6 +16,41 @@ import {
 
 import { STARTER_EVENT_TEMPLATES } from "@/lib/starter-templates-data";
 
+export function resolveEventAssetUrl(
+  urlOrRef?: string | null,
+  token?: string | null,
+  download = false
+): string {
+  if (!urlOrRef) return "";
+  const raw = String(urlOrRef).trim();
+  if (!raw) return "";
+  if (/^(https?:|data:|blob:)/i.test(raw)) return raw;
+
+  let resolved = raw;
+  if (raw.startsWith("/api/v1/")) {
+    resolved = `${API_BASE_URL}${raw.slice("/api/v1".length)}`;
+  } else if (raw.startsWith("/")) {
+    resolved = `${API_BASE_URL}${raw}`;
+  } else {
+    resolved = `${API_BASE_URL}/events/files/${encodeURIComponent(raw)}/content`;
+  }
+
+  const params: string[] = [];
+  const authToken = token ?? getStoredToken();
+  if (authToken && !resolved.includes("token=")) {
+    params.push(`token=${encodeURIComponent(authToken)}`);
+  }
+  if (download && !resolved.includes("download=")) {
+    params.push("download=1");
+  }
+  if (params.length > 0) {
+    resolved += (resolved.includes("?") ? "&" : "?") + params.join("&");
+  }
+  return resolved;
+}
+
+const REQUEST_TIMEOUT_MS = 30000;
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
   const authToken = getStoredToken();
@@ -32,17 +67,58 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
 
-  const response = await fetch(url, { ...options, headers });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+      signal: options.signal ?? controller.signal,
+    });
+  } catch (err: any) {
+    clearTimeout(timer);
+    if (err?.name === "AbortError") {
+      throw new ApiError(
+        "Request timed out while contacting the CCE Events service. Please check your connection and try again.",
+        408
+      );
+    }
+    throw new ApiError(
+      `Network error connecting to CCE Events API (${url}). Please verify backend availability.`,
+      0
+    );
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!response.ok) {
     let errorMessage = `Request failed with status ${response.status}`;
     try {
-      const errorData = await response.json();
-      if (errorData.detail) {
-        errorMessage = typeof errorData.detail === "string" ? errorData.detail : JSON.stringify(errorData.detail);
+      const text = await response.text();
+      if (text) {
+        try {
+          const errorData = JSON.parse(text);
+          if (errorData?.detail) {
+            errorMessage =
+              typeof errorData.detail === "string"
+                ? errorData.detail
+                : JSON.stringify(errorData.detail);
+          } else if (errorData?.message) {
+            errorMessage = String(errorData.message);
+          }
+        } catch {
+          errorMessage = text.slice(0, 240);
+        }
       }
     } catch {
-      // Use fallback
+      // Keep status fallback
+    }
+    if (response.status === 401 && !errorMessage.toLowerCase().includes("unauthorized")) {
+      errorMessage = `Unauthorized: ${errorMessage}`;
+    } else if (response.status === 403 && !errorMessage.toLowerCase().includes("forbidden")) {
+      errorMessage = `Access denied: ${errorMessage}`;
     }
     throw new ApiError(errorMessage, response.status);
   }
@@ -156,8 +232,18 @@ export const eventsApi = {
   },
 
   // File Upload
-  uploadEventFile: async (file: File): Promise<{
+  uploadEventFile: async (
+    file: File,
+    uploadOptions?: {
+      eventId?: string;
+      fieldKey?: string;
+      uploadScope?: "event_media" | "notification_media" | "student_submission";
+    }
+  ): Promise<{
+    file_id?: string;
     storage_reference: string;
+    drive_file_id?: string;
+    drive_folder_id?: string;
     original_filename: string;
     mime_type: string;
     file_size: number;
@@ -166,8 +252,14 @@ export const eventsApi = {
   }> => {
     const formData = new FormData();
     formData.append("file", file);
+    if (uploadOptions?.eventId) formData.append("event_id", uploadOptions.eventId);
+    if (uploadOptions?.fieldKey) formData.append("field_key", uploadOptions.fieldKey);
+    if (uploadOptions?.uploadScope) formData.append("upload_scope", uploadOptions.uploadScope);
     return request<{
+      file_id?: string;
       storage_reference: string;
+      drive_file_id?: string;
+      drive_folder_id?: string;
       original_filename: string;
       mime_type: string;
       file_size: number;
@@ -221,6 +313,9 @@ export const eventsApi = {
         return res;
       }
     } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        throw err;
+      }
       console.warn("Backend templates API unreachable, utilizing built-in starter templates:", err);
     }
 

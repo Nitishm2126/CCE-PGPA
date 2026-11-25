@@ -10,17 +10,17 @@ import {
   EventAttachment,
   EventTemplate,
 } from "@/types/events";
-import { eventsApi } from "@/lib/events-api";
+import { eventsApi, resolveEventAssetUrl } from "@/lib/events-api";
 import { notificationsApi } from "@/lib/notifications-api";
 import { EventTemplatesLibraryModal } from "@/components/events/EventTemplatesLibraryModal";
-import { api } from "@/lib/api-client";
+import { api, getStoredToken } from "@/lib/api-client";
 import { AdminStudentItem } from "@/types/auth";
 import { SemesterResponse } from "@/types/achievement";
 
 interface EventCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (event: EventItem) => void;
+  onSuccess: (event: EventItem, isEditMode?: boolean) => void;
   initialEvent?: EventItem | null;
   semesters?: SemesterResponse[];
 }
@@ -115,12 +115,14 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
   // Template states
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<EventTemplate | null>(null);
+  const [idempotencyKey, setIdempotencyKey] = useState<string>("");
 
   // Reset or populate state when modal opens or initialEvent changes
   useEffect(() => {
     if (!isOpen) return;
 
     if (initialEvent) {
+      setIdempotencyKey("");
       setTitle(initialEvent.title || "");
       setSubtitle(initialEvent.subtitle || "");
       setShortDescription(initialEvent.short_description || "");
@@ -129,7 +131,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setCustomCategory(initialEvent.custom_category || "");
       setVenue(initialEvent.venue || "");
       setMode(initialEvent.mode || "Offline");
-      setMeetingUrl(initialEvent.meeting_url || "");
+      setMeetingUrl(initialEvent.online_meeting_url || initialEvent.meeting_url || "");
 
       if (initialEvent.event_start_at) {
         const [d, t] = initialEvent.event_start_at.split("T");
@@ -155,7 +157,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setAcademicYear(initialEvent.academic_year || "2024-2025");
       setSemesterId(initialEvent.semester_id || "");
 
-      setPosterUrl(initialEvent.poster_url || "");
+      setPosterUrl(initialEvent.banner_image_url || initialEvent.poster_url || "");
       setGalleryImages(initialEvent.gallery_images || []);
       setAttachments(initialEvent.attachments || []);
 
@@ -203,6 +205,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setSendUpdateNotification(false);
       setUpdateMessage("");
     } else {
+      setIdempotencyKey(`evt_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`);
       const today = new Date().toISOString().split("T")[0];
       const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
       const eventDay = new Date(Date.now() + 10 * 86400000).toISOString().split("T")[0];
@@ -316,11 +319,37 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingPoster(true);
+    setError(null);
     try {
-      const res = await eventsApi.uploadEventFile(file);
-      setPosterUrl(res.storage_reference);
+      const res = await eventsApi.uploadEventFile(file, {
+        eventId: initialEvent?.id,
+        uploadScope: "event_media",
+      });
+      setPosterUrl(res.file_url || res.storage_reference);
     } catch (err: any) {
       setError(err.message || "Failed to upload poster image");
+    } finally {
+      setUploadingPoster(false);
+    }
+  };
+
+  // Handle gallery image upload
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPoster(true);
+    setError(null);
+    try {
+      const res = await eventsApi.uploadEventFile(file, {
+        eventId: initialEvent?.id,
+        uploadScope: "event_media",
+      });
+      const urlVal = res.file_url || res.storage_reference;
+      if (urlVal) {
+        setGalleryImages((prev) => [...prev, urlVal]);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to upload gallery image");
     } finally {
       setUploadingPoster(false);
     }
@@ -331,13 +360,17 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingDoc(true);
+    setError(null);
     try {
-      const res = await eventsApi.uploadEventFile(file);
+      const res = await eventsApi.uploadEventFile(file, {
+        eventId: initialEvent?.id,
+        uploadScope: "event_media",
+      });
       setAttachments((prev) => [
         ...prev,
         {
           name: file.name,
-          url: res.storage_reference,
+          url: res.file_url || res.storage_reference,
           type: res.mime_type,
           size: res.file_size,
         },
@@ -383,6 +416,18 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       return;
     }
 
+    if (mode !== "Offline" && meetingUrl.trim() && !/^https?:\/\//i.test(meetingUrl.trim())) {
+      setError("Please enter a valid online meeting URL starting with http:// or https://.");
+      setActiveTab("basic");
+      return;
+    }
+
+    if (notifyStudents && notificationTiming === "scheduled" && !notificationScheduledDate) {
+      setError("Please select a scheduled date for the student notification.");
+      setActiveTab("notifications");
+      return;
+    }
+
     let audiencePayload: any = null;
     if (audienceType === "specific_students") {
       if (selectedStudents.length === 0) {
@@ -409,6 +454,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       venue: venue.trim() || undefined,
       mode,
       meeting_url: mode !== "Offline" ? meetingUrl.trim() || undefined : undefined,
+      online_meeting_url: mode !== "Offline" ? meetingUrl.trim() || undefined : undefined,
       event_start_at: eventStartAt,
       event_end_at: eventEndAt,
       registration_start_at: regStartAt,
@@ -416,6 +462,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       academic_year: academicYear,
       semester_id: semesterId || undefined,
       poster_url: posterUrl || undefined,
+      banner_image_url: posterUrl || undefined,
       gallery_images: galleryImages.length > 0 ? galleryImages : undefined,
       attachments: attachments.length > 0 ? attachments : undefined,
       audience_type: audienceType,
@@ -447,6 +494,9 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
           : undefined,
       send_update_notification: isEdit ? sendUpdateNotification : false,
       update_message: isEdit && sendUpdateNotification ? updateMessage.trim() : undefined,
+      idempotency_key: !isEdit && idempotencyKey ? idempotencyKey : undefined,
+      sections_config: !isEdit ? selectedTemplate?.sections_config : undefined,
+      form_fields: !isEdit ? selectedTemplate?.fields_config : undefined,
     };
 
     setIsSubmitting(true);
@@ -456,25 +506,8 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
         savedEvent = await eventsApi.updateEvent(initialEvent.id, payload);
       } else {
         savedEvent = await eventsApi.createEvent(payload);
-
-        // If a starter template was selected, initialize the event's form configuration
-        if (
-          selectedTemplate &&
-          ((selectedTemplate.fields_config?.length ?? 0) > 0 ||
-            (selectedTemplate.sections_config?.length ?? 0) > 0)
-        ) {
-          try {
-            await eventsApi.saveEventForm(
-              savedEvent.id,
-              selectedTemplate.fields_config || [],
-              selectedTemplate.sections_config || []
-            );
-          } catch (tErr) {
-            console.warn("Could not auto-apply template form config", tErr);
-          }
-        }
       }
-      onSuccess(savedEvent);
+      onSuccess(savedEvent, isEdit);
       onClose();
     } catch (err: any) {
       setError(err.message || "Failed to save event. Please check inputs and retry.");
@@ -867,7 +900,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                   </div>
                   {posterUrl && (
                     <div className="w-24 h-16 rounded-xl border border-slate-200 dark:border-[#292929] overflow-hidden bg-slate-100 flex items-center justify-center">
-                      <img src={posterUrl} alt="Poster preview" className="w-full h-full object-cover" />
+                      <img src={resolveEventAssetUrl(posterUrl, getStoredToken())} alt="Poster preview" className="w-full h-full object-cover" />
                     </div>
                   )}
                 </div>
@@ -880,33 +913,42 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                   <span className="text-[11px] text-slate-400">{galleryImages.length} images</span>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="space-y-2">
                   <input
-                    type="url"
-                    placeholder="Add gallery image URL (https://...)"
-                    value={newGalleryUrl}
-                    onChange={(e) => setNewGalleryUrl(e.target.value)}
-                    className="flex-1 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5]"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleGalleryUpload}
+                    disabled={uploadingPoster}
+                    className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-[#252525] dark:file:text-[#5DD62C] cursor-pointer"
                   />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (newGalleryUrl.trim()) {
-                        setGalleryImages([...galleryImages, newGalleryUrl.trim()]);
-                        setNewGalleryUrl("");
-                      }
-                    }}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black cursor-pointer"
-                  >
-                    + Add
-                  </button>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      placeholder="Add gallery image URL (https://...)"
+                      value={newGalleryUrl}
+                      onChange={(e) => setNewGalleryUrl(e.target.value)}
+                      className="flex-1 rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newGalleryUrl.trim()) {
+                          setGalleryImages([...galleryImages, newGalleryUrl.trim()]);
+                          setNewGalleryUrl("");
+                        }
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black cursor-pointer"
+                    >
+                      + Add
+                    </button>
+                  </div>
                 </div>
 
                 {galleryImages.length > 0 && (
                   <div className="grid grid-cols-4 gap-2 pt-1">
                     {galleryImages.map((img, idx) => (
                       <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-[#292929] aspect-video">
-                        <img src={img} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                        <img src={resolveEventAssetUrl(img, getStoredToken())} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => setGalleryImages(galleryImages.filter((_, i) => i !== idx))}

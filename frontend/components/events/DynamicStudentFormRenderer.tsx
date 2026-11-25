@@ -7,12 +7,50 @@ import {
   EventSubmissionItem,
   EventSubmissionRequest,
   EventFormField,
+  FormFieldOption,
   FormSection,
   ConditionalRule,
   GeoLocationData,
 } from "@/types/events";
-import { eventsApi } from "@/lib/events-api";
+import { eventsApi, resolveEventAssetUrl } from "@/lib/events-api";
+import { getStoredToken } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
+
+const LAYOUT_FIELD_TYPES = [
+  "heading",
+  "subheading",
+  "description",
+  "rich_text_block",
+  "divider",
+  "info",
+  "info_card",
+  "image_block",
+  "pdf_link",
+  "notice",
+];
+
+const FILE_UPLOAD_TYPES = [
+  "file",
+  "pdf_upload",
+  "image_upload",
+  "document_upload",
+  "camera_capture",
+  "gallery_upload",
+  "geo_photo",
+];
+
+function getFieldOptions(f: EventFormField): FormFieldOption[] {
+  const raw =
+    f.options_config && f.options_config.length > 0
+      ? f.options_config
+      : (f as any).options || (f.validation_config as any)?.options || [];
+  if (!Array.isArray(raw)) return [];
+  return raw.map((opt: any) =>
+    typeof opt === "object" && opt !== null
+      ? { label: String(opt.label ?? opt.value ?? ""), value: String(opt.value ?? opt.label ?? "") }
+      : { label: String(opt), value: String(opt) }
+  );
+}
 
 interface DynamicStudentFormRendererProps {
   event: EventItem;
@@ -21,6 +59,7 @@ interface DynamicStudentFormRendererProps {
   onSubmitted?: (submission: EventSubmissionItem) => void;
   onCancel?: () => void;
   onViewMySubmission?: () => void;
+  isPreviewMode?: boolean;
 }
 
 export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProps> = ({
@@ -30,12 +69,19 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
   onSubmitted,
   onCancel,
   onViewMySubmission,
+  isPreviewMode = false,
 }) => {
   const { user } = useAuth();
+  const authToken = getStoredToken();
 
-  // Populate initial values from existing submission if available
+  // Populate initial values from existing submission or field default_value
   const [formValues, setFormValues] = useState<Record<string, any>>(() => {
     const initial: Record<string, any> = {};
+    (form.fields || []).forEach((f) => {
+      if (f.default_value !== undefined && f.default_value !== null && f.default_value !== "") {
+        initial[f.field_key] = f.default_value;
+      }
+    });
     if (existingSubmission && existingSubmission.values) {
       Object.entries(existingSubmission.values).forEach(([key, valObj]) => {
         initial[key] = valObj?.value !== undefined ? valObj.value : valObj;
@@ -51,6 +97,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
       original_filename: string;
       mime_type: string;
       file_size: number;
+      file_url?: string;
     }>
   >(() => {
     if (existingSubmission && existingSubmission.files) {
@@ -60,6 +107,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
         original_filename: f.original_filename,
         mime_type: f.mime_type,
         file_size: f.file_size,
+        file_url: f.file_url,
       }));
     }
     return [];
@@ -82,6 +130,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
   const [capturingGeoKey, setCapturingGeoKey] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [previewSuccess, setPreviewSuccess] = useState<string | null>(null);
   const [submittedData, setSubmittedData] = useState<EventSubmissionItem | null>(null);
 
   // Field change handler
@@ -102,26 +151,63 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     }
   };
 
-  // File upload handler
-  const handleFileUpload = async (key: string, file: File) => {
+  // Client-side file validation against configured bounds/allowed types
+  const validateFileBeforeUpload = (field: EventFormField | undefined, file: File): string | null => {
+    const maxMb = Math.min(Number(field?.validation_config?.max_size_mb || 15), 15);
+    if (file.size > maxMb * 1024 * 1024) {
+      return `'${field?.label || "File"}' exceeds maximum allowed size (${maxMb} MB).`;
+    }
+    const allowed = field?.validation_config?.allowed_types;
+    if (Array.isArray(allowed) && allowed.length > 0) {
+      const ext = file.name.includes(".") ? file.name.split(".").pop()?.toLowerCase() || "" : "";
+      const normAllowed = allowed.map((t) => String(t).trim().toLowerCase().replace(/^\./, ""));
+      const mime = (file.type || "").toLowerCase();
+      const matched = normAllowed.some(
+        (a) => a === ext || a === mime || (a.endsWith("/*") && mime.startsWith(a.replace("/*", "/")))
+      );
+      if (!matched) {
+        return `File type '.${ext || mime}' is not allowed for '${field?.label || "File"}'. Allowed: ${allowed.join(", ")}`;
+      }
+    }
+    return null;
+  };
+
+  // Single File upload handler
+  const handleFileUpload = async (field: EventFormField, file: File) => {
+    const key = field.field_key;
+    const preErr = validateFileBeforeUpload(field, file);
+    if (preErr) {
+      setErrorMessage(preErr);
+      return;
+    }
+
     setUploadingFieldKey(key);
     setErrorMessage(null);
 
     try {
-      const res = await eventsApi.uploadEventFile(file);
+      const res = await eventsApi.uploadEventFile(file, {
+        eventId: isPreviewMode ? undefined : event.id,
+        fieldKey: key,
+        uploadScope: isPreviewMode ? "event_media" : "student_submission",
+      });
       const newFileEntry = {
         field_key: key,
         storage_reference: res.storage_reference,
         original_filename: res.original_filename,
         mime_type: res.mime_type,
         file_size: res.file_size,
+        file_url: res.file_url,
       };
 
       setUploadedFiles((prev) => [
         ...prev.filter((f) => f.field_key !== key),
         newFileEntry,
       ]);
-      handleFieldChange(key, res.original_filename);
+      handleFieldChange(key, {
+        storage_reference: res.storage_reference,
+        original_filename: res.original_filename,
+        file_url: res.file_url,
+      });
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to upload file. Please try again.");
     } finally {
@@ -129,78 +215,120 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     }
   };
 
-  // Geotag capture handler
-  const handleCaptureGeoPhoto = (key: string, file: File) => {
-    setCapturingGeoKey(key);
+  // Multi-file Gallery Upload handler
+  const handleGalleryFieldUpload = async (field: EventFormField, fileList: FileList) => {
+    const key = field.field_key;
+    setUploadingFieldKey(key);
     setErrorMessage(null);
 
-    if (!navigator.geolocation) {
-      // Browser doesn't support geolocation, fallback to standard upload
-      handleFileUpload(key, file);
-      setCapturingGeoKey(null);
+    try {
+      const existingList: any[] = Array.isArray(formValues[key]) ? [...formValues[key]] : [];
+      const addedFileEntries: typeof uploadedFiles = [];
+
+      for (const file of Array.from(fileList)) {
+        const preErr = validateFileBeforeUpload(field, file);
+        if (preErr) {
+          setErrorMessage(preErr);
+          continue;
+        }
+        const res = await eventsApi.uploadEventFile(file, {
+          eventId: isPreviewMode ? undefined : event.id,
+          fieldKey: key,
+          uploadScope: isPreviewMode ? "event_media" : "student_submission",
+        });
+        addedFileEntries.push({
+          field_key: key,
+          storage_reference: res.storage_reference,
+          original_filename: res.original_filename,
+          mime_type: res.mime_type,
+          file_size: res.file_size,
+          file_url: res.file_url,
+        });
+        existingList.push({
+          storage_reference: res.storage_reference,
+          original_filename: res.original_filename,
+          file_url: res.file_url,
+        });
+      }
+
+      if (addedFileEntries.length > 0) {
+        setUploadedFiles((prev) => [...prev, ...addedFileEntries]);
+        handleFieldChange(key, existingList);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to upload gallery images.");
+    } finally {
+      setUploadingFieldKey(null);
+    }
+  };
+
+  // Geotag capture handler
+  const handleCaptureGeoPhoto = (field: EventFormField, file: File) => {
+    const key = field.field_key;
+    const preErr = validateFileBeforeUpload(field, file);
+    if (preErr) {
+      setErrorMessage(preErr);
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const res = await eventsApi.uploadEventFile(file);
-          const geoData: GeoLocationData = {
-            has_geo: true,
-            latitude: Number(pos.coords.latitude.toFixed(6)),
-            longitude: Number(pos.coords.longitude.toFixed(6)),
-            accuracy: Math.round(pos.coords.accuracy),
-            timestamp: new Date(pos.timestamp).toISOString(),
-            storage_reference: res.storage_reference,
-            original_filename: res.original_filename,
-          };
+    setCapturingGeoKey(key);
+    setErrorMessage(null);
 
-          const newFileEntry = {
+    const uploadGeo = async (pos?: GeolocationPosition) => {
+      try {
+        const res = await eventsApi.uploadEventFile(file, {
+          eventId: isPreviewMode ? undefined : event.id,
+          fieldKey: key,
+          uploadScope: isPreviewMode ? "event_media" : "student_submission",
+        });
+        const geoData: GeoLocationData & { file_url?: string } = pos
+          ? {
+              has_geo: true,
+              latitude: Number(pos.coords.latitude.toFixed(6)),
+              longitude: Number(pos.coords.longitude.toFixed(6)),
+              accuracy: Math.round(pos.coords.accuracy),
+              timestamp: new Date(pos.timestamp).toISOString(),
+              storage_reference: res.storage_reference,
+              original_filename: res.original_filename,
+              file_url: res.file_url,
+            }
+          : {
+              has_geo: false,
+              timestamp: new Date().toISOString(),
+              storage_reference: res.storage_reference,
+              original_filename: res.original_filename,
+              file_url: res.file_url,
+            };
+
+        setUploadedFiles((prev) => [
+          ...prev.filter((f) => f.field_key !== key),
+          {
             field_key: key,
             storage_reference: res.storage_reference,
             original_filename: res.original_filename,
             mime_type: res.mime_type,
             file_size: res.file_size,
-          };
+            file_url: res.file_url,
+          },
+        ]);
+        handleFieldChange(key, geoData);
+      } catch (err: any) {
+        setErrorMessage(err.message || "Failed to upload photo.");
+      } finally {
+        setCapturingGeoKey(null);
+      }
+    };
 
-          setUploadedFiles((prev) => [
-            ...prev.filter((f) => f.field_key !== key),
-            newFileEntry,
-          ]);
-          handleFieldChange(key, geoData);
-        } catch (err: any) {
-          setErrorMessage(err.message || "Failed to upload photo with location.");
-        } finally {
-          setCapturingGeoKey(null);
-        }
-      },
-      async (err) => {
-        // Geolocation denied or unavailable -> Upload photo without metadata with notice
+    if (!navigator.geolocation) {
+      uploadGeo();
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => uploadGeo(pos),
+      (err) => {
         console.warn("Geolocation prompt was denied or unavailable:", err.message);
-        try {
-          const res = await eventsApi.uploadEventFile(file);
-          const geoData: GeoLocationData = {
-            has_geo: false,
-            timestamp: new Date().toISOString(),
-            storage_reference: res.storage_reference,
-            original_filename: res.original_filename,
-          };
-          setUploadedFiles((prev) => [
-            ...prev.filter((f) => f.field_key !== key),
-            {
-              field_key: key,
-              storage_reference: res.storage_reference,
-              original_filename: res.original_filename,
-              mime_type: res.mime_type,
-              file_size: res.file_size,
-            },
-          ]);
-          handleFieldChange(key, geoData);
-        } catch (uploadErr: any) {
-          setErrorMessage(uploadErr.message || "Failed to upload photo.");
-        } finally {
-          setCapturingGeoKey(null);
-        }
+        uploadGeo();
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
@@ -225,7 +353,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     const matches: boolean[] = [];
 
     for (const r of rules) {
-      const srcKey = r.field;
+      const srcKey = r.field || (r as any).field_key;
       const op = (r.operator || "equals").toLowerCase();
       const targetVal = r.value !== undefined ? r.value : r.target_value;
       const action = (r.action || "show").toLowerCase();
@@ -271,68 +399,40 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     return matches.every(Boolean);
   };
 
-  // Validate step fields before wizard advance
-  const validateStep = (stepIndex: number): boolean => {
-    const targetSection = sections[stepIndex];
-    if (!targetSection) return true;
-
-    const stepFields = form.fields.filter((f) => (f.section_id || "default") === targetSection.id);
-
-    for (const f of stepFields) {
-      if (!f.enabled || !isFieldVisible(f)) continue;
+  // Shared field validator used for both step navigation and final submission
+  const validateFields = (targetFields: EventFormField[]): string | null => {
+    for (const f of targetFields) {
+      if (f.enabled === false || !isFieldVisible(f)) continue;
+      if (LAYOUT_FIELD_TYPES.includes(f.field_type)) continue;
 
       const val = formValues[f.field_key];
-      const isFileField = ["file", "pdf_upload", "image_upload", "camera_capture", "geo_photo"].includes(f.field_type);
+      const isFileField = FILE_UPLOAD_TYPES.includes(f.field_type);
       const hasUploaded = uploadedFiles.some((uf) => uf.field_key === f.field_key);
 
       if (f.required) {
-        if (isFileField && !hasUploaded && !val) {
-          setErrorMessage(`'${f.label}' is required. Please attach the requested photo or document.`);
-          return false;
-        }
-        if (!isFileField) {
-          const empty =
-            val === undefined ||
-            val === null ||
-            (typeof val === "string" && !val.trim()) ||
-            (Array.isArray(val) && val.length === 0);
-          if (empty) {
-            setErrorMessage(`'${f.label}' is required.`);
-            return false;
-          }
-        }
-      }
-    }
-    return true;
-  };
-
-  // Submit response to Backend
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-
-    // Validate all visible fields
-    for (const f of form.fields) {
-      if (!f.enabled || !isFieldVisible(f)) continue;
-
-      // Skip layout blocks
-      if (["heading", "subheading", "divider", "info_card", "notice"].includes(f.field_type)) continue;
-
-      const val = formValues[f.field_key];
-      const isFileField = ["file", "pdf_upload", "image_upload", "camera_capture", "geo_photo"].includes(f.field_type);
-      const hasUploaded = uploadedFiles.some((uf) => uf.field_key === f.field_key);
-
-      if (f.required) {
-        if (isFileField && !hasUploaded && !val) {
-          setErrorMessage(`'${f.label}' is required. Please provide the requested photo or document.`);
-          return;
+        if (isFileField && !hasUploaded && (!val || (Array.isArray(val) && val.length === 0))) {
+          return `'${f.label}' is required. Please upload the requested photo or document.`;
         }
         if (f.field_type === "repeatable_group") {
           const entries = Array.isArray(val) ? val : [];
           const min = f.repeatable_config?.min_items || 1;
           if (entries.length < min) {
-            setErrorMessage(`'${f.label}' requires at least ${min} entries.`);
-            return;
+            return `'${f.label}' requires at least ${min} entr${min === 1 ? "y" : "ies"}.`;
+          }
+          for (let i = 0; i < entries.length; i++) {
+            for (const subF of f.repeatable_config?.fields || []) {
+              if (subF.required && !String(entries[i]?.[subF.field_key] ?? "").trim()) {
+                return `Please fill '${subF.label}' for ${f.repeatable_config?.entity_name || "Entry"} #${i + 1}.`;
+              }
+            }
+          }
+        } else if (f.field_type === "checkbox" && getFieldOptions(f).length === 0) {
+          if (val !== true) {
+            return `'${f.label}' must be checked before continuing.`;
+          }
+        } else if (f.field_type === "date_range") {
+          if (!val?.start || !val?.end) {
+            return `'${f.label}' requires both start and end dates.`;
           }
         } else if (!isFileField) {
           const empty =
@@ -341,17 +441,88 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
             (typeof val === "string" && !val.trim()) ||
             (Array.isArray(val) && val.length === 0);
           if (empty) {
-            setErrorMessage(`'${f.label}' is a required field.`);
-            return;
+            return `'${f.label}' is a required field.`;
           }
         }
       }
+
+      // Bounds & format validation on populated values
+      if (val !== undefined && val !== null && val !== "") {
+        const vCfg = f.validation_config || {};
+        if (f.field_type === "date_range" && val.start && val.end && val.end < val.start) {
+          return `'${f.label}': End date cannot be earlier than start date.`;
+        }
+        if (f.field_type === "number" || f.field_type === "numeric_rating" || f.field_type === "custom_scale") {
+          const numVal = Number(val);
+          if (Number.isNaN(numVal)) {
+            return `'${f.label}' must be a valid number.`;
+          }
+          if (vCfg.min_val !== undefined && vCfg.min_val !== null && numVal < Number(vCfg.min_val)) {
+            return `'${f.label}' must be at least ${vCfg.min_val}.`;
+          }
+          if (vCfg.max_val !== undefined && vCfg.max_val !== null && numVal > Number(vCfg.max_val)) {
+            return `'${f.label}' cannot exceed ${vCfg.max_val}.`;
+          }
+        }
+        if (["text", "textarea", "rich_text"].includes(f.field_type)) {
+          const sLen = String(val).trim().length;
+          if (vCfg.min_len && sLen > 0 && sLen < Number(vCfg.min_len)) {
+            return `'${f.label}' must be at least ${vCfg.min_len} characters.`;
+          }
+          if (vCfg.max_len && sLen > Number(vCfg.max_len)) {
+            return `'${f.label}' cannot exceed ${vCfg.max_len} characters.`;
+          }
+        }
+        if (f.field_type === "email" && typeof val === "string" && val.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim())) {
+          return `'${f.label}' must be a valid email address.`;
+        }
+        if (f.field_type === "url" && typeof val === "string" && val.trim() && !/^https?:\/\//i.test(val.trim())) {
+          return `'${f.label}' must start with http:// or https://.`;
+        }
+      }
+    }
+    return null;
+  };
+
+  // Validate step fields before wizard advance
+  const validateStep = (stepIndex: number): boolean => {
+    setErrorMessage(null);
+    const targetSection = sections[stepIndex];
+    if (!targetSection) return true;
+
+    const fallbackSecId = sections[0]?.id || "default";
+    const stepFields = form.fields.filter((f) => (f.section_id || fallbackSecId) === targetSection.id);
+    const err = validateFields(stepFields);
+    if (err) {
+      setErrorMessage(err);
+      return false;
+    }
+    return true;
+  };
+
+  // Submit response to Backend (or simulate validation in preview mode)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setPreviewSuccess(null);
+
+    const err = validateFields(form.fields || []);
+    if (err) {
+      setErrorMessage(err);
+      return;
+    }
+
+    if (isPreviewMode) {
+      setPreviewSuccess(
+        "Preview validation passed! Required checks, min/max bounds, and conditional rules are working correctly."
+      );
+      return;
     }
 
     const payload: EventSubmissionRequest = {
       form_version_id: form.id,
       values: formValues,
-      uploaded_files: uploadedFiles,
+      uploaded_files: uploadedFiles.map(({ file_url: _u, ...rest }) => rest),
     };
 
     setIsSubmitting(true);
@@ -487,20 +658,27 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
         </div>
       )}
 
-      {/* Error Banner */}
+      {/* Error / Preview Banners */}
       {errorMessage && (
         <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-800 dark:text-rose-300 font-semibold flex items-center justify-between">
           <span>⚠️ {errorMessage}</span>
-          <button onClick={() => setErrorMessage(null)} className="text-rose-500 cursor-pointer">×</button>
+          <button type="button" onClick={() => setErrorMessage(null)} className="text-rose-500 cursor-pointer">×</button>
+        </div>
+      )}
+      {previewSuccess && (
+        <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 font-semibold flex items-center justify-between">
+          <span>✓ {previewSuccess}</span>
+          <button type="button" onClick={() => setPreviewSuccess(null)} className="text-emerald-600 cursor-pointer">×</button>
         </div>
       )}
 
       {/* Form Fields */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {visibleSections.map((sec) => {
-          const secFields = form.fields.filter(
-            (f) => (f.section_id || "default") === sec.id && isFieldVisible(f)
-          );
+          const fallbackSecId = sections[0]?.id || "default";
+          const secFields = form.fields
+            .filter((f) => (f.section_id || fallbackSecId) === sec.id && f.enabled !== false && isFieldVisible(f))
+            .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
 
           return (
             <div key={sec.id} className="space-y-4 pt-2">
@@ -518,14 +696,23 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
               <div className="space-y-4">
                 {secFields.map((f) => {
                   const val = formValues[f.field_key];
+                  const fieldOpts = getFieldOptions(f);
 
                   // 1. Layout Blocks
-                  if (["heading", "subheading", "divider", "info_card", "notice"].includes(f.field_type)) {
+                  if (LAYOUT_FIELD_TYPES.includes(f.field_type)) {
                     if (f.field_type === "heading") {
                       return <h3 key={f.id} className="text-sm font-bold text-slate-900 dark:text-white pt-2">{f.label}</h3>;
                     }
                     if (f.field_type === "subheading") {
                       return <h4 key={f.id} className="text-xs font-semibold text-slate-700 dark:text-slate-300 pt-1">{f.label}</h4>;
+                    }
+                    if (f.field_type === "description" || f.field_type === "rich_text_block") {
+                      return (
+                        <div key={f.id} className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                          <p className="font-semibold text-slate-800 dark:text-slate-100">{f.label}</p>
+                          {f.description && <p className="mt-0.5 text-slate-500 dark:text-slate-400">{f.description}</p>}
+                        </div>
+                      );
                     }
                     if (f.field_type === "divider") {
                       return <hr key={f.id} className="border-slate-200 dark:border-[#292929] my-3" />;
@@ -535,6 +722,28 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                         <div key={f.id} className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300">
                           ⚠️ {f.label}
                         </div>
+                      );
+                    }
+                    if (f.field_type === "image_block" && (f.placeholder || f.default_value)) {
+                      return (
+                        <div key={f.id} className="rounded-xl overflow-hidden border border-slate-200 dark:border-[#292929]">
+                          <img src={resolveEventAssetUrl(f.default_value || f.placeholder, authToken)} alt={f.label} className="w-full max-h-64 object-cover" />
+                          {f.label && <p className="px-3 py-1.5 text-[11px] text-slate-500 bg-slate-50 dark:bg-[#202020]">{f.label}</p>}
+                        </div>
+                      );
+                    }
+                    if (f.field_type === "pdf_link" && (f.placeholder || f.default_value)) {
+                      return (
+                        <a
+                          key={f.id}
+                          href={resolveEventAssetUrl(f.default_value || f.placeholder, authToken, true)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#202020] border border-slate-200 dark:border-[#2d2d2d] text-xs font-semibold text-blue-600 dark:text-[#5DD62C] hover:underline"
+                        >
+                          <span>📄 {f.label}</span>
+                          <span>Download PDF ↗</span>
+                        </a>
                       );
                     }
                     return (
@@ -563,7 +772,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                           className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5] focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                         >
                           <option value="">{f.placeholder || "-- Select an option --"}</option>
-                          {(f.options_config || []).map((opt) => (
+                          {fieldOpts.map((opt) => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                           ))}
                         </select>
@@ -572,8 +781,8 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                       {/* Radio */}
                       {f.field_type === "radio" && (
                         <div className="space-y-1.5 pt-1">
-                          {(f.options_config || []).map((opt) => (
-                            <label key={opt.value} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer p-1 rounded-lg hover:bg-slate-50 dark:hover:bg-[#202020]">
+                          {fieldOpts.map((opt) => (
+                            <label key={opt.value} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-[#202020]">
                               <input
                                 type="radio"
                                 name={f.field_key}
@@ -588,22 +797,57 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                         </div>
                       )}
 
-                      {/* Checkbox Group */}
+                      {/* Checkbox (Multi-option group OR single confirmation checkbox) */}
                       {f.field_type === "checkbox" && (
-                        <div className="space-y-1.5 pt-1">
-                          {(f.options_config || []).map((opt) => {
-                            const isChecked = Array.isArray(val) && val.includes(opt.value);
+                        fieldOpts.length > 0 ? (
+                          <div className="space-y-1.5 pt-1">
+                            {fieldOpts.map((opt) => {
+                              const isChecked = Array.isArray(val) && val.includes(opt.value);
+                              return (
+                                <label key={opt.value} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-[#202020]">
+                                  <input
+                                    type="checkbox"
+                                    value={opt.value}
+                                    checked={isChecked}
+                                    onChange={() => handleCheckboxToggle(f.field_key, opt.value)}
+                                    className="rounded text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span>{opt.label}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <label className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-200 cursor-pointer p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50/60 dark:bg-[#161616]">
+                            <input
+                              type="checkbox"
+                              checked={val === true}
+                              onChange={(e) => handleFieldChange(f.field_key, e.target.checked)}
+                              className="mt-0.5 rounded text-blue-600 dark:text-[#5DD62C] focus:ring-blue-500 cursor-pointer"
+                            />
+                            <span className="leading-relaxed">I confirm and agree to this requirement</span>
+                          </label>
+                        )
+                      )}
+
+                      {/* Multi-Select Pills */}
+                      {f.field_type === "multi_select" && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {fieldOpts.map((opt) => {
+                            const selected = Array.isArray(val) && val.includes(opt.value);
                             return (
-                              <label key={opt.value} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer p-1 rounded-lg hover:bg-slate-50 dark:hover:bg-[#202020]">
-                                <input
-                                  type="checkbox"
-                                  value={opt.value}
-                                  checked={isChecked}
-                                  onChange={() => handleCheckboxToggle(f.field_key, opt.value)}
-                                  className="rounded text-blue-600 focus:ring-blue-500"
-                                />
-                                <span>{opt.label}</span>
-                              </label>
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => handleCheckboxToggle(f.field_key, opt.value)}
+                                className={`px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                                  selected
+                                    ? "border-blue-600 dark:border-[#5DD62C] bg-blue-50 dark:bg-[#5DD62C]/15 text-blue-700 dark:text-[#5DD62C]"
+                                    : "border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-700 dark:text-slate-300"
+                                }`}
+                              >
+                                {selected ? "✓ " : ""}{opt.label}
+                              </button>
                             );
                           })}
                         </div>
@@ -631,8 +875,8 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
 
                       {/* Star Rating */}
                       {f.field_type === "star_rating" && (
-                        <div className="flex items-center gap-1.5 pt-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          {Array.from({ length: f.rating_config?.max_rating || 5 }, (_, i) => i + 1).map((star) => (
                             <button
                               key={star}
                               type="button"
@@ -645,15 +889,19 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                             </button>
                           ))}
                           <span className="text-xs font-semibold text-slate-500 ml-2">
-                            {val ? `${val} / 5 Stars` : "Tap to rate"}
+                            {val ? `${val} / ${f.rating_config?.max_rating || 5} Stars` : "Tap to rate"}
                           </span>
                         </div>
                       )}
 
-                      {/* Satisfaction Scale */}
-                      {f.field_type === "satisfaction_rating" && (
+                      {/* Satisfaction / Difficulty Scale */}
+                      {(f.field_type === "satisfaction_rating" || f.field_type === "difficulty_rating") && (
                         <div className="flex flex-wrap gap-1.5 pt-1">
-                          {(f.rating_config?.options || ["Poor", "Fair", "Good", "Very Good", "Excellent"]).map((opt) => (
+                          {(f.rating_config?.options ||
+                            (f.field_type === "difficulty_rating"
+                              ? ["Beginner", "Intermediate", "Advanced"]
+                              : ["Poor", "Fair", "Good", "Very Good", "Excellent"])
+                          ).map((opt) => (
                             <button
                               key={opt}
                               type="button"
@@ -670,23 +918,54 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                         </div>
                       )}
 
-                      {/* Numeric Scale */}
-                      {f.field_type === "numeric_rating" && (
-                        <div className="flex flex-wrap gap-1 pt-1">
-                          {Array.from({ length: 11 }, (_, i) => i).map((num) => (
-                            <button
-                              key={num}
-                              type="button"
-                              onClick={() => handleFieldChange(f.field_key, num)}
-                              className={`w-8 h-8 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                                val === num
-                                  ? "border-blue-600 dark:border-[#5DD62C] bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black shadow-xs"
-                                  : "border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-700 dark:text-slate-300"
-                              }`}
-                            >
-                              {num}
-                            </button>
-                          ))}
+                      {/* Numeric Scale / Custom Scale */}
+                      {(f.field_type === "numeric_rating" || f.field_type === "custom_scale") && (
+                        <div className="space-y-1.5 pt-1">
+                          {f.rating_config?.options && f.rating_config.options.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {f.rating_config.options.map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => handleFieldChange(f.field_key, opt)}
+                                  className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                                    val === opt
+                                      ? "border-blue-600 dark:border-[#5DD62C] bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black"
+                                      : "border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-700 dark:text-slate-300"
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap gap-1">
+                              {(() => {
+                                const minR = f.rating_config?.min_rating ?? (f.field_type === "custom_scale" ? 1 : 0);
+                                const maxR = f.rating_config?.max_rating ?? (f.field_type === "custom_scale" ? 5 : 10);
+                                return Array.from({ length: Math.max(2, maxR - minR + 1) }, (_, i) => minR + i).map((num) => (
+                                  <button
+                                    key={num}
+                                    type="button"
+                                    onClick={() => handleFieldChange(f.field_key, num)}
+                                    className={`w-8 h-8 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                                      val === num
+                                        ? "border-blue-600 dark:border-[#5DD62C] bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black shadow-xs"
+                                        : "border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-700 dark:text-slate-300"
+                                    }`}
+                                  >
+                                    {num}
+                                  </button>
+                                ));
+                              })()}
+                            </div>
+                          )}
+                          {(f.rating_config?.min_label || f.rating_config?.max_label) && (
+                            <div className="flex justify-between text-[10px] text-slate-400">
+                              <span>{f.rating_config?.min_label}</span>
+                              <span>{f.rating_config?.max_label}</span>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -699,7 +978,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                             capture="environment"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
-                              if (file) handleCaptureGeoPhoto(f.field_key, file);
+                              if (file) handleCaptureGeoPhoto(f, file);
                             }}
                             disabled={capturingGeoKey === f.field_key}
                             className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-[#252525] dark:file:text-[#5DD62C] cursor-pointer"
@@ -710,7 +989,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                             </p>
                           )}
                           {val && typeof val === "object" && (
-                            <div className="p-2.5 rounded-lg bg-white dark:bg-[#1d1d1d] border border-slate-200 dark:border-[#2d2d2d] text-[11px] text-slate-600 dark:text-slate-300 space-y-0.5">
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-[#1d1d1d] border border-slate-200 dark:border-[#2d2d2d] text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
                               {val.has_geo ? (
                                 <p className="text-emerald-600 dark:text-[#5DD62C] font-semibold flex items-center gap-1">
                                   <span>✓ Verified Location:</span> {val.latitude}°, {val.longitude}° (±{val.accuracy}m)
@@ -720,7 +999,21 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                                   ⚠️ Location coordinates unavailable (photo recorded)
                                 </p>
                               )}
-                              <p className="text-slate-400">Captured: {new Date(val.timestamp).toLocaleTimeString()}</p>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-slate-400">
+                                  {val.original_filename || "Geo photo"} • {val.timestamp ? new Date(val.timestamp).toLocaleTimeString() : ""}
+                                </span>
+                                {(val.file_url || val.storage_reference) && (
+                                  <a
+                                    href={resolveEventAssetUrl(val.file_url || val.storage_reference, authToken, false)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 dark:text-[#5DD62C] underline font-semibold"
+                                  >
+                                    View Photo ↗
+                                  </a>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -730,7 +1023,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                       {f.field_type === "repeatable_group" && (
                         <div className="p-3.5 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50/40 dark:bg-[#161616] space-y-3">
                           {(() => {
-                            const entries: any[] = Array.isArray(val) ? val : [{}];
+                            const entries: any[] = Array.isArray(val) && val.length > 0 ? val : [{}];
                             const repCfg = f.repeatable_config || { entity_name: "Entry", fields: [] };
                             const maxItems = repCfg.max_items || 10;
 
@@ -742,7 +1035,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                                       <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                                         {repCfg.entity_name || "Entry"} #{eIdx + 1}
                                       </span>
-                                      {entries.length > 1 && (
+                                      {entries.length > (repCfg.min_items || 1) && (
                                         <button
                                           type="button"
                                           onClick={() => {
@@ -757,26 +1050,49 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                      {(repCfg.fields || []).map((subF) => (
-                                        <div key={subF.field_key}>
-                                          <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">
-                                            {subF.label} {subF.required && <span className="text-rose-500">*</span>}
-                                          </label>
-                                          <input
-                                            type="text"
-                                            value={entry[subF.field_key] || ""}
-                                            onChange={(e) => {
-                                              const updatedEntries = [...entries];
-                                              updatedEntries[eIdx] = {
-                                                ...updatedEntries[eIdx],
-                                                [subF.field_key]: e.target.value,
-                                              };
-                                              handleFieldChange(f.field_key, updatedEntries);
-                                            }}
-                                            className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#141414]"
-                                          />
-                                        </div>
-                                      ))}
+                                      {(repCfg.fields || []).map((subF) => {
+                                        const subOpts = getFieldOptions(subF);
+                                        return (
+                                          <div key={subF.field_key}>
+                                            <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">
+                                              {subF.label} {subF.required && <span className="text-rose-500">*</span>}
+                                            </label>
+                                            {subF.field_type === "dropdown" && subOpts.length > 0 ? (
+                                              <select
+                                                value={entry[subF.field_key] || ""}
+                                                onChange={(e) => {
+                                                  const updatedEntries = [...entries];
+                                                  updatedEntries[eIdx] = {
+                                                    ...updatedEntries[eIdx],
+                                                    [subF.field_key]: e.target.value,
+                                                  };
+                                                  handleFieldChange(f.field_key, updatedEntries);
+                                                }}
+                                                className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#141414]"
+                                              >
+                                                <option value="">-- Select --</option>
+                                                {subOpts.map((o) => (
+                                                  <option key={o.value} value={o.value}>{o.label}</option>
+                                                ))}
+                                              </select>
+                                            ) : (
+                                              <input
+                                                type={subF.field_type === "email" ? "email" : subF.field_type === "number" ? "number" : "text"}
+                                                value={entry[subF.field_key] || ""}
+                                                onChange={(e) => {
+                                                  const updatedEntries = [...entries];
+                                                  updatedEntries[eIdx] = {
+                                                    ...updatedEntries[eIdx],
+                                                    [subF.field_key]: e.target.value,
+                                                  };
+                                                  handleFieldChange(f.field_key, updatedEntries);
+                                                }}
+                                                className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#141414]"
+                                              />
+                                            )}
+                                          </div>
+                                        );
+                                      })}
                                     </div>
                                   </div>
                                 ))}
@@ -798,45 +1114,164 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                         </div>
                       )}
 
-                      {/* File / Document Upload */}
-                      {["file", "pdf_upload", "image_upload", "camera_capture"].includes(f.field_type) && (
-                        <div className="space-y-1">
+                      {/* Multi-Image Gallery Upload */}
+                      {f.field_type === "gallery_upload" && (
+                        <div className="space-y-2">
                           <input
                             type="file"
+                            multiple
+                            accept="image/*"
                             onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFileUpload(f.field_key, file);
+                              if (e.target.files && e.target.files.length > 0) {
+                                handleGalleryFieldUpload(f, e.target.files);
+                              }
                             }}
                             disabled={uploadingFieldKey === f.field_key}
                             className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-[#252525] dark:file:text-[#5DD62C] cursor-pointer"
                           />
                           {uploadingFieldKey === f.field_key && (
-                            <p className="text-[11px] text-blue-500 animate-pulse">Uploading file to cloud storage...</p>
+                            <p className="text-[11px] text-blue-500 animate-pulse">Uploading gallery images to Google Drive...</p>
                           )}
-                          {val && (
-                            <p className="text-[11px] text-emerald-600 dark:text-[#5DD62C] font-semibold">
-                              ✓ Uploaded: {typeof val === "string" ? val : "File attached"}
-                            </p>
+                          {Array.isArray(val) && val.length > 0 && (
+                            <div className="space-y-1.5">
+                              {val.map((item: any, idx: number) => (
+                                <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-[#202020] border border-slate-200 dark:border-[#2d2d2d] text-[11px]">
+                                  <span className="truncate font-semibold text-emerald-600 dark:text-[#5DD62C]">
+                                    ✓ {item.original_filename || `Image #${idx + 1}`}
+                                  </span>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    {(item.file_url || item.storage_reference) && (
+                                      <a
+                                        href={resolveEventAssetUrl(item.file_url || item.storage_reference, authToken, false)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 dark:text-[#5DD62C] underline font-semibold"
+                                      >
+                                        View
+                                      </a>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleFieldChange(f.field_key, val.filter((_: any, i: number) => i !== idx))}
+                                      className="text-rose-500 hover:underline cursor-pointer"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       )}
 
-                      {/* Long Textarea */}
-                      {f.field_type === "textarea" && (
+                      {/* Single File / PDF / Document / Image / Camera Upload */}
+                      {["file", "pdf_upload", "image_upload", "document_upload", "camera_capture"].includes(f.field_type) && (
+                        <div className="space-y-1.5">
+                          <input
+                            type="file"
+                            accept={
+                              f.field_type === "pdf_upload"
+                                ? ".pdf,application/pdf"
+                                : f.field_type === "image_upload" || f.field_type === "camera_capture"
+                                ? "image/*"
+                                : f.field_type === "document_upload"
+                                ? ".pdf,.doc,.docx,.txt"
+                                : undefined
+                            }
+                            capture={f.field_type === "camera_capture" ? "environment" : undefined}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(f, file);
+                            }}
+                            disabled={uploadingFieldKey === f.field_key}
+                            className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-[#252525] dark:file:text-[#5DD62C] cursor-pointer"
+                          />
+                          {uploadingFieldKey === f.field_key && (
+                            <p className="text-[11px] text-blue-500 animate-pulse">Uploading file securely to Google Drive...</p>
+                          )}
+                          {val && (
+                            <div className="flex items-center justify-between text-[11px] text-emerald-600 dark:text-[#5DD62C] font-semibold">
+                              <span>
+                                ✓ Uploaded: {typeof val === "object" ? val.original_filename : String(val)}
+                              </span>
+                              {(val.file_url || val.storage_reference) && (
+                                <a
+                                  href={resolveEventAssetUrl(typeof val === "object" ? (val.file_url || val.storage_reference) : val, authToken, true)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 dark:text-[#5DD62C] underline"
+                                >
+                                  View / Download ↗
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Date Range */}
+                      {f.field_type === "date_range" && (
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] text-slate-400 mb-0.5">From Date</label>
+                            <input
+                              type="date"
+                              value={val?.start || ""}
+                              onChange={(e) => handleFieldChange(f.field_key, { ...(val || {}), start: e.target.value })}
+                              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-slate-400 mb-0.5">To Date</label>
+                            <input
+                              type="date"
+                              value={val?.end || ""}
+                              onChange={(e) => handleFieldChange(f.field_key, { ...(val || {}), end: e.target.value })}
+                              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Long Textarea / Rich Text */}
+                      {(f.field_type === "textarea" || f.field_type === "rich_text") && (
                         <textarea
-                          rows={3}
+                          rows={f.field_type === "rich_text" ? 5 : 3}
                           value={val || ""}
-                          placeholder={f.placeholder || "Enter your response..."}
+                          placeholder={f.placeholder || "Enter your detailed response..."}
                           onChange={(e) => handleFieldChange(f.field_key, e.target.value)}
                           className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5] focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                         />
                       )}
 
-                      {/* Standard text, number, email, phone, date, etc. */}
-                      {!["dropdown", "radio", "checkbox", "yes_no", "star_rating", "satisfaction_rating", "numeric_rating", "geo_photo", "repeatable_group", "file", "pdf_upload", "image_upload", "camera_capture", "textarea"].includes(f.field_type) && (
+                      {/* Standard text, number, email, phone, url, date, time, datetime */}
+                      {![
+                        "dropdown", "radio", "checkbox", "multi_select", "yes_no",
+                        "star_rating", "satisfaction_rating", "difficulty_rating", "numeric_rating", "custom_scale",
+                        "geo_photo", "repeatable_group", "gallery_upload", "file", "pdf_upload",
+                        "image_upload", "document_upload", "camera_capture", "date_range", "textarea", "rich_text",
+                      ].includes(f.field_type) && (
                         <input
-                          type={f.field_type === "number" ? "number" : f.field_type === "email" ? "email" : f.field_type === "date" ? "date" : f.field_type === "time" ? "time" : "text"}
-                          value={val || ""}
+                          type={
+                            f.field_type === "number"
+                              ? "number"
+                              : f.field_type === "email"
+                              ? "email"
+                              : f.field_type === "url"
+                              ? "url"
+                              : f.field_type === "phone"
+                              ? "tel"
+                              : f.field_type === "date"
+                              ? "date"
+                              : f.field_type === "time"
+                              ? "time"
+                              : f.field_type === "datetime"
+                              ? "datetime-local"
+                              : "text"
+                          }
+                          step={f.field_type === "number" ? "any" : undefined}
+                          value={val ?? ""}
                           placeholder={f.placeholder || "Enter value..."}
                           onChange={(e) => handleFieldChange(f.field_key, e.target.value)}
                           className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5] focus:outline-hidden focus:ring-1 focus:ring-blue-500"
@@ -901,6 +1336,8 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                     </svg>
                     Submitting...
                   </>
+                ) : isPreviewMode ? (
+                  "Test Form Validation (Preview)"
                 ) : existingSubmission ? (
                   "Update My Submission"
                 ) : (

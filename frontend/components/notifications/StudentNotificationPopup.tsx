@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { StudentNotificationItem } from "@/types/notifications";
 import { notificationsApi } from "@/lib/notifications-api";
+import { resolveEventAssetUrl } from "@/lib/events-api";
+import { getStoredToken } from "@/lib/api-client";
 
 interface StudentNotificationPopupProps {
   onNavigateToEvent?: (eventId?: string) => void;
@@ -62,11 +64,15 @@ export const StudentNotificationPopup: React.FC<StudentNotificationPopupProps> =
         // ignore
       }
 
-      const eventId = activePopup.event_id;
       const ctaUrl = activePopup.cta_url;
+      const eventId =
+        activePopup.event_id ||
+        (ctaUrl?.includes("eventId=")
+          ? new URLSearchParams(ctaUrl.split("?")[1] || "").get("eventId") || undefined
+          : undefined);
       setActivePopup(null);
 
-      if (eventId && onNavigateToEvent) {
+      if ((eventId || ctaUrl?.startsWith("/student?tab=events")) && onNavigateToEvent) {
         onNavigateToEvent(eventId);
       } else if (ctaUrl) {
         if (ctaUrl.startsWith("/")) {
@@ -88,7 +94,7 @@ export const StudentNotificationPopup: React.FC<StudentNotificationPopupProps> =
         {activePopup.image_url && (
           <div className="w-full h-44 bg-slate-100 dark:bg-[#121212] overflow-hidden border-b border-slate-100 dark:border-[#262626] relative">
             <img
-              src={activePopup.image_url}
+              src={resolveEventAssetUrl(activePopup.image_url, getStoredToken())}
               alt={activePopup.title}
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
@@ -142,7 +148,7 @@ export const StudentNotificationPopup: React.FC<StudentNotificationPopupProps> =
           {activePopup.attachment_url && (
             <div className="pt-1">
               <a
-                href={activePopup.attachment_url}
+                href={resolveEventAssetUrl(activePopup.attachment_url, getStoredToken(), true)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-[#5DD62C] font-semibold hover:underline"

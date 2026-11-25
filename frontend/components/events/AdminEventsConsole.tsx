@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { EventItem, EventStatus } from "@/types/events";
-import { eventsApi } from "@/lib/events-api";
+import { EventItem } from "@/types/events";
+import { eventsApi, resolveEventAssetUrl } from "@/lib/events-api";
 import { EventStatusBadge, EventModeBadge } from "@/components/events/EventStatusBadge";
 import { EventCreateModal } from "@/components/events/EventCreateModal";
 import { EventFormBuilder } from "@/components/events/EventFormBuilder";
 import { EventResponsesManager } from "@/components/events/EventResponsesManager";
 import { SemesterResponse } from "@/types/achievement";
-import { api } from "@/lib/api-client";
+import { api, getStoredToken } from "@/lib/api-client";
 
 interface AdminEventsConsoleProps {
   userRole?: string;
@@ -294,8 +294,16 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
               <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto text-lg font-bold">
                 ⚠️
               </div>
-              <h3 className="text-sm font-bold text-rose-900 dark:text-rose-200">Failed to Load Events</h3>
-              <p className="text-xs text-rose-700 dark:text-rose-300/90">{error}</p>
+              <h3 className="text-sm font-bold text-rose-900 dark:text-rose-200">
+                {error.includes("Not Found")
+                  ? "Events API Endpoint Unavailable (404)"
+                  : error.includes("Network error") || error.includes("timed out")
+                  ? "Unable to Reach Events Service"
+                  : error.includes("Unauthorized") || error.includes("Access denied")
+                  ? "Authorization Required"
+                  : "Failed to Load Events"}
+              </h3>
+              <p className="text-xs text-rose-700 dark:text-rose-300/90 break-words">{error}</p>
               <button
                 type="button"
                 onClick={loadEvents}
@@ -308,25 +316,19 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
             <div className="p-12 rounded-2xl border border-dashed border-slate-300 dark:border-[#292929] text-center space-y-3 max-w-md mx-auto my-6">
               <div className="text-4xl">📅</div>
               <h3 className="text-base font-bold text-slate-900 dark:text-[#F5F5F5]">
-                {statusFilter === "published"
-                  ? "No published events available"
-                  : statusFilter === "draft"
-                  ? "No draft events found"
-                  : statusFilter === "closed"
-                  ? "No closed events found"
-                  : statusFilter === "archived"
-                  ? "No archived events found"
-                  : "No events have been created yet"}
+                No Events Found
               </h3>
               <p className="text-xs text-slate-500 dark:text-[#A3A3A3] max-w-sm mx-auto">
                 {statusFilter === "published"
-                  ? "Events will appear here once published for student registrations."
+                  ? "No published events are available yet. Publish a draft event for students to see it."
                   : statusFilter === "draft"
                   ? "No draft events are currently waiting for edits or publishing."
                   : statusFilter === "closed"
                   ? "No closed events found matching your current filter."
                   : statusFilter === "archived"
                   ? "No archived events found."
+                  : searchQuery || semesterFilter !== "all"
+                  ? "No events match your current search or semester filters."
                   : "Get started by creating your first event or choosing from the starter templates library."}
               </p>
               <div className="flex items-center justify-center gap-2 pt-2">
@@ -349,6 +351,7 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
             const subCount = evt.total_submissions || 0;
             const capacityRatio = hasCapacity ? Math.min(100, Math.round((subCount / (evt.registration_capacity || 1)) * 100)) : 0;
             const isFull = hasCapacity && subCount >= (evt.registration_capacity || 0);
+            const bannerSrc = resolveEventAssetUrl(evt.banner_image_url || evt.poster_url, getStoredToken());
 
             return (
               <div
@@ -356,10 +359,10 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
                 className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] overflow-hidden shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between"
               >
                 {/* Optional Poster Banner */}
-                {evt.banner_image_url && (
+                {bannerSrc && (
                   <div className="w-full h-32 bg-slate-100 dark:bg-[#121212] relative overflow-hidden border-b border-slate-100 dark:border-[#262626]">
                     <img
-                      src={evt.banner_image_url}
+                      src={bannerSrc}
                       alt={evt.title}
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
@@ -376,12 +379,12 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
                   <div className="space-y-2.5">
                     {/* Header row: Status & Mode / Layout */}
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <EventStatusBadge status={evt.status} size="sm" />
+                      <EventStatusBadge status={evt.effective_status || evt.status} size="sm" />
                       <div className="flex items-center gap-1.5">
                         <span className="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 dark:bg-[#262626] text-slate-600 dark:text-slate-300">
                           {evt.form_layout_mode === "multi_step" ? "⚡ Wizard" : "📄 Single Page"}
                         </span>
-                        {!evt.banner_image_url && <EventModeBadge mode={evt.mode} />}
+                        {!bannerSrc && <EventModeBadge mode={evt.mode} />}
                       </div>
                     </div>
 
@@ -555,8 +558,12 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
               setIsCreateModalOpen(false);
               setEditingEvent(null);
             }}
-            onSuccess={() => {
+            onSuccess={(savedEvent, wasEditMode) => {
               loadEvents();
+              if (!wasEditMode && savedEvent) {
+                setActiveEvent(savedEvent);
+                setViewState("form_builder");
+              }
             }}
             initialEvent={editingEvent}
             semesters={semestersList}

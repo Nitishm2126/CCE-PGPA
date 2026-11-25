@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { EventItem, EventResponsesResponse, EventSubmissionItem } from "@/types/events";
-import { eventsApi } from "@/lib/events-api";
+import { eventsApi, resolveEventAssetUrl } from "@/lib/events-api";
+import { getStoredToken } from "@/lib/api-client";
 
 interface EventResponsesManagerProps {
   event: EventItem;
@@ -331,6 +332,74 @@ export const EventResponsesManager: React.FC<EventResponsesManagerProps> = ({ ev
 
                   const ansObj = selectedSubmission.values?.[field.field_key];
                   const rawVal = ansObj?.value !== undefined ? ansObj.value : ansObj;
+                  const token = getStoredToken();
+
+                  const renderFormattedAnswer = (val: any) => {
+                    if (val === null || val === undefined || val === "") {
+                      return <span className="text-slate-400 italic">Not provided</span>;
+                    }
+                    if (Array.isArray(val)) {
+                      if (val.length === 0) return <span className="text-slate-400 italic">None</span>;
+                      if (typeof val[0] === "object" && val[0] !== null) {
+                        return (
+                          <div className="space-y-1.5 mt-1">
+                            {val.map((entry: any, idx: number) => (
+                              <div key={idx} className="p-2 rounded-lg bg-slate-50 dark:bg-[#202020] border border-slate-200 dark:border-[#2d2d2d] text-[11px] space-y-0.5">
+                                <span className="font-bold text-slate-600 dark:text-slate-300">Entry #{idx + 1}</span>
+                                {typeof entry.original_filename === "string" && (
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span>📎 {entry.original_filename}</span>
+                                    {(entry.file_url || entry.storage_reference) && (
+                                      <a
+                                        href={resolveEventAssetUrl(entry.file_url || entry.storage_reference, token, true)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 dark:text-[#5DD62C] underline font-semibold"
+                                      >
+                                        Download
+                                      </a>
+                                    )}
+                                  </div>
+                                )}
+                                {!entry.original_filename && Object.entries(entry).map(([k, v]) => (
+                                  <div key={k}><span className="text-slate-400">{k}:</span> {String(v)}</div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return val.join(", ");
+                    }
+                    if (typeof val === "object") {
+                      if ("start" in val || "end" in val) {
+                        return `${val.start || "—"} to ${val.end || "—"}`;
+                      }
+                      if (val.storage_reference || val.file_url) {
+                        const fileHref = resolveEventAssetUrl(val.file_url || val.storage_reference, token, true);
+                        const previewHref = resolveEventAssetUrl(val.file_url || val.storage_reference, token, false);
+                        return (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span>📎 {val.original_filename || val.storage_reference}</span>
+                              {fileHref && (
+                                <a href={previewHref} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-[#5DD62C] underline font-semibold">
+                                  View / Download
+                                </a>
+                              )}
+                            </div>
+                            {val.geo?.lat !== undefined && (
+                              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">
+                                📍 GPS Verified: {Number(val.geo.lat).toFixed(5)}, {Number(val.geo.lng).toFixed(5)} (±{Math.round(val.geo.accuracy || 0)}m)
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }
+                      return JSON.stringify(val);
+                    }
+                    return String(val);
+                  };
 
                   return (
                     <div
@@ -340,13 +409,9 @@ export const EventResponsesManager: React.FC<EventResponsesManagerProps> = ({ ev
                       <p className="text-[11px] font-semibold text-slate-500 dark:text-[#A3A3A3]">
                         {field.label}
                       </p>
-                      <p className="text-xs font-medium text-slate-900 dark:text-[#F5F5F5] break-words">
-                        {Array.isArray(rawVal)
-                          ? rawVal.join(", ")
-                          : rawVal !== null && rawVal !== undefined && rawVal !== ""
-                          ? String(rawVal)
-                          : <span className="text-slate-400 italic">Not provided</span>}
-                      </p>
+                      <div className="text-xs font-medium text-slate-900 dark:text-[#F5F5F5] break-words">
+                        {renderFormattedAnswer(rawVal)}
+                      </div>
                     </div>
                   );
                 })}
@@ -359,23 +424,50 @@ export const EventResponsesManager: React.FC<EventResponsesManagerProps> = ({ ev
                     Uploaded Supporting Evidence ({selectedSubmission.files.length})
                   </span>
                   <div className="space-y-2">
-                    {selectedSubmission.files.map((file) => (
-                      <div
-                        key={file.id}
-                        className="p-2.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 flex items-center justify-between text-xs"
-                      >
-                        <div className="flex items-center gap-2 truncate">
-                          <span>📎</span>
-                          <span className="font-semibold truncate">{file.original_filename}</span>
-                          <span className="text-[10px] text-slate-400">
-                            ({(file.file_size / 1024).toFixed(1)} KB)
-                          </span>
+                    {selectedSubmission.files.map((file) => {
+                      const token = getStoredToken();
+                      const previewUrl = resolveEventAssetUrl(file.file_url || file.storage_reference, token, false);
+                      const downloadUrl = resolveEventAssetUrl(file.download_url || file.file_url || file.storage_reference, token, true);
+                      return (
+                        <div
+                          key={file.id}
+                          className="p-2.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 flex items-center justify-between gap-2 text-xs"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <span>📎</span>
+                            <span className="font-semibold truncate">{file.original_filename}</span>
+                            <span className="text-[10px] text-slate-400">
+                              ({(file.file_size / 1024).toFixed(1)} KB)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px] font-mono">
+                              {file.mime_type}
+                            </span>
+                            {previewUrl && (
+                              <a
+                                href={previewUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#333] hover:bg-white dark:hover:bg-[#181818] text-[11px] font-semibold text-blue-600 dark:text-[#5DD62C]"
+                              >
+                                View
+                              </a>
+                            )}
+                            {downloadUrl && (
+                              <a
+                                href={downloadUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2.5 py-1 rounded-lg bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black text-[11px] font-semibold"
+                              >
+                                Download
+                              </a>
+                            )}
+                          </div>
                         </div>
-                        <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px] font-mono">
-                          {file.mime_type}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

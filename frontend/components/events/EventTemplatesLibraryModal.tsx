@@ -21,6 +21,7 @@ export const EventTemplatesLibraryModal: React.FC<EventTemplatesLibraryModalProp
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [previewTemplate, setPreviewTemplate] = useState<EventTemplate | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -37,6 +38,21 @@ export const EventTemplatesLibraryModal: React.FC<EventTemplatesLibraryModalProp
       setError(err.message || "Failed to load event templates.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteCustomTemplate = async (tpl: EventTemplate) => {
+    if (tpl.is_starter) return;
+    if (!confirm(`Delete custom template "${tpl.name}"? Existing events using it will remain untouched.`)) return;
+    setDeletingId(tpl.id);
+    setError(null);
+    try {
+      await eventsApi.deleteCustomTemplate(tpl.id);
+      setTemplates((prev) => prev.filter((t) => t.id !== tpl.id));
+    } catch (err: any) {
+      setError(err.message || "Failed to delete custom template.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -182,13 +198,26 @@ export const EventTemplatesLibraryModal: React.FC<EventTemplatesLibraryModalProp
                     </div>
 
                     <div className="pt-3 border-t border-slate-100 dark:border-[#2b2b2b] flex items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setPreviewTemplate(tpl)}
-                        className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#333] hover:bg-slate-100 dark:hover:bg-[#262626] text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer"
-                      >
-                        👁 Preview
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewTemplate(tpl)}
+                          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#333] hover:bg-slate-100 dark:hover:bg-[#262626] text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer"
+                        >
+                          👁 Preview
+                        </button>
+                        {!isStarter && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCustomTemplate(tpl)}
+                            disabled={deletingId === tpl.id}
+                            className="px-2.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-semibold cursor-pointer disabled:opacity-50"
+                            title="Delete custom template"
+                          >
+                            {deletingId === tpl.id ? "..." : "🗑"}
+                          </button>
+                        )}
+                      </div>
 
                       <button
                         type="button"

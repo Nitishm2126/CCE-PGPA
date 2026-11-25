@@ -11,8 +11,11 @@ import {
   RatingConfig,
   RepeatableConfig,
   FormLayoutMode,
+  EventTemplate,
 } from "@/types/events";
 import { eventsApi } from "@/lib/events-api";
+import { EventTemplatesLibraryModal } from "@/components/events/EventTemplatesLibraryModal";
+import { DynamicStudentFormRenderer } from "@/components/events/DynamicStudentFormRenderer";
 
 interface EventFormBuilderProps {
   event: EventItem;
@@ -66,7 +69,9 @@ const FIELD_PALETTE: PaletteItem[] = [
 
   // Uploads
   { type: "file", label: "Document Upload (PDF/Word)", category: "upload", icon: "📄", defaultLabel: "Upload Resume / ID Card", description: "Document file attachment" },
+  { type: "document_upload", label: "Word / Docs Upload", category: "upload", icon: "📃", defaultLabel: "Upload Report (DOCX/PDF)", description: "Strict PDF, DOC, DOCX upload" },
   { type: "image_upload", label: "Image / Screenshot", category: "upload", icon: "🖼", defaultLabel: "Payment Receipt / ID Photo", description: "PNG, JPG, or WebP image" },
+  { type: "gallery_upload", label: "Multi-Image Gallery", category: "upload", icon: "🗂", defaultLabel: "Upload Multiple Photos / Screens", description: "Upload multiple PNG or JPG images" },
   { type: "pdf_upload", label: "PDF Document Only", category: "upload", icon: "📕", defaultLabel: "Upload Signed NOC (PDF)", description: "Strict PDF document upload" },
   { type: "camera_capture", label: "Live Camera Snapshot", category: "upload", icon: "📷", defaultLabel: "Take Live Photo", description: "Direct camera photo capture" },
 
@@ -79,290 +84,10 @@ const FIELD_PALETTE: PaletteItem[] = [
   // Layout Blocks
   { type: "heading", label: "Section Heading", category: "layout", icon: "H", defaultLabel: "Participant Information", description: "Visual bold title separator" },
   { type: "subheading", label: "Subheading", category: "layout", icon: "h2", defaultLabel: "Academic & Contact Details", description: "Secondary section subtitle" },
+  { type: "description", label: "Description Block", category: "layout", icon: "📝", defaultLabel: "Read all eligibility instructions carefully before registering.", description: "Formatted instructional text block" },
   { type: "divider", label: "Horizontal Divider", category: "layout", icon: "—", defaultLabel: "Divider", description: "Visual separation line" },
   { type: "info_card", label: "Information Notice", category: "layout", icon: "ℹ", defaultLabel: "Please ensure all details match college records.", description: "Blue informative callout card" },
   { type: "notice", label: "Warning / Important Notice", category: "layout", icon: "⚠️", defaultLabel: "Late registrations will not be entertained.", description: "Amber warning highlight box" },
-];
-
-// -----------------------------------------------------------------------------
-// 8 Starter Form Templates
-// -----------------------------------------------------------------------------
-interface FormTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  icon: string;
-  layout_mode: FormLayoutMode;
-  sections: FormSection[];
-  fields: EventFormField[];
-}
-
-const STARTER_TEMPLATES: FormTemplate[] = [
-  {
-    id: "general_reg",
-    name: "General Event Registration",
-    description: "Standard event sign-up with participant information and preferences.",
-    category: "General",
-    icon: "📋",
-    layout_mode: "single_page",
-    sections: [
-      { id: "sec_info", title: "Participant Information", description: "Enter your official student credentials", order: 0 },
-      { id: "sec_prefs", title: "Attendance & Preferences", description: "Logistical preferences for the event", order: 1 },
-    ],
-    fields: [
-      { id: "g_1", field_key: "full_name", field_type: "text", label: "Student Full Name", placeholder: "e.g. John Doe", required: true, display_order: 0, enabled: true, section_id: "sec_info" },
-      { id: "g_2", field_key: "register_number", field_type: "text", label: "Register Number", placeholder: "e.g. SEC25CO001", required: true, display_order: 1, enabled: true, section_id: "sec_info" },
-      { id: "g_3", field_key: "email", field_type: "email", label: "College Email", placeholder: "student@sairamtap.edu.in", required: true, display_order: 2, enabled: true, section_id: "sec_info" },
-      { id: "g_4", field_key: "phone", field_type: "phone", label: "WhatsApp Contact Number", placeholder: "10-digit mobile number", required: true, display_order: 3, enabled: true, section_id: "sec_info" },
-      {
-        id: "g_5", field_key: "attendance_mode", field_type: "radio", label: "Mode of Attendance", required: true, display_order: 4, enabled: true, section_id: "sec_prefs",
-        options_config: [{ label: "In-Person (On-Campus)", value: "in_person" }, { label: "Online (Virtual Stream)", value: "online" }]
-      },
-      {
-        id: "g_6", field_key: "dietary_preference", field_type: "dropdown", label: "Dietary Preference (for lunch)", required: false, display_order: 5, enabled: true, section_id: "sec_prefs",
-        options_config: [{ label: "Vegetarian", value: "veg" }, { label: "Non-Vegetarian", value: "non_veg" }]
-      },
-      { id: "g_7", field_key: "expectations", field_type: "textarea", label: "What do you hope to learn or experience?", placeholder: "Share your goals...", required: false, display_order: 6, enabled: true, section_id: "sec_prefs" },
-    ],
-  },
-  {
-    id: "workshop_reg",
-    name: "Hands-on Technical Workshop",
-    description: "Detailed workshop registration with skill level assessment, prerequisites, and laptop setup.",
-    category: "Workshop",
-    icon: "💻",
-    layout_mode: "multi_step",
-    sections: [
-      { id: "sec_part", title: "Participant Details", description: "Official contact & college identification", order: 0 },
-      { id: "sec_tech", title: "Technical Background", description: "Your programming and tools experience", order: 1 },
-      { id: "sec_logistics", title: "Hardware & Logistics", description: "Hardware requirements for lab sessions", order: 2 },
-    ],
-    fields: [
-      { id: "w_1", field_key: "full_name", field_type: "text", label: "Participant Name", placeholder: "e.g. Priya Sharma", required: true, display_order: 0, enabled: true, section_id: "sec_part" },
-      { id: "w_2", field_key: "register_number", field_type: "text", label: "Register Number", placeholder: "e.g. SEC25CO045", required: true, display_order: 1, enabled: true, section_id: "sec_part" },
-      { id: "w_3", field_key: "email", field_type: "email", label: "College Email", placeholder: "student@sairamtap.edu.in", required: true, display_order: 2, enabled: true, section_id: "sec_part" },
-      {
-        id: "w_4", field_key: "experience_level", field_type: "difficulty_rating", label: "Self-assessed Skill Level", required: true, display_order: 3, enabled: true, section_id: "sec_tech",
-        rating_config: { options: ["Beginner", "Intermediate", "Advanced"], scale_type: "labels" }
-      },
-      {
-        id: "w_5", field_key: "preferred_languages", field_type: "checkbox", label: "Languages / Frameworks you know", required: true, display_order: 4, enabled: true, section_id: "sec_tech",
-        options_config: [{ label: "Python", value: "python" }, { label: "JavaScript / TypeScript", value: "js_ts" }, { label: "Java / C++", value: "java_cpp" }, { label: "Cloudflare Workers / Serverless", value: "workers" }]
-      },
-      {
-        id: "w_6", field_key: "has_laptop", field_type: "yes_no", label: "Will you bring your own laptop for hands-on sessions?", required: true, display_order: 5, enabled: true, section_id: "sec_logistics"
-      },
-      {
-        id: "w_7", field_key: "laptop_os", field_type: "dropdown", label: "Laptop Operating System", required: true, display_order: 6, enabled: true, section_id: "sec_logistics",
-        conditions: [{ field: "has_laptop", operator: "equals", value: "yes", action: "show" }],
-        options_config: [{ label: "Windows 11", value: "win11" }, { label: "macOS (Apple Silicon)", value: "macos" }, { label: "Linux (Ubuntu / Fedora)", value: "linux" }]
-      },
-    ],
-  },
-  {
-    id: "hackathon_team",
-    name: "Hackathon & Project Competition",
-    description: "Team-based registration with project abstract, track selection, and repeatable team members list.",
-    category: "Competition",
-    icon: "🚀",
-    layout_mode: "multi_step",
-    sections: [
-      { id: "sec_proj", title: "Project & Innovation Pitch", description: "Describe your solution, theme and track", order: 0 },
-      { id: "sec_team", title: "Team Members Roster", description: "Add up to 4 team members with their roles", order: 1 },
-      { id: "sec_docs", title: "Pitch Deck & Links", description: "Supporting presentation and repository links", order: 2 },
-    ],
-    fields: [
-      { id: "h_1", field_key: "team_name", field_type: "text", label: "Team Name", placeholder: "e.g. ByteBuilders", required: true, display_order: 0, enabled: true, section_id: "sec_proj" },
-      { id: "h_2", field_key: "project_title", field_type: "text", label: "Project Title", placeholder: "e.g. Smart Campus Energy AI", required: true, display_order: 1, enabled: true, section_id: "sec_proj" },
-      {
-        id: "h_3", field_key: "hackathon_track", field_type: "dropdown", label: "Competition Track", required: true, display_order: 2, enabled: true, section_id: "sec_proj",
-        options_config: [
-          { label: "AI & Autonomous Agents", value: "ai_agents" },
-          { label: "Cloud & Edge Computing", value: "cloud_edge" },
-          { label: "FinTech & Blockchain", value: "fintech" },
-          { label: "Healthcare & Social Good", value: "healthcare" },
-          { label: "Open Innovation", value: "open_innovation" },
-        ]
-      },
-      { id: "h_4", field_key: "abstract", field_type: "textarea", label: "Problem Statement & Proposed Solution", placeholder: "Describe the core challenge and your technical approach in 200-300 words...", required: true, display_order: 3, enabled: true, section_id: "sec_proj" },
-      {
-        id: "h_5", field_key: "team_members", field_type: "repeatable_group", label: "Team Members", required: true, display_order: 4, enabled: true, section_id: "sec_team",
-        repeatable_config: {
-          entity_name: "Team Member",
-          min_items: 1,
-          max_items: 4,
-          add_button_text: "+ Add Team Member",
-          fields: [
-            { id: "tm_name", field_key: "member_name", field_type: "text", label: "Member Full Name", required: true, display_order: 0, enabled: true },
-            { id: "tm_reg", field_key: "member_reg", field_type: "text", label: "Register Number", required: true, display_order: 1, enabled: true },
-            {
-              id: "tm_role", field_key: "member_role", field_type: "dropdown", label: "Team Role", required: true, display_order: 2, enabled: true,
-              options_config: [
-                { label: "Team Lead", value: "lead" },
-                { label: "Frontend Engineer", value: "frontend" },
-                { label: "Backend / Cloud Engineer", value: "backend" },
-                { label: "AI / Data Engineer", value: "ai_data" },
-                { label: "UI/UX Designer", value: "design" },
-              ]
-            },
-            { id: "tm_email", field_key: "member_email", field_type: "email", label: "Email Address", required: true, display_order: 3, enabled: true },
-          ]
-        }
-      },
-      { id: "h_6", field_key: "github_repo", field_type: "url", label: "GitHub Repository / Demo Link", placeholder: "https://github.com/...", required: false, display_order: 5, enabled: true, section_id: "sec_docs" },
-      { id: "h_7", field_key: "pitch_deck", field_type: "pdf_upload", label: "Upload Pitch Deck (PDF)", description: "Max 10 slides, PDF format under 15MB", required: true, display_order: 6, enabled: true, section_id: "sec_docs" },
-    ],
-  },
-  {
-    id: "internship_noc",
-    name: "Internship & NOC Request Form",
-    description: "Official student request form for industrial internship approval and college NOC.",
-    category: "Internship",
-    icon: "🏢",
-    layout_mode: "single_page",
-    sections: [
-      { id: "sec_stu", title: "Student Academic Record", description: "Academic and mentor details", order: 0 },
-      { id: "sec_comp", title: "Company & Role Specifications", description: "Information about the hiring organization", order: 1 },
-      { id: "sec_verify", title: "Verification & Offer Letter", description: "Official documentation upload", order: 2 },
-    ],
-    fields: [
-      { id: "i_1", field_key: "student_name", field_type: "text", label: "Student Name", required: true, display_order: 0, enabled: true, section_id: "sec_stu" },
-      { id: "i_2", field_key: "reg_number", field_type: "text", label: "Register Number", required: true, display_order: 1, enabled: true, section_id: "sec_stu" },
-      { id: "i_3", field_key: "cgpa", field_type: "number", label: "Current Cumulative CGPA", placeholder: "e.g. 8.75", required: true, display_order: 2, enabled: true, section_id: "sec_stu" },
-      { id: "i_4", field_key: "company_name", field_type: "text", label: "Company / Organization Name", placeholder: "e.g. Zoho Corporation", required: true, display_order: 3, enabled: true, section_id: "sec_comp" },
-      { id: "i_5", field_key: "internship_role", field_type: "text", label: "Role / Job Title", placeholder: "e.g. Software Engineering Intern", required: true, display_order: 4, enabled: true, section_id: "sec_comp" },
-      {
-        id: "i_6", field_key: "work_mode", field_type: "radio", label: "Work Arrangement", required: true, display_order: 5, enabled: true, section_id: "sec_comp",
-        options_config: [{ label: "On-Site (At Office)", value: "onsite" }, { label: "Remote (Work from Home)", value: "remote" }, { label: "Hybrid", value: "hybrid" }]
-      },
-      { id: "i_7", field_key: "internship_period", field_type: "date_range", label: "Internship Duration (Start & End Dates)", required: true, display_order: 6, enabled: true, section_id: "sec_comp" },
-      { id: "i_8", field_key: "offer_letter", field_type: "pdf_upload", label: "Upload Official Offer Letter (PDF)", description: "Must include company letterhead and signature", required: true, display_order: 7, enabled: true, section_id: "sec_verify" },
-    ],
-  },
-  {
-    id: "exam_feedback",
-    name: "Exam Attendance & Session Feedback",
-    description: "Session attendance check, geo-verification photo, and question paper feedback.",
-    category: "Academic",
-    icon: "✍️",
-    layout_mode: "single_page",
-    sections: [
-      { id: "sec_sess", title: "Exam Session Information", description: "Subject code and hall assignment", order: 0 },
-      { id: "sec_photo", title: "Identity & Venue Verification", description: "Live verification photograph", order: 1 },
-      { id: "sec_rev", title: "Subject Feedback", description: "Confidential paper evaluation", order: 2 },
-    ],
-    fields: [
-      { id: "e_1", field_key: "subject_code", field_type: "text", label: "Subject Code & Title", placeholder: "e.g. CS3401 - Cloud Computing", required: true, display_order: 0, enabled: true, section_id: "sec_sess" },
-      { id: "e_2", field_key: "hall_number", field_type: "text", label: "Exam Hall / Lab Number", placeholder: "e.g. Lab 4 (Alpha Block)", required: true, display_order: 1, enabled: true, section_id: "sec_sess" },
-      { id: "e_3", field_key: "venue_photo", field_type: "geo_photo", label: "Hall Verification Photo", description: "Take a photo inside the hall with camera", required: true, display_order: 2, enabled: true, section_id: "sec_photo" },
-      {
-        id: "e_4", field_key: "paper_difficulty", field_type: "difficulty_rating", label: "Question Paper Difficulty", required: true, display_order: 3, enabled: true, section_id: "sec_rev",
-        rating_config: { options: ["Easy", "Moderate", "Challenging", "Very Tough"], scale_type: "labels" }
-      },
-      {
-        id: "e_5", field_key: "hall_cleanliness", field_type: "star_rating", label: "Hall Environment & Seating", required: true, display_order: 4, enabled: true, section_id: "sec_rev",
-        rating_config: { max_rating: 5, min_label: "Poor", max_label: "Excellent" }
-      },
-    ],
-  },
-  {
-    id: "event_feedback",
-    name: "Event & Speaker Feedback Form",
-    description: "Post-event satisfaction survey with star ratings, speaker evaluations, and suggestions.",
-    category: "Feedback",
-    icon: "⭐",
-    layout_mode: "single_page",
-    sections: [
-      { id: "sec_ratings", title: "Session Ratings", description: "Rate different aspects of the event", order: 0 },
-      { id: "sec_written", title: "Detailed Feedback & Suggestions", description: "Help us improve future department events", order: 1 },
-    ],
-    fields: [
-      {
-        id: "f_1", field_key: "overall_satisfaction", field_type: "satisfaction_rating", label: "Overall Satisfaction", required: true, display_order: 0, enabled: true, section_id: "sec_ratings",
-        rating_config: { options: ["Poor", "Fair", "Good", "Very Good", "Excellent"], scale_type: "labels" }
-      },
-      {
-        id: "f_2", field_key: "speaker_rating", field_type: "star_rating", label: "Speaker Knowledge & Presentation", required: true, display_order: 1, enabled: true, section_id: "sec_ratings",
-        rating_config: { max_rating: 5, min_label: "Poor", max_label: "Outstanding" }
-      },
-      {
-        id: "f_3", field_key: "content_relevance", field_type: "star_rating", label: "Content Relevance & Depth", required: true, display_order: 2, enabled: true, section_id: "sec_ratings",
-        rating_config: { max_rating: 5, min_label: "Irrelevant", max_label: "Highly Relevant" }
-      },
-      {
-        id: "f_4", field_key: "nps_score", field_type: "numeric_rating", label: "How likely are you to recommend this event to peers? (0-10)", required: true, display_order: 3, enabled: true, section_id: "sec_ratings",
-        validation_config: { min_val: 0, max_val: 10 }
-      },
-      { id: "f_5", field_key: "takeaway", field_type: "textarea", label: "What was your biggest takeaway from today?", placeholder: "Share your thoughts...", required: false, display_order: 4, enabled: true, section_id: "sec_written" },
-      { id: "f_6", field_key: "future_topics", field_type: "text", label: "Topics you would like to see in next events", placeholder: "e.g. Docker, Kubernetes, LangChain", required: false, display_order: 5, enabled: true, section_id: "sec_written" },
-    ],
-  },
-  {
-    id: "cultural_competition",
-    name: "Cultural & Talent Competition",
-    description: "Creative performances, solo or group categories, track uploads, and props requests.",
-    category: "Cultural",
-    icon: "🎭",
-    layout_mode: "single_page",
-    sections: [
-      { id: "sec_act", title: "Act / Performance Details", description: "Tell us about your presentation", order: 0 },
-      { id: "sec_media", title: "Music Track & Audio Upload", description: "Background music track", order: 1 },
-    ],
-    fields: [
-      { id: "c_1", field_key: "act_title", field_type: "text", label: "Performance / Song / Act Title", placeholder: "e.g. Classical Fusion", required: true, display_order: 0, enabled: true, section_id: "sec_act" },
-      {
-        id: "c_2", field_key: "cultural_category", field_type: "dropdown", label: "Competition Category", required: true, display_order: 1, enabled: true, section_id: "sec_act",
-        options_config: [
-          { label: "Solo Singing (Western/Carnatic)", value: "singing" },
-          { label: "Solo Dance", value: "solo_dance" },
-          { label: "Group Dance (3-8 members)", value: "group_dance" },
-          { label: "Instrumental Solo", value: "instrumental" },
-          { label: "Mime / Skit", value: "skit" },
-        ]
-      },
-      {
-        id: "c_3", field_key: "is_group", field_type: "radio", label: "Performance Type", required: true, display_order: 2, enabled: true, section_id: "sec_act",
-        options_config: [{ label: "Solo Performance", value: "solo" }, { label: "Group Performance", value: "group" }]
-      },
-      {
-        id: "c_4", field_key: "audio_track", field_type: "file", label: "Upload Audio Track (MP3/WAV)", description: "Max 20MB, clean audio cut to length", required: false, display_order: 3, enabled: true, section_id: "sec_media",
-        validation_config: { allowed_types: [".mp3", ".wav"], max_size_mb: 20 }
-      },
-      { id: "c_5", field_key: "prop_requirements", field_type: "textarea", label: "Stage & Sound Requirements", placeholder: "e.g. 2 standing mics, 1 table, keyboard stand...", required: false, display_order: 4, enabled: true, section_id: "sec_media" },
-    ],
-  },
-  {
-    id: "student_survey",
-    name: "Student Campus & Academic Survey",
-    description: "Comprehensive opinion and facilities survey with rating blocks and conditional questions.",
-    category: "Survey",
-    icon: "📊",
-    layout_mode: "single_page",
-    sections: [
-      { id: "sec_demo", title: "Demographics", description: "Academic year and section", order: 0 },
-      { id: "sec_fac", title: "Facilities Evaluation", description: "Rate campus resources", order: 1 },
-    ],
-    fields: [
-      {
-        id: "s_1", field_key: "year_of_study", field_type: "dropdown", label: "Year of Study", required: true, display_order: 0, enabled: true, section_id: "sec_demo",
-        options_config: [{ label: "1st Year", value: "1" }, { label: "2nd Year", value: "2" }, { label: "3rd Year", value: "3" }, { label: "4th Year", value: "4" }]
-      },
-      {
-        id: "s_2", field_key: "commute_type", field_type: "radio", label: "Commute Type", required: true, display_order: 1, enabled: true, section_id: "sec_demo",
-        options_config: [{ label: "Day Scholar (College Bus)", value: "bus" }, { label: "Day Scholar (Self)", value: "self" }, { label: "Hosteller", value: "hostel" }]
-      },
-      {
-        id: "s_3", field_key: "wifi_experience", field_type: "satisfaction_rating", label: "Campus Wi-Fi & Internet Speed", required: true, display_order: 2, enabled: true, section_id: "sec_fac",
-        rating_config: { options: ["Very Poor", "Poor", "Average", "Good", "Excellent"], scale_type: "labels" }
-      },
-      {
-        id: "s_4", field_key: "lab_facilities", field_type: "star_rating", label: "Department Computing Labs", required: true, display_order: 3, enabled: true, section_id: "sec_fac",
-        rating_config: { max_rating: 5, min_label: "Needs Improvement", max_label: "World Class" }
-      },
-      { id: "s_5", field_key: "general_suggestions", field_type: "textarea", label: "Key Suggestions or Needs", placeholder: "What one thing would make your student experience better?", required: false, display_order: 4, enabled: true, section_id: "sec_fac" },
-    ],
-  },
 ];
 
 // -----------------------------------------------------------------------------
@@ -444,8 +169,15 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
   const [viewMode, setViewMode] = useState<"builder" | "preview">("builder");
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
 
-  // Template dropdown state
+  // Template dropdown & custom template saving state
   const [showTemplatesModal, setShowTemplatesModal] = useState<boolean>(false);
+  const [showSaveTemplateModal, setShowSaveTemplateModal] = useState<boolean>(false);
+  const [tplName, setTplName] = useState<string>("");
+  const [tplCategory, setTplCategory] = useState<string>(event.category || "Workshop");
+  const [tplPurpose, setTplPurpose] = useState<string>("");
+  const [tplDescription, setTplDescription] = useState<string>("");
+  const [savingTemplate, setSavingTemplate] = useState<boolean>(false);
+  const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
 
   // Status
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -490,6 +222,8 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
       defaultRatingConfig = { options: ["Poor", "Fair", "Good", "Very Good", "Excellent"], scale_type: "labels" };
     } else if (type === "difficulty_rating") {
       defaultRatingConfig = { options: ["Beginner", "Intermediate", "Advanced"], scale_type: "labels" };
+    } else if (type === "custom_scale") {
+      defaultRatingConfig = { min_rating: 1, max_rating: 5, min_label: "Low", max_label: "High", scale_type: "numbers" };
     }
 
     let defaultRepeatable: RepeatableConfig | undefined;
@@ -513,7 +247,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
       label: def?.defaultLabel || "New Field",
       description: "",
       placeholder: "",
-      required: !["heading", "subheading", "divider", "info_card", "notice"].includes(type),
+      required: !["heading", "subheading", "description", "rich_text_block", "divider", "info", "info_card", "notice"].includes(type),
       display_order: fields.length,
       enabled: true,
       section_id: activeSectionId,
@@ -521,8 +255,8 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
       rating_config: defaultRatingConfig,
       repeatable_config: defaultRepeatable,
       validation_config:
-        type === "file" || type === "pdf_upload" || type === "image_upload"
-          ? { allowed_types: [".pdf", ".png", ".jpg"], max_size_mb: 10 }
+        ["file", "pdf_upload", "document_upload", "image_upload", "gallery_upload"].includes(type)
+          ? { allowed_types: type === "pdf_upload" ? ["pdf"] : type.includes("image") || type === "gallery_upload" ? ["jpg", "jpeg", "png", "webp"] : ["pdf", "doc", "docx", "png", "jpg"], max_size_mb: 10 }
           : {},
     };
 
@@ -623,18 +357,112 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
     }
   };
 
-  // Load a starter template
-  const handleLoadTemplate = (tpl: FormTemplate) => {
+  // Drag-and-drop field reordering
+  const handleDropField = (targetFieldId: string, targetSectionId: string) => {
+    if (!draggedFieldId || draggedFieldId === targetFieldId) return;
+    setFields((prev) => {
+      const copy = [...prev];
+      const fromIdx = copy.findIndex((f) => f.id === draggedFieldId);
+      const toIdx = copy.findIndex((f) => f.id === targetFieldId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const [moved] = copy.splice(fromIdx, 1);
+      moved.section_id = targetSectionId;
+      copy.splice(toIdx, 0, moved);
+      return copy.map((f, idx) => ({ ...f, display_order: idx }));
+    });
+    setDraggedFieldId(null);
+  };
+
+  const handleDropToSectionEnd = (targetSectionId: string) => {
+    if (!draggedFieldId) return;
+    setFields((prev) => {
+      const copy = [...prev];
+      const fromIdx = copy.findIndex((f) => f.id === draggedFieldId);
+      if (fromIdx === -1) return prev;
+      const [moved] = copy.splice(fromIdx, 1);
+      moved.section_id = targetSectionId;
+      copy.push(moved);
+      return copy.map((f, idx) => ({ ...f, display_order: idx }));
+    });
+    setActiveSectionId(targetSectionId);
+    setDraggedFieldId(null);
+  };
+
+  const handleDuplicateSection = (secId: string) => {
+    const srcSec = sections.find((s) => s.id === secId);
+    if (!srcSec) return;
+    const newSecId = `sec_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
+    const newSec: FormSection = {
+      ...srcSec,
+      id: newSecId,
+      title: `${srcSec.title} (Copy)`,
+      order: sections.length,
+    };
+    const secFields = fields.filter((f) => f.section_id === secId);
+    const clonedFields = secFields.map((f, i) => ({
+      ...JSON.parse(JSON.stringify(f)),
+      id: `field_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 5)}`,
+      field_key: `${f.field_key}_copy_${Math.floor(Math.random() * 900 + 100)}`,
+      section_id: newSecId,
+      display_order: fields.length + i,
+    }));
+    setSections((prev) => [...prev, newSec]);
+    setFields((prev) => [...prev, ...clonedFields]);
+    setActiveSectionId(newSecId);
+  };
+
+  // Load a canonical starter or custom template
+  const handleLoadTemplate = (tpl: EventTemplate) => {
     if (fields.length > 0 && !confirm(`Loading the "${tpl.name}" template will replace your current form layout. Continue?`)) {
       return;
     }
-    setSections(tpl.sections);
-    setFields(tpl.fields);
-    setLayoutMode(tpl.layout_mode);
-    setActiveSectionId(tpl.sections[0]?.id || "sec_default");
-    setSelectedFieldId(tpl.fields[0]?.id || null);
+    const nextSections =
+      tpl.sections_config && tpl.sections_config.length > 0
+        ? tpl.sections_config
+        : [{ id: "sec_default", title: "General Information", order: 0 }];
+    const fallbackSecId = nextSections[0].id;
+    const nextFields = (tpl.fields_config || []).map((f, idx) => ({
+      ...f,
+      id: f.id || `tpl_f_${Date.now()}_${idx}`,
+      section_id: f.section_id || fallbackSecId,
+      display_order: f.display_order ?? idx,
+      enabled: f.enabled !== false,
+    }));
+    setSections(nextSections);
+    setFields(nextFields);
+    setLayoutMode(tpl.form_layout_mode || "multi_step");
+    setActiveSectionId(fallbackSecId);
+    setSelectedFieldId(nextFields[0]?.id || null);
     setShowTemplatesModal(false);
-    setSaveSuccess(`Loaded "${tpl.name}" starter template!`);
+    setSaveSuccess(`Loaded "${tpl.name}" template!`);
+  };
+
+  // Save current form structure as a reusable custom template
+  const handleSaveAsCustomTemplate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tplName.trim()) return;
+    setSavingTemplate(true);
+    setErrorMessage(null);
+    try {
+      await eventsApi.saveCustomTemplate({
+        name: tplName.trim(),
+        category: tplCategory || "Workshop",
+        purpose: tplPurpose.trim() || `Reusable template derived from ${event.title}`,
+        description: tplDescription.trim() || `${sections.length} sections and ${fields.length} configured fields.`,
+        form_layout_mode: layoutMode,
+        sections_config: sections,
+        fields_config: fields,
+      });
+      setShowSaveTemplateModal(false);
+      setTplName("");
+      setTplPurpose("");
+      setTplDescription("");
+      setSaveSuccess(`Saved custom template "${tplName.trim()}" to the Templates Library!`);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to save custom template.");
+    } finally {
+      setSavingTemplate(false);
+    }
   };
 
   // Save to Backend
@@ -697,13 +525,25 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Templates Picker Trigger */}
+          {/* Templates Picker & Save Custom Template Triggers */}
           <button
             type="button"
             onClick={() => setShowTemplatesModal(true)}
             className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-300 dark:border-[#383838] bg-slate-50 dark:bg-[#202020] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#252525] transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <span>⚡ Starter Templates</span>
+            <span>📚 Templates Library</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setTplName(`${event.title} Template`);
+              setTplCategory(event.category || "Workshop");
+              setShowSaveTemplateModal(true);
+            }}
+            disabled={fields.length === 0}
+            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-300 dark:border-[#383838] bg-slate-50 dark:bg-[#202020] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#252525] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+          >
+            <span>💾 Save as Template</span>
           </button>
 
           {/* Single-Page vs Multi-Step Mode Toggle */}
@@ -797,81 +637,97 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
       )}
 
       {/* ===================================================================== */}
-      {/* STARTER TEMPLATES MODAL                                               */}
+      {/* CANONICAL TEMPLATES LIBRARY MODAL & SAVE CUSTOM TEMPLATE MODAL        */}
       {/* ===================================================================== */}
-      {showTemplatesModal && (
+      <EventTemplatesLibraryModal
+        isOpen={showTemplatesModal}
+        onClose={() => setShowTemplatesModal(false)}
+        onSelectTemplate={handleLoadTemplate}
+      />
+
+      {showSaveTemplateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-4xl bg-white dark:bg-[#1a1a1a] rounded-2xl border border-slate-200 dark:border-[#2d2d2d] shadow-2xl p-6 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#292929]">
+          <form
+            onSubmit={handleSaveAsCustomTemplate}
+            className="w-full max-w-md bg-white dark:bg-[#1a1a1a] rounded-2xl border border-slate-200 dark:border-[#2d2d2d] shadow-2xl p-5 space-y-4"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#292929]">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5]">Save Form as Reusable Template</h3>
+              <button type="button" onClick={() => setShowSaveTemplateModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">✕</button>
+            </div>
+            <div className="space-y-3 text-xs">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-[#F5F5F5] flex items-center gap-2">
-                  <span>⚡ Select a Starter Form Template</span>
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
-                  Jumpstart your event form with industry-standard pre-configured fields and sections.
-                </p>
+                <label className="block font-semibold text-slate-700 dark:text-slate-200 mb-1">Template Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={tplName}
+                  onChange={(e) => setTplName(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                />
               </div>
-              <button
-                type="button"
-                onClick={() => setShowTemplatesModal(false)}
-                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 overflow-y-auto pr-1">
-              {STARTER_TEMPLATES.map((tpl) => (
-                <div
-                  key={tpl.id}
-                  onClick={() => handleLoadTemplate(tpl)}
-                  className="p-4 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#202020] hover:border-blue-500 dark:hover:border-[#5DD62C] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+              <div>
+                <label className="block font-semibold text-slate-700 dark:text-slate-200 mb-1">Category</label>
+                <select
+                  value={tplCategory}
+                  onChange={(e) => setTplCategory(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
                 >
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-2xl">{tpl.icon}</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-[#2d2d2d] text-slate-700 dark:text-slate-300">
-                        {tpl.category}
-                      </span>
-                    </div>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] group-hover:text-blue-600 dark:group-hover:text-[#5DD62C]">
-                      {tpl.name}
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-1 line-clamp-2">
-                      {tpl.description}
-                    </p>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-[#2d2d2d] flex items-center justify-between text-[11px] text-slate-500 dark:text-[#888]">
-                    <span>{tpl.sections.length} Sections • {tpl.fields.length} Fields</span>
-                    <span className="text-blue-600 dark:text-[#5DD62C] font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                      Load Template →
-                    </span>
-                  </div>
-                </div>
-              ))}
+                  <option value="Workshop">Workshop</option>
+                  <option value="Competition">Competition</option>
+                  <option value="Exam">Exam</option>
+                  <option value="Internship">Internship</option>
+                  <option value="Feedback">Feedback</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-semibold text-slate-700 dark:text-slate-200 mb-1">Purpose / Summary</label>
+                <input
+                  type="text"
+                  value={tplPurpose}
+                  onChange={(e) => setTplPurpose(e.target.value)}
+                  placeholder="When should coordinators choose this template?"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-slate-700 dark:text-slate-200 mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={tplDescription}
+                  onChange={(e) => setTplDescription(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                />
+              </div>
             </div>
-
-            <div className="pt-3 border-t border-slate-100 dark:border-[#292929] flex justify-end">
+            <div className="pt-2 border-t border-slate-100 dark:border-[#292929] flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setShowTemplatesModal(false)}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
+                onClick={() => setShowSaveTemplateModal(false)}
+                className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#333] cursor-pointer"
               >
-                Close
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={savingTemplate}
+                className="px-4 py-1.5 text-xs font-semibold rounded-xl bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black cursor-pointer disabled:opacity-50"
+              >
+                {savingTemplate ? "Saving..." : "Save Template"}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
 
       {/* ===================================================================== */}
-      {/* VIEW: LIVE STUDENT PREVIEW MODE                                      */}
+      {/* VIEW: LIVE INTERACTIVE STUDENT PREVIEW MODE                           */}
       {/* ===================================================================== */}
       {viewMode === "preview" ? (
         <div className="space-y-4">
           <div className="flex items-center justify-between bg-slate-100 dark:bg-[#202020] p-2 rounded-xl">
             <span className="text-xs font-semibold text-slate-600 dark:text-[#A3A3A3] px-2">
-              Viewing form as a student will see it:
+              Interactive Student Preview (test conditions, ratings &amp; validation):
             </span>
             <div className="flex items-center gap-1 bg-white dark:bg-[#181818] p-1 rounded-lg border border-slate-200 dark:border-[#292929]">
               <button
@@ -895,117 +751,21 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
             </div>
           </div>
 
-          <div className={`mx-auto transition-all ${previewDevice === "mobile" ? "max-w-sm border-4 border-slate-800 rounded-3xl p-3 shadow-2xl" : "max-w-3xl"}`}>
-            <div className="bg-white dark:bg-[#181818] rounded-2xl border border-slate-200 dark:border-[#292929] p-6 shadow-sm space-y-6">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-[#F5F5F5]">{event.title}</h3>
-                {event.subtitle && <p className="text-xs font-medium text-blue-600 dark:text-[#5DD62C] mt-0.5">{event.subtitle}</p>}
-                {event.short_description && <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-2">{event.short_description}</p>}
-              </div>
-
-              {/* Render preview sections */}
-              {sections.map((sec, secIdx) => {
-                const secFields = fields.filter((f) => f.section_id === sec.id);
-                if (secFields.length === 0) return null;
-                return (
-                  <div key={sec.id} className="pt-4 first:pt-0 border-t first:border-t-0 border-slate-100 dark:border-[#282828] space-y-4">
-                    <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        {layoutMode === "multi_step" ? `Step ${secIdx + 1}: ` : ""}
-                        {sec.title}
-                      </h4>
-                      {sec.description && <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{sec.description}</p>}
-                    </div>
-
-                    <div className="space-y-4">
-                      {secFields.map((f) => (
-                        <div key={f.id} className="space-y-1">
-                          {["heading", "subheading", "divider", "info_card", "notice"].includes(f.field_type) ? (
-                            f.field_type === "heading" ? (
-                              <h3 className="text-sm font-bold text-slate-900 dark:text-white pt-2">{f.label}</h3>
-                            ) : f.field_type === "subheading" ? (
-                              <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 pt-1">{f.label}</h4>
-                            ) : f.field_type === "divider" ? (
-                              <hr className="my-2 border-slate-200 dark:border-[#292929]" />
-                            ) : f.field_type === "notice" ? (
-                              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300">
-                                ⚠️ {f.label}
-                              </div>
-                            ) : (
-                              <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-xs text-blue-800 dark:text-blue-300">
-                                ℹ {f.label}
-                              </div>
-                            )
-                          ) : (
-                            <>
-                              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
-                                {f.label}
-                                {f.required && <span className="text-rose-500 ml-1">*</span>}
-                              </label>
-                              {f.description && <p className="text-[11px] text-slate-400 dark:text-[#888]">{f.description}</p>}
-                              
-                              {/* Mock Input Display */}
-                              {f.field_type === "textarea" ? (
-                                <textarea rows={3} disabled placeholder={f.placeholder || "Enter your response..."} className="w-full text-xs rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#141414] p-2.5 opacity-70" />
-                              ) : f.field_type === "dropdown" ? (
-                                <select disabled className="w-full text-xs rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#141414] p-2.5 opacity-70">
-                                  <option value="">{f.placeholder || "Select an option..."}</option>
-                                  {(f.options_config || []).map((opt) => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                  ))}
-                                </select>
-                              ) : f.field_type === "radio" ? (
-                                <div className="space-y-1.5 pt-1">
-                                  {(f.options_config || []).map((opt) => (
-                                    <label key={opt.value} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-                                      <input type="radio" disabled name={f.field_key} />
-                                      <span>{opt.label}</span>
-                                    </label>
-                                  ))}
-                                </div>
-                              ) : f.field_type === "star_rating" ? (
-                                <div className="flex items-center gap-2 pt-1">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <span key={star} className="text-xl text-amber-400 cursor-pointer">★</span>
-                                  ))}
-                                  <span className="text-[11px] text-slate-400 ml-2">1 to 5 Stars</span>
-                                </div>
-                              ) : f.field_type === "geo_photo" ? (
-                                <div className="p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#141414] text-center space-y-2">
-                                  <span className="text-2xl">📍📷</span>
-                                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Camera Photo with GPS Geotag</p>
-                                  <p className="text-[11px] text-slate-400">Captures verified timestamp and coordinates</p>
-                                </div>
-                              ) : f.field_type === "repeatable_group" ? (
-                                <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#141414] space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                                      {f.repeatable_config?.entity_name || "Entry"} #1
-                                    </span>
-                                    <span className="text-[10px] text-blue-600 dark:text-[#5DD62C] font-semibold">+ Add Next</span>
-                                  </div>
-                                  <div className="p-2 bg-white dark:bg-[#1c1c1c] rounded-lg border border-slate-200/80 dark:border-[#292929] text-[11px] text-slate-400">
-                                    Dynamic repeatable entries will be populated by students
-                                  </div>
-                                </div>
-                              ) : (
-                                <input type="text" disabled placeholder={f.placeholder || "Enter value..."} className="w-full text-xs rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#141414] p-2.5 opacity-70" />
-                              )}
-                            </>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-
-              <div className="pt-4 border-t border-slate-100 dark:border-[#282828] flex justify-end">
-                <button type="button" disabled className="px-5 py-2.5 bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black font-semibold text-xs rounded-xl opacity-60">
-                  Submit Registration
-                </button>
-              </div>
-            </div>
+          <div className={`mx-auto transition-all ${previewDevice === "mobile" ? "max-w-sm border-4 border-slate-800 rounded-3xl p-2 shadow-2xl" : "max-w-3xl"}`}>
+            <DynamicStudentFormRenderer
+              event={{ ...event, form_layout_mode: layoutMode }}
+              form={{
+                id: "preview_version",
+                event_id: event.id,
+                version_number: 1,
+                status: "draft",
+                sections_config: sections,
+                fields,
+                created_by: event.created_by,
+                created_at: event.created_at,
+              }}
+              isPreviewMode={true}
+            />
           </div>
         </div>
       ) : (
@@ -1156,6 +916,14 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                         <span className="text-[10px] font-semibold text-slate-400 dark:text-[#777] px-1.5 py-0.5 bg-white dark:bg-[#141414] rounded-md border border-slate-200 dark:border-[#2d2d2d]">
                           {secFields.length} fields
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => handleDuplicateSection(sec.id)}
+                          className="p-1 text-slate-400 hover:text-blue-500 cursor-pointer text-xs"
+                          title="Duplicate section and its fields"
+                        >
+                          📑
+                        </button>
                         {sections.length > 1 && (
                           <button
                             type="button"
@@ -1169,8 +937,19 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                       </div>
                     </div>
 
-                    {/* Fields Inside This Section */}
-                    <div className="space-y-2 pt-1">
+                    {/* Fields Inside This Section (Dropzone enabled) */}
+                    <div
+                      className="space-y-2 pt-1"
+                      onDragOver={(e) => {
+                        if (draggedFieldId) e.preventDefault();
+                      }}
+                      onDrop={(e) => {
+                        if (draggedFieldId) {
+                          e.preventDefault();
+                          handleDropToSectionEnd(sec.id);
+                        }
+                      }}
+                    >
                       {secFields.length === 0 ? (
                         <div
                           onClick={() => setActiveSectionId(sec.id)}
@@ -1178,7 +957,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                         >
                           <p className="text-xs text-slate-400">Section is empty.</p>
                           <p className="text-[11px] text-blue-600 dark:text-[#5DD62C] font-semibold mt-0.5">
-                            Click palette items on left to add fields here
+                            Click palette items on left or drag fields here
                           </p>
                         </div>
                       ) : (
@@ -1189,11 +968,31 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                           return (
                             <div
                               key={f.id}
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggedFieldId(f.id);
+                                e.dataTransfer.effectAllowed = "move";
+                              }}
+                              onDragEnd={() => setDraggedFieldId(null)}
+                              onDragOver={(e) => {
+                                if (draggedFieldId && draggedFieldId !== f.id) e.preventDefault();
+                              }}
+                              onDrop={(e) => {
+                                if (draggedFieldId && draggedFieldId !== f.id) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDropField(f.id, sec.id);
+                                }
+                              }}
                               onClick={() => {
                                 setSelectedFieldId(f.id);
                                 setActiveSectionId(sec.id);
                               }}
                               className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                                draggedFieldId === f.id ? "opacity-40" : ""
+                              } ${
+                                f.enabled === false ? "opacity-60 border-dashed" : ""
+                              } ${
                                 isSelected
                                   ? "border-blue-500 dark:border-[#5DD62C] bg-white dark:bg-[#222] shadow-xs"
                                   : "border-slate-200 dark:border-[#2a2a2a] bg-white dark:bg-[#161616] hover:border-slate-300 dark:hover:border-[#383838]"
@@ -1201,11 +1000,15 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                             >
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
+                                  <span className="text-slate-300 dark:text-slate-600 cursor-grab select-none text-xs" title="Drag to reorder">⋮⋮</span>
                                   <span className="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5] truncate">
                                     {f.label}
                                   </span>
                                   {f.required && (
                                     <span className="text-rose-500 text-xs font-bold" title="Required field">*</span>
+                                  )}
+                                  {f.enabled === false && (
+                                    <span className="text-[9px] font-bold px-1 rounded bg-slate-200 dark:bg-[#2d2d2d] text-slate-500">DISABLED</span>
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2 mt-1">
@@ -1353,19 +1156,176 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                   />
                 </div>
 
-                {/* Required Toggle */}
-                <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b]">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5]">Required Field</p>
-                    <p className="text-[10px] text-slate-400">Must be answered before submitting</p>
+                {/* Enabled, Required & Default Value */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b]">
+                    <div>
+                      <p className="text-[11px] font-semibold text-slate-800 dark:text-[#F5F5F5]">Required</p>
+                      <p className="text-[9px] text-slate-400">Mandatory answer</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(selectedField.required)}
+                      onChange={(e) => handleUpdateSelectedField({ required: e.target.checked })}
+                      className="w-4 h-4 rounded text-blue-600 dark:text-[#5DD62C] cursor-pointer"
+                    />
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(selectedField.required)}
-                    onChange={(e) => handleUpdateSelectedField({ required: e.target.checked })}
-                    className="w-4 h-4 rounded text-blue-600 dark:text-[#5DD62C] cursor-pointer"
-                  />
+                  <div className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b]">
+                    <div>
+                      <p className="text-[11px] font-semibold text-slate-800 dark:text-[#F5F5F5]">Enabled</p>
+                      <p className="text-[9px] text-slate-400">Show on form</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={selectedField.enabled !== false}
+                      onChange={(e) => handleUpdateSelectedField({ enabled: e.target.checked })}
+                      className="w-4 h-4 rounded text-blue-600 dark:text-[#5DD62C] cursor-pointer"
+                    />
+                  </div>
                 </div>
+
+                {!["file", "pdf_upload", "document_upload", "image_upload", "gallery_upload", "camera_capture", "geo_photo", "repeatable_group", "divider"].includes(selectedField.field_type) && (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                      Default Value (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={typeof selectedField.default_value === "string" || typeof selectedField.default_value === "number" ? String(selectedField.default_value) : ""}
+                      placeholder="Pre-filled student answer or asset URL..."
+                      onChange={(e) => handleUpdateSelectedField({ default_value: e.target.value })}
+                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                    />
+                  </div>
+                )}
+
+                {/* VALIDATION BOUNDS (TEXT, NUMBER, UPLOADS) */}
+                {["text", "textarea", "rich_text"].includes(selectedField.field_type) && (
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2">
+                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Character Length Rules</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-slate-500">Min Length</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={selectedField.validation_config?.min_len ?? ""}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              validation_config: {
+                                ...(selectedField.validation_config || {}),
+                                min_len: e.target.value ? Number(e.target.value) : undefined,
+                              },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500">Max Length</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={selectedField.validation_config?.max_len ?? ""}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              validation_config: {
+                                ...(selectedField.validation_config || {}),
+                                max_len: e.target.value ? Number(e.target.value) : undefined,
+                              },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedField.field_type === "number" && (
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2">
+                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Numeric Value Bounds</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-slate-500">Minimum Value</label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={selectedField.validation_config?.min_val ?? ""}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              validation_config: {
+                                ...(selectedField.validation_config || {}),
+                                min_val: e.target.value !== "" ? Number(e.target.value) : undefined,
+                              },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500">Maximum Value</label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={selectedField.validation_config?.max_val ?? ""}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              validation_config: {
+                                ...(selectedField.validation_config || {}),
+                                max_val: e.target.value !== "" ? Number(e.target.value) : undefined,
+                              },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {["file", "pdf_upload", "document_upload", "image_upload", "gallery_upload", "camera_capture", "geo_photo"].includes(selectedField.field_type) && (
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2">
+                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Upload File Rules (Drive Ready)</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-slate-500">Max Size (MB, ≤15)</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={15}
+                          value={selectedField.validation_config?.max_size_mb ?? 10}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              validation_config: {
+                                ...(selectedField.validation_config || {}),
+                                max_size_mb: e.target.value ? Math.min(15, Number(e.target.value)) : 10,
+                              },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500">Allowed Extensions</label>
+                        <input
+                          type="text"
+                          value={(selectedField.validation_config?.allowed_types || []).join(", ")}
+                          placeholder="pdf, jpg, png"
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              validation_config: {
+                                ...(selectedField.validation_config || {}),
+                                allowed_types: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                              },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* OPTIONS MANAGER (FOR DROPDOWN, RADIO, CHECKBOX, MULTI_SELECT) */}
                 {["dropdown", "radio", "checkbox", "multi_select"].includes(selectedField.field_type) && (
@@ -1417,10 +1377,38 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                 )}
 
                 {/* RATING CONFIGURATIONS */}
-                {["star_rating", "numeric_rating", "satisfaction_rating", "difficulty_rating"].includes(selectedField.field_type) && (
+                {["star_rating", "numeric_rating", "satisfaction_rating", "difficulty_rating", "custom_scale"].includes(selectedField.field_type) && (
                   <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2.5">
                     <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Rating Configuration</span>
                     <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500">Min Value</label>
+                        <input
+                          type="number"
+                          value={selectedField.rating_config?.min_rating ?? (selectedField.field_type === "numeric_rating" ? 0 : 1)}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              rating_config: { ...selectedField.rating_config, min_rating: Number(e.target.value) },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500">Max Value / Stars</label>
+                        <input
+                          type="number"
+                          min={2}
+                          max={10}
+                          value={selectedField.rating_config?.max_rating ?? (selectedField.field_type === "numeric_rating" ? 10 : 5)}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              rating_config: { ...selectedField.rating_config, max_rating: Number(e.target.value) },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
                       <div>
                         <label className="block text-[10px] font-semibold text-slate-500">Min Label</label>
                         <input
@@ -1449,6 +1437,148 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                           className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
                         />
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* REPEATABLE GROUP SUBFIELDS INSPECTOR */}
+                {selectedField.field_type === "repeatable_group" && (
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2.5">
+                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Repeatable Group Settings</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-slate-500">Entity Name</label>
+                        <input
+                          type="text"
+                          value={selectedField.repeatable_config?.entity_name || "Teammate"}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              repeatable_config: { ...(selectedField.repeatable_config || { fields: [] }), entity_name: e.target.value },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500">Add Button Text</label>
+                        <input
+                          type="text"
+                          value={selectedField.repeatable_config?.add_button_text || "+ Add Entry"}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              repeatable_config: { ...(selectedField.repeatable_config || { fields: [] }), add_button_text: e.target.value },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500">Min Entries</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={selectedField.repeatable_config?.min_items ?? 1}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              repeatable_config: { ...(selectedField.repeatable_config || { fields: [] }), min_items: Number(e.target.value) },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500">Max Entries</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={selectedField.repeatable_config?.max_items ?? 5}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              repeatable_config: { ...(selectedField.repeatable_config || { fields: [] }), max_items: Number(e.target.value) },
+                            })
+                          }
+                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-1 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Subfields per Entry</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const curRep = selectedField.repeatable_config || { entity_name: "Entry", fields: [] };
+                            const nextIdx = (curRep.fields?.length || 0) + 1;
+                            handleUpdateSelectedField({
+                              repeatable_config: {
+                                ...curRep,
+                                fields: [
+                                  ...(curRep.fields || []),
+                                  {
+                                    id: `rep_${Date.now()}_${nextIdx}`,
+                                    field_key: `sub_${nextIdx}`,
+                                    field_type: "text",
+                                    label: `Field ${nextIdx}`,
+                                    required: true,
+                                    display_order: nextIdx,
+                                    enabled: true,
+                                  },
+                                ],
+                              },
+                            });
+                          }}
+                          className="text-[11px] text-blue-600 dark:text-[#5DD62C] font-semibold cursor-pointer"
+                        >
+                          + Add Subfield
+                        </button>
+                      </div>
+                      {(selectedField.repeatable_config?.fields || []).map((sf, sIdx) => (
+                        <div key={sf.id || sIdx} className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={sf.label}
+                            onChange={(e) => {
+                              const curRep = selectedField.repeatable_config || { entity_name: "Entry", fields: [] };
+                              const nextFields = [...(curRep.fields || [])];
+                              nextFields[sIdx] = {
+                                ...sf,
+                                label: e.target.value,
+                                field_key: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "_") || sf.field_key,
+                              };
+                              handleUpdateSelectedField({ repeatable_config: { ...curRep, fields: nextFields } });
+                            }}
+                            className="flex-1 text-[11px] px-2 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                          />
+                          <select
+                            value={sf.field_type}
+                            onChange={(e) => {
+                              const curRep = selectedField.repeatable_config || { entity_name: "Entry", fields: [] };
+                              const nextFields = [...(curRep.fields || [])];
+                              nextFields[sIdx] = { ...sf, field_type: e.target.value as any };
+                              handleUpdateSelectedField({ repeatable_config: { ...curRep, fields: nextFields } });
+                            }}
+                            className="text-[10px] px-1.5 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                          >
+                            <option value="text">text</option>
+                            <option value="email">email</option>
+                            <option value="number">number</option>
+                            <option value="phone">phone</option>
+                            <option value="dropdown">dropdown</option>
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const curRep = selectedField.repeatable_config || { entity_name: "Entry", fields: [] };
+                              const nextFields = (curRep.fields || []).filter((_, i) => i !== sIdx);
+                              handleUpdateSelectedField({ repeatable_config: { ...curRep, fields: nextFields } });
+                            }}
+                            className="text-slate-400 hover:text-rose-500 text-xs px-1 cursor-pointer"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

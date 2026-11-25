@@ -39,6 +39,25 @@ export default function StudentDashboardPage() {
 
   // Navigation tab state - Initial landing page is "submit" (Submit Activity)
   const [activeTab, setActiveTab] = useState<string>("submit");
+  const [deepLinkedEventId, setDeepLinkedEventId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get("tab");
+    const eventIdParam = params.get("eventId");
+    if (!tabParam && !eventIdParam) return;
+    queueMicrotask(() => {
+      if (tabParam) {
+        setActiveTab(tabParam);
+      } else if (eventIdParam) {
+        setActiveTab("events");
+      }
+      if (eventIdParam) {
+        setDeepLinkedEventId(eventIdParam);
+      }
+    });
+  }, []);
 
   // Data states
   const [studentData, setStudentData] = useState<StudentDetailResponse | null>(null);
@@ -462,13 +481,21 @@ export default function StudentDashboardPage() {
         onSubmitClick={() => handleOpenSubmitModal(null)}
         onLogout={handleLogout}
         onOpenMessages={() => setActiveTab("messages")}
-        onNavigateToEvents={() => setActiveTab("events")}
+        onNavigateToEvents={(eventId) => {
+          if (eventId) setDeepLinkedEventId(eventId);
+          setActiveTab("events");
+        }}
         unreadMessagesCount={unreadMessagesCount}
         activeTab={activeTab}
       />
 
       {/* In-App Notification Modal Popup for urgent & important broadcasts */}
-      <StudentNotificationPopup onNavigateToEvent={() => setActiveTab("events")} />
+      <StudentNotificationPopup
+        onNavigateToEvent={(eventId) => {
+          if (eventId) setDeepLinkedEventId(eventId);
+          setActiveTab("events");
+        }}
+      />
 
       {/* 2. Slide-Over Navigation Drawer */}
       <StudentDrawer
@@ -767,7 +794,10 @@ export default function StudentDashboardPage() {
 
         {/* TAB: CCE EVENTS & FORMS */}
         {activeTab === "events" && (
-          <StudentEventsSection />
+          <StudentEventsSection
+            initialEventId={deepLinkedEventId}
+            onConsumedInitialEventId={() => setDeepLinkedEventId(null)}
+          />
         )}
 
         {/* TAB 6: PROFILE (Student & Mentor Academic Profile) */}

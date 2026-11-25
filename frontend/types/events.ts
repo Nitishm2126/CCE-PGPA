@@ -6,6 +6,13 @@ export type EventMode = "Offline" | "Online" | "Hybrid";
 
 export type EventStatus = "draft" | "published" | "closed" | "archived";
 
+export type EffectiveEventStatus =
+  | EventStatus
+  | "scheduled"
+  | "registration_open"
+  | "registration_closed"
+  | "completed";
+
 export type AudienceType = "all" | "specific_students" | "section" | "academic_year" | "custom";
 
 export type FormLayoutMode = "single_page" | "multi_step";
@@ -84,6 +91,7 @@ export interface ConditionalConfig {
 }
 
 export interface RatingConfig {
+  min_rating?: number; // e.g. 0 or 1
   max_rating?: number; // e.g. 5 or 10
   allow_half?: boolean;
   min_label?: string; // e.g. "Poor" or "Beginner"
@@ -204,6 +212,8 @@ export interface EventItem {
   semester_id?: string;
   semester_display_name?: string;
   status: EventStatus;
+  effective_status?: EffectiveEventStatus;
+  idempotency_key?: string;
   allow_multiple_responses: boolean;
   allow_edit_submission: boolean;
   close_after_deadline: boolean;
@@ -253,10 +263,14 @@ export interface EventSubmissionFile {
   field_id?: string;
   field_key: string;
   storage_reference: string;
+  drive_file_id?: string;
+  drive_folder_id?: string;
   original_filename: string;
   mime_type: string;
   file_size: number;
   uploaded_at: string;
+  file_url?: string;
+  download_url?: string;
 }
 
 export interface EventSubmissionItem {
@@ -304,12 +318,14 @@ export interface EventCreateRequest {
   detailed_description?: string;
   category: string;
   poster_url?: string;
+  banner_image_url?: string;
   document_url?: string;
   gallery_images?: string[];
   attachments?: EventAttachment[];
   venue?: string;
   mode: EventMode;
   meeting_url?: string;
+  online_meeting_url?: string;
   event_start_at: string;
   event_end_at: string;
   registration_start_at: string;
@@ -339,6 +355,7 @@ export interface EventCreateRequest {
   notification_cta_label?: string;
   send_update_notification?: boolean;
   update_message?: string;
+  idempotency_key?: string;
   form_fields?: Array<Partial<EventFormField>>;
   sections_config?: FormSection[];
 }

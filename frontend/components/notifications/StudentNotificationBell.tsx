@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { StudentNotificationItem } from "@/types/notifications";
 import { notificationsApi } from "@/lib/notifications-api";
+import { resolveEventAssetUrl } from "@/lib/events-api";
+import { getStoredToken } from "@/lib/api-client";
 
 interface StudentNotificationBellProps {
   onNavigateToEvent?: (eventId?: string) => void;
@@ -118,9 +120,15 @@ export const StudentNotificationBell: React.FC<StudentNotificationBellProps> = (
     }
     await handleMarkAsRead(notif);
 
-    if (notif.event_id && onNavigateToEvent) {
+    const linkedEventId =
+      notif.event_id ||
+      (notif.cta_url?.includes("eventId=")
+        ? new URLSearchParams(notif.cta_url.split("?")[1] || "").get("eventId") || undefined
+        : undefined);
+
+    if ((linkedEventId || notif.cta_url?.startsWith("/student?tab=events")) && onNavigateToEvent) {
       setIsOpen(false);
-      onNavigateToEvent(notif.event_id);
+      onNavigateToEvent(linkedEventId);
     } else if (notif.cta_url) {
       if (notif.cta_url.startsWith("/")) {
         window.location.href = notif.cta_url;
@@ -288,7 +296,7 @@ export const StudentNotificationBell: React.FC<StudentNotificationBellProps> = (
                     {notif.image_url && (
                       <div className="w-full h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-[#222]">
                         <img
-                          src={notif.image_url}
+                          src={resolveEventAssetUrl(notif.image_url, getStoredToken())}
                           alt={notif.title}
                           className="w-full h-full object-cover"
                           referrerPolicy="no-referrer"
@@ -333,7 +341,7 @@ export const StudentNotificationBell: React.FC<StudentNotificationBellProps> = (
                       <div className="flex items-center gap-2">
                         {notif.attachment_url && (
                           <a
-                            href={notif.attachment_url}
+                            href={resolveEventAssetUrl(notif.attachment_url, getStoredToken(), true)}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}

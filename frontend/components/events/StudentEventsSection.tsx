@@ -2,17 +2,30 @@
 
 import React, { useState, useEffect } from "react";
 import { EventItem, EventFormVersion, EventSubmissionItem } from "@/types/events";
-import { eventsApi } from "@/lib/events-api";
+import { eventsApi, resolveEventAssetUrl } from "@/lib/events-api";
+import { getStoredToken } from "@/lib/api-client";
 import { EventStatusBadge, EventModeBadge } from "@/components/events/EventStatusBadge";
 import { DynamicStudentFormRenderer } from "@/components/events/DynamicStudentFormRenderer";
 
-export const StudentEventsSection: React.FC = () => {
+interface StudentEventsSectionProps {
+  initialEventId?: string | null;
+  onConsumedInitialEventId?: () => void;
+}
+
+export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
+  initialEventId = null,
+  onConsumedInitialEventId,
+}) => {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const authToken = getStoredToken();
 
-  // Tabs
-  const [activeTab, setActiveTab] = useState<"all" | "open" | "my_registrations" | "closed">("open");
+  // Filters: All Events, Upcoming, Registration Open, Registered, Completed
+  const [activeTab, setActiveTab] = useState<"all" | "upcoming" | "open" | "registered" | "completed">("all");
+
+  // Event details modal
+  const [viewingEventDetails, setViewingEventDetails] = useState<EventItem | null>(null);
 
   // Registration modal states
   const [registeringEvent, setRegisteringEvent] = useState<EventItem | null>(null);
@@ -41,20 +54,69 @@ export const StudentEventsSection: React.FC = () => {
     loadEvents();
   }, []);
 
+  // Deep-link from in-app notification bell / popup
+  useEffect(() => {
+    if (!initialEventId) return;
+    const matched = events.find((e) => e.id === initialEventId);
+    if (matched) {
+      queueMicrotask(() => {
+        setActiveTab("all");
+        setViewingEventDetails(matched);
+        onConsumedInitialEventId?.();
+      });
+      return;
+    }
+    if (!loading) {
+      eventsApi
+        .getStudentEvent(initialEventId)
+        .then((evt) => {
+          setActiveTab("all");
+          setViewingEventDetails(evt);
+        })
+        .catch((err) => {
+          setError(err?.message || "Selected event could not be loaded.");
+        })
+        .finally(() => {
+          onConsumedInitialEventId?.();
+        });
+    }
+  }, [initialEventId, events, loading, onConsumedInitialEventId]);
+
   // Filter events based on activeTab
   const nowIso = new Date().toISOString();
-  const filteredEvents = events.filter((evt) => {
-    const isRegOpen =
-      evt.status === "published" &&
-      evt.is_registration_enabled &&
-      (!evt.registration_start_at || nowIso >= evt.registration_start_at) &&
-      (!evt.close_after_deadline || !evt.registration_deadline || nowIso <= evt.registration_deadline);
+  const isEventUpcoming = (evt: EventItem) =>
+    evt.effective_status === "scheduled" ||
+    (evt.status === "published" && Boolean(evt.registration_start_at) && nowIso < evt.registration_start_at);
 
-    if (activeTab === "open") return isRegOpen;
-    if (activeTab === "my_registrations") return evt.has_submitted;
-    if (activeTab === "closed") return !isRegOpen;
+  const isEventRegOpen = (evt: EventItem) =>
+    evt.status === "published" &&
+    evt.is_registration_enabled !== false &&
+    (!evt.registration_start_at || nowIso >= evt.registration_start_at) &&
+    (!evt.close_after_deadline || !evt.registration_deadline || nowIso <= evt.registration_deadline);
+
+  const isEventCompleted = (evt: EventItem) =>
+    evt.effective_status === "completed" ||
+    evt.status === "closed" ||
+    (Boolean(evt.event_end_at) && nowIso > evt.event_end_at) ||
+    (!isEventUpcoming(evt) && !isEventRegOpen(evt));
+
+  const filteredEvents = events.filter((evt) => {
+    if (activeTab === "upcoming") return isEventUpcoming(evt);
+    if (activeTab === "open") return isEventRegOpen(evt);
+    if (activeTab === "registered") return Boolean(evt.has_submitted);
+    if (activeTab === "completed") return isEventCompleted(evt);
     return true; // "all"
   });
+
+  const handleOpenEventDetails = async (evt: EventItem) => {
+    setViewingEventDetails(evt);
+    try {
+      const fullEvt = await eventsApi.getStudentEvent(evt.id);
+      setViewingEventDetails(fullEvt);
+    } catch {
+      // Keep summary card data if full refresh fails transiently
+    }
+  };
 
   // Open Registration Modal
   const handleOpenRegistration = async (evt: EventItem) => {
@@ -126,10 +188,11 @@ export const StudentEventsSection: React.FC = () => {
       <div className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-2 shadow-2xs">
         <div className="flex flex-wrap gap-1.5">
           {[
-            { id: "open", label: "Open for Registration" },
-            { id: "all", label: "All Eligible Events" },
-            { id: "my_registrations", label: `My Registrations (${events.filter((e) => e.has_submitted).length})` },
-            { id: "closed", label: "Past / Closed" },
+            { id: "all", label: `All Events (${events.length})` },
+            { id: "upcoming", label: "Upcoming" },
+            { id: "open", label: "Registration Open" },
+            { id: "registered", label: `Registered (${events.filter((e) => e.has_submitted).length})` },
+            { id: "completed", label: "Completed" },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -167,8 +230,14 @@ export const StudentEventsSection: React.FC = () => {
           <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto text-lg font-bold">
             ⚠️
           </div>
-          <h3 className="text-sm font-bold text-rose-900 dark:text-rose-200">Unable to Load Events</h3>
-          <p className="text-xs text-rose-700 dark:text-rose-300/90">{error}</p>
+          <h3 className="text-sm font-bold text-rose-900 dark:text-rose-200">
+            {error.includes("Not Found")
+              ? "Events API Endpoint Unavailable (404)"
+              : error.includes("Network error") || error.includes("timed out")
+              ? "Connection Problem"
+              : "Unable to Load Events"}
+          </h3>
+          <p className="text-xs text-rose-700 dark:text-rose-300/90 break-words">{error}</p>
           <button
             type="button"
             onClick={loadEvents}
@@ -181,31 +250,27 @@ export const StudentEventsSection: React.FC = () => {
         <div className="p-12 rounded-2xl border border-dashed border-slate-300 dark:border-[#292929] text-center space-y-2 max-w-md mx-auto my-6">
           <span className="text-3xl">🗓</span>
           <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5]">
-            {activeTab === "open"
-              ? "No Open Events Currently Available"
-              : activeTab === "my_registrations"
-              ? "No Registrations Submitted Yet"
-              : activeTab === "closed"
-              ? "No Closed Events"
-              : "No Events Found"}
+            No Events Available
           </h3>
           <p className="text-xs text-slate-500 dark:text-[#A3A3A3] max-w-sm mx-auto">
-            {activeTab === "open"
-              ? "Check back soon for new department workshops, competitions, and opportunities."
-              : activeTab === "my_registrations"
-              ? "You haven't submitted any event registrations yet. Explore open events and submit your responses."
-              : activeTab === "closed"
-              ? "No closed events matching your filters."
-              : "No events are currently available for you. Check back later for new workshops, hackathons, and activities."}
+            {activeTab === "upcoming"
+              ? "No upcoming scheduled events found right now."
+              : activeTab === "open"
+              ? "No events are currently open for registration. Check All Events or check back soon."
+              : activeTab === "registered"
+              ? "You haven't submitted any event registrations yet."
+              : activeTab === "completed"
+              ? "No past or completed events to display."
+              : "No department events are currently published for you. Check back soon for workshops, competitions, and surveys."}
           </p>
-          {activeTab !== "open" && (
+          {activeTab !== "all" && (
             <div className="pt-2">
               <button
                 type="button"
-                onClick={() => setActiveTab("open")}
+                onClick={() => setActiveTab("all")}
                 className="text-xs font-semibold text-blue-600 dark:text-[#5DD62C] hover:underline cursor-pointer"
               >
-                Browse Open Events →
+                View All Events →
               </button>
             </div>
           )}
@@ -213,15 +278,12 @@ export const StudentEventsSection: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredEvents.map((evt) => {
-            const isRegOpen =
-              evt.status === "published" &&
-              evt.is_registration_enabled &&
-              (!evt.registration_start_at || nowIso >= evt.registration_start_at) &&
-              (!evt.close_after_deadline || !evt.registration_deadline || nowIso <= evt.registration_deadline);
-
+            const isRegOpen = isEventRegOpen(evt);
             const hasCapacity = typeof evt.registration_capacity === "number" && evt.registration_capacity > 0;
             const subCount = evt.total_submissions || 0;
             const isFull = hasCapacity && subCount >= (evt.registration_capacity || 0);
+            const bannerSrc = resolveEventAssetUrl(evt.banner_image_url || evt.poster_url, authToken);
+            const meetingLink = evt.online_meeting_url || evt.meeting_url;
 
             return (
               <div
@@ -229,10 +291,13 @@ export const StudentEventsSection: React.FC = () => {
                 className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] overflow-hidden shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between"
               >
                 {/* Optional Banner Image */}
-                {evt.banner_image_url && (
-                  <div className="w-full h-36 bg-slate-100 dark:bg-[#121212] relative overflow-hidden border-b border-slate-100 dark:border-[#262626]">
+                {bannerSrc && (
+                  <div
+                    onClick={() => handleOpenEventDetails(evt)}
+                    className="w-full h-36 bg-slate-100 dark:bg-[#121212] relative overflow-hidden border-b border-slate-100 dark:border-[#262626] cursor-pointer"
+                  >
                     <img
-                      src={evt.banner_image_url}
+                      src={bannerSrc}
                       alt={evt.title}
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
@@ -247,15 +312,21 @@ export const StudentEventsSection: React.FC = () => {
 
                 <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
                   <div className="space-y-2.5">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-[#5DD62C]">
                         {evt.custom_category || evt.category}
                       </span>
-                      {!evt.banner_image_url && <EventModeBadge mode={evt.mode} />}
+                      <div className="flex items-center gap-1.5">
+                        <EventStatusBadge status={evt.effective_status || evt.status} size="sm" />
+                        {!bannerSrc && <EventModeBadge mode={evt.mode} />}
+                      </div>
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] line-clamp-1">
+                      <h3
+                        onClick={() => handleOpenEventDetails(evt)}
+                        className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5] line-clamp-1 cursor-pointer hover:text-blue-600 dark:hover:text-[#5DD62C]"
+                      >
                         {evt.title}
                       </h3>
                       {evt.subtitle && (
@@ -285,11 +356,11 @@ export const StudentEventsSection: React.FC = () => {
                           </span>
                         </div>
                       )}
-                      {evt.online_meeting_url && (
+                      {meetingLink && (
                         <div className="flex items-center justify-between">
                           <span>🌐 Meeting:</span>
                           <a
-                            href={evt.online_meeting_url}
+                            href={meetingLink}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 dark:text-[#5DD62C] hover:underline font-semibold"
@@ -329,7 +400,7 @@ export const StudentEventsSection: React.FC = () => {
                           {evt.attachments.map((att, idx) => (
                             <a
                               key={att.id || att.url || idx}
-                              href={att.url}
+                              href={resolveEventAssetUrl(att.url, authToken, true)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 dark:bg-[#262626] text-[10px] font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors"
@@ -343,7 +414,7 @@ export const StudentEventsSection: React.FC = () => {
                   </div>
 
                   {/* Footer Action */}
-                  <div className="pt-2 border-t border-slate-100 dark:border-[#292929]">
+                  <div className="pt-2 border-t border-slate-100 dark:border-[#292929] space-y-1.5">
                     {evt.has_submitted ? (
                       <div className="flex items-center justify-between gap-2">
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
@@ -352,10 +423,17 @@ export const StudentEventsSection: React.FC = () => {
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
+                            onClick={() => handleOpenEventDetails(evt)}
+                            className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#333] text-slate-700 dark:text-slate-200 font-semibold text-xs cursor-pointer"
+                          >
+                            Info
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => handleViewMySubmission(evt)}
                             className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#202020] hover:bg-slate-200 text-slate-800 dark:text-[#F5F5F5] font-semibold text-xs cursor-pointer active:scale-95 transition-all"
                           >
-                            View Details
+                            My Submission
                           </button>
                           {evt.allow_edit_submission && isRegOpen && (
                             <button
@@ -369,16 +447,34 @@ export const StudentEventsSection: React.FC = () => {
                         </div>
                       </div>
                     ) : isRegOpen && !isFull ? (
-                      <button
-                        type="button"
-                        onClick={() => handleOpenRegistration(evt)}
-                        className="w-full rounded-xl bg-blue-600 dark:bg-[#5DD62C] hover:bg-blue-700 dark:hover:bg-[#4cb824] text-white dark:text-black font-semibold text-xs py-2 shadow-2xs active:scale-95 transition-all cursor-pointer text-center"
-                      >
-                        Register / Fill Form →
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEventDetails(evt)}
+                          className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#333] hover:bg-slate-50 dark:hover:bg-[#222] text-slate-700 dark:text-slate-200 font-semibold text-xs cursor-pointer"
+                        >
+                          Details
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenRegistration(evt)}
+                          className="flex-1 rounded-xl bg-blue-600 dark:bg-[#5DD62C] hover:bg-blue-700 dark:hover:bg-[#4cb824] text-white dark:text-black font-semibold text-xs py-2 shadow-2xs active:scale-95 transition-all cursor-pointer text-center"
+                        >
+                          {evt.notification_cta_label || "Register / Fill Form"} →
+                        </button>
+                      </div>
                     ) : (
-                      <div className="w-full py-1.5 rounded-xl bg-slate-100 dark:bg-[#202020] text-slate-400 font-semibold text-xs text-center">
-                        {isFull ? "Capacity Reached" : "Registration Closed"}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEventDetails(evt)}
+                          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#333] text-slate-700 dark:text-slate-200 font-semibold text-xs cursor-pointer"
+                        >
+                          Details
+                        </button>
+                        <div className="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-[#202020] text-slate-400 font-semibold text-xs text-center">
+                          {isFull ? "Capacity Reached" : isEventUpcoming(evt) ? "Opens Soon" : "Registration Closed"}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -386,6 +482,191 @@ export const StudentEventsSection: React.FC = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* RICH EVENT DETAILS MODAL */}
+      {viewingEventDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-[#292929] flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-[#5DD62C]">
+                    {viewingEventDetails.custom_category || viewingEventDetails.category}
+                  </span>
+                  <EventStatusBadge status={viewingEventDetails.effective_status || viewingEventDetails.status} size="sm" />
+                  <EventModeBadge mode={viewingEventDetails.mode} />
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#F5F5F5] mt-1">
+                  {viewingEventDetails.title}
+                </h3>
+                {viewingEventDetails.subtitle && (
+                  <p className="text-xs text-slate-500 dark:text-[#A3A3A3]">{viewingEventDetails.subtitle}</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingEventDetails(null)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+              {(viewingEventDetails.banner_image_url || viewingEventDetails.poster_url) && (
+                <div className="w-full h-48 rounded-xl overflow-hidden border border-slate-200 dark:border-[#292929] bg-slate-100 dark:bg-[#121212]">
+                  <img
+                    src={resolveEventAssetUrl(viewingEventDetails.banner_image_url || viewingEventDetails.poster_url, authToken)}
+                    alt={viewingEventDetails.title}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              )}
+
+              {(viewingEventDetails.detailed_description || viewingEventDetails.short_description) && (
+                <div className="space-y-1">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#A3A3A3]">Overview</span>
+                  <p className="text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-line">
+                    {viewingEventDetails.detailed_description || viewingEventDetails.short_description}
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-[#202020] border border-slate-200 dark:border-[#2d2d2d]">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Event Schedule</span>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
+                    {new Date(viewingEventDetails.event_start_at).toLocaleString()} — {new Date(viewingEventDetails.event_end_at).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Registration Window</span>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
+                    {new Date(viewingEventDetails.registration_start_at).toLocaleString()} — {new Date(viewingEventDetails.registration_deadline).toLocaleString()}
+                  </p>
+                </div>
+                {viewingEventDetails.venue && (
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Venue</span>
+                    <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{viewingEventDetails.venue}</p>
+                  </div>
+                )}
+                {(viewingEventDetails.online_meeting_url || viewingEventDetails.meeting_url) && (
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Meeting Link</span>
+                    <a
+                      href={viewingEventDetails.online_meeting_url || viewingEventDetails.meeting_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-blue-600 dark:text-[#5DD62C] hover:underline mt-0.5 inline-block break-all"
+                    >
+                      Join Online Session ↗
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {(viewingEventDetails.contact_person || viewingEventDetails.contact_email || viewingEventDetails.contact_phone) && (
+                <div className="p-3 rounded-xl border border-slate-200 dark:border-[#292929] space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Coordinator Contact</span>
+                  <p className="text-slate-800 dark:text-slate-200 font-semibold">
+                    {[viewingEventDetails.contact_person, viewingEventDetails.contact_email, viewingEventDetails.contact_phone].filter(Boolean).join(" • ")}
+                  </p>
+                </div>
+              )}
+
+              {viewingEventDetails.instructions && (
+                <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 space-y-1">
+                  <span className="font-bold text-blue-900 dark:text-blue-200 block">📋 Participation Instructions</span>
+                  <p className="whitespace-pre-line text-blue-800 dark:text-blue-300 leading-relaxed">{viewingEventDetails.instructions}</p>
+                </div>
+              )}
+
+              {viewingEventDetails.terms_conditions && (
+                <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 space-y-1">
+                  <span className="font-bold text-amber-900 dark:text-amber-200 block">⚖️ Terms &amp; Conditions</span>
+                  <p className="whitespace-pre-line text-amber-800 dark:text-amber-300 leading-relaxed">{viewingEventDetails.terms_conditions}</p>
+                </div>
+              )}
+
+              {viewingEventDetails.gallery_images && viewingEventDetails.gallery_images.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Event Gallery</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {viewingEventDetails.gallery_images.map((imgUrl, idx) => (
+                      <a
+                        key={idx}
+                        href={resolveEventAssetUrl(imgUrl, authToken)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-xl overflow-hidden border border-slate-200 dark:border-[#292929] aspect-video block"
+                      >
+                        <img src={resolveEventAssetUrl(imgUrl, authToken)} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {viewingEventDetails.attachments && viewingEventDetails.attachments.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Rulebooks &amp; Downloads</span>
+                  <div className="space-y-1.5">
+                    {viewingEventDetails.attachments.map((att, idx) => (
+                      <a
+                        key={att.id || att.url || idx}
+                        href={resolveEventAssetUrl(att.url, authToken, true)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#202020] hover:border-blue-500 font-semibold text-blue-600 dark:text-[#5DD62C]"
+                      >
+                        <span>📎 {att.name}</span>
+                        <span>Download ↗</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="px-5 py-3.5 border-t border-slate-100 dark:border-[#292929] flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setViewingEventDetails(null)}
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#333] cursor-pointer"
+              >
+                Close
+              </button>
+              {viewingEventDetails.has_submitted ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const target = viewingEventDetails;
+                    setViewingEventDetails(null);
+                    handleViewMySubmission(target);
+                  }}
+                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-emerald-600 text-white cursor-pointer"
+                >
+                  View My Submission →
+                </button>
+              ) : isEventRegOpen(viewingEventDetails) ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const target = viewingEventDetails;
+                    setViewingEventDetails(null);
+                    handleOpenRegistration(target);
+                  }}
+                  className="px-5 py-2 text-xs font-semibold rounded-xl bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black cursor-pointer"
+                >
+                  {viewingEventDetails.notification_cta_label || "Register / Fill Form"} →
+                </button>
+              ) : null}
+            </div>
+          </div>
         </div>
       )}
 
@@ -574,18 +855,43 @@ export const StudentEventsSection: React.FC = () => {
                     Attached Files ({viewingSubmission.files.length})
                   </span>
                   <div className="space-y-2">
-                    {viewingSubmission.files.map((file) => (
-                      <div
-                        key={file.id}
-                        className="p-2.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 flex items-center justify-between text-xs"
-                      >
-                        <div className="flex items-center gap-2 truncate">
-                          <span>📎</span>
-                          <span className="font-semibold truncate">{file.original_filename}</span>
+                    {viewingSubmission.files.map((file) => {
+                      const previewUrl = resolveEventAssetUrl(file.file_url || file.storage_reference, authToken, false);
+                      const downloadUrl = resolveEventAssetUrl(file.download_url || file.file_url || file.storage_reference, authToken, true);
+                      return (
+                        <div
+                          key={file.id}
+                          className="p-2.5 rounded-xl border border-slate-200 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 flex items-center justify-between gap-2 text-xs"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <span>📎</span>
+                            <span className="font-semibold truncate">{file.original_filename}</span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {previewUrl && (
+                              <a
+                                href={previewUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 dark:text-[#5DD62C] font-semibold hover:underline"
+                              >
+                                View
+                              </a>
+                            )}
+                            {downloadUrl && (
+                              <a
+                                href={downloadUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold hover:underline"
+                              >
+                                Download ↓
+                              </a>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-[10px] text-emerald-600 font-bold">Uploaded ✓</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
