@@ -161,10 +161,15 @@ export const eventsApi = {
     });
   },
 
-  deleteEvent: async (eventId: string): Promise<{ message: string }> => {
-    return request<{ message: string }>(`/events/${eventId}`, {
-      method: "DELETE",
-    });
+  deleteEvent: async (
+    eventId: string
+  ): Promise<{ action?: "deleted" | "archived"; message: string; event_id?: string; total_submissions?: number }> => {
+    return request<{ action?: "deleted" | "archived"; message: string; event_id?: string; total_submissions?: number }>(
+      `/events/${eventId}`,
+      {
+        method: "DELETE",
+      }
+    );
   },
 
   publishEvent: async (eventId: string): Promise<{ message: string; event: EventItem }> => {

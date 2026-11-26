@@ -40,23 +40,21 @@ export default function StudentDashboardPage() {
   // Navigation tab state - Initial landing page is "submit" (Submit Activity)
   const [activeTab, setActiveTab] = useState<string>("submit");
   const [deepLinkedEventId, setDeepLinkedEventId] = useState<string | null>(null);
+  const [deepLinkedEventAction, setDeepLinkedEventAction] = useState<"details" | "register" | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get("tab");
     const eventIdParam = params.get("eventId");
-    if (!tabParam && !eventIdParam) return;
-    queueMicrotask(() => {
-      if (tabParam) {
-        setActiveTab(tabParam);
-      } else if (eventIdParam) {
-        setActiveTab("events");
-      }
-      if (eventIdParam) {
-        setDeepLinkedEventId(eventIdParam);
-      }
-    });
+    if (tabParam) {
+      setActiveTab(tabParam);
+    } else if (eventIdParam) {
+      setActiveTab("events");
+    }
+    if (eventIdParam) {
+      setDeepLinkedEventId(eventIdParam);
+    }
   }, []);
 
   // Data states
@@ -202,10 +200,10 @@ export default function StudentDashboardPage() {
           const studentSemStr = profileRes.status === "fulfilled" ? profileRes.value.profile?.semester : null;
           const matchedSem = studentSemStr
             ? sems.find(
-                (s) =>
-                  s.display_name?.toLowerCase() === studentSemStr.toLowerCase() ||
-                  s.semester_number.toString() === studentSemStr.replace(/\D/g, "")
-              )
+              (s) =>
+                s.display_name?.toLowerCase() === studentSemStr.toLowerCase() ||
+                s.semester_number.toString() === studentSemStr.replace(/\D/g, "")
+            )
             : null;
           if (defaultSem) {
             setSelectedCatalogueSemesterId(defaultSem.id);
@@ -481,8 +479,11 @@ export default function StudentDashboardPage() {
         onSubmitClick={() => handleOpenSubmitModal(null)}
         onLogout={handleLogout}
         onOpenMessages={() => setActiveTab("messages")}
-        onNavigateToEvents={(eventId) => {
-          if (eventId) setDeepLinkedEventId(eventId);
+        onNavigateToEvents={(eventId, action) => {
+          if (eventId) {
+            setDeepLinkedEventId(eventId);
+            setDeepLinkedEventAction(action || "details");
+          }
           setActiveTab("events");
         }}
         unreadMessagesCount={unreadMessagesCount}
@@ -491,8 +492,11 @@ export default function StudentDashboardPage() {
 
       {/* In-App Notification Modal Popup for urgent & important broadcasts */}
       <StudentNotificationPopup
-        onNavigateToEvent={(eventId) => {
-          if (eventId) setDeepLinkedEventId(eventId);
+        onNavigateToEvent={(eventId, action) => {
+          if (eventId) {
+            setDeepLinkedEventId(eventId);
+            setDeepLinkedEventAction(action || "register");
+          }
           setActiveTab("events");
         }}
       />
@@ -796,7 +800,11 @@ export default function StudentDashboardPage() {
         {activeTab === "events" && (
           <StudentEventsSection
             initialEventId={deepLinkedEventId}
-            onConsumedInitialEventId={() => setDeepLinkedEventId(null)}
+            initialEventAction={deepLinkedEventAction}
+            onConsumedInitialEventId={() => {
+              setDeepLinkedEventId(null);
+              setDeepLinkedEventAction(null);
+            }}
           />
         )}
 

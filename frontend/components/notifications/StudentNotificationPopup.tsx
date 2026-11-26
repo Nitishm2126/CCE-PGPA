@@ -7,7 +7,7 @@ import { resolveEventAssetUrl } from "@/lib/events-api";
 import { getStoredToken } from "@/lib/api-client";
 
 interface StudentNotificationPopupProps {
-  onNavigateToEvent?: (eventId?: string) => void;
+  onNavigateToEvent?: (eventId?: string, action?: "details" | "register") => void;
 }
 
 export const StudentNotificationPopup: React.FC<StudentNotificationPopupProps> = ({
@@ -73,7 +73,7 @@ export const StudentNotificationPopup: React.FC<StudentNotificationPopupProps> =
       setActivePopup(null);
 
       if ((eventId || ctaUrl?.startsWith("/student?tab=events")) && onNavigateToEvent) {
-        onNavigateToEvent(eventId);
+        onNavigateToEvent(eventId, "register");
       } else if (ctaUrl) {
         if (ctaUrl.startsWith("/")) {
           window.location.href = ctaUrl;

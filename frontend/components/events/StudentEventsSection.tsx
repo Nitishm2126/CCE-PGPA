@@ -9,16 +9,19 @@ import { DynamicStudentFormRenderer } from "@/components/events/DynamicStudentFo
 
 interface StudentEventsSectionProps {
   initialEventId?: string | null;
+  initialEventAction?: "details" | "register" | null;
   onConsumedInitialEventId?: () => void;
 }
 
 export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
   initialEventId = null,
+  initialEventAction = "details",
   onConsumedInitialEventId,
 }) => {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
   const authToken = getStoredToken();
 
   // Filters: All Events, Upcoming, Registration Open, Registered, Completed
@@ -32,6 +35,7 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
   const [eventForm, setEventForm] = useState<EventFormVersion | null>(null);
   const [existingSubmission, setExistingSubmission] = useState<EventSubmissionItem | null>(null);
   const [loadingForm, setLoadingForm] = useState<boolean>(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // View submission modal
   const [viewingSubmission, setViewingSubmission] = useState<EventSubmissionItem | null>(null);
@@ -54,51 +58,36 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
     loadEvents();
   }, []);
 
-  // Deep-link from in-app notification bell / popup
-  useEffect(() => {
-    if (!initialEventId) return;
-    const matched = events.find((e) => e.id === initialEventId);
-    if (matched) {
-      queueMicrotask(() => {
-        setActiveTab("all");
-        setViewingEventDetails(matched);
-        onConsumedInitialEventId?.();
-      });
-      return;
-    }
-    if (!loading) {
-      eventsApi
-        .getStudentEvent(initialEventId)
-        .then((evt) => {
-          setActiveTab("all");
-          setViewingEventDetails(evt);
-        })
-        .catch((err) => {
-          setError(err?.message || "Selected event could not be loaded.");
-        })
-        .finally(() => {
-          onConsumedInitialEventId?.();
-        });
-    }
-  }, [initialEventId, events, loading, onConsumedInitialEventId]);
+  // Parsed UTC timestamp helper
+  const parseTs = (iso?: string | null): number | null => {
+    if (!iso) return null;
+    const ms = Date.parse(iso);
+    return Number.isNaN(ms) ? null : ms;
+  };
 
-  // Filter events based on activeTab
-  const nowIso = new Date().toISOString();
-  const isEventUpcoming = (evt: EventItem) =>
-    evt.effective_status === "scheduled" ||
-    (evt.status === "published" && Boolean(evt.registration_start_at) && nowIso < evt.registration_start_at);
+  const nowMs = Date.now();
+  const isEventUpcoming = (evt: EventItem) => {
+    if (evt.effective_status === "scheduled") return true;
+    const startMs = parseTs(evt.registration_start_at);
+    return evt.status === "published" && startMs !== null && nowMs < startMs;
+  };
 
-  const isEventRegOpen = (evt: EventItem) =>
-    evt.status === "published" &&
-    evt.is_registration_enabled !== false &&
-    (!evt.registration_start_at || nowIso >= evt.registration_start_at) &&
-    (!evt.close_after_deadline || !evt.registration_deadline || nowIso <= evt.registration_deadline);
+  const isEventRegOpen = (evt: EventItem) => {
+    if (evt.effective_status === "registration_open") return true;
+    if (evt.status !== "published") return false;
+    if (evt.is_registration_enabled === false || (evt.is_registration_enabled as unknown as number) === 0) return false;
+    const startMs = parseTs(evt.registration_start_at);
+    const deadlineMs = parseTs(evt.registration_deadline);
+    if (startMs !== null && nowMs < startMs) return false;
+    if (evt.close_after_deadline !== false && deadlineMs !== null && nowMs > deadlineMs) return false;
+    return true;
+  };
 
-  const isEventCompleted = (evt: EventItem) =>
-    evt.effective_status === "completed" ||
-    evt.status === "closed" ||
-    (Boolean(evt.event_end_at) && nowIso > evt.event_end_at) ||
-    (!isEventUpcoming(evt) && !isEventRegOpen(evt));
+  const isEventCompleted = (evt: EventItem) => {
+    if (evt.effective_status === "completed" || evt.status === "closed") return true;
+    const endMs = parseTs(evt.event_end_at);
+    return (endMs !== null && nowMs > endMs) || (!isEventUpcoming(evt) && !isEventRegOpen(evt));
+  };
 
   const filteredEvents = events.filter((evt) => {
     if (activeTab === "upcoming") return isEventUpcoming(evt);
@@ -109,6 +98,7 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
   });
 
   const handleOpenEventDetails = async (evt: EventItem) => {
+    setActionNotice(null);
     setViewingEventDetails(evt);
     try {
       const fullEvt = await eventsApi.getStudentEvent(evt.id);
@@ -120,12 +110,17 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
 
   // Open Registration Modal
   const handleOpenRegistration = async (evt: EventItem) => {
+    setActionNotice(null);
     setRegisteringEvent(evt);
     setLoadingForm(true);
+    setFormError(null);
     setEventForm(null);
     setExistingSubmission(null);
     try {
       const formRes = await eventsApi.getStudentEventForm(evt.id);
+      if (formRes.event) {
+        setRegisteringEvent((prev) => ({ ...(prev || evt), ...formRes.event }));
+      }
       setEventForm(formRes.form);
 
       // If already submitted and editing allowed, fetch submission
@@ -138,8 +133,7 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
         }
       }
     } catch (err: any) {
-      alert("Unable to open registration form: " + err.message);
-      setRegisteringEvent(null);
+      setFormError(err?.message || "Unable to open registration form. Please try again.");
     } finally {
       setLoadingForm(false);
     }
@@ -148,15 +142,55 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
   // Open View My Submission Modal
   const handleViewMySubmission = async (evt: EventItem) => {
     setLoadingMySub(true);
+    setActionNotice(null);
     try {
       const sub = await eventsApi.getStudentMySubmission(evt.id);
       setViewingSubmission(sub);
     } catch (err: any) {
-      alert("Failed to load your submission: " + err.message);
+      setActionNotice(err?.message || "Failed to load your submission details.");
     } finally {
       setLoadingMySub(false);
     }
   };
+
+  // Deep-link from in-app notification bell / popup
+  useEffect(() => {
+    if (!initialEventId) return;
+
+    const openTarget = (target: EventItem) => {
+      setActiveTab("all");
+      if (initialEventAction === "register") {
+        if (target.has_submitted && !target.allow_edit_submission) {
+          handleViewMySubmission(target);
+        } else if (isEventRegOpen(target)) {
+          handleOpenRegistration(target);
+        } else {
+          setViewingEventDetails(target);
+        }
+      } else {
+        setViewingEventDetails(target);
+      }
+      onConsumedInitialEventId?.();
+    };
+
+    const matched = events.find((e) => e.id === initialEventId);
+    if (matched) {
+      queueMicrotask(() => openTarget(matched));
+      return;
+    }
+
+    if (!loading) {
+      eventsApi
+        .getStudentEvent(initialEventId)
+        .then((evt) => {
+          openTarget(evt);
+        })
+        .catch((err) => {
+          setActionNotice(err?.message || "This event is no longer available or has been archived.");
+          onConsumedInitialEventId?.();
+        });
+    }
+  }, [initialEventId, initialEventAction, events, loading, onConsumedInitialEventId]);
 
   return (
     <div className="space-y-4">
@@ -184,6 +218,20 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
         </button>
       </div>
 
+      {/* Dismissible Action Notice */}
+      {actionNotice && (
+        <div className="rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/30 px-4 py-3 text-xs font-semibold text-amber-800 dark:text-amber-300 flex items-center justify-between gap-3">
+          <span>⚠️ {actionNotice}</span>
+          <button
+            type="button"
+            onClick={() => setActionNotice(null)}
+            className="text-current opacity-70 hover:opacity-100 cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-2 shadow-2xs">
         <div className="flex flex-wrap gap-1.5">
@@ -198,11 +246,10 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
-                activeTab === tab.id
-                  ? "bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black shadow-2xs"
-                  : "bg-slate-50 dark:bg-[#202020] text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900"
-              }`}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${activeTab === tab.id
+                ? "bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black shadow-2xs"
+                : "bg-slate-50 dark:bg-[#202020] text-slate-600 dark:text-[#A3A3A3] hover:text-slate-900"
+                }`}
             >
               {tab.label}
             </button>
@@ -234,8 +281,8 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
             {error.includes("Not Found")
               ? "Events API Endpoint Unavailable (404)"
               : error.includes("Network error") || error.includes("timed out")
-              ? "Connection Problem"
-              : "Unable to Load Events"}
+                ? "Connection Problem"
+                : "Unable to Load Events"}
           </h3>
           <p className="text-xs text-rose-700 dark:text-rose-300/90 break-words">{error}</p>
           <button
@@ -256,12 +303,12 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
             {activeTab === "upcoming"
               ? "No upcoming scheduled events found right now."
               : activeTab === "open"
-              ? "No events are currently open for registration. Check All Events or check back soon."
-              : activeTab === "registered"
-              ? "You haven't submitted any event registrations yet."
-              : activeTab === "completed"
-              ? "No past or completed events to display."
-              : "No department events are currently published for you. Check back soon for workshops, competitions, and surveys."}
+                ? "No events are currently open for registration. Check All Events or check back soon."
+                : activeTab === "registered"
+                  ? "You haven't submitted any event registrations yet."
+                  : activeTab === "completed"
+                    ? "No past or completed events to display."
+                    : "No department events are currently published for you. Check back soon for workshops, competitions, and surveys."}
           </p>
           {activeTab !== "all" && (
             <div className="pt-2">
@@ -380,9 +427,8 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
                         <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-[#333]">
                           <span>👥 Capacity:</span>
                           <span
-                            className={`font-semibold ${
-                              isFull ? "text-rose-500 font-bold" : "text-slate-800 dark:text-slate-200"
-                            }`}
+                            className={`font-semibold ${isFull ? "text-rose-500 font-bold" : "text-slate-800 dark:text-slate-200"
+                              }`}
                           >
                             {isFull ? "Registration Full" : `${(evt.registration_capacity || 0) - subCount} spots left`}
                           </span>
@@ -391,7 +437,7 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
                     </div>
 
                     {/* Attachments preview if available */}
-                    {evt.attachments && evt.attachments.length > 0 && (
+                    {Array.isArray(evt.attachments) && evt.attachments.length > 0 && (
                       <div className="space-y-1 pt-1">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                           Downloads / Guidelines
@@ -592,7 +638,7 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
                 </div>
               )}
 
-              {viewingEventDetails.gallery_images && viewingEventDetails.gallery_images.length > 0 && (
+              {Array.isArray(viewingEventDetails.gallery_images) && viewingEventDetails.gallery_images.length > 0 && (
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Event Gallery</span>
                   <div className="grid grid-cols-3 gap-2">
@@ -611,7 +657,7 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
                 </div>
               )}
 
-              {viewingEventDetails.attachments && viewingEventDetails.attachments.length > 0 && (
+              {Array.isArray(viewingEventDetails.attachments) && viewingEventDetails.attachments.length > 0 && (
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Rulebooks &amp; Downloads</span>
                   <div className="space-y-1.5">
@@ -710,12 +756,49 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
 
               {loadingForm ? (
                 <div className="py-12 text-center text-xs text-slate-400">Loading registration form...</div>
+              ) : formError ? (
+                <div className="p-5 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/30 text-center space-y-3">
+                  <p className="text-xs font-bold text-rose-800 dark:text-rose-200">Unable to Open Registration Form</p>
+                  <p className="text-xs text-rose-700 dark:text-rose-300 break-words">{formError}</p>
+                  <div className="flex items-center justify-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenRegistration(registeringEvent)}
+                      className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold cursor-pointer"
+                    >
+                      Retry
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRegisteringEvent(null);
+                        setFormError(null);
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-[#333] text-xs font-semibold cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
               ) : eventForm ? (
                 <DynamicStudentFormRenderer
                   event={registeringEvent}
                   form={eventForm}
                   existingSubmission={existingSubmission}
                   onSubmitted={(sub) => {
+                    setEvents((prev) =>
+                      prev.map((item) =>
+                        item.id === registeringEvent.id
+                          ? {
+                              ...item,
+                              has_submitted: true,
+                              my_submission_id: sub.id,
+                              my_submission_status: sub.submission_status,
+                              my_submitted_at: sub.submitted_at,
+                            }
+                          : item
+                      )
+                    );
                     loadEvents();
                   }}
                   onCancel={() => setRegisteringEvent(null)}
@@ -840,8 +923,8 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
                           {Array.isArray(val)
                             ? val.join(", ")
                             : val !== null && val !== undefined && val !== ""
-                            ? String(val)
-                            : <span className="text-slate-400 italic">Not provided</span>}
+                              ? String(val)
+                              : <span className="text-slate-400 italic">Not provided</span>}
                         </p>
                       </div>
                     );

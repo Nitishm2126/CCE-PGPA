@@ -25,6 +25,28 @@ interface EventCreateModalProps {
   semesters?: SemesterResponse[];
 }
 
+function localDateTimeToUtcIso(dateStr: string, timeStr: string): string {
+  const cleanTime = timeStr && timeStr.length >= 5 ? timeStr.slice(0, 5) : "00:00";
+  const parsed = new Date(`${dateStr}T${cleanTime}:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return `${dateStr}T${cleanTime}:00Z`;
+  }
+  return parsed.toISOString();
+}
+
+function utcIsoToLocalDateAndTime(isoStr: string, fallbackTime: string): { date: string; time: string } {
+  const parsed = new Date(isoStr);
+  if (!Number.isNaN(parsed.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return {
+      date: `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}`,
+      time: `${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`,
+    };
+  }
+  const [d, t] = isoStr.split("T");
+  return { date: d || "", time: t ? t.substring(0, 5) : fallbackTime };
+}
+
 export const EventCreateModal: React.FC<EventCreateModalProps> = ({
   isOpen,
   onClose,
@@ -134,24 +156,24 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setMeetingUrl(initialEvent.online_meeting_url || initialEvent.meeting_url || "");
 
       if (initialEvent.event_start_at) {
-        const [d, t] = initialEvent.event_start_at.split("T");
-        setEventStartDate(d || "");
-        setEventStartTime(t ? t.substring(0, 5) : "09:00");
+        const { date, time } = utcIsoToLocalDateAndTime(initialEvent.event_start_at, "09:00");
+        setEventStartDate(date);
+        setEventStartTime(time);
       }
       if (initialEvent.event_end_at) {
-        const [d, t] = initialEvent.event_end_at.split("T");
-        setEventEndDate(d || "");
-        setEventEndTime(t ? t.substring(0, 5) : "17:00");
+        const { date, time } = utcIsoToLocalDateAndTime(initialEvent.event_end_at, "17:00");
+        setEventEndDate(date);
+        setEventEndTime(time);
       }
       if (initialEvent.registration_start_at) {
-        const [d, t] = initialEvent.registration_start_at.split("T");
-        setRegStartDate(d || "");
-        setRegStartTime(t ? t.substring(0, 5) : "09:00");
+        const { date, time } = utcIsoToLocalDateAndTime(initialEvent.registration_start_at, "00:00");
+        setRegStartDate(date);
+        setRegStartTime(time);
       }
       if (initialEvent.registration_deadline) {
-        const [d, t] = initialEvent.registration_deadline.split("T");
-        setRegDeadlineDate(d || "");
-        setRegDeadlineTime(t ? t.substring(0, 5) : "23:59");
+        const { date, time } = utcIsoToLocalDateAndTime(initialEvent.registration_deadline, "23:59");
+        setRegDeadlineDate(date);
+        setRegDeadlineTime(time);
       }
 
       setAcademicYear(initialEvent.academic_year || "2024-2025");
@@ -194,9 +216,9 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setNotificationCtaLabel(initialEvent.notification_cta_label || "Register Now");
       if (initialEvent.notification_schedule) {
         setNotificationTiming("scheduled");
-        const [d, t] = initialEvent.notification_schedule.split("T");
-        setNotificationScheduledDate(d || "");
-        setNotificationScheduledTime(t ? t.substring(0, 5) : "09:00");
+        const { date, time } = utcIsoToLocalDateAndTime(initialEvent.notification_schedule, "09:00");
+        setNotificationScheduledDate(date);
+        setNotificationScheduledTime(time);
       } else {
         setNotificationTiming("with_event");
         setNotificationScheduledDate("");
@@ -206,9 +228,12 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setUpdateMessage("");
     } else {
       setIdempotencyKey(`evt_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`);
-      const today = new Date().toISOString().split("T")[0];
-      const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
-      const eventDay = new Date(Date.now() + 10 * 86400000).toISOString().split("T")[0];
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const formatLocalDate = (dt: Date) =>
+        `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+      const today = formatLocalDate(new Date());
+      const nextWeek = formatLocalDate(new Date(Date.now() + 7 * 86400000));
+      const eventDay = formatLocalDate(new Date(Date.now() + 10 * 86400000));
 
       setTitle("");
       setSubtitle("");
@@ -226,7 +251,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setEventEndTime("16:30");
 
       setRegStartDate(today);
-      setRegStartTime("09:00");
+      setRegStartTime("00:00");
       setRegDeadlineDate(nextWeek);
       setRegDeadlineTime("23:59");
 
@@ -399,18 +424,18 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       return;
     }
 
-    const eventStartAt = `${eventStartDate}T${eventStartTime}:00`;
-    const eventEndAt = `${eventEndDate}T${eventEndTime}:00`;
-    const regStartAt = `${regStartDate}T${regStartTime}:00`;
-    const regDeadlineAt = `${regDeadlineDate}T${regDeadlineTime}:00`;
+    const eventStartAt = localDateTimeToUtcIso(eventStartDate, eventStartTime);
+    const eventEndAt = localDateTimeToUtcIso(eventEndDate, eventEndTime);
+    const regStartAt = localDateTimeToUtcIso(regStartDate, regStartTime);
+    const regDeadlineAt = localDateTimeToUtcIso(regDeadlineDate, regDeadlineTime);
 
-    if (eventEndAt < eventStartAt) {
+    if (Date.parse(eventEndAt) < Date.parse(eventStartAt)) {
       setError("Event end date cannot be earlier than event start date.");
       setActiveTab("basic");
       return;
     }
 
-    if (regDeadlineAt < regStartAt) {
+    if (Date.parse(regDeadlineAt) < Date.parse(regStartAt)) {
       setError("Registration deadline cannot be earlier than registration start date.");
       setActiveTab("basic");
       return;
@@ -490,7 +515,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       notification_cta_label: notificationCtaLabel.trim() || "Register Now",
       notification_schedule:
         notificationTiming === "scheduled" && notificationScheduledDate
-          ? `${notificationScheduledDate}T${notificationScheduledTime}:00`
+          ? localDateTimeToUtcIso(notificationScheduledDate, notificationScheduledTime)
           : undefined,
       send_update_notification: isEdit ? sendUpdateNotification : false,
       update_message: isEdit && sendUpdateNotification ? updateMessage.trim() : undefined,

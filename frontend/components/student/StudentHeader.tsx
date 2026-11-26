@@ -14,7 +14,7 @@ interface StudentHeaderProps {
   onSubmitClick: () => void;
   onLogout?: () => void;
   onOpenMessages?: () => void;
-  onNavigateToEvents?: (eventId?: string) => void;
+  onNavigateToEvents?: (eventId?: string, action?: "details" | "register") => void;
   unreadMessagesCount?: number;
   activeTab?: string;
 }

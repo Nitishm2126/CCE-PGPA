@@ -7,7 +7,7 @@ import { resolveEventAssetUrl } from "@/lib/events-api";
 import { getStoredToken } from "@/lib/api-client";
 
 interface StudentNotificationBellProps {
-  onNavigateToEvent?: (eventId?: string) => void;
+  onNavigateToEvent?: (eventId?: string, action?: "details" | "register") => void;
 }
 
 export const StudentNotificationBell: React.FC<StudentNotificationBellProps> = ({
@@ -111,6 +111,21 @@ export const StudentNotificationBell: React.FC<StudentNotificationBellProps> = (
     }
   };
 
+  const resolveLinkedEventId = (notif: StudentNotificationItem): string | undefined =>
+    notif.event_id ||
+    (notif.cta_url?.includes("eventId=")
+      ? new URLSearchParams(notif.cta_url.split("?")[1] || "").get("eventId") || undefined
+      : undefined);
+
+  const handleOpenNotification = async (notif: StudentNotificationItem) => {
+    await handleMarkAsRead(notif);
+    const linkedEventId = resolveLinkedEventId(notif);
+    if ((linkedEventId || notif.cta_url?.startsWith("/student?tab=events")) && onNavigateToEvent) {
+      setIsOpen(false);
+      onNavigateToEvent(linkedEventId, "details");
+    }
+  };
+
   const handleCtaClick = async (notif: StudentNotificationItem, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -120,15 +135,11 @@ export const StudentNotificationBell: React.FC<StudentNotificationBellProps> = (
     }
     await handleMarkAsRead(notif);
 
-    const linkedEventId =
-      notif.event_id ||
-      (notif.cta_url?.includes("eventId=")
-        ? new URLSearchParams(notif.cta_url.split("?")[1] || "").get("eventId") || undefined
-        : undefined);
+    const linkedEventId = resolveLinkedEventId(notif);
 
     if ((linkedEventId || notif.cta_url?.startsWith("/student?tab=events")) && onNavigateToEvent) {
       setIsOpen(false);
-      onNavigateToEvent(linkedEventId);
+      onNavigateToEvent(linkedEventId, "register");
     } else if (notif.cta_url) {
       if (notif.cta_url.startsWith("/")) {
         window.location.href = notif.cta_url;
@@ -241,7 +252,7 @@ export const StudentNotificationBell: React.FC<StudentNotificationBellProps> = (
                 return (
                   <div
                     key={notif.id}
-                    onClick={() => handleMarkAsRead(notif)}
+                    onClick={() => handleOpenNotification(notif)}
                     className={`p-3.5 space-y-2 transition-colors cursor-pointer ${
                       !notif.is_read
                         ? "bg-blue-50/40 dark:bg-[#1a2333]/40"
