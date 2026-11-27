@@ -7,6 +7,7 @@ import {
   FormFieldOption,
   EventItem,
   FormSection,
+  FormSettings,
   ConditionalRule,
   RatingConfig,
   RepeatableConfig,
@@ -21,6 +22,7 @@ interface EventFormBuilderProps {
   event: EventItem;
   initialFields?: EventFormField[];
   initialSections?: FormSection[];
+  initialFormSettings?: FormSettings | null;
   onSaved?: () => void;
   onBack?: () => void;
 }
@@ -39,56 +41,133 @@ interface PaletteItem {
 
 const FIELD_PALETTE: PaletteItem[] = [
   // Basic Fields
-  { type: "text", label: "Short Text", category: "basic", icon: "Aa", defaultLabel: "Full Name", description: "Single-line text input" },
-  { type: "textarea", label: "Paragraph / Long Text", category: "basic", icon: "¶", defaultLabel: "Statement of Purpose", description: "Multi-line text area" },
-  { type: "number", label: "Number", category: "basic", icon: "#", defaultLabel: "Experience in Years", description: "Numeric value with optional bounds" },
-  { type: "email", label: "Email Address", category: "basic", icon: "@", defaultLabel: "College Email", description: "Validates email format" },
-  { type: "phone", label: "Phone Number", category: "basic", icon: "📞", defaultLabel: "WhatsApp / Contact Number", description: "10-digit telephone format" },
-  { type: "url", label: "Website / URL", category: "basic", icon: "🔗", defaultLabel: "Portfolio or GitHub URL", description: "Validates web URL" },
-  { type: "rich_text", label: "Rich Text Input", category: "basic", icon: "📝", defaultLabel: "Project Description", description: "Formatted text with bold/bullets" },
+  { type: "text", label: "Short Answer", category: "basic", icon: "Aa", defaultLabel: "Full Name", description: "Single-line text input" },
+  { type: "textarea", label: "Paragraph", category: "basic", icon: "¶", defaultLabel: "Statement of Purpose", description: "Multi-line paragraph text" },
+  { type: "number", label: "Number", category: "basic", icon: "#", defaultLabel: "Experience in Years", description: "Integer or decimal numeric input" },
+  { type: "email", label: "Email", category: "basic", icon: "@", defaultLabel: "College Email", description: "Validates email address format" },
+  { type: "phone", label: "Phone Number", category: "basic", icon: "📞", defaultLabel: "WhatsApp / Contact Number", description: "Telephone format validation" },
+  { type: "url", label: "Website / URL", category: "basic", icon: "🔗", defaultLabel: "Portfolio or GitHub URL", description: "Validates https:// web link" },
+  { type: "rich_text", label: "Rich Text Input", category: "basic", icon: "📝", defaultLabel: "Project Description", description: "Formatted detailed response" },
 
   // Date & Time
-  { type: "date", label: "Date Picker", category: "datetime", icon: "📅", defaultLabel: "Date of Birth", description: "Calendar date selector" },
-  { type: "time", label: "Time Picker", category: "datetime", icon: "⏰", defaultLabel: "Preferred Time Slot", description: "Time of day selector" },
-  { type: "datetime", label: "Date & Time", category: "datetime", icon: "🗓", defaultLabel: "Appointment Slot", description: "Combined date and time" },
+  { type: "date", label: "Date", category: "datetime", icon: "📅", defaultLabel: "Date of Birth", description: "Calendar date selector" },
+  { type: "time", label: "Time", category: "datetime", icon: "⏰", defaultLabel: "Preferred Time Slot", description: "Time of day selector" },
+  { type: "datetime", label: "Date and Time", category: "datetime", icon: "🗓", defaultLabel: "Appointment Slot", description: "Combined date and time picker" },
   { type: "date_range", label: "Date Range", category: "datetime", icon: "↔", defaultLabel: "Internship Duration", description: "Start and end date pair" },
 
   // Selection
-  { type: "dropdown", label: "Dropdown Select", category: "choice", icon: "▼", defaultLabel: "Select Your Track", description: "Single choice from dropdown list" },
-  { type: "radio", label: "Radio Buttons", category: "choice", icon: "◉", defaultLabel: "T-Shirt Size", description: "Single choice from radio buttons" },
-  { type: "checkbox", label: "Checkbox Group", category: "choice", icon: "☑", defaultLabel: "Areas of Interest", description: "Multiple choices from checkboxes" },
-  { type: "yes_no", label: "Yes / No Buttons", category: "choice", icon: "⚖", defaultLabel: "Will you bring your own laptop?", description: "Fast boolean toggle buttons" },
-  { type: "multi_select", label: "Multi-Select Tags", category: "choice", icon: "🏷", defaultLabel: "Preferred Technologies", description: "Multiple tag selection" },
+  { type: "radio", label: "Multiple Choice", category: "choice", icon: "◉", defaultLabel: "Choose One Option", description: "Single choice radio buttons + Other" },
+  { type: "checkbox", label: "Checkboxes", category: "choice", icon: "☑", defaultLabel: "Areas of Interest", description: "Multiple choices + Other & bounds" },
+  { type: "dropdown", label: "Dropdown", category: "choice", icon: "▼", defaultLabel: "Select Your Track", description: "Single choice from dropdown menu" },
+  { type: "yes_no", label: "Yes / No", category: "choice", icon: "⚖", defaultLabel: "Will you bring your own laptop?", description: "Fast Yes / No toggle buttons" },
+  { type: "multi_select", label: "Multi-Select Tags", category: "choice", icon: "🏷", defaultLabel: "Preferred Technologies", description: "Tag pills with multi-select" },
 
   // Feedback & Rating
-  { type: "star_rating", label: "1–5 Star Rating", category: "rating", icon: "★", defaultLabel: "Overall Content Quality", description: "Interactive star evaluation" },
-  { type: "numeric_rating", label: "Numeric Scale (1–10)", category: "rating", icon: "🔟", defaultLabel: "Likelihood to Recommend (NPS)", description: "0-10 or 1-10 numerical scale" },
+  { type: "numeric_rating", label: "Linear Scale", category: "rating", icon: "🔟", defaultLabel: "Linear Scale (1–5 / 0–10)", description: "Configurable numeric linear scale" },
+  { type: "star_rating", label: "Rating", category: "rating", icon: "★", defaultLabel: "Overall Rating", description: "Interactive star evaluation" },
   { type: "satisfaction_rating", label: "Satisfaction Scale", category: "rating", icon: "😊", defaultLabel: "Overall Satisfaction", description: "Poor to Excellent scale" },
   { type: "difficulty_rating", label: "Difficulty Rating", category: "rating", icon: "⚡", defaultLabel: "Session Difficulty Level", description: "Beginner, Intermediate, Advanced" },
-  { type: "custom_scale", label: "Custom Scale", category: "rating", icon: "📊", defaultLabel: "Pacing of the Workshop", description: "Configurable discrete scale" },
+  { type: "custom_scale", label: "Custom Scale", category: "rating", icon: "📊", defaultLabel: "Pacing of the Workshop", description: "Custom labeled or numeric scale" },
 
   // Uploads
-  { type: "file", label: "Document Upload (PDF/Word)", category: "upload", icon: "📄", defaultLabel: "Upload Resume / ID Card", description: "Document file attachment" },
-  { type: "document_upload", label: "Word / Docs Upload", category: "upload", icon: "📃", defaultLabel: "Upload Report (DOCX/PDF)", description: "Strict PDF, DOC, DOCX upload" },
-  { type: "image_upload", label: "Image / Screenshot", category: "upload", icon: "🖼", defaultLabel: "Payment Receipt / ID Photo", description: "PNG, JPG, or WebP image" },
-  { type: "gallery_upload", label: "Multi-Image Gallery", category: "upload", icon: "🗂", defaultLabel: "Upload Multiple Photos / Screens", description: "Upload multiple PNG or JPG images" },
-  { type: "pdf_upload", label: "PDF Document Only", category: "upload", icon: "📕", defaultLabel: "Upload Signed NOC (PDF)", description: "Strict PDF document upload" },
+  { type: "file", label: "File Upload", category: "upload", icon: "📎", defaultLabel: "Upload File", description: "Single or multiple document files" },
+  { type: "image_upload", label: "Single Image Upload", category: "upload", icon: "🖼", defaultLabel: "Upload Image / Receipt", description: "PNG, JPG, or WebP image" },
+  { type: "gallery_upload", label: "Multiple Image Upload", category: "upload", icon: "🗂", defaultLabel: "Upload Multiple Images", description: "Upload multiple PNG or JPG images" },
+  { type: "pdf_upload", label: "PDF Upload", category: "upload", icon: "📕", defaultLabel: "Upload Signed NOC (PDF)", description: "Strict PDF document upload" },
+  { type: "document_upload", label: "Document Upload", category: "upload", icon: "📃", defaultLabel: "Upload Document (DOCX/PDF)", description: "PDF, DOC, DOCX document upload" },
   { type: "camera_capture", label: "Live Camera Snapshot", category: "upload", icon: "📷", defaultLabel: "Take Live Photo", description: "Direct camera photo capture" },
 
   // Geo-tagged Photo
-  { type: "geo_photo", label: "Geo-tagged Photo", category: "advanced", icon: "📍", defaultLabel: "Venue Check-in Photo with GPS", description: "Photo with optional verified coordinates" },
+  { type: "geo_photo", label: "Geo-tagged Photo", category: "advanced", icon: "📍", defaultLabel: "Venue Check-in Photo with GPS", description: "Photo with verified GPS coordinates" },
 
   // Repeatable Sections
-  { type: "repeatable_group", label: "Repeatable Group", category: "advanced", icon: "👥", defaultLabel: "Team Members List", description: "Dynamic add/remove member rows" },
+  { type: "repeatable_group", label: "Repeatable Group", category: "advanced", icon: "👥", defaultLabel: "Team Members List", description: "Dynamic add/remove entry group" },
 
   // Layout Blocks
   { type: "heading", label: "Section Heading", category: "layout", icon: "H", defaultLabel: "Participant Information", description: "Visual bold title separator" },
+  { type: "description", label: "Description / Instructions", category: "layout", icon: "📝", defaultLabel: "Read all eligibility instructions carefully before registering.", description: "Formatted instructional text block" },
   { type: "subheading", label: "Subheading", category: "layout", icon: "h2", defaultLabel: "Academic & Contact Details", description: "Secondary section subtitle" },
-  { type: "description", label: "Description Block", category: "layout", icon: "📝", defaultLabel: "Read all eligibility instructions carefully before registering.", description: "Formatted instructional text block" },
   { type: "divider", label: "Horizontal Divider", category: "layout", icon: "—", defaultLabel: "Divider", description: "Visual separation line" },
   { type: "info_card", label: "Information Notice", category: "layout", icon: "ℹ", defaultLabel: "Please ensure all details match college records.", description: "Blue informative callout card" },
   { type: "notice", label: "Warning / Important Notice", category: "layout", icon: "⚠️", defaultLabel: "Late registrations will not be entertained.", description: "Amber warning highlight box" },
 ];
+
+const LAYOUT_TYPES = ["heading", "subheading", "description", "rich_text_block", "divider", "info", "info_card", "notice"];
+const CHOICE_TYPES = ["dropdown", "radio", "checkbox", "multi_select"];
+const UPLOAD_TYPES = ["file", "pdf_upload", "document_upload", "image_upload", "gallery_upload", "camera_capture", "geo_photo"];
+
+function buildDefaultField(type: FormFieldType, sectionId: string, orderIndex: number, totalCount: number): EventFormField {
+  const def = FIELD_PALETTE.find((d) => d.type === type);
+  const newId = `field_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  const newKey = `f_${type}_${totalCount + 1}_${Math.random().toString(36).substring(2, 4)}`;
+
+  const defaultOptions: FormFieldOption[] = CHOICE_TYPES.includes(type)
+    ? [
+        { label: "Option 1", value: "option_1" },
+        { label: "Option 2", value: "option_2" },
+        { label: "Option 3", value: "option_3" },
+      ]
+    : [];
+
+  let defaultRatingConfig: RatingConfig | undefined;
+  if (type === "star_rating") {
+    defaultRatingConfig = { max_rating: 5, min_label: "Poor", max_label: "Excellent", scale_type: "stars" };
+  } else if (type === "numeric_rating") {
+    defaultRatingConfig = { min_rating: 1, max_rating: 5, min_label: "Low", max_label: "High", scale_type: "numbers" };
+  } else if (type === "satisfaction_rating") {
+    defaultRatingConfig = { options: ["Poor", "Fair", "Good", "Very Good", "Excellent"], scale_type: "labels" };
+  } else if (type === "difficulty_rating") {
+    defaultRatingConfig = { options: ["Beginner", "Intermediate", "Advanced"], scale_type: "labels" };
+  } else if (type === "custom_scale") {
+    defaultRatingConfig = { min_rating: 1, max_rating: 5, min_label: "Low", max_label: "High", scale_type: "numbers" };
+  }
+
+  let defaultRepeatable: RepeatableConfig | undefined;
+  if (type === "repeatable_group") {
+    defaultRepeatable = {
+      entity_name: "Team Member",
+      min_items: 1,
+      max_items: 4,
+      add_button_text: "+ Add Member",
+      fields: [
+        { id: `rep_sub_1_${Date.now()}`, field_key: "name", field_type: "text", label: "Full Name", required: true, display_order: 0, enabled: true },
+        { id: `rep_sub_2_${Date.now()}`, field_key: "role", field_type: "text", label: "Role / Contribution", required: true, display_order: 1, enabled: true },
+      ],
+    };
+  }
+
+  return {
+    id: newId,
+    field_key: newKey,
+    field_type: type,
+    label: def?.defaultLabel || "New Question",
+    description: "",
+    help_text: "",
+    placeholder: "",
+    required: !LAYOUT_TYPES.includes(type),
+    display_order: orderIndex,
+    enabled: true,
+    section_id: sectionId,
+    options_config: defaultOptions,
+    rating_config: defaultRatingConfig,
+    repeatable_config: defaultRepeatable,
+    validation_config: UPLOAD_TYPES.includes(type)
+      ? {
+          allowed_types:
+            type === "pdf_upload"
+              ? ["pdf"]
+              : type === "image_upload" || type === "gallery_upload" || type === "camera_capture" || type === "geo_photo"
+              ? ["jpg", "jpeg", "png", "webp"]
+              : ["pdf", "doc", "docx", "png", "jpg"],
+          max_size_mb: 10,
+          allow_multiple_files: type === "gallery_upload",
+          max_files: type === "gallery_upload" ? 5 : 1,
+        }
+      : type === "number"
+      ? { number_mode: "decimal" }
+      : {},
+  };
+}
 
 // -----------------------------------------------------------------------------
 // Component
@@ -97,6 +176,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
   event,
   initialFields = [],
   initialSections = [],
+  initialFormSettings = null,
   onSaved,
   onBack,
 }) => {
@@ -157,9 +237,30 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
     ];
   });
 
+  // Separate Form Settings state
+  const [formSettings, setFormSettings] = useState<FormSettings>(() => ({
+    form_title: initialFormSettings?.form_title ?? "",
+    form_description: initialFormSettings?.form_description ?? "",
+    custom_instructions: initialFormSettings?.custom_instructions ?? "",
+    submit_button_label: initialFormSettings?.submit_button_label ?? "Submit Registration",
+    success_message: initialFormSettings?.success_message ?? "",
+    allow_multiple_responses: initialFormSettings?.allow_multiple_responses ?? Boolean(event.allow_multiple_responses),
+    allow_edit_submission: initialFormSettings?.allow_edit_submission ?? Boolean(event.allow_edit_submission),
+    allow_resubmission: initialFormSettings?.allow_resubmission ?? Boolean(event.allow_edit_submission),
+    registration_capacity: initialFormSettings?.registration_capacity ?? event.registration_capacity ?? null,
+    submission_deadline: initialFormSettings?.submission_deadline ?? "",
+    show_progress_indicator: initialFormSettings?.show_progress_indicator !== false,
+    show_section_navigation: initialFormSettings?.show_section_navigation !== false,
+  }));
+
   const [activeSectionId, setActiveSectionId] = useState<string>(sections[0]?.id || "sec_default");
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(fields[0]?.id || null);
   const [layoutMode, setLayoutMode] = useState<FormLayoutMode>(event.form_layout_mode || "single_page");
+  const [rightTab, setRightTab] = useState<"question" | "settings">("question");
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [insertMenuFieldId, setInsertMenuFieldId] = useState<string | null>(null);
+  const [editingSectionLogicId, setEditingSectionLogicId] = useState<string | null>(null);
+  const [confirmScratch, setConfirmScratch] = useState<boolean>(false);
 
   // Filter / Search for palette
   const [paletteSearch, setPaletteSearch] = useState<string>("");
@@ -172,6 +273,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
   // Template dropdown & custom template saving state
   const [showTemplatesModal, setShowTemplatesModal] = useState<boolean>(false);
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState<boolean>(false);
+  const [pendingTemplate, setPendingTemplate] = useState<EventTemplate | null>(null);
   const [tplName, setTplName] = useState<string>("");
   const [tplCategory, setTplCategory] = useState<string>(event.category || "Workshop");
   const [tplPurpose, setTplPurpose] = useState<string>("");
@@ -190,81 +292,53 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
   // Filtered palette items
   const filteredPalette = useMemo(() => {
     return FIELD_PALETTE.filter((item) => {
+      const q = paletteSearch.toLowerCase();
       const matchesSearch =
-        item.label.toLowerCase().includes(paletteSearch.toLowerCase()) ||
-        item.description.toLowerCase().includes(paletteSearch.toLowerCase());
+        item.label.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q) ||
+        item.type.toLowerCase().includes(q);
       const matchesCat = paletteCategory === "all" || item.category === paletteCategory;
       return matchesSearch && matchesCat;
     });
   }, [paletteSearch, paletteCategory]);
 
-  // Add field to active section
-  const handleAddField = (type: FormFieldType) => {
-    const def = FIELD_PALETTE.find((d) => d.type === type);
-    const newId = `field_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const newKey = `f_${type}_${fields.length + 1}`;
+  // Add field to active section OR immediately after a target field ID
+  const handleAddField = (type: FormFieldType, afterFieldId?: string, explicitSectionId?: string) => {
+    const targetSecId = explicitSectionId || activeSectionId || sections[0]?.id || "sec_default";
+    const newField = buildDefaultField(type, targetSecId, fields.length, fields.length);
 
-    const defaultOptions: FormFieldOption[] =
-      type === "dropdown" || type === "radio" || type === "checkbox" || type === "multi_select"
-        ? [
-            { label: "Option 1", value: "option_1" },
-            { label: "Option 2", value: "option_2" },
-            { label: "Option 3", value: "option_3" },
-          ]
-        : [];
-
-    let defaultRatingConfig: RatingConfig | undefined;
-    if (type === "star_rating") {
-      defaultRatingConfig = { max_rating: 5, min_label: "Poor", max_label: "Excellent", scale_type: "stars" };
-    } else if (type === "numeric_rating") {
-      defaultRatingConfig = { max_rating: 10, min_label: "0 - Not Likely", max_label: "10 - Highly Likely", scale_type: "numbers" };
-    } else if (type === "satisfaction_rating") {
-      defaultRatingConfig = { options: ["Poor", "Fair", "Good", "Very Good", "Excellent"], scale_type: "labels" };
-    } else if (type === "difficulty_rating") {
-      defaultRatingConfig = { options: ["Beginner", "Intermediate", "Advanced"], scale_type: "labels" };
-    } else if (type === "custom_scale") {
-      defaultRatingConfig = { min_rating: 1, max_rating: 5, min_label: "Low", max_label: "High", scale_type: "numbers" };
-    }
-
-    let defaultRepeatable: RepeatableConfig | undefined;
-    if (type === "repeatable_group") {
-      defaultRepeatable = {
-        entity_name: "Team Member",
-        min_items: 1,
-        max_items: 4,
-        add_button_text: "+ Add Member",
-        fields: [
-          { id: `rep_sub_1_${Date.now()}`, field_key: "name", field_type: "text", label: "Full Name", required: true, display_order: 0, enabled: true },
-          { id: `rep_sub_2_${Date.now()}`, field_key: "role", field_type: "text", label: "Role / Contribution", required: true, display_order: 1, enabled: true },
-        ],
-      };
-    }
-
-    const newField: EventFormField = {
-      id: newId,
-      field_key: newKey,
-      field_type: type,
-      label: def?.defaultLabel || "New Field",
-      description: "",
-      placeholder: "",
-      required: !["heading", "subheading", "description", "rich_text_block", "divider", "info", "info_card", "notice"].includes(type),
-      display_order: fields.length,
-      enabled: true,
-      section_id: activeSectionId,
-      options_config: defaultOptions,
-      rating_config: defaultRatingConfig,
-      repeatable_config: defaultRepeatable,
-      validation_config:
-        ["file", "pdf_upload", "document_upload", "image_upload", "gallery_upload"].includes(type)
-          ? { allowed_types: type === "pdf_upload" ? ["pdf"] : type.includes("image") || type === "gallery_upload" ? ["jpg", "jpeg", "png", "webp"] : ["pdf", "doc", "docx", "png", "jpg"], max_size_mb: 10 }
-          : {},
-    };
-
-    setFields((prev) => [...prev, newField]);
-    setSelectedFieldId(newId);
+    setFields((prev) => {
+      const next = [...prev];
+      if (afterFieldId) {
+        const idx = next.findIndex((f) => f.id === afterFieldId);
+        if (idx !== -1) {
+          newField.section_id = next[idx].section_id || targetSecId;
+          next.splice(idx + 1, 0, newField);
+          return next.map((f, i) => ({ ...f, display_order: i }));
+        }
+      }
+      // Insert after last field in targetSecId so section order remains contiguous
+      let lastIdxInSec = -1;
+      for (let i = next.length - 1; i >= 0; i--) {
+        if ((next[i].section_id || sections[0]?.id) === targetSecId) {
+          lastIdxInSec = i;
+          break;
+        }
+      }
+      if (lastIdxInSec !== -1) {
+        next.splice(lastIdxInSec + 1, 0, newField);
+      } else {
+        next.push(newField);
+      }
+      return next.map((f, i) => ({ ...f, display_order: i }));
+    });
+    setSelectedFieldId(newField.id);
+    setRightTab("question");
+    setInsertMenuFieldId(null);
+    setCollapsedSections((prev) => ({ ...prev, [targetSecId]: false }));
   };
 
-  // Duplicate an existing field
+  // Duplicate an existing field right after the original
   const handleDuplicateField = (fieldToDuplicate: EventFormField) => {
     const newId = `field_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const newKey = `${fieldToDuplicate.field_key}_copy_${Math.floor(Math.random() * 900 + 100)}`;
@@ -275,14 +349,24 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
       label: `${fieldToDuplicate.label} (Copy)`,
       display_order: fields.length,
     };
-    setFields((prev) => [...prev, duplicate]);
+    setFields((prev) => {
+      const idx = prev.findIndex((f) => f.id === fieldToDuplicate.id);
+      const next = [...prev];
+      if (idx !== -1) {
+        next.splice(idx + 1, 0, duplicate);
+      } else {
+        next.push(duplicate);
+      }
+      return next.map((f, i) => ({ ...f, display_order: i }));
+    });
     setSelectedFieldId(newId);
+    setRightTab("question");
   };
 
   // Remove field
   const handleRemoveField = (id: string) => {
     setFields((prev) => {
-      const next = prev.filter((f) => f.id !== id);
+      const next = prev.filter((f) => f.id !== id).map((f, i) => ({ ...f, display_order: i }));
       if (selectedFieldId === id) {
         setSelectedFieldId(next[0]?.id || null);
       }
@@ -300,10 +384,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
       const temp = copy[index];
       copy[index] = copy[targetIndex];
       copy[targetIndex] = temp;
-      copy.forEach((f, idx) => {
-        f.display_order = idx;
-      });
-      return copy;
+      return copy.map((f, idx) => ({ ...f, display_order: idx }));
     });
   };
 
@@ -318,6 +399,34 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
         return f;
       })
     );
+  };
+
+  // Change selected field type cleanly while preserving label/required/order
+  const handleChangeSelectedFieldType = (nextType: FormFieldType) => {
+    if (!selectedField) return;
+    const blueprint = buildDefaultField(nextType, selectedField.section_id || activeSectionId, selectedField.display_order, fields.length);
+    const patch: Partial<EventFormField> = {
+      field_type: nextType,
+    };
+    if (CHOICE_TYPES.includes(nextType) && (!selectedField.options_config || selectedField.options_config.length === 0)) {
+      patch.options_config = blueprint.options_config;
+    }
+    if (["star_rating", "numeric_rating", "satisfaction_rating", "difficulty_rating", "custom_scale"].includes(nextType)) {
+      patch.rating_config = blueprint.rating_config;
+    }
+    if (nextType === "repeatable_group" && !selectedField.repeatable_config) {
+      patch.repeatable_config = blueprint.repeatable_config;
+    }
+    if (UPLOAD_TYPES.includes(nextType)) {
+      patch.validation_config = {
+        ...(selectedField.validation_config || {}),
+        ...(blueprint.validation_config || {}),
+      };
+    }
+    if (LAYOUT_TYPES.includes(nextType)) {
+      patch.required = false;
+    }
+    handleUpdateSelectedField(patch);
   };
 
   // Section Management
@@ -342,11 +451,11 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
 
   const handleRemoveSection = (secId: string) => {
     if (sections.length <= 1) {
-      alert("A form must have at least one section.");
+      setErrorMessage("A form must have at least one section.");
       return;
     }
     // Re-assign fields belonging to this section to the first available section
-    const remaining = sections.filter((s) => s.id !== secId);
+    const remaining = sections.filter((s) => s.id !== secId).map((s, idx) => ({ ...s, order: idx }));
     const fallbackSecId = remaining[0].id;
     setSections(remaining);
     setFields((prev) =>
@@ -393,7 +502,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
     if (!srcSec) return;
     const newSecId = `sec_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
     const newSec: FormSection = {
-      ...srcSec,
+      ...JSON.parse(JSON.stringify(srcSec)),
       id: newSecId,
       title: `${srcSec.title} (Copy)`,
       order: sections.length,
@@ -411,11 +520,8 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
     setActiveSectionId(newSecId);
   };
 
-  // Load a canonical starter or custom template
-  const handleLoadTemplate = (tpl: EventTemplate) => {
-    if (fields.length > 0 && !confirm(`Loading the "${tpl.name}" template will replace your current form layout. Continue?`)) {
-      return;
-    }
+  // Apply template immediately or ask via inline confirmation when form already has questions
+  const applyTemplateNow = (tpl: EventTemplate) => {
     const nextSections =
       tpl.sections_config && tpl.sections_config.length > 0
         ? tpl.sections_config
@@ -434,7 +540,31 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
     setActiveSectionId(fallbackSecId);
     setSelectedFieldId(nextFields[0]?.id || null);
     setShowTemplatesModal(false);
-    setSaveSuccess(`Loaded "${tpl.name}" template!`);
+    setPendingTemplate(null);
+    setSaveSuccess(`Loaded "${tpl.name}" template. Review and click Save Form Changes when ready.`);
+  };
+
+  const handleLoadTemplate = (tpl: EventTemplate) => {
+    if (fields.length > 0) {
+      setShowTemplatesModal(false);
+      setPendingTemplate(tpl);
+      return;
+    }
+    applyTemplateNow(tpl);
+  };
+
+  const handleResetScratch = () => {
+    const blankSecId = `sec_${Date.now()}`;
+    const firstQ = buildDefaultField("text", blankSecId, 0, 0);
+    firstQ.label = "Untitled Question";
+    firstQ.field_key = "untitled_question_1";
+    setSections([{ id: blankSecId, title: "Section 1", description: "", order: 0 }]);
+    setFields([firstQ]);
+    setActiveSectionId(blankSecId);
+    setSelectedFieldId(firstQ.id);
+    setRightTab("question");
+    setConfirmScratch(false);
+    setSaveSuccess("Started a fresh blank form from scratch.");
   };
 
   // Save current form structure as a reusable custom template
@@ -482,8 +612,17 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
         await eventsApi.updateEvent(event.id, { form_layout_mode: layoutMode });
       }
 
-      const res = await eventsApi.saveEventForm(event.id, fields, sections);
-      setSaveSuccess("Form layout and fields saved successfully!");
+      const normalizedFields = fields.map((f, idx) => ({
+        ...f,
+        display_order: idx,
+        validation_config: {
+          ...(f.validation_config || {}),
+          ...(f.help_text !== undefined ? { help_text: f.help_text } : {}),
+        },
+      }));
+
+      await eventsApi.saveEventForm(event.id, normalizedFields, sections, formSettings);
+      setSaveSuccess("Form fields, sections, and settings saved successfully!");
       if (onSaved) onSaved();
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to save form fields. Please try again.");
@@ -517,7 +656,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
             </h2>
           </div>
           <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
-            {sections.length} Section{sections.length > 1 ? "s" : ""} • {fields.length} Field{fields.length > 1 ? "s" : ""} • Layout:{" "}
+            {sections.length} Section{sections.length > 1 ? "s" : ""} • {fields.length} Question{fields.length !== 1 ? "s" : ""} • Layout:{" "}
             <span className="font-semibold text-slate-700 dark:text-slate-300">
               {layoutMode === "multi_step" ? "Multi-Step Wizard" : "Single-Page Form"}
             </span>
@@ -525,13 +664,21 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Templates Picker & Save Custom Template Triggers */}
+          {/* Templates Picker, Scratch Reset & Save Custom Template Triggers */}
           <button
             type="button"
             onClick={() => setShowTemplatesModal(true)}
             className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-300 dark:border-[#383838] bg-slate-50 dark:bg-[#202020] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#252525] transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <span>📚 Templates Library</span>
+            <span>📚 Templates</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirmScratch(true)}
+            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-300 dark:border-[#383838] bg-slate-50 dark:bg-[#202020] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#252525] transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Clear current canvas and start from a blank form"
+          >
+            <span>✨ Blank / Scratch</span>
           </button>
           <button
             type="button"
@@ -543,7 +690,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
             disabled={fields.length === 0}
             className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-300 dark:border-[#383838] bg-slate-50 dark:bg-[#202020] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#252525] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
           >
-            <span>💾 Save as Template</span>
+            <span>💾 Save Template</span>
           </button>
 
           {/* Single-Page vs Multi-Step Mode Toggle */}
@@ -622,7 +769,55 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
         </div>
       </div>
 
-      {/* Notifications */}
+      {/* Inline Confirmations & Status Banners */}
+      {pendingTemplate && (
+        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex flex-wrap items-center justify-between gap-2">
+          <span>
+            Replace current questions with the <strong>&ldquo;{pendingTemplate.name}&rdquo;</strong> template? (Nothing is published until you save.)
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPendingTemplate(null)}
+              className="px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-[#1a1a1a] text-xs font-semibold cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => applyTemplateNow(pendingTemplate)}
+              className="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-xs font-semibold cursor-pointer"
+            >
+              Load Template
+            </button>
+          </div>
+        </div>
+      )}
+
+      {confirmScratch && (
+        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex flex-wrap items-center justify-between gap-2">
+          <span>
+            Start a blank form from scratch? Your current unsaved questions in the editor will be cleared.
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmScratch(false)}
+              className="px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-[#1a1a1a] text-xs font-semibold cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleResetScratch}
+              className="px-2.5 py-1 rounded-lg bg-rose-600 text-white text-xs font-semibold cursor-pointer"
+            >
+              Reset to Blank
+            </button>
+          </div>
+        </div>
+      )}
+
       {saveSuccess && (
         <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 font-semibold flex items-center justify-between">
           <span>✓ {saveSuccess}</span>
@@ -760,6 +955,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                 version_number: 1,
                 status: "draft",
                 sections_config: sections,
+                form_settings: formSettings,
                 fields,
                 created_by: event.created_by,
                 created_at: event.created_at,
@@ -770,26 +966,26 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
         </div>
       ) : (
         /* ===================================================================== */
-        /* VIEW: 3-PANEL VISUAL BUILDER WORKSPACE                                */
+        /* VIEW: 3-PANEL GOOGLE FORMS-STYLE VISUAL BUILDER WORKSPACE             */
         /* ===================================================================== */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
           {/* ------------------------------------------------------------------- */}
-          {/* PANEL 1 (LEFT): PALETTE OF AVAILABLE FIELD TYPES                   */}
+          {/* PANEL 1 (LEFT): QUESTION LIBRARY                                   */}
           {/* ------------------------------------------------------------------- */}
           <div className="lg:col-span-3 rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-3 shadow-2xs space-y-3">
             <div>
               <h3 className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5] uppercase tracking-wider">
-                Field Palette
+                Question Library
               </h3>
               <p className="text-[11px] text-slate-400 dark:text-[#888] mt-0.5">
-                Click any field to add to the active section.
+                Click any question or block to add to active section.
               </p>
             </div>
 
             {/* Search Box */}
             <input
               type="text"
-              placeholder="Filter fields..."
+              placeholder="Search questions..."
               value={paletteSearch}
               onChange={(e) => setPaletteSearch(e.target.value)}
               className="w-full text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#121212] text-slate-800 dark:text-[#F5F5F5] focus:outline-hidden focus:ring-1 focus:ring-blue-500"
@@ -801,7 +997,8 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                 { id: "all", label: "All" },
                 { id: "basic", label: "Basic" },
                 { id: "choice", label: "Choice" },
-                { id: "rating", label: "Rating" },
+                { id: "datetime", label: "Date/Time" },
+                { id: "rating", label: "Scale" },
                 { id: "upload", label: "Upload" },
                 { id: "advanced", label: "Adv" },
                 { id: "layout", label: "Layout" },
@@ -859,7 +1056,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                   Form Canvas & Sections
                 </h3>
                 <p className="text-[11px] text-slate-400 dark:text-[#888] mt-0.5">
-                  Organize questions into sections and reorder.
+                  Click any question to configure or drag to reorder.
                 </p>
               </div>
               <button
@@ -876,6 +1073,11 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
               {sections.map((sec, secIdx) => {
                 const secFields = fields.filter((f) => f.section_id === sec.id);
                 const isActive = activeSectionId === sec.id;
+                const isCollapsed = Boolean(collapsedSections[sec.id]);
+                const secRules: ConditionalRule[] = Array.isArray(sec.conditions)
+                  ? sec.conditions
+                  : sec.conditions?.rules || [];
+                const secLogic: "and" | "or" = !Array.isArray(sec.conditions) && sec.conditions?.logic === "or" ? "or" : "and";
 
                 return (
                   <div
@@ -889,33 +1091,58 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                     {/* Section Header */}
                     <div className="flex items-start justify-between gap-2">
                       <div
-                        className="flex-1 cursor-pointer"
+                        className="flex-1 cursor-pointer min-w-0"
                         onClick={() => setActiveSectionId(sec.id)}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-[#2d2d2d] text-slate-700 dark:text-slate-300">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCollapsedSections((prev) => ({ ...prev, [sec.id]: !isCollapsed }));
+                            }}
+                            className="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-[#2d2d2d] text-slate-500 text-xs cursor-pointer"
+                            title={isCollapsed ? "Expand section" : "Collapse section"}
+                          >
+                            {isCollapsed ? "▸" : "▾"}
+                          </button>
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-[#2d2d2d] text-slate-700 dark:text-slate-300 shrink-0">
                             #{secIdx + 1}
                           </span>
                           <input
                             type="text"
                             value={sec.title}
                             onChange={(e) => handleUpdateSection(sec.id, { title: e.target.value })}
-                            className="font-bold text-xs text-slate-900 dark:text-[#F5F5F5] bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-hidden"
+                            className="flex-1 min-w-0 font-bold text-xs text-slate-900 dark:text-[#F5F5F5] bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-hidden"
                           />
                         </div>
-                        <input
-                          type="text"
-                          placeholder="Optional section description..."
-                          value={sec.description || ""}
-                          onChange={(e) => handleUpdateSection(sec.id, { description: e.target.value })}
-                          className="text-[11px] text-slate-400 dark:text-[#888] bg-transparent w-full mt-1 border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-hidden"
-                        />
+                        {!isCollapsed && (
+                          <input
+                            type="text"
+                            placeholder="Optional section description..."
+                            value={sec.description || ""}
+                            onChange={(e) => handleUpdateSection(sec.id, { description: e.target.value })}
+                            className="text-[11px] text-slate-400 dark:text-[#888] bg-transparent w-full mt-1 border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-hidden"
+                          />
+                        )}
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 shrink-0">
                         <span className="text-[10px] font-semibold text-slate-400 dark:text-[#777] px-1.5 py-0.5 bg-white dark:bg-[#141414] rounded-md border border-slate-200 dark:border-[#2d2d2d]">
-                          {secFields.length} fields
+                          {secFields.length}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => setEditingSectionLogicId(editingSectionLogicId === sec.id ? null : sec.id)}
+                          className={`p-1 rounded text-xs cursor-pointer ${
+                            secRules.length > 0
+                              ? "text-purple-600 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/50"
+                              : "text-slate-400 hover:text-purple-500"
+                          }`}
+                          title="Section Conditional Skip / Visibility Logic"
+                        >
+                          ⚡
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleDuplicateSection(sec.id)}
@@ -937,137 +1164,302 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                       </div>
                     </div>
 
-                    {/* Fields Inside This Section (Dropzone enabled) */}
-                    <div
-                      className="space-y-2 pt-1"
-                      onDragOver={(e) => {
-                        if (draggedFieldId) e.preventDefault();
-                      }}
-                      onDrop={(e) => {
-                        if (draggedFieldId) {
-                          e.preventDefault();
-                          handleDropToSectionEnd(sec.id);
-                        }
-                      }}
-                    >
-                      {secFields.length === 0 ? (
-                        <div
-                          onClick={() => setActiveSectionId(sec.id)}
-                          className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-[#2d2d2d] text-center cursor-pointer hover:bg-slate-100/50 dark:hover:bg-[#202020]"
-                        >
-                          <p className="text-xs text-slate-400">Section is empty.</p>
-                          <p className="text-[11px] text-blue-600 dark:text-[#5DD62C] font-semibold mt-0.5">
-                            Click palette items on left or drag fields here
-                          </p>
-                        </div>
-                      ) : (
-                        secFields.map((f, fIdx) => {
-                          const isSelected = selectedFieldId === f.id;
-                          const hasConditions = f.conditions && (Array.isArray(f.conditions) ? f.conditions.length > 0 : Boolean(f.conditions.rules?.length));
-
-                          return (
-                            <div
-                              key={f.id}
-                              draggable
-                              onDragStart={(e) => {
-                                setDraggedFieldId(f.id);
-                                e.dataTransfer.effectAllowed = "move";
-                              }}
-                              onDragEnd={() => setDraggedFieldId(null)}
-                              onDragOver={(e) => {
-                                if (draggedFieldId && draggedFieldId !== f.id) e.preventDefault();
-                              }}
-                              onDrop={(e) => {
-                                if (draggedFieldId && draggedFieldId !== f.id) {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  handleDropField(f.id, sec.id);
+                    {/* Inline Section Conditional Logic Panel */}
+                    {editingSectionLogicId === sec.id && (
+                      <div className="p-2.5 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 space-y-2 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-bold text-purple-800 dark:text-purple-200">
+                            Section Skip / Visibility Rules
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {secRules.length > 1 && (
+                              <select
+                                value={secLogic}
+                                onChange={(e) =>
+                                  handleUpdateSection(sec.id, {
+                                    conditions: { logic: e.target.value as "and" | "or", rules: secRules },
+                                  })
                                 }
-                              }}
+                                className="text-[10px] px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800 bg-white dark:bg-[#141414]"
+                              >
+                                <option value="and">Match ALL (AND)</option>
+                                <option value="or">Match ANY (OR)</option>
+                              </select>
+                            )}
+                            <button
+                              type="button"
                               onClick={() => {
-                                setSelectedFieldId(f.id);
-                                setActiveSectionId(sec.id);
+                                const candidates = fields.filter((f) => f.section_id !== sec.id);
+                                const source = candidates[0] || fields[0];
+                                if (!source) {
+                                  setErrorMessage("Add at least one question before configuring section logic.");
+                                  return;
+                                }
+                                const nextRule: ConditionalRule = {
+                                  field: source.field_key,
+                                  operator: "equals",
+                                  value: "yes",
+                                  action: "show",
+                                };
+                                handleUpdateSection(sec.id, {
+                                  conditions: { logic: secLogic, rules: [...secRules, nextRule] },
+                                });
                               }}
-                              className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
-                                draggedFieldId === f.id ? "opacity-40" : ""
-                              } ${
-                                f.enabled === false ? "opacity-60 border-dashed" : ""
-                              } ${
-                                isSelected
-                                  ? "border-blue-500 dark:border-[#5DD62C] bg-white dark:bg-[#222] shadow-xs"
-                                  : "border-slate-200 dark:border-[#2a2a2a] bg-white dark:bg-[#161616] hover:border-slate-300 dark:hover:border-[#383838]"
-                              }`}
+                              className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 cursor-pointer"
                             >
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-slate-300 dark:text-slate-600 cursor-grab select-none text-xs" title="Drag to reorder">⋮⋮</span>
-                                  <span className="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5] truncate">
-                                    {f.label}
-                                  </span>
-                                  {f.required && (
-                                    <span className="text-rose-500 text-xs font-bold" title="Required field">*</span>
-                                  )}
-                                  {f.enabled === false && (
-                                    <span className="text-[9px] font-bold px-1 rounded bg-slate-200 dark:bg-[#2d2d2d] text-slate-500">DISABLED</span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-[#202020] px-1 rounded">
-                                    {f.field_key}
-                                  </span>
-                                  <span className="text-[10px] text-blue-600 dark:text-[#5DD62C] font-semibold">
-                                    {f.field_type}
-                                  </span>
-                                  {hasConditions && (
-                                    <span className="text-[10px] bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 px-1 rounded font-semibold">
-                                      ⚡ Logic
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
+                              + Add Rule
+                            </button>
+                          </div>
+                        </div>
 
-                              {/* Card Action Buttons */}
-                              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                                <button
-                                  type="button"
-                                  onClick={() => handleMoveField(fields.indexOf(f), "up")}
-                                  disabled={fields.indexOf(f) === 0}
-                                  className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20 cursor-pointer text-xs"
-                                  title="Move Up"
+                        {secRules.length === 0 ? (
+                          <p className="text-[11px] text-slate-500 italic">No rules set. This section is always shown.</p>
+                        ) : (
+                          secRules.map((rule, rIdx) => (
+                            <div key={rIdx} className="p-2 rounded-lg bg-white dark:bg-[#141414] border border-purple-200/70 dark:border-[#2d2d2d] space-y-1.5">
+                              <div className="grid grid-cols-3 gap-1.5">
+                                <select
+                                  value={rule.action || "show"}
+                                  onChange={(e) => {
+                                    const updated = [...secRules];
+                                    updated[rIdx] = { ...updated[rIdx], action: e.target.value as any };
+                                    handleUpdateSection(sec.id, { conditions: { logic: secLogic, rules: updated } });
+                                  }}
+                                  className="text-[11px] px-1.5 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
                                 >
-                                  ▲
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleMoveField(fields.indexOf(f), "down")}
-                                  disabled={fields.indexOf(f) === fields.length - 1}
-                                  className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20 cursor-pointer text-xs"
-                                  title="Move Down"
+                                  <option value="show">Show Section If</option>
+                                  <option value="skip">Skip Section If</option>
+                                </select>
+                                <select
+                                  value={rule.field}
+                                  onChange={(e) => {
+                                    const updated = [...secRules];
+                                    updated[rIdx] = { ...updated[rIdx], field: e.target.value };
+                                    handleUpdateSection(sec.id, { conditions: { logic: secLogic, rules: updated } });
+                                  }}
+                                  className="text-[11px] px-1.5 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
                                 >
-                                  ▼
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDuplicateField(f)}
-                                  className="p-1 text-slate-400 hover:text-blue-500 cursor-pointer text-xs"
-                                  title="Duplicate field"
-                                >
-                                  📑
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveField(f.id)}
-                                  className="p-1 text-slate-400 hover:text-rose-500 cursor-pointer text-xs"
-                                  title="Delete field"
-                                >
-                                  ✕
-                                </button>
+                                  {fields.map((f) => (
+                                    <option key={f.field_key} value={f.field_key}>{f.label}</option>
+                                  ))}
+                                </select>
+                                <div className="flex items-center gap-1">
+                                  <select
+                                    value={rule.operator}
+                                    onChange={(e) => {
+                                      const updated = [...secRules];
+                                      updated[rIdx] = { ...updated[rIdx], operator: e.target.value as any };
+                                      handleUpdateSection(sec.id, { conditions: { logic: secLogic, rules: updated } });
+                                    }}
+                                    className="flex-1 text-[11px] px-1.5 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
+                                  >
+                                    <option value="equals">equals</option>
+                                    <option value="not_equals">not equals</option>
+                                    <option value="contains">contains</option>
+                                    <option value="is_empty">is empty</option>
+                                    <option value="is_not_empty">not empty</option>
+                                  </select>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = secRules.filter((_, i) => i !== rIdx);
+                                      handleUpdateSection(sec.id, {
+                                        conditions: updated.length ? { logic: secLogic, rules: updated } : undefined,
+                                      });
+                                    }}
+                                    className="text-slate-400 hover:text-rose-500 px-1 cursor-pointer"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
                               </div>
+                              {!["is_empty", "is_not_empty"].includes(rule.operator) && (
+                                <input
+                                  type="text"
+                                  value={rule.value || ""}
+                                  placeholder="Target answer value (e.g. yes, no, online)"
+                                  onChange={(e) => {
+                                    const updated = [...secRules];
+                                    updated[rIdx] = { ...updated[rIdx], value: e.target.value };
+                                    handleUpdateSection(sec.id, { conditions: { logic: secLogic, rules: updated } });
+                                  }}
+                                  className="w-full text-[11px] px-2 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
+                                />
+                              )}
                             </div>
-                          );
-                        })
-                      )}
-                    </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+
+                    {/* Fields Inside This Section (Dropzone enabled) */}
+                    {!isCollapsed && (
+                      <div
+                        className="space-y-2 pt-1"
+                        onDragOver={(e) => {
+                          if (draggedFieldId) e.preventDefault();
+                        }}
+                        onDrop={(e) => {
+                          if (draggedFieldId) {
+                            e.preventDefault();
+                            handleDropToSectionEnd(sec.id);
+                          }
+                        }}
+                      >
+                        {secFields.length === 0 ? (
+                          <div
+                            onClick={() => setActiveSectionId(sec.id)}
+                            className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-[#2d2d2d] text-center cursor-pointer hover:bg-slate-100/50 dark:hover:bg-[#202020]"
+                          >
+                            <p className="text-xs text-slate-400">Section is empty.</p>
+                            <p className="text-[11px] text-blue-600 dark:text-[#5DD62C] font-semibold mt-0.5">
+                              Click questions on the left or drag fields here
+                            </p>
+                          </div>
+                        ) : (
+                          secFields.map((f) => {
+                            const isSelected = selectedFieldId === f.id;
+                            const hasConditions = f.conditions && (Array.isArray(f.conditions) ? f.conditions.length > 0 : Boolean(f.conditions.rules?.length));
+
+                            return (
+                              <div key={f.id} className="space-y-1.5">
+                                <div
+                                  draggable
+                                  onDragStart={(e) => {
+                                    setDraggedFieldId(f.id);
+                                    e.dataTransfer.effectAllowed = "move";
+                                  }}
+                                  onDragEnd={() => setDraggedFieldId(null)}
+                                  onDragOver={(e) => {
+                                    if (draggedFieldId && draggedFieldId !== f.id) e.preventDefault();
+                                  }}
+                                  onDrop={(e) => {
+                                    if (draggedFieldId && draggedFieldId !== f.id) {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleDropField(f.id, sec.id);
+                                    }
+                                  }}
+                                  onClick={() => {
+                                    setSelectedFieldId(f.id);
+                                    setActiveSectionId(sec.id);
+                                    setRightTab("question");
+                                  }}
+                                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                                    draggedFieldId === f.id ? "opacity-40" : ""
+                                  } ${
+                                    f.enabled === false ? "opacity-60 border-dashed" : ""
+                                  } ${
+                                    isSelected
+                                      ? "border-blue-500 dark:border-[#5DD62C] bg-white dark:bg-[#222] shadow-xs"
+                                      : "border-slate-200 dark:border-[#2a2a2a] bg-white dark:bg-[#161616] hover:border-slate-300 dark:hover:border-[#383838]"
+                                  }`}
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-slate-300 dark:text-slate-600 cursor-grab select-none text-xs" title="Drag to reorder">⋮⋮</span>
+                                      <span className="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5] truncate">
+                                        {f.label}
+                                      </span>
+                                      {f.required && (
+                                        <span className="text-rose-500 text-xs font-bold" title="Required field">*</span>
+                                      )}
+                                      {f.enabled === false && (
+                                        <span className="text-[9px] font-bold px-1 rounded bg-slate-200 dark:bg-[#2d2d2d] text-slate-500">HIDDEN</span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                      <span className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-[#202020] px-1 rounded">
+                                        {f.field_key}
+                                      </span>
+                                      <span className="text-[10px] text-blue-600 dark:text-[#5DD62C] font-semibold">
+                                        {FIELD_PALETTE.find((p) => p.type === f.field_type)?.label || f.field_type}
+                                      </span>
+                                      {hasConditions && (
+                                        <span className="text-[10px] bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 px-1 rounded font-semibold">
+                                          ⚡ Logic
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Card Action Buttons */}
+                                  <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                      type="button"
+                                      onClick={() => setInsertMenuFieldId(insertMenuFieldId === f.id ? null : f.id)}
+                                      className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-[#5DD62C] cursor-pointer text-xs font-bold"
+                                      title="Insert question right below this"
+                                    >
+                                      ＋
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveField(fields.indexOf(f), "up")}
+                                      disabled={fields.indexOf(f) === 0}
+                                      className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20 cursor-pointer text-xs"
+                                      title="Move Up"
+                                    >
+                                      ▲
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveField(fields.indexOf(f), "down")}
+                                      disabled={fields.indexOf(f) === fields.length - 1}
+                                      className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20 cursor-pointer text-xs"
+                                      title="Move Down"
+                                    >
+                                      ▼
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDuplicateField(f)}
+                                      className="p-1 text-slate-400 hover:text-blue-500 cursor-pointer text-xs"
+                                      title="Duplicate field"
+                                    >
+                                      📑
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveField(f.id)}
+                                      className="p-1 text-slate-400 hover:text-rose-500 cursor-pointer text-xs"
+                                      title="Delete field"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Quick Insert Bar Between Questions */}
+                                {insertMenuFieldId === f.id && (
+                                  <div className="p-2 rounded-xl border border-dashed border-blue-300 dark:border-[#5DD62C]/60 bg-blue-50/40 dark:bg-[#5DD62C]/5 flex flex-wrap items-center gap-1.5">
+                                    <span className="text-[10px] font-bold text-slate-500 mr-1">Insert below:</span>
+                                    {[
+                                      { type: "text" as FormFieldType, label: "+ Short Answer" },
+                                      { type: "textarea" as FormFieldType, label: "+ Paragraph" },
+                                      { type: "radio" as FormFieldType, label: "+ Multiple Choice" },
+                                      { type: "checkbox" as FormFieldType, label: "+ Checkboxes" },
+                                      { type: "dropdown" as FormFieldType, label: "+ Dropdown" },
+                                      { type: "yes_no" as FormFieldType, label: "+ Yes/No" },
+                                      { type: "file" as FormFieldType, label: "+ File Upload" },
+                                    ].map((q) => (
+                                      <button
+                                        key={q.type}
+                                        type="button"
+                                        onClick={() => handleAddField(q.type, f.id, sec.id)}
+                                        className="px-2 py-0.5 rounded-lg bg-white dark:bg-[#1c1c1c] border border-slate-200 dark:border-[#333] hover:border-blue-500 text-[10px] font-semibold text-slate-700 dark:text-slate-200 cursor-pointer"
+                                      >
+                                        {q.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -1075,24 +1467,226 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
           </div>
 
           {/* ------------------------------------------------------------------- */}
-          {/* PANEL 3 (RIGHT): FIELD SETTINGS & PROPERTIES INSPECTOR              */}
+          {/* PANEL 3 (RIGHT): QUESTION SETTINGS & FORM SETTINGS INSPECTOR        */}
           {/* ------------------------------------------------------------------- */}
           <div className="lg:col-span-4 rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-4 shadow-2xs space-y-4">
-            <div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5] uppercase tracking-wider">
-                Field Properties
-              </h3>
-              <p className="text-[11px] text-slate-400 dark:text-[#888] mt-0.5">
-                {selectedField ? `Editing "${selectedField.label}"` : "Select a field to configure settings."}
-              </p>
+            {/* Inspector Tab Switcher */}
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-[#202020] border border-slate-200 dark:border-[#292929]">
+              <button
+                type="button"
+                onClick={() => setRightTab("question")}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  rightTab === "question"
+                    ? "bg-white dark:bg-[#181818] text-blue-600 dark:text-[#5DD62C] shadow-2xs"
+                    : "text-slate-600 dark:text-[#A3A3A3]"
+                }`}
+              >
+                Question Settings
+              </button>
+              <button
+                type="button"
+                onClick={() => setRightTab("settings")}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  rightTab === "settings"
+                    ? "bg-white dark:bg-[#181818] text-blue-600 dark:text-[#5DD62C] shadow-2xs"
+                    : "text-slate-600 dark:text-[#A3A3A3]"
+                }`}
+              >
+                ⚙ Form Settings
+              </button>
             </div>
 
-            {selectedField ? (
-              <div className="space-y-4 max-h-[700px] overflow-y-auto pr-1">
-                {/* Field Label */}
+            {rightTab === "settings" ? (
+              <div className="space-y-3.5 max-h-[670px] overflow-y-auto pr-1">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
-                    Field Label / Question
+                    Form Title Override (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formSettings.form_title || ""}
+                    placeholder={event.title}
+                    onChange={(e) => setFormSettings((s) => ({ ...s, form_title: e.target.value }))}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                    Form Description
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={formSettings.form_description || ""}
+                    placeholder="Brief overview shown at the top of the student registration form..."
+                    onChange={(e) => setFormSettings((s) => ({ ...s, form_description: e.target.value }))}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                    Custom Form Instructions
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={formSettings.custom_instructions || ""}
+                    placeholder="Special instructions or guidelines shown above form fields..."
+                    onChange={(e) => setFormSettings((s) => ({ ...s, custom_instructions: e.target.value }))}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                      Submit Button Label
+                    </label>
+                    <input
+                      type="text"
+                      value={formSettings.submit_button_label || ""}
+                      placeholder="Submit Registration"
+                      onChange={(e) => setFormSettings((s) => ({ ...s, submit_button_label: e.target.value }))}
+                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                      Registration Capacity
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={formSettings.registration_capacity ?? ""}
+                      placeholder="Unlimited"
+                      onChange={(e) =>
+                        setFormSettings((s) => ({
+                          ...s,
+                          registration_capacity: e.target.value ? Number(e.target.value) : null,
+                        }))
+                      }
+                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                    Custom Submission Success Message
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={formSettings.success_message || ""}
+                    placeholder="Thank you! Your registration has been recorded successfully."
+                    onChange={(e) => setFormSettings((s) => ({ ...s, success_message: e.target.value }))}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                    Form Submission Deadline Override
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={formSettings.submission_deadline ? String(formSettings.submission_deadline).slice(0, 16) : ""}
+                    onChange={(e) =>
+                      setFormSettings((s) => ({
+                        ...s,
+                        submission_deadline: e.target.value ? new Date(e.target.value).toISOString() : null,
+                      }))
+                    }
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                  />
+                </div>
+
+                <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2.5">
+                  <p className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Response &amp; Navigation Rules</p>
+                  {[
+                    {
+                      key: "allow_multiple_responses" as const,
+                      title: "Allow Multiple Responses",
+                      desc: "If off, students submit once unless editing is allowed",
+                      checked: Boolean(formSettings.allow_multiple_responses),
+                    },
+                    {
+                      key: "allow_edit_submission" as const,
+                      title: "Allow Editing After Submission",
+                      desc: "Students can update their submitted form answers",
+                      checked: Boolean(formSettings.allow_edit_submission),
+                    },
+                    {
+                      key: "allow_resubmission" as const,
+                      title: "Allow Resubmission",
+                      desc: "Allow students to submit a revised response",
+                      checked: Boolean(formSettings.allow_resubmission),
+                    },
+                    {
+                      key: "show_progress_indicator" as const,
+                      title: "Show Progress Indicator",
+                      desc: "Display step progress bar on multi-step forms",
+                      checked: formSettings.show_progress_indicator !== false,
+                    },
+                    {
+                      key: "show_section_navigation" as const,
+                      title: "Show Section Navigation",
+                      desc: "Display clickable section step pills & Back/Next buttons",
+                      checked: formSettings.show_section_navigation !== false,
+                    },
+                  ].map((item) => (
+                    <label key={item.key} className="flex items-center justify-between gap-2 cursor-pointer">
+                      <div>
+                        <p className="text-[11px] font-semibold text-slate-800 dark:text-[#F5F5F5]">{item.title}</p>
+                        <p className="text-[10px] text-slate-400">{item.desc}</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={item.checked}
+                        onChange={(e) => setFormSettings((s) => ({ ...s, [item.key]: e.target.checked }))}
+                        className="w-4 h-4 rounded text-blue-600 dark:text-[#5DD62C] cursor-pointer"
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ) : selectedField ? (
+              <div className="space-y-4 max-h-[670px] overflow-y-auto pr-1">
+                {/* Question Type & Section */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                      Question Type
+                    </label>
+                    <select
+                      value={selectedField.field_type}
+                      onChange={(e) => handleChangeSelectedFieldType(e.target.value as FormFieldType)}
+                      className="w-full text-xs px-2.5 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                    >
+                      {FIELD_PALETTE.map((p) => (
+                        <option key={p.type} value={p.type}>{p.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                      Section
+                    </label>
+                    <select
+                      value={selectedField.section_id || sections[0]?.id}
+                      onChange={(e) => handleUpdateSelectedField({ section_id: e.target.value })}
+                      className="w-full text-xs px-2.5 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                    >
+                      {sections.map((s) => (
+                        <option key={s.id} value={s.id}>{s.title}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Question Title & Data Key */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                    Question Title
                   </label>
                   <input
                     type="text"
@@ -1102,58 +1696,64 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                   />
                 </div>
 
-                {/* Field Key & Section Assignment */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
-                      Data Key
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedField.field_key}
-                      onChange={(e) => handleUpdateSelectedField({ field_key: e.target.value.toLowerCase().replace(/\s+/g, "_") })}
-                      className="w-full text-xs font-mono px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
-                      Section
-                    </label>
-                    <select
-                      value={selectedField.section_id || sections[0]?.id}
-                      onChange={(e) => handleUpdateSelectedField({ section_id: e.target.value })}
-                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
-                    >
-                      {sections.map((s) => (
-                        <option key={s.id} value={s.id}>{s.title}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Placeholder & Description */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
-                    Placeholder Text
+                    Data Key (Submission Identifier)
                   </label>
                   <input
                     type="text"
-                    value={selectedField.placeholder || ""}
-                    onChange={(e) => handleUpdateSelectedField({ placeholder: e.target.value })}
-                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                    value={selectedField.field_key}
+                    onChange={(e) => handleUpdateSelectedField({ field_key: e.target.value.toLowerCase().replace(/\s+/g, "_") })}
+                    className="w-full text-xs font-mono px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
                   />
                 </div>
 
+                {/* Description, Help Text & Placeholder */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
-                    Help Text / Description
+                    Question Description
                   </label>
                   <textarea
                     rows={2}
                     value={selectedField.description || ""}
+                    placeholder="Additional context shown below the question title..."
                     onChange={(e) => handleUpdateSelectedField({ description: e.target.value })}
                     className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                      Help Text Hint
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedField.help_text ?? selectedField.validation_config?.help_text ?? ""}
+                      placeholder="Short tip below input"
+                      onChange={(e) =>
+                        handleUpdateSelectedField({
+                          help_text: e.target.value,
+                          validation_config: {
+                            ...(selectedField.validation_config || {}),
+                            help_text: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full text-xs px-2.5 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                      Placeholder
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedField.placeholder || ""}
+                      onChange={(e) => handleUpdateSelectedField({ placeholder: e.target.value })}
+                      className="w-full text-xs px-2.5 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                    />
+                  </div>
                 </div>
 
                 {/* Enabled, Required & Default Value */}
@@ -1172,7 +1772,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                   </div>
                   <div className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b]">
                     <div>
-                      <p className="text-[11px] font-semibold text-slate-800 dark:text-[#F5F5F5]">Enabled</p>
+                      <p className="text-[11px] font-semibold text-slate-800 dark:text-[#F5F5F5]">Visible</p>
                       <p className="text-[9px] text-slate-400">Show on form</p>
                     </div>
                     <input
@@ -1184,25 +1784,38 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                   </div>
                 </div>
 
-                {!["file", "pdf_upload", "document_upload", "image_upload", "gallery_upload", "camera_capture", "geo_photo", "repeatable_group", "divider"].includes(selectedField.field_type) && (
+                {!UPLOAD_TYPES.includes(selectedField.field_type) && !LAYOUT_TYPES.includes(selectedField.field_type) && selectedField.field_type !== "repeatable_group" && (
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
-                      Default Value (Optional)
+                      Default Value / Pre-selected Option
                     </label>
-                    <input
-                      type="text"
-                      value={typeof selectedField.default_value === "string" || typeof selectedField.default_value === "number" ? String(selectedField.default_value) : ""}
-                      placeholder="Pre-filled student answer or asset URL..."
-                      onChange={(e) => handleUpdateSelectedField({ default_value: e.target.value })}
-                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
-                    />
+                    {["dropdown", "radio"].includes(selectedField.field_type) ? (
+                      <select
+                        value={typeof selectedField.default_value === "string" ? selectedField.default_value : ""}
+                        onChange={(e) => handleUpdateSelectedField({ default_value: e.target.value })}
+                        className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                      >
+                        <option value="">-- None --</option>
+                        {(selectedField.options_config || []).map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={typeof selectedField.default_value === "string" || typeof selectedField.default_value === "number" ? String(selectedField.default_value) : ""}
+                        placeholder="Optional default answer..."
+                        onChange={(e) => handleUpdateSelectedField({ default_value: e.target.value })}
+                        className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5]"
+                      />
+                    )}
                   </div>
                 )}
 
-                {/* VALIDATION BOUNDS (TEXT, NUMBER, UPLOADS) */}
+                {/* TEXT / PARAGRAPH VALIDATION RULES */}
                 {["text", "textarea", "rich_text"].includes(selectedField.field_type) && (
-                  <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2">
-                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Character Length Rules</span>
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2.5">
+                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Text &amp; Regex Validation</span>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="block text-[10px] text-slate-500">Min Length</label>
@@ -1239,12 +1852,92 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                         />
                       </div>
                     </div>
+                    <div>
+                      <label className="block text-[10px] text-slate-500">Regex Pattern (Optional)</label>
+                      <input
+                        type="text"
+                        value={selectedField.validation_config?.regex_pattern || ""}
+                        placeholder="e.g. ^[A-Z]{2}[0-9]{4}$"
+                        onChange={(e) =>
+                          handleUpdateSelectedField({
+                            validation_config: {
+                              ...(selectedField.validation_config || {}),
+                              regex_pattern: e.target.value || undefined,
+                            },
+                          })
+                        }
+                        className="w-full text-xs font-mono px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-slate-500">Custom Error Message</label>
+                      <input
+                        type="text"
+                        value={selectedField.validation_config?.custom_error || ""}
+                        placeholder="Shown if answer fails validation"
+                        onChange={(e) =>
+                          handleUpdateSelectedField({
+                            validation_config: {
+                              ...(selectedField.validation_config || {}),
+                              custom_error: e.target.value || undefined,
+                            },
+                          })
+                        }
+                        className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                      />
+                    </div>
                   </div>
                 )}
 
+                {/* EMAIL / PHONE / URL CUSTOM VALIDATION */}
+                {["email", "phone", "url"].includes(selectedField.field_type) && (
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2">
+                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Format Validation</span>
+                    <p className="text-[10px] text-slate-500">
+                      Automatic {selectedField.field_type.toUpperCase()} format check is active.
+                    </p>
+                    <div>
+                      <label className="block text-[10px] text-slate-500">Custom Error Message (Optional)</label>
+                      <input
+                        type="text"
+                        value={selectedField.validation_config?.custom_error || ""}
+                        placeholder={`Please enter a valid ${selectedField.field_type}`}
+                        onChange={(e) =>
+                          handleUpdateSelectedField({
+                            validation_config: {
+                              ...(selectedField.validation_config || {}),
+                              custom_error: e.target.value || undefined,
+                            },
+                          })
+                        }
+                        className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* NUMBER VALIDATION */}
                 {selectedField.field_type === "number" && (
                   <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2">
-                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Numeric Value Bounds</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Numeric Rules</span>
+                    <div>
+                      <label className="block text-[10px] text-slate-500 mb-0.5">Number Format</label>
+                      <select
+                        value={selectedField.validation_config?.number_mode || "decimal"}
+                        onChange={(e) =>
+                          handleUpdateSelectedField({
+                            validation_config: {
+                              ...(selectedField.validation_config || {}),
+                              number_mode: e.target.value as "integer" | "decimal",
+                            },
+                          })
+                        }
+                        className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                      >
+                        <option value="decimal">Decimal or Integer</option>
+                        <option value="integer">Integer Only (Whole Numbers)</option>
+                      </select>
+                    </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="block text-[10px] text-slate-500">Minimum Value</label>
@@ -1281,10 +1974,106 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                         />
                       </div>
                     </div>
+                    <div>
+                      <label className="block text-[10px] text-slate-500">Custom Error Message</label>
+                      <input
+                        type="text"
+                        value={selectedField.validation_config?.custom_error || ""}
+                        placeholder="Optional custom numeric error message"
+                        onChange={(e) =>
+                          handleUpdateSelectedField({
+                            validation_config: {
+                              ...(selectedField.validation_config || {}),
+                              custom_error: e.target.value || undefined,
+                            },
+                          })
+                        }
+                        className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                      />
+                    </div>
                   </div>
                 )}
 
-                {["file", "pdf_upload", "document_upload", "image_upload", "gallery_upload", "camera_capture", "geo_photo"].includes(selectedField.field_type) && (
+                {/* DATE & TIME RULES */}
+                {["date", "datetime", "time"].includes(selectedField.field_type) && (
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2">
+                    <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Date / Time Bounds</span>
+                    {selectedField.field_type !== "time" ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[10px] text-slate-500">Min Date</label>
+                          <input
+                            type="date"
+                            value={selectedField.validation_config?.min_date || ""}
+                            onChange={(e) =>
+                              handleUpdateSelectedField({
+                                validation_config: {
+                                  ...(selectedField.validation_config || {}),
+                                  min_date: e.target.value || undefined,
+                                },
+                              })
+                            }
+                            className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-slate-500">Max Date</label>
+                          <input
+                            type="date"
+                            value={selectedField.validation_config?.max_date || ""}
+                            onChange={(e) =>
+                              handleUpdateSelectedField({
+                                validation_config: {
+                                  ...(selectedField.validation_config || {}),
+                                  max_date: e.target.value || undefined,
+                                },
+                              })
+                            }
+                            className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[10px] text-slate-500">Earliest Time</label>
+                          <input
+                            type="time"
+                            value={selectedField.validation_config?.min_time || ""}
+                            onChange={(e) =>
+                              handleUpdateSelectedField({
+                                validation_config: {
+                                  ...(selectedField.validation_config || {}),
+                                  min_time: e.target.value || undefined,
+                                },
+                              })
+                            }
+                            className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-slate-500">Latest Time</label>
+                          <input
+                            type="time"
+                            value={selectedField.validation_config?.max_time || ""}
+                            onChange={(e) =>
+                              handleUpdateSelectedField({
+                                validation_config: {
+                                  ...(selectedField.validation_config || {}),
+                                  max_time: e.target.value || undefined,
+                                },
+                              })
+                            }
+                            className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* FILE UPLOAD RULES */}
+                {UPLOAD_TYPES.includes(selectedField.field_type) && (
                   <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2">
                     <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Upload File Rules (Drive Ready)</span>
                     <div className="grid grid-cols-2 gap-2">
@@ -1307,29 +2096,68 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] text-slate-500">Allowed Extensions</label>
+                        <label className="block text-[10px] text-slate-500">Max Files</label>
                         <input
-                          type="text"
-                          value={(selectedField.validation_config?.allowed_types || []).join(", ")}
-                          placeholder="pdf, jpg, png"
-                          onChange={(e) =>
+                          type="number"
+                          min={1}
+                          max={10}
+                          value={selectedField.validation_config?.max_files ?? (selectedField.field_type === "gallery_upload" ? 5 : 1)}
+                          onChange={(e) => {
+                            const maxF = e.target.value ? Math.max(1, Math.min(10, Number(e.target.value))) : 1;
                             handleUpdateSelectedField({
                               validation_config: {
                                 ...(selectedField.validation_config || {}),
-                                allowed_types: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                                max_files: maxF,
+                                allow_multiple_files: maxF > 1 || Boolean(selectedField.validation_config?.allow_multiple_files),
                               },
-                            })
-                          }
+                            });
+                          }}
                           className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
                         />
                       </div>
                     </div>
+                    <div>
+                      <label className="block text-[10px] text-slate-500">Allowed Extensions</label>
+                      <input
+                        type="text"
+                        value={(selectedField.validation_config?.allowed_types || []).join(", ")}
+                        placeholder="pdf, jpg, png"
+                        onChange={(e) =>
+                          handleUpdateSelectedField({
+                            validation_config: {
+                              ...(selectedField.validation_config || {}),
+                              allowed_types: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                            },
+                          })
+                        }
+                        className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                      />
+                    </div>
+                    {selectedField.field_type !== "geo_photo" && selectedField.field_type !== "camera_capture" && (
+                      <label className="flex items-center justify-between pt-1 cursor-pointer">
+                        <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Allow Multiple Files</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(selectedField.validation_config?.allow_multiple_files) || selectedField.field_type === "gallery_upload"}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              validation_config: {
+                                ...(selectedField.validation_config || {}),
+                                allow_multiple_files: e.target.checked,
+                                max_files: e.target.checked ? Math.max(2, selectedField.validation_config?.max_files || 5) : 1,
+                              },
+                            })
+                          }
+                          className="w-4 h-4 rounded text-blue-600 dark:text-[#5DD62C] cursor-pointer"
+                        />
+                      </label>
+                    )}
                   </div>
                 )}
 
-                {/* OPTIONS MANAGER (FOR DROPDOWN, RADIO, CHECKBOX, MULTI_SELECT) */}
-                {["dropdown", "radio", "checkbox", "multi_select"].includes(selectedField.field_type) && (
-                  <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2">
+                {/* OPTIONS MANAGER (DROPDOWN, RADIO, CHECKBOX, MULTI_SELECT) */}
+                {CHOICE_TYPES.includes(selectedField.field_type) && (
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Options Choices</span>
                       <button
@@ -1347,9 +2175,35 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                       </button>
                     </div>
 
-                    <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                    <div className="space-y-1.5 max-h-44 overflow-y-auto">
                       {(selectedField.options_config || []).map((opt, oIdx) => (
-                        <div key={oIdx} className="flex items-center gap-1.5">
+                        <div key={oIdx} className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={oIdx === 0}
+                            onClick={() => {
+                              const cur = [...(selectedField.options_config || [])];
+                              [cur[oIdx - 1], cur[oIdx]] = [cur[oIdx], cur[oIdx - 1]];
+                              handleUpdateSelectedField({ options_config: cur });
+                            }}
+                            className="text-[10px] text-slate-400 hover:text-slate-700 disabled:opacity-25 px-1 cursor-pointer"
+                            title="Move option up"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            disabled={oIdx === (selectedField.options_config || []).length - 1}
+                            onClick={() => {
+                              const cur = [...(selectedField.options_config || [])];
+                              [cur[oIdx + 1], cur[oIdx]] = [cur[oIdx], cur[oIdx + 1]];
+                              handleUpdateSelectedField({ options_config: cur });
+                            }}
+                            className="text-[10px] text-slate-400 hover:text-slate-700 disabled:opacity-25 px-1 cursor-pointer"
+                            title="Move option down"
+                          >
+                            ↓
+                          </button>
                           <input
                             type="text"
                             value={opt.label}
@@ -1373,6 +2227,64 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                         </div>
                       ))}
                     </div>
+
+                    {["radio", "checkbox", "multi_select"].includes(selectedField.field_type) && (
+                      <label className="flex items-center justify-between pt-1 border-t border-slate-200 dark:border-[#2d2d2d] cursor-pointer">
+                        <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Add &ldquo;Other&rdquo; option (custom text)</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(selectedField.validation_config?.allow_other)}
+                          onChange={(e) =>
+                            handleUpdateSelectedField({
+                              validation_config: {
+                                ...(selectedField.validation_config || {}),
+                                allow_other: e.target.checked,
+                              },
+                            })
+                          }
+                          className="w-4 h-4 rounded text-blue-600 dark:text-[#5DD62C] cursor-pointer"
+                        />
+                      </label>
+                    )}
+
+                    {["checkbox", "multi_select"].includes(selectedField.field_type) && (
+                      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200 dark:border-[#2d2d2d]">
+                        <div>
+                          <label className="block text-[10px] text-slate-500">Min Selections</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={selectedField.validation_config?.min_selections ?? ""}
+                            onChange={(e) =>
+                              handleUpdateSelectedField({
+                                validation_config: {
+                                  ...(selectedField.validation_config || {}),
+                                  min_selections: e.target.value !== "" ? Number(e.target.value) : undefined,
+                                },
+                              })
+                            }
+                            className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-slate-500">Max Selections</label>
+                          <input
+                            type="number"
+                            min={1}
+                            value={selectedField.validation_config?.max_selections ?? ""}
+                            onChange={(e) =>
+                              handleUpdateSelectedField({
+                                validation_config: {
+                                  ...(selectedField.validation_config || {}),
+                                  max_selections: e.target.value !== "" ? Number(e.target.value) : undefined,
+                                },
+                              })
+                            }
+                            className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1585,10 +2497,10 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
 
                 {/* CONDITIONAL LOGIC BUILDER */}
                 <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1b1b1b] space-y-2.5">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">Conditional Visibility</p>
-                      <p className="text-[10px] text-slate-400">Show or hide based on answers</p>
+                      <p className="text-[10px] text-slate-400">Show or hide this question based on answers</p>
                     </div>
                     <button
                       type="button"
@@ -1596,9 +2508,10 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                         const cur = Array.isArray(selectedField.conditions)
                           ? selectedField.conditions
                           : selectedField.conditions?.rules || [];
+                        const curLogic = !Array.isArray(selectedField.conditions) && selectedField.conditions?.logic === "or" ? "or" : "and";
                         const otherFields = fields.filter((f) => f.id !== selectedField.id);
                         if (otherFields.length === 0) {
-                          alert("Add other fields to form before creating conditional rules.");
+                          setErrorMessage("Add at least one other question before creating conditional rules.");
                           return;
                         }
                         const newRule: ConditionalRule = {
@@ -1607,9 +2520,11 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                           value: "yes",
                           action: "show",
                         };
-                        handleUpdateSelectedField({ conditions: [...cur, newRule] });
+                        handleUpdateSelectedField({
+                          conditions: { logic: curLogic, rules: [...cur, newRule] },
+                        });
                       }}
-                      className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold cursor-pointer"
+                      className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold cursor-pointer shrink-0"
                     >
                       + Add Rule
                     </button>
@@ -1620,6 +2535,14 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                     const rules: ConditionalRule[] = Array.isArray(selectedField.conditions)
                       ? selectedField.conditions
                       : selectedField.conditions?.rules || [];
+                    const logicMode: "and" | "or" =
+                      !Array.isArray(selectedField.conditions) && selectedField.conditions?.logic === "or" ? "or" : "and";
+
+                    const commitRules = (nextRules: ConditionalRule[], nextLogic = logicMode) => {
+                      handleUpdateSelectedField({
+                        conditions: nextRules.length ? { logic: nextLogic, rules: nextRules } : undefined,
+                      });
+                    };
 
                     if (rules.length === 0) {
                       return <p className="text-[11px] text-slate-400 italic">No conditional rules. Always visible.</p>;
@@ -1627,87 +2550,132 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
 
                     return (
                       <div className="space-y-2">
-                        {rules.map((rule, rIdx) => (
-                          <div key={rIdx} className="p-2 rounded-lg bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#2d2d2d] text-xs space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-bold text-purple-600 dark:text-purple-300">Rule #{rIdx + 1}</span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const updated = rules.filter((_, i) => i !== rIdx);
-                                  handleUpdateSelectedField({ conditions: updated });
-                                }}
-                                className="text-slate-400 hover:text-rose-500 text-xs cursor-pointer"
-                              >
-                                ✕
-                              </button>
-                            </div>
-
-                            {/* Source Field Dropdown */}
-                            <div className="grid grid-cols-2 gap-1.5">
-                              <div>
-                                <label className="block text-[10px] text-slate-400">If Field:</label>
-                                <select
-                                  value={rule.field}
-                                  onChange={(e) => {
-                                    const updated = [...rules];
-                                    updated[rIdx] = { ...updated[rIdx], field: e.target.value };
-                                    handleUpdateSelectedField({ conditions: updated });
-                                  }}
-                                  className="w-full text-[11px] px-1.5 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
-                                >
-                                  {fields
-                                    .filter((f) => f.id !== selectedField.id)
-                                    .map((f) => (
-                                      <option key={f.field_key} value={f.field_key}>
-                                        {f.label} ({f.field_key})
-                                      </option>
-                                    ))}
-                                </select>
-                              </div>
-
-                              {/* Operator Dropdown */}
-                              <div>
-                                <label className="block text-[10px] text-slate-400">Operator:</label>
-                                <select
-                                  value={rule.operator}
-                                  onChange={(e) => {
-                                    const updated = [...rules];
-                                    updated[rIdx] = { ...updated[rIdx], operator: e.target.value as any };
-                                    handleUpdateSelectedField({ conditions: updated });
-                                  }}
-                                  className="w-full text-[11px] px-1.5 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
-                                >
-                                  <option value="equals">equals</option>
-                                  <option value="not_equals">not equals</option>
-                                  <option value="contains">contains</option>
-                                  <option value="greater_than">greater than</option>
-                                  <option value="less_than">less than</option>
-                                  <option value="is_empty">is empty</option>
-                                  <option value="is_not_empty">is not empty</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            {/* Target value */}
-                            {!["is_empty", "is_not_empty"].includes(rule.operator) && (
-                              <div>
-                                <label className="block text-[10px] text-slate-400">Value:</label>
-                                <input
-                                  type="text"
-                                  value={rule.value || ""}
-                                  placeholder="e.g. yes or option_1"
-                                  onChange={(e) => {
-                                    const updated = [...rules];
-                                    updated[rIdx] = { ...updated[rIdx], value: e.target.value };
-                                    handleUpdateSelectedField({ conditions: updated });
-                                  }}
-                                  className="w-full text-[11px] px-2 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
-                                />
-                              </div>
-                            )}
+                        {rules.length > 1 && (
+                          <div className="flex items-center justify-between text-[11px] bg-white dark:bg-[#141414] px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#2d2d2d]">
+                            <span className="text-slate-500 font-medium">Combine rules with:</span>
+                            <select
+                              value={logicMode}
+                              onChange={(e) => commitRules(rules, e.target.value as "and" | "or")}
+                              className="font-semibold text-purple-700 dark:text-purple-300 bg-transparent cursor-pointer"
+                            >
+                              <option value="and">ALL match (AND)</option>
+                              <option value="or">ANY matches (OR)</option>
+                            </select>
                           </div>
-                        ))}
+                        )}
+
+                        {rules.map((rule, rIdx) => {
+                          const srcField = fields.find((f) => f.field_key === rule.field);
+                          const srcOpts = srcField?.options_config || [];
+                          return (
+                            <div key={rIdx} className="p-2 rounded-lg bg-white dark:bg-[#141414] border border-slate-200 dark:border-[#2d2d2d] text-xs space-y-1.5">
+                              <div className="flex items-center justify-between gap-2">
+                                <select
+                                  value={rule.action || "show"}
+                                  onChange={(e) => {
+                                    const updated = [...rules];
+                                    updated[rIdx] = { ...updated[rIdx], action: e.target.value as any };
+                                    commitRules(updated);
+                                  }}
+                                  className="text-[10px] font-bold text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 px-1.5 py-0.5 rounded"
+                                >
+                                  <option value="show">Show Question When</option>
+                                  <option value="hide">Hide Question When</option>
+                                </select>
+                                <button
+                                  type="button"
+                                  onClick={() => commitRules(rules.filter((_, i) => i !== rIdx))}
+                                  className="text-slate-400 hover:text-rose-500 text-xs cursor-pointer"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+
+                              {/* Source Field & Operator Dropdowns */}
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <div>
+                                  <label className="block text-[10px] text-slate-400">If Question:</label>
+                                  <select
+                                    value={rule.field}
+                                    onChange={(e) => {
+                                      const updated = [...rules];
+                                      updated[rIdx] = { ...updated[rIdx], field: e.target.value };
+                                      commitRules(updated);
+                                    }}
+                                    className="w-full text-[11px] px-1.5 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
+                                  >
+                                    {fields
+                                      .filter((f) => f.id !== selectedField.id)
+                                      .map((f) => (
+                                        <option key={f.field_key} value={f.field_key}>
+                                          {f.label} ({f.field_key})
+                                        </option>
+                                      ))}
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="block text-[10px] text-slate-400">Operator:</label>
+                                  <select
+                                    value={rule.operator}
+                                    onChange={(e) => {
+                                      const updated = [...rules];
+                                      updated[rIdx] = { ...updated[rIdx], operator: e.target.value as any };
+                                      commitRules(updated);
+                                    }}
+                                    className="w-full text-[11px] px-1.5 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
+                                  >
+                                    <option value="equals">equals</option>
+                                    <option value="not_equals">not equals</option>
+                                    <option value="contains">contains</option>
+                                    <option value="not_contains">does not contain</option>
+                                    <option value="greater_than">greater than</option>
+                                    <option value="less_than">less than</option>
+                                    <option value="in">is one of (comma)</option>
+                                    <option value="is_empty">is empty</option>
+                                    <option value="is_not_empty">is not empty</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              {/* Target value */}
+                              {!["is_empty", "is_not_empty"].includes(rule.operator) && (
+                                <div className="space-y-1">
+                                  <label className="block text-[10px] text-slate-400">Value:</label>
+                                  <input
+                                    type="text"
+                                    value={rule.value || ""}
+                                    placeholder="e.g. yes, other, online"
+                                    onChange={(e) => {
+                                      const updated = [...rules];
+                                      updated[rIdx] = { ...updated[rIdx], value: e.target.value };
+                                      commitRules(updated);
+                                    }}
+                                    className="w-full text-[11px] px-2 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
+                                  />
+                                  {srcOpts.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 pt-0.5">
+                                      {srcOpts.slice(0, 6).map((o) => (
+                                        <button
+                                          key={o.value}
+                                          type="button"
+                                          onClick={() => {
+                                            const updated = [...rules];
+                                            updated[rIdx] = { ...updated[rIdx], value: o.value };
+                                            commitRules(updated);
+                                          }}
+                                          className="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#252525] hover:bg-purple-100 text-slate-600 dark:text-slate-300 cursor-pointer"
+                                        >
+                                          {o.label}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   })()}

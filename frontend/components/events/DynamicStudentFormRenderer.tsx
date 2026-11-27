@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
   EventItem,
   EventFormVersion,
@@ -113,17 +113,143 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     return [];
   });
 
-  // Sections setup
-  const sections: FormSection[] = useMemo(() => {
+  const formSettings = form.form_settings || {};
+
+  // Track "Other" free-text inputs for choice fields when allow_other is enabled
+  const [otherSelected, setOtherSelected] = useState<Record<string, boolean>>(() => {
+    const out: Record<string, boolean> = {};
+    if (existingSubmission?.values) {
+      Object.entries(existingSubmission.values).forEach(([k, valObj]) => {
+        const v = valObj?.value !== undefined ? valObj.value : valObj;
+        if (typeof v === "string" && v.startsWith("Other:")) {
+          out[k] = true;
+        } else if (Array.isArray(v) && v.some((x) => typeof x === "string" && x.startsWith("Other:"))) {
+          out[k] = true;
+        }
+      });
+    }
+    return out;
+  });
+
+  const [otherTexts, setOtherTexts] = useState<Record<string, string>>(() => {
+    const out: Record<string, string> = {};
+    if (existingSubmission?.values) {
+      Object.entries(existingSubmission.values).forEach(([k, valObj]) => {
+        const v = valObj?.value !== undefined ? valObj.value : valObj;
+        if (typeof v === "string" && v.startsWith("Other:")) {
+          out[k] = v.slice(6).trim();
+        } else if (Array.isArray(v)) {
+          const hit = v.find((x) => typeof x === "string" && x.startsWith("Other:"));
+          if (typeof hit === "string") out[k] = hit.slice(6).trim();
+        }
+      });
+    }
+    return out;
+  });
+
+  // Shared conditional rules evaluator for both fields and sections
+  const evaluateConditions = (conditions: any, values: Record<string, any>): boolean => {
+    if (!conditions) return true;
+
+    let rules: ConditionalRule[] = [];
+    let logic = "and";
+
+    if (Array.isArray(conditions)) {
+      rules = conditions;
+    } else if (typeof conditions === "object" && conditions !== null) {
+      rules = conditions.rules || [];
+      logic = (conditions.logic || "and").toLowerCase();
+    }
+
+    if (!rules || rules.length === 0) return true;
+
+    const matches: boolean[] = [];
+
+    for (const r of rules) {
+      const srcKey = r.field || (r as any).field_key;
+      const op = (r.operator || "equals").toLowerCase();
+      const targetVal = r.value !== undefined ? r.value : r.target_value;
+      const action = (r.action || "show").toLowerCase();
+
+      const srcVal = values[srcKey];
+      const targetLower = String(targetVal ?? "").trim().toLowerCase();
+      let ruleMatched = false;
+
+      if (op === "equals") {
+        if (Array.isArray(srcVal)) {
+          ruleMatched = srcVal.some((item) => String(item ?? "").trim().toLowerCase() === targetLower);
+        } else {
+          ruleMatched = String(srcVal ?? "").trim().toLowerCase() === targetLower;
+        }
+      } else if (op === "not_equals") {
+        if (Array.isArray(srcVal)) {
+          ruleMatched = srcVal.every((item) => String(item ?? "").trim().toLowerCase() !== targetLower);
+        } else {
+          ruleMatched = String(srcVal ?? "").trim().toLowerCase() !== targetLower;
+        }
+      } else if (op === "contains") {
+        if (Array.isArray(srcVal)) {
+          ruleMatched = srcVal.some((item) => String(item ?? "").toLowerCase().includes(targetLower));
+        } else {
+          ruleMatched = String(srcVal ?? "").toLowerCase().includes(targetLower);
+        }
+      } else if (op === "not_contains") {
+        if (Array.isArray(srcVal)) {
+          ruleMatched = srcVal.every((item) => !String(item ?? "").toLowerCase().includes(targetLower));
+        } else {
+          ruleMatched = !String(srcVal ?? "").toLowerCase().includes(targetLower);
+        }
+      } else if (op === "greater_than") {
+        ruleMatched = Number(srcVal) > Number(targetVal);
+      } else if (op === "less_than") {
+        ruleMatched = Number(srcVal) < Number(targetVal);
+      } else if (op === "in") {
+        const list = (Array.isArray(targetVal) ? targetVal : String(targetVal ?? "").split(",")).map((s) =>
+          String(s).trim().toLowerCase()
+        );
+        if (Array.isArray(srcVal)) {
+          ruleMatched = srcVal.some((s) => list.includes(String(s).trim().toLowerCase()));
+        } else {
+          ruleMatched = list.includes(String(srcVal ?? "").trim().toLowerCase());
+        }
+      } else if (op === "is_empty") {
+        ruleMatched = srcVal === undefined || srcVal === null || srcVal === "" || (Array.isArray(srcVal) && srcVal.length === 0);
+      } else if (op === "is_not_empty") {
+        ruleMatched = srcVal !== undefined && srcVal !== null && srcVal !== "" && (!Array.isArray(srcVal) || srcVal.length > 0);
+      } else {
+        ruleMatched = true;
+      }
+
+      if (action === "hide" || action === "skip") {
+        matches.push(!ruleMatched);
+      } else {
+        matches.push(ruleMatched);
+      }
+    }
+
+    if (logic === "or") {
+      return matches.some(Boolean);
+    }
+    return matches.every(Boolean);
+  };
+
+  // Sections setup (with dynamic conditional section visibility / skip filtering)
+  const rawSections: FormSection[] = useMemo(() => {
     if (form.sections_config && form.sections_config.length > 0) {
       return [...form.sections_config].sort((a, b) => a.order - b.order);
     }
     return [{ id: "default", title: "Registration Details", order: 0 }];
   }, [form.sections_config]);
 
+  const sections: FormSection[] = useMemo(() => {
+    const filtered = rawSections.filter((s) => evaluateConditions(s.conditions, formValues));
+    return filtered.length > 0 ? filtered : rawSections;
+  }, [rawSections, formValues]);
+
   // Wizard state (for multi-step layout mode)
   const isMultiStep = event.form_layout_mode === "multi_step" && sections.length > 1;
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
+  const activeStepIndex = Math.min(currentStepIndex, Math.max(0, sections.length - 1));
 
   // Status
   const [uploadingFieldKey, setUploadingFieldKey] = useState<string | null>(null);
@@ -172,6 +298,25 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     return null;
   };
 
+  // Upload or create temporary preview descriptor without polluting Drive/DB when in Preview mode
+  const performFieldFileUpload = async (fieldKey: string, file: File) => {
+    if (isPreviewMode) {
+      const localUrl = typeof URL !== "undefined" ? URL.createObjectURL(file) : "";
+      return {
+        storage_reference: `preview_${Date.now()}_${file.name}`,
+        original_filename: file.name,
+        mime_type: file.type || "application/octet-stream",
+        file_size: file.size,
+        file_url: localUrl,
+      };
+    }
+    return eventsApi.uploadEventFile(file, {
+      eventId: event.id,
+      fieldKey,
+      uploadScope: "student_submission",
+    });
+  };
+
   // Single File upload handler
   const handleFileUpload = async (field: EventFormField, file: File) => {
     const key = field.field_key;
@@ -185,11 +330,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     setErrorMessage(null);
 
     try {
-      const res = await eventsApi.uploadEventFile(file, {
-        eventId: isPreviewMode ? undefined : event.id,
-        fieldKey: key,
-        uploadScope: isPreviewMode ? "event_media" : "student_submission",
-      });
+      const res = await performFieldFileUpload(key, file);
       const newFileEntry = {
         field_key: key,
         storage_reference: res.storage_reference,
@@ -215,14 +356,20 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     }
   };
 
-  // Multi-file Gallery Upload handler
+  // Multi-file Gallery / Multiple Upload handler
   const handleGalleryFieldUpload = async (field: EventFormField, fileList: FileList) => {
     const key = field.field_key;
+    const existingList: any[] = Array.isArray(formValues[key]) ? [...formValues[key]] : [];
+    const maxFiles = field.validation_config?.max_files;
+    if (maxFiles && existingList.length + fileList.length > maxFiles) {
+      setErrorMessage(`'${field.label}' allows at most ${maxFiles} file(s).`);
+      return;
+    }
+
     setUploadingFieldKey(key);
     setErrorMessage(null);
 
     try {
-      const existingList: any[] = Array.isArray(formValues[key]) ? [...formValues[key]] : [];
       const addedFileEntries: typeof uploadedFiles = [];
 
       for (const file of Array.from(fileList)) {
@@ -231,11 +378,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
           setErrorMessage(preErr);
           continue;
         }
-        const res = await eventsApi.uploadEventFile(file, {
-          eventId: isPreviewMode ? undefined : event.id,
-          fieldKey: key,
-          uploadScope: isPreviewMode ? "event_media" : "student_submission",
-        });
+        const res = await performFieldFileUpload(key, file);
         addedFileEntries.push({
           field_key: key,
           storage_reference: res.storage_reference,
@@ -256,7 +399,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
         handleFieldChange(key, existingList);
       }
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to upload gallery images.");
+      setErrorMessage(err.message || "Failed to upload files.");
     } finally {
       setUploadingFieldKey(null);
     }
@@ -276,11 +419,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
 
     const uploadGeo = async (pos?: GeolocationPosition) => {
       try {
-        const res = await eventsApi.uploadEventFile(file, {
-          eventId: isPreviewMode ? undefined : event.id,
-          fieldKey: key,
-          uploadScope: isPreviewMode ? "event_media" : "student_submission",
-        });
+        const res = await performFieldFileUpload(key, file);
         const geoData: GeoLocationData & { file_url?: string } = pos
           ? {
               has_geo: true,
@@ -335,89 +474,38 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
   };
 
   // Evaluate conditional visibility for a field
-  const isFieldVisible = (f: EventFormField): boolean => {
-    if (!f.conditions) return true;
-
-    let rules: ConditionalRule[] = [];
-    let logic = "and";
-
-    if (Array.isArray(f.conditions)) {
-      rules = f.conditions;
-    } else if (typeof f.conditions === "object" && f.conditions !== null) {
-      rules = f.conditions.rules || [];
-      logic = (f.conditions.logic || "and").toLowerCase();
-    }
-
-    if (!rules || rules.length === 0) return true;
-
-    const matches: boolean[] = [];
-
-    for (const r of rules) {
-      const srcKey = r.field || (r as any).field_key;
-      const op = (r.operator || "equals").toLowerCase();
-      const targetVal = r.value !== undefined ? r.value : r.target_value;
-      const action = (r.action || "show").toLowerCase();
-
-      const srcVal = formValues[srcKey];
-      let ruleMatched = false;
-
-      if (op === "equals") {
-        ruleMatched = String(srcVal ?? "").trim().toLowerCase() === String(targetVal ?? "").trim().toLowerCase();
-      } else if (op === "not_equals") {
-        ruleMatched = String(srcVal ?? "").trim().toLowerCase() !== String(targetVal ?? "").trim().toLowerCase();
-      } else if (op === "contains") {
-        ruleMatched = String(srcVal ?? "").toLowerCase().includes(String(targetVal ?? "").toLowerCase());
-      } else if (op === "greater_than") {
-        ruleMatched = Number(srcVal) > Number(targetVal);
-      } else if (op === "less_than") {
-        ruleMatched = Number(srcVal) < Number(targetVal);
-      } else if (op === "in") {
-        const list = Array.isArray(targetVal) ? targetVal : String(targetVal).split(",").map((s) => s.trim());
-        if (Array.isArray(srcVal)) {
-          ruleMatched = srcVal.some((s) => list.includes(String(s)));
-        } else {
-          ruleMatched = list.includes(String(srcVal));
-        }
-      } else if (op === "is_empty") {
-        ruleMatched = srcVal === undefined || srcVal === null || srcVal === "" || (Array.isArray(srcVal) && srcVal.length === 0);
-      } else if (op === "is_not_empty") {
-        ruleMatched = srcVal !== undefined && srcVal !== null && srcVal !== "" && (!Array.isArray(srcVal) || srcVal.length > 0);
-      } else {
-        ruleMatched = true;
-      }
-
-      if (action === "hide") {
-        matches.push(!ruleMatched);
-      } else {
-        matches.push(ruleMatched);
-      }
-    }
-
-    if (logic === "or") {
-      return matches.some(Boolean);
-    }
-    return matches.every(Boolean);
-  };
+  const isFieldVisible = (f: EventFormField): boolean => evaluateConditions(f.conditions, formValues);
 
   // Shared field validator used for both step navigation and final submission
   const validateFields = (targetFields: EventFormField[]): string | null => {
+    const visibleSectionIds = new Set(sections.map((s) => s.id));
+    const fallbackSecId = rawSections[0]?.id || "default";
+
     for (const f of targetFields) {
+      const fSecId = f.section_id || fallbackSecId;
+      if (rawSections.some((s) => s.id === fSecId) && !visibleSectionIds.has(fSecId)) continue;
       if (f.enabled === false || !isFieldVisible(f)) continue;
       if (LAYOUT_FIELD_TYPES.includes(f.field_type)) continue;
 
+      const vCfg = f.validation_config || {};
+      const customErr = vCfg.custom_error || undefined;
       const val = formValues[f.field_key];
       const isFileField = FILE_UPLOAD_TYPES.includes(f.field_type);
       const hasUploaded = uploadedFiles.some((uf) => uf.field_key === f.field_key);
 
+      if (otherSelected[f.field_key] && !String(otherTexts[f.field_key] || "").trim()) {
+        return `Please specify your "Other" answer for '${f.label}'.`;
+      }
+
       if (f.required) {
         if (isFileField && !hasUploaded && (!val || (Array.isArray(val) && val.length === 0))) {
-          return `'${f.label}' is required. Please upload the requested photo or document.`;
+          return customErr || `'${f.label}' is required. Please upload the requested photo or document.`;
         }
         if (f.field_type === "repeatable_group") {
           const entries = Array.isArray(val) ? val : [];
           const min = f.repeatable_config?.min_items || 1;
           if (entries.length < min) {
-            return `'${f.label}' requires at least ${min} entr${min === 1 ? "y" : "ies"}.`;
+            return customErr || `'${f.label}' requires at least ${min} entr${min === 1 ? "y" : "ies"}.`;
           }
           for (let i = 0; i < entries.length; i++) {
             for (const subF of f.repeatable_config?.fields || []) {
@@ -426,13 +514,13 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
               }
             }
           }
-        } else if (f.field_type === "checkbox" && getFieldOptions(f).length === 0) {
+        } else if (f.field_type === "checkbox" && getFieldOptions(f).length === 0 && !vCfg.allow_other) {
           if (val !== true) {
-            return `'${f.label}' must be checked before continuing.`;
+            return customErr || `'${f.label}' must be checked before continuing.`;
           }
         } else if (f.field_type === "date_range") {
           if (!val?.start || !val?.end) {
-            return `'${f.label}' requires both start and end dates.`;
+            return customErr || `'${f.label}' requires both start and end dates.`;
           }
         } else if (!isFileField) {
           const empty =
@@ -441,43 +529,88 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
             (typeof val === "string" && !val.trim()) ||
             (Array.isArray(val) && val.length === 0);
           if (empty) {
-            return `'${f.label}' is a required field.`;
+            return customErr || `'${f.label}' is a required field.`;
           }
         }
       }
 
       // Bounds & format validation on populated values
-      if (val !== undefined && val !== null && val !== "") {
-        const vCfg = f.validation_config || {};
+      if (val !== undefined && val !== null && val !== "" && (!Array.isArray(val) || val.length > 0)) {
         if (f.field_type === "date_range" && val.start && val.end && val.end < val.start) {
-          return `'${f.label}': End date cannot be earlier than start date.`;
+          return customErr || `'${f.label}': End date cannot be earlier than start date.`;
         }
         if (f.field_type === "number" || f.field_type === "numeric_rating" || f.field_type === "custom_scale") {
           const numVal = Number(val);
           if (Number.isNaN(numVal)) {
-            return `'${f.label}' must be a valid number.`;
+            return customErr || `'${f.label}' must be a valid number.`;
+          }
+          if (f.field_type === "number" && vCfg.number_mode === "integer" && !Number.isInteger(numVal)) {
+            return customErr || `'${f.label}' must be a whole integer.`;
           }
           if (vCfg.min_val !== undefined && vCfg.min_val !== null && numVal < Number(vCfg.min_val)) {
-            return `'${f.label}' must be at least ${vCfg.min_val}.`;
+            return customErr || `'${f.label}' must be at least ${vCfg.min_val}.`;
           }
           if (vCfg.max_val !== undefined && vCfg.max_val !== null && numVal > Number(vCfg.max_val)) {
-            return `'${f.label}' cannot exceed ${vCfg.max_val}.`;
+            return customErr || `'${f.label}' cannot exceed ${vCfg.max_val}.`;
           }
         }
         if (["text", "textarea", "rich_text"].includes(f.field_type)) {
-          const sLen = String(val).trim().length;
+          const sTrim = String(val).trim();
+          const sLen = sTrim.length;
           if (vCfg.min_len && sLen > 0 && sLen < Number(vCfg.min_len)) {
-            return `'${f.label}' must be at least ${vCfg.min_len} characters.`;
+            return customErr || `'${f.label}' must be at least ${vCfg.min_len} characters.`;
           }
           if (vCfg.max_len && sLen > Number(vCfg.max_len)) {
-            return `'${f.label}' cannot exceed ${vCfg.max_len} characters.`;
+            return customErr || `'${f.label}' cannot exceed ${vCfg.max_len} characters.`;
+          }
+          if (vCfg.regex_pattern && sLen > 0) {
+            try {
+              const rx = new RegExp(vCfg.regex_pattern);
+              if (!rx.test(sTrim)) {
+                return customErr || `'${f.label}' does not match the required pattern.`;
+              }
+            } catch {
+              // Ignore invalid regex syntax configured by mistake
+            }
           }
         }
         if (f.field_type === "email" && typeof val === "string" && val.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim())) {
-          return `'${f.label}' must be a valid email address.`;
+          return customErr || `'${f.label}' must be a valid email address.`;
         }
-        if (f.field_type === "url" && typeof val === "string" && val.trim() && !/^https?:\/\//i.test(val.trim())) {
-          return `'${f.label}' must start with http:// or https://.`;
+        if (f.field_type === "phone" && typeof val === "string" && val.trim()) {
+          const digits = val.replace(/\D/g, "");
+          if (digits.length < 7 || digits.length > 15) {
+            return customErr || `'${f.label}' must be a valid phone number.`;
+          }
+        }
+        if (f.field_type === "url" && typeof val === "string" && val.trim() && !/^https?:\/\/[^\s]+/i.test(val.trim())) {
+          return customErr || `'${f.label}' must start with http:// or https://.`;
+        }
+        if (["checkbox", "multi_select"].includes(f.field_type) && Array.isArray(val)) {
+          if (vCfg.min_selections !== undefined && vCfg.min_selections !== null && val.length < Number(vCfg.min_selections)) {
+            return customErr || `'${f.label}' requires at least ${vCfg.min_selections} selection(s).`;
+          }
+          if (vCfg.max_selections !== undefined && vCfg.max_selections !== null && val.length > Number(vCfg.max_selections)) {
+            return customErr || `'${f.label}' allows at most ${vCfg.max_selections} selection(s).`;
+          }
+        }
+        if (["date", "datetime"].includes(f.field_type) && typeof val === "string") {
+          const valCmp = val.slice(0, 10);
+          if (vCfg.min_date && valCmp < vCfg.min_date) {
+            return customErr || `'${f.label}' must be on or after ${vCfg.min_date}.`;
+          }
+          if (vCfg.max_date && valCmp > vCfg.max_date) {
+            return customErr || `'${f.label}' must be on or before ${vCfg.max_date}.`;
+          }
+        }
+        if (f.field_type === "time" && typeof val === "string") {
+          const valTime = val.slice(0, 5);
+          if (vCfg.min_time && valTime < vCfg.min_time) {
+            return customErr || `'${f.label}' must be at or after ${vCfg.min_time}.`;
+          }
+          if (vCfg.max_time && valTime > vCfg.max_time) {
+            return customErr || `'${f.label}' must be at or before ${vCfg.max_time}.`;
+          }
         }
       }
     }
@@ -490,7 +623,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     const targetSection = sections[stepIndex];
     if (!targetSection) return true;
 
-    const fallbackSecId = sections[0]?.id || "default";
+    const fallbackSecId = rawSections[0]?.id || "default";
     const stepFields = form.fields.filter((f) => (f.section_id || fallbackSecId) === targetSection.id);
     const err = validateFields(stepFields);
     if (err) {
@@ -514,7 +647,8 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
 
     if (isPreviewMode) {
       setPreviewSuccess(
-        "Preview validation passed! Required checks, min/max bounds, and conditional rules are working correctly."
+        formSettings.success_message ||
+          "Preview validation passed! Required checks, min/max bounds, and conditional rules are working correctly."
       );
       return;
     }
@@ -551,7 +685,12 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
             Registration Submitted Successfully!
           </h3>
           <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-1">
-            Your response has been confirmed and saved for <span className="font-semibold text-slate-700 dark:text-slate-300">{event.title}</span>.
+            {formSettings.success_message || (
+              <>
+                Your response has been confirmed and saved for{" "}
+                <span className="font-semibold text-slate-700 dark:text-slate-300">{formSettings.form_title || event.title}</span>.
+              </>
+            )}
           </p>
         </div>
 
@@ -599,11 +738,11 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
   }
 
   // Active section fields for wizard
-  const visibleSections = isMultiStep ? [sections[currentStepIndex]] : sections;
+  const visibleSections = isMultiStep ? [sections[activeStepIndex]].filter(Boolean) : sections;
 
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-5 sm:p-7 shadow-xs space-y-6">
-      {/* Event Header Card */}
+      {/* Event / Form Header Card */}
       <div className="border-b border-slate-100 dark:border-[#282828] pb-5">
         <div className="flex items-center gap-2">
           {onCancel && (
@@ -628,33 +767,67 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
           )}
         </div>
         <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#F5F5F5] mt-1">
-          {event.title}
+          {formSettings.form_title || event.title}
         </h2>
         {event.subtitle && (
           <p className="text-xs font-medium text-blue-600 dark:text-[#5DD62C] mt-0.5">{event.subtitle}</p>
         )}
-        {event.short_description && (
+        {(formSettings.form_description || event.short_description) && (
           <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-2 leading-relaxed">
-            {event.short_description}
+            {formSettings.form_description || event.short_description}
           </p>
+        )}
+        {formSettings.custom_instructions && (
+          <div className="mt-3 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900 text-xs text-blue-900 dark:text-blue-200 leading-relaxed whitespace-pre-line">
+            <span className="font-bold">Instructions: </span>
+            {formSettings.custom_instructions}
+          </div>
         )}
       </div>
 
-      {/* Multi-Step Wizard Indicator */}
-      {isMultiStep && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span className="font-semibold text-slate-800 dark:text-slate-200">
-              Step {currentStepIndex + 1} of {sections.length}: {sections[currentStepIndex]?.title}
-            </span>
-            <span className="font-mono text-[11px]">{Math.round(((currentStepIndex + 1) / sections.length) * 100)}%</span>
-          </div>
-          <div className="w-full bg-slate-100 dark:bg-[#252525] h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-blue-600 dark:bg-[#5DD62C] h-full transition-all duration-300"
-              style={{ width: `${((currentStepIndex + 1) / sections.length) * 100}%` }}
-            />
-          </div>
+      {/* Multi-Step Wizard Progress & Section Navigation Pills */}
+      {isMultiStep && (formSettings.show_progress_indicator !== false || formSettings.show_section_navigation !== false) && (
+        <div className="space-y-2.5">
+          {formSettings.show_progress_indicator !== false && (
+            <>
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  Step {activeStepIndex + 1} of {sections.length}: {sections[activeStepIndex]?.title}
+                </span>
+                <span className="font-mono text-[11px]">{Math.round(((activeStepIndex + 1) / sections.length) * 100)}%</span>
+              </div>
+              <div className="w-full bg-slate-100 dark:bg-[#252525] h-1.5 rounded-full overflow-hidden">
+                <div
+                  className="bg-blue-600 dark:bg-[#5DD62C] h-full transition-all duration-300"
+                  style={{ width: `${((activeStepIndex + 1) / sections.length) * 100}%` }}
+                />
+              </div>
+            </>
+          )}
+          {formSettings.show_section_navigation !== false && (
+            <div className="flex flex-wrap gap-1.5">
+              {sections.map((s, idx) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => {
+                    if (idx <= activeStepIndex || validateStep(activeStepIndex)) {
+                      setCurrentStepIndex(idx);
+                    }
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                    idx === activeStepIndex
+                      ? "bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black"
+                      : idx < activeStepIndex
+                      ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
+                      : "bg-slate-100 dark:bg-[#202020] text-slate-500"
+                  }`}
+                >
+                  {idx + 1}. {s.title}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -778,7 +951,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                         </select>
                       )}
 
-                      {/* Radio */}
+                      {/* Radio (Multiple Choice + optional Other) */}
                       {f.field_type === "radio" && (
                         <div className="space-y-1.5 pt-1">
                           {fieldOpts.map((opt) => (
@@ -787,19 +960,53 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                                 type="radio"
                                 name={f.field_key}
                                 value={opt.value}
-                                checked={val === opt.value}
-                                onChange={() => handleFieldChange(f.field_key, opt.value)}
+                                checked={!otherSelected[f.field_key] && val === opt.value}
+                                onChange={() => {
+                                  setOtherSelected((prev) => ({ ...prev, [f.field_key]: false }));
+                                  handleFieldChange(f.field_key, opt.value);
+                                }}
                                 className="text-blue-600 focus:ring-blue-500"
                               />
                               <span>{opt.label}</span>
                             </label>
                           ))}
+                          {f.validation_config?.allow_other && (
+                            <div className="space-y-1.5 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-[#202020]">
+                              <label className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name={f.field_key}
+                                  checked={Boolean(otherSelected[f.field_key])}
+                                  onChange={() => {
+                                    setOtherSelected((prev) => ({ ...prev, [f.field_key]: true }));
+                                    const txt = otherTexts[f.field_key] || "";
+                                    handleFieldChange(f.field_key, txt ? `Other: ${txt}` : "__other__");
+                                  }}
+                                  className="text-blue-600 focus:ring-blue-500"
+                                />
+                                <span>{f.validation_config?.other_label || "Other"}</span>
+                              </label>
+                              {otherSelected[f.field_key] && (
+                                <input
+                                  type="text"
+                                  value={otherTexts[f.field_key] || ""}
+                                  placeholder="Please specify..."
+                                  onChange={(e) => {
+                                    const txt = e.target.value;
+                                    setOtherTexts((prev) => ({ ...prev, [f.field_key]: txt }));
+                                    handleFieldChange(f.field_key, txt.trim() ? `Other: ${txt}` : "__other__");
+                                  }}
+                                  className="ml-6 w-[calc(100%-1.5rem)] text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                                />
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
 
-                      {/* Checkbox (Multi-option group OR single confirmation checkbox) */}
+                      {/* Checkbox (Multi-option group + optional Other, OR single confirmation checkbox) */}
                       {f.field_type === "checkbox" && (
-                        fieldOpts.length > 0 ? (
+                        fieldOpts.length > 0 || f.validation_config?.allow_other ? (
                           <div className="space-y-1.5 pt-1">
                             {fieldOpts.map((opt) => {
                               const isChecked = Array.isArray(val) && val.includes(opt.value);
@@ -816,6 +1023,47 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                                 </label>
                               );
                             })}
+                            {f.validation_config?.allow_other && (
+                              <div className="space-y-1.5 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-[#202020]">
+                                <label className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={Boolean(otherSelected[f.field_key])}
+                                    onChange={(e) => {
+                                      const checked = e.target.checked;
+                                      setOtherSelected((prev) => ({ ...prev, [f.field_key]: checked }));
+                                      const baseList = (Array.isArray(val) ? val : []).filter(
+                                        (x: any) => !(typeof x === "string" && (x === "__other__" || x.startsWith("Other:")))
+                                      );
+                                      if (checked) {
+                                        const txt = otherTexts[f.field_key] || "";
+                                        handleFieldChange(f.field_key, [...baseList, txt.trim() ? `Other: ${txt}` : "__other__"]);
+                                      } else {
+                                        handleFieldChange(f.field_key, baseList);
+                                      }
+                                    }}
+                                    className="rounded text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span>{f.validation_config?.other_label || "Other"}</span>
+                                </label>
+                                {otherSelected[f.field_key] && (
+                                  <input
+                                    type="text"
+                                    value={otherTexts[f.field_key] || ""}
+                                    placeholder="Please specify..."
+                                    onChange={(e) => {
+                                      const txt = e.target.value;
+                                      setOtherTexts((prev) => ({ ...prev, [f.field_key]: txt }));
+                                      const baseList = (Array.isArray(val) ? val : []).filter(
+                                        (x: any) => !(typeof x === "string" && (x === "__other__" || x.startsWith("Other:")))
+                                      );
+                                      handleFieldChange(f.field_key, [...baseList, txt.trim() ? `Other: ${txt}` : "__other__"]);
+                                    }}
+                                    className="ml-6 w-[calc(100%-1.5rem)] text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                                  />
+                                )}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <label className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-200 cursor-pointer p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50/60 dark:bg-[#161616]">
@@ -1114,13 +1362,23 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                         </div>
                       )}
 
-                      {/* Multi-Image Gallery Upload */}
-                      {f.field_type === "gallery_upload" && (
+                      {/* Multi-Image Gallery OR Multi-File Upload */}
+                      {(f.field_type === "gallery_upload" ||
+                        (["file", "pdf_upload", "image_upload", "document_upload"].includes(f.field_type) &&
+                          (f.validation_config?.allow_multiple_files || (f.validation_config?.max_files || 1) > 1))) && (
                         <div className="space-y-2">
                           <input
                             type="file"
                             multiple
-                            accept="image/*"
+                            accept={
+                              f.field_type === "pdf_upload"
+                                ? ".pdf,application/pdf"
+                                : f.field_type === "image_upload" || f.field_type === "gallery_upload"
+                                ? "image/*"
+                                : f.field_type === "document_upload"
+                                ? ".pdf,.doc,.docx,.txt"
+                                : undefined
+                            }
                             onChange={(e) => {
                               if (e.target.files && e.target.files.length > 0) {
                                 handleGalleryFieldUpload(f, e.target.files);
@@ -1130,17 +1388,19 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                             className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-[#252525] dark:file:text-[#5DD62C] cursor-pointer"
                           />
                           {uploadingFieldKey === f.field_key && (
-                            <p className="text-[11px] text-blue-500 animate-pulse">Uploading gallery images to Google Drive...</p>
+                            <p className="text-[11px] text-blue-500 animate-pulse">
+                              {isPreviewMode ? "Staging preview files..." : "Uploading files to Google Drive..."}
+                            </p>
                           )}
                           {Array.isArray(val) && val.length > 0 && (
                             <div className="space-y-1.5">
                               {val.map((item: any, idx: number) => (
                                 <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-[#202020] border border-slate-200 dark:border-[#2d2d2d] text-[11px]">
                                   <span className="truncate font-semibold text-emerald-600 dark:text-[#5DD62C]">
-                                    ✓ {item.original_filename || `Image #${idx + 1}`}
+                                    ✓ {item.original_filename || `File #${idx + 1}`}
                                   </span>
                                   <div className="flex items-center gap-2 shrink-0">
-                                    {(item.file_url || item.storage_reference) && (
+                                    {(item.file_url || item.storage_reference) && !String(item.storage_reference || "").startsWith("preview_") && (
                                       <a
                                         href={resolveEventAssetUrl(item.file_url || item.storage_reference, authToken, false)}
                                         target="_blank"
@@ -1166,7 +1426,9 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                       )}
 
                       {/* Single File / PDF / Document / Image / Camera Upload */}
-                      {["file", "pdf_upload", "image_upload", "document_upload", "camera_capture"].includes(f.field_type) && (
+                      {["file", "pdf_upload", "image_upload", "document_upload", "camera_capture"].includes(f.field_type) &&
+                        !f.validation_config?.allow_multiple_files &&
+                        (f.validation_config?.max_files || 1) <= 1 && (
                         <div className="space-y-1.5">
                           <input
                             type="file"
@@ -1188,14 +1450,16 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                             className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 dark:file:bg-[#252525] dark:file:text-[#5DD62C] cursor-pointer"
                           />
                           {uploadingFieldKey === f.field_key && (
-                            <p className="text-[11px] text-blue-500 animate-pulse">Uploading file securely to Google Drive...</p>
+                            <p className="text-[11px] text-blue-500 animate-pulse">
+                              {isPreviewMode ? "Staging preview file..." : "Uploading file securely to Google Drive..."}
+                            </p>
                           )}
-                          {val && (
+                          {val && !Array.isArray(val) && (
                             <div className="flex items-center justify-between text-[11px] text-emerald-600 dark:text-[#5DD62C] font-semibold">
                               <span>
-                                ✓ Uploaded: {typeof val === "object" ? val.original_filename : String(val)}
+                                ✓ {isPreviewMode ? "Preview attached" : "Uploaded"}: {typeof val === "object" ? val.original_filename : String(val)}
                               </span>
-                              {(val.file_url || val.storage_reference) && (
+                              {(val.file_url || val.storage_reference) && !String(val.storage_reference || "").startsWith("preview_") && (
                                 <a
                                   href={resolveEventAssetUrl(typeof val === "object" ? (val.file_url || val.storage_reference) : val, authToken, true)}
                                   target="_blank"
@@ -1270,12 +1534,42 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                               ? "datetime-local"
                               : "text"
                           }
-                          step={f.field_type === "number" ? "any" : undefined}
+                          step={
+                            f.field_type === "number"
+                              ? f.validation_config?.number_mode === "integer"
+                                ? "1"
+                                : "any"
+                              : undefined
+                          }
+                          min={
+                            f.field_type === "date" || f.field_type === "datetime"
+                              ? f.validation_config?.min_date
+                              : f.field_type === "time"
+                              ? f.validation_config?.min_time
+                              : f.field_type === "number"
+                              ? f.validation_config?.min_val
+                              : undefined
+                          }
+                          max={
+                            f.field_type === "date" || f.field_type === "datetime"
+                              ? f.validation_config?.max_date
+                              : f.field_type === "time"
+                              ? f.validation_config?.max_time
+                              : f.field_type === "number"
+                              ? f.validation_config?.max_val
+                              : undefined
+                          }
                           value={val ?? ""}
                           placeholder={f.placeholder || "Enter value..."}
                           onChange={(e) => handleFieldChange(f.field_key, e.target.value)}
                           className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414] text-slate-900 dark:text-[#F5F5F5] focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                         />
+                      )}
+
+                      {(f.help_text || f.validation_config?.help_text) && (
+                        <p className="text-[10px] text-slate-400 dark:text-[#777] pt-0.5">
+                          💡 {f.help_text || f.validation_config?.help_text}
+                        </p>
                       )}
                     </div>
                   );
@@ -1300,22 +1594,22 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
           </div>
 
           <div className="flex items-center gap-2">
-            {isMultiStep && currentStepIndex > 0 && (
+            {isMultiStep && formSettings.show_section_navigation !== false && activeStepIndex > 0 && (
               <button
                 type="button"
-                onClick={() => setCurrentStepIndex((prev) => prev - 1)}
+                onClick={() => setCurrentStepIndex(Math.max(0, activeStepIndex - 1))}
                 className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-300 dark:border-[#333] bg-white dark:bg-[#202020] text-slate-700 dark:text-slate-300 cursor-pointer"
               >
                 ← Back
               </button>
             )}
 
-            {isMultiStep && currentStepIndex < sections.length - 1 ? (
+            {isMultiStep && formSettings.show_section_navigation !== false && activeStepIndex < sections.length - 1 ? (
               <button
                 type="button"
                 onClick={() => {
-                  if (validateStep(currentStepIndex)) {
-                    setCurrentStepIndex((prev) => prev + 1);
+                  if (validateStep(activeStepIndex)) {
+                    setCurrentStepIndex(Math.min(sections.length - 1, activeStepIndex + 1));
                   }
                 }}
                 className="px-5 py-2 text-xs font-semibold rounded-xl bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black cursor-pointer shadow-xs"
@@ -1341,7 +1635,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                 ) : existingSubmission ? (
                   "Update My Submission"
                 ) : (
-                  "Submit Registration"
+                  formSettings.submit_button_label || "Submit Registration"
                 )}
               </button>
             )}

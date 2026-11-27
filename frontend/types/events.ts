@@ -71,6 +71,7 @@ export type ConditionOperator =
   | "equals"
   | "not_equals"
   | "contains"
+  | "not_contains"
   | "greater_than"
   | "less_than"
   | "in"
@@ -82,7 +83,8 @@ export interface ConditionalRule {
   operator: ConditionOperator;
   value?: any;
   target_value?: any;
-  action?: "show" | "hide";
+  action?: "show" | "hide" | "skip";
+  jump_to_section_id?: string;
 }
 
 export interface ConditionalConfig {
@@ -126,6 +128,8 @@ export interface FormSection {
   title: string;
   description?: string;
   order: number;
+  conditions?: ConditionalRule[] | ConditionalConfig | any;
+  collapsed?: boolean;
 }
 
 export interface FormFieldValidationConfig {
@@ -133,8 +137,37 @@ export interface FormFieldValidationConfig {
   max_len?: number;
   min_val?: number;
   max_val?: number;
+  number_mode?: "integer" | "decimal";
+  regex_pattern?: string;
+  custom_error?: string;
+  min_selections?: number;
+  max_selections?: number;
+  min_date?: string;
+  max_date?: string;
+  min_time?: string;
+  max_time?: string;
   allowed_types?: string[];
   max_size_mb?: number;
+  allow_multiple_files?: boolean;
+  max_files?: number;
+  help_text?: string;
+  allow_other?: boolean;
+  other_label?: string;
+}
+
+export interface FormSettings {
+  form_title?: string;
+  form_description?: string;
+  custom_instructions?: string;
+  submit_button_label?: string;
+  success_message?: string;
+  allow_multiple_responses?: boolean;
+  allow_edit_submission?: boolean;
+  allow_resubmission?: boolean;
+  registration_capacity?: number | null;
+  submission_deadline?: string | null;
+  show_progress_indicator?: boolean;
+  show_section_navigation?: boolean;
 }
 
 export interface FormFieldOption {
@@ -148,6 +181,7 @@ export interface EventFormField {
   field_type: FormFieldType;
   label: string;
   description?: string;
+  help_text?: string;
   placeholder?: string;
   required: boolean;
   validation_config?: FormFieldValidationConfig;
@@ -171,6 +205,7 @@ export interface EventFormVersion {
   version_number: number;
   status: "draft" | "published" | "archived";
   sections_config?: FormSection[];
+  form_settings?: FormSettings | null;
   created_by: string;
   created_at: string;
   published_at?: string;

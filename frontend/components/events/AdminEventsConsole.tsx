@@ -152,10 +152,16 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
     }
   };
 
-  // Switch to Form Builder
-  const handleOpenFormBuilder = (event: EventItem) => {
+  // Switch to Form Builder (also fetch latest event & form details so form_settings/versions stay current)
+  const handleOpenFormBuilder = async (event: EventItem) => {
     setActiveEvent(event);
     setViewState("form_builder");
+    try {
+      const fresh = await eventsApi.getEvent(event.id);
+      if (fresh) setActiveEvent(fresh);
+    } catch {
+      // Keep cached event summary if background refresh fails
+    }
   };
 
   // Switch to Responses
@@ -178,9 +184,16 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
         event={activeEvent}
         initialFields={activeEvent.current_form?.fields}
         initialSections={activeEvent.current_form?.sections_config}
+        initialFormSettings={activeEvent.current_form?.form_settings}
         onBack={handleBackToList}
-        onSaved={() => {
-          loadEvents();
+        onSaved={async () => {
+          await loadEvents();
+          try {
+            const fresh = await eventsApi.getEvent(activeEvent.id);
+            if (fresh) setActiveEvent(fresh);
+          } catch {
+            // Non-fatal
+          }
         }}
       />
     );
