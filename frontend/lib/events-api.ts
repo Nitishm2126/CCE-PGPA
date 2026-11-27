@@ -12,6 +12,8 @@ import {
   EventSubmissionItem,
   EventSubmissionRequest,
   EventTemplate,
+  EventAudienceSummaryResponse,
+  PollAggregateResult,
 } from "@/types/events";
 
 import { STARTER_EVENT_TEMPLATES } from "@/lib/starter-templates-data";
@@ -277,6 +279,11 @@ export const eventsApi = {
     });
   },
 
+  // Audience Options Summary (All students + dynamic mentor cohorts)
+  getAudienceOptions: async (): Promise<EventAudienceSummaryResponse> => {
+    return request<EventAudienceSummaryResponse>("/events/audience-options");
+  },
+
   // Student Endpoints
   listStudentEvents: async (): Promise<{ events: EventItem[] }> => {
     return request<{ events: EventItem[] }>("/student/events");
@@ -286,18 +293,25 @@ export const eventsApi = {
     return request<EventItem>(`/student/events/${eventId}`);
   },
 
-  getStudentEventForm: async (eventId: string): Promise<{ event: EventItem; form: EventFormVersion }> => {
-    return request<{ event: EventItem; form: EventFormVersion }>(`/student/events/${eventId}/form`);
+  getStudentEventForm: async (
+    eventId: string
+  ): Promise<{ event: EventItem; form: EventFormVersion; poll_results?: PollAggregateResult }> => {
+    return request<{ event: EventItem; form: EventFormVersion; poll_results?: PollAggregateResult }>(
+      `/student/events/${eventId}/form`
+    );
   },
 
   submitStudentEvent: async (
     eventId: string,
     data: EventSubmissionRequest
-  ): Promise<{ message: string; submission: EventSubmissionItem }> => {
-    return request<{ message: string; submission: EventSubmissionItem }>(`/student/events/${eventId}/submit`, {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+  ): Promise<{ message: string; submission: EventSubmissionItem; poll_results?: PollAggregateResult }> => {
+    return request<{ message: string; submission: EventSubmissionItem; poll_results?: PollAggregateResult }>(
+      `/student/events/${eventId}/submit`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
   },
 
   getStudentMySubmission: async (eventId: string): Promise<EventSubmissionItem> => {

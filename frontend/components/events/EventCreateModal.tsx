@@ -9,12 +9,12 @@ import {
   FormLayoutMode,
   EventAttachment,
   EventTemplate,
+  EventAudienceOption,
 } from "@/types/events";
 import { eventsApi, resolveEventAssetUrl } from "@/lib/events-api";
 import { notificationsApi } from "@/lib/notifications-api";
 import { EventTemplatesLibraryModal } from "@/components/events/EventTemplatesLibraryModal";
-import { api, getStoredToken } from "@/lib/api-client";
-import { AdminStudentItem } from "@/types/auth";
+import { getStoredToken } from "@/lib/api-client";
 import { SemesterResponse } from "@/types/achievement";
 
 interface EventCreateModalProps {
@@ -91,14 +91,12 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
   const [newDocName, setNewDocName] = useState("");
   const [newDocUrl, setNewDocUrl] = useState("");
 
-  // Section C: Target Audience
+  // Section C: Target Audience (All 61 Students & Mentor Cohorts)
   const [audienceType, setAudienceType] = useState<AudienceType>("all");
-  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
-  const [selectedSection, setSelectedSection] = useState<string>("A");
-  const [selectedYear, setSelectedYear] = useState<string>("2");
-  const [studentSearch, setStudentSearch] = useState("");
-  const [allStudents, setAllStudents] = useState<AdminStudentItem[]>([]);
-  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [selectedAudienceId, setSelectedAudienceId] = useState<string>("all");
+  const [audienceOptions, setAudienceOptions] = useState<EventAudienceOption[]>([]);
+  const [totalStudentCount, setTotalStudentCount] = useState<number>(61);
+  const [loadingAudience, setLoadingAudience] = useState<boolean>(false);
 
   // Section D: Contact Info, Guidelines & Rules
   const [contactPerson, setContactPerson] = useState("");
@@ -184,12 +182,24 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setAttachments(initialEvent.attachments || []);
 
       setAudienceType(initialEvent.audience_type || "all");
-      if (initialEvent.audience_type === "specific_students" && Array.isArray(initialEvent.audience_payload)) {
-        setSelectedStudents(initialEvent.audience_payload);
-      } else if (initialEvent.audience_type === "section" && typeof initialEvent.audience_payload === "string") {
-        setSelectedSection(initialEvent.audience_payload);
-      } else if (initialEvent.audience_type === "academic_year" && typeof initialEvent.audience_payload === "string") {
-        setSelectedYear(initialEvent.audience_payload);
+      const audPayload = initialEvent.audience_payload;
+      if (
+        (initialEvent.audience_type === "custom" || initialEvent.audience_type === "mentor_mentees") &&
+        audPayload &&
+        typeof audPayload === "object"
+      ) {
+        const mKey = String(audPayload.mentor_key || "").toLowerCase();
+        if (mKey) {
+          setSelectedAudienceId(`mentor_${mKey}`);
+        } else {
+          const hay = `${audPayload.mentor_name || ""} ${audPayload.mentor_email || ""}`.toLowerCase();
+          if (hay.includes("lekha")) setSelectedAudienceId("mentor_lekha");
+          else if (hay.includes("lurdhu") || hay.includes("lurdh")) setSelectedAudienceId("mentor_lurdhmary");
+          else if (hay.includes("priya") || hay.includes("pachai") || hay.includes("pachhai")) setSelectedAudienceId("mentor_pachhaiammal_priya");
+          else setSelectedAudienceId("all");
+        }
+      } else {
+        setSelectedAudienceId("all");
       }
 
       setContactPerson(initialEvent.contact_person || "");
@@ -263,9 +273,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setAttachments([]);
 
       setAudienceType("all");
-      setSelectedStudents([]);
-      setSelectedSection("A");
-      setSelectedYear("2");
+      setSelectedAudienceId("all");
 
       setContactPerson("");
       setContactEmail("");
@@ -298,44 +306,78 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
     setError(null);
   }, [isOpen, initialEvent, semesters]);
 
-  // Load students eagerly for live audience recipient count calculation
+  // Load dynamic Target Audience summary (All 61 students + live mentor mentee counts)
   useEffect(() => {
-    if (isOpen && allStudents.length === 0) {
-      setLoadingStudents(true);
-      api
-        .adminGetStudents()
-        .then((res: AdminStudentItem[]) => {
-          setAllStudents(res || []);
-        })
-        .catch((e: unknown) => {
-          console.error("Failed to load students for audience picker", e);
-        })
-        .finally(() => setLoadingStudents(false));
-    }
-  }, [isOpen, allStudents.length]);
+    if (!isOpen) return;
+    setLoadingAudience(true);
+    eventsApi
+      .getAudienceOptions()
+      .then((res) => {
+        if (res && Array.isArray(res.options) && res.options.length > 0) {
+          setAudienceOptions(res.options);
+          setTotalStudentCount(res.total_students ?? 61);
+        }
+      })
+      .catch((e: unknown) => {
+        console.error("Failed to load live mentor audience counts:", e);
+      })
+      .finally(() => setLoadingAudience(false));
+  }, [isOpen]);
 
-  const recipientCount = React.useMemo(() => {
-    if (loadingStudents) return "...";
-    if (audienceType === "all") return allStudents.length || 61;
-    if (audienceType === "section") {
-      const cnt = allStudents.filter(
-        (s) => (s.section || "").trim().toUpperCase() === selectedSection.trim().toUpperCase()
-      ).length;
-      return cnt;
-    }
-    if (audienceType === "academic_year") {
-      const cnt = allStudents.filter(
-        (s) =>
-          String(s.year || "").trim() === selectedYear.trim() ||
-          String(s.batch || "").trim() === selectedYear.trim()
-      ).length;
-      return cnt;
-    }
-    if (audienceType === "specific_students") {
-      return selectedStudents.length;
-    }
-    return allStudents.length || 61;
-  }, [allStudents, audienceType, selectedSection, selectedYear, selectedStudents, loadingStudents]);
+  const effectiveAudienceOptions: EventAudienceOption[] = React.useMemo(() => {
+    if (audienceOptions.length > 0) return audienceOptions;
+    return [
+      {
+        id: "all",
+        audience_type: "all",
+        mentor_key: "all",
+        title: `All ${totalStudentCount} Students`,
+        subtitle: "Complete CCE Cohort",
+        description: `Targets all ${totalStudentCount} enrolled CCE students across every mentor.`,
+        student_count: totalStudentCount,
+        audience_payload: null,
+      },
+      {
+        id: "mentor_lekha",
+        audience_type: "custom",
+        mentor_key: "lekha",
+        mentor_name: "P. LEKHA",
+        title: "Lekha Mentees",
+        subtitle: "Loading mentor allocation...",
+        description: "Students allocated under mentor Lekha.",
+        student_count: 0,
+        audience_payload: { mode: "mentor_mentees", mentor_key: "lekha", mentor_name: "P. LEKHA" },
+      },
+      {
+        id: "mentor_lurdhmary",
+        audience_type: "custom",
+        mentor_key: "lurdhmary",
+        mentor_name: "LURDHUMARY J",
+        title: "Lurdhmary Mentees",
+        subtitle: "Loading mentor allocation...",
+        description: "Students allocated under mentor Lurdhmary.",
+        student_count: 0,
+        audience_payload: { mode: "mentor_mentees", mentor_key: "lurdhmary", mentor_name: "LURDHUMARY J" },
+      },
+      {
+        id: "mentor_pachhaiammal_priya",
+        audience_type: "custom",
+        mentor_key: "pachhaiammal_priya",
+        mentor_name: "Dr. Pachaiammal Alias Priya",
+        title: "Pachhaiammal Priya Mentees",
+        subtitle: "Loading mentor allocation...",
+        description: "Students allocated under mentor Pachhaiammal Priya.",
+        student_count: 0,
+        audience_payload: { mode: "mentor_mentees", mentor_key: "pachhaiammal_priya", mentor_name: "Dr. Pachaiammal Alias Priya" },
+      },
+    ];
+  }, [audienceOptions, totalStudentCount]);
+
+  const selectedAudienceOption = React.useMemo(() => {
+    return effectiveAudienceOptions.find((o) => o.id === selectedAudienceId) || effectiveAudienceOptions[0];
+  }, [effectiveAudienceOptions, selectedAudienceId]);
+
+  const recipientCount = loadingAudience && audienceOptions.length === 0 ? "..." : selectedAudienceOption?.student_count ?? totalStudentCount;
 
   if (!isOpen) return null;
 
@@ -453,19 +495,15 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       return;
     }
 
-    let audiencePayload: any = null;
-    if (audienceType === "specific_students") {
-      if (selectedStudents.length === 0) {
-        setError("Please select at least one student for the target audience.");
-        setActiveTab("audience");
-        return;
-      }
-      audiencePayload = selectedStudents;
-    } else if (audienceType === "section") {
-      audiencePayload = selectedSection;
-    } else if (audienceType === "academic_year") {
-      audiencePayload = selectedYear;
-    }
+    const chosenAudienceType: AudienceType = selectedAudienceOption?.id === "all" ? "all" : "custom";
+    const audiencePayload: any =
+      chosenAudienceType === "all"
+        ? null
+        : selectedAudienceOption?.audience_payload || {
+            mode: "mentor_mentees",
+            mentor_key: selectedAudienceOption?.mentor_key,
+            mentor_name: selectedAudienceOption?.mentor_name,
+          };
 
     const capNum = registrationCapacity.trim() ? parseInt(registrationCapacity.trim(), 10) : null;
 
@@ -490,7 +528,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       banner_image_url: posterUrl || undefined,
       gallery_images: galleryImages.length > 0 ? galleryImages : undefined,
       attachments: attachments.length > 0 ? attachments : undefined,
-      audience_type: audienceType,
+      audience_type: chosenAudienceType,
       audience_payload: audiencePayload,
       contact_person: contactPerson.trim() || undefined,
       contact_email: contactEmail.trim() || undefined,
@@ -540,13 +578,6 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
       setIsSubmitting(false);
     }
   };
-
-  const filteredStudents = allStudents.filter(
-    (s) =>
-      (s.full_name || "").toLowerCase().includes(studentSearch.toLowerCase()) ||
-      (s.register_number || "").toLowerCase().includes(studentSearch.toLowerCase()) ||
-      (s.email || "").toLowerCase().includes(studentSearch.toLowerCase())
-  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs">
@@ -1061,159 +1092,73 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
           {/* TAB 3: TARGET AUDIENCE */}
           {activeTab === "audience" && (
             <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1.5">
-                  Select Event Target Audience
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {[
-                    { id: "all", title: "All Department Students", desc: "Open to all enrolled students" },
-                    { id: "section", title: "Specific Section", desc: "Target section A, B, or C" },
-                    { id: "academic_year", title: "Specific Year / Batch", desc: "Target by student year (1st-4th Year)" },
-                    { id: "specific_students", title: "Custom Student Selection", desc: "Select specific register numbers" },
-                  ].map((aud) => (
-                    <label
-                      key={aud.id}
-                      className={`p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-2.5 ${
-                        audienceType === aud.id
-                          ? "border-blue-500 dark:border-[#5DD62C] bg-blue-50/40 dark:bg-[#5DD62C]/10 shadow-2xs"
-                          : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="audienceType"
-                        value={aud.id}
-                        checked={audienceType === aud.id}
-                        onChange={() => setAudienceType(aud.id as AudienceType)}
-                        className="mt-0.5 text-blue-600 focus:ring-blue-500"
-                      />
-                      <div>
-                        <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">{aud.title}</p>
-                        <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-0.5">{aud.desc}</p>
-                      </div>
-                    </label>
-                  ))}
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4]">
+                    Select Event Target Audience
+                  </label>
+                  <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-0.5">
+                    Choose all enrolled students or a specific mentor&apos;s mentee cohort. Counts are fetched live from mentor allocations.
+                  </p>
                 </div>
+                {loadingAudience && (
+                  <span className="text-[11px] font-semibold text-blue-600 dark:text-[#5DD62C] animate-pulse shrink-0">
+                    Syncing counts...
+                  </span>
+                )}
               </div>
 
-              {/* Section Selector */}
-              {audienceType === "section" && (
-                <div className="rounded-xl border border-slate-200 dark:border-[#292929] p-3.5 bg-slate-50/50 dark:bg-[#202020]/40">
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1.5">
-                    Target Section
-                  </label>
-                  <div className="flex gap-4">
-                    {["A", "B", "C"].map((sec) => (
-                      <label key={sec} className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                        <input
-                          type="radio"
-                          name="targetSection"
-                          value={sec}
-                          checked={selectedSection === sec}
-                          onChange={(e) => setSelectedSection(e.target.value)}
-                        />
-                        <span>Section {sec}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Year Selector */}
-              {audienceType === "academic_year" && (
-                <div className="rounded-xl border border-slate-200 dark:border-[#292929] p-3.5 bg-slate-50/50 dark:bg-[#202020]/40">
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#D4D4D4] mb-1.5">
-                    Target Year Cohort
-                  </label>
-                  <div className="flex gap-4">
-                    {["1", "2", "3", "4"].map((yr) => (
-                      <label key={yr} className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                        <input
-                          type="radio"
-                          name="targetYear"
-                          value={yr}
-                          checked={selectedYear === yr}
-                          onChange={(e) => setSelectedYear(e.target.value)}
-                        />
-                        <span>Year {yr}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Specific Students Selection */}
-              {audienceType === "specific_students" && (
-                <div className="space-y-3 rounded-xl border border-slate-200 dark:border-[#292929] p-3.5 bg-slate-50/50 dark:bg-[#202020]/40">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-[#D4D4D4]">
-                      Selected: {selectedStudents.length} Students
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (selectedStudents.length === filteredStudents.length) {
-                          setSelectedStudents([]);
-                        } else {
-                          setSelectedStudents(filteredStudents.map((s) => s.id));
-                        }
-                      }}
-                      className="text-xs font-semibold text-blue-600 dark:text-[#5DD62C] hover:underline cursor-pointer"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {effectiveAudienceOptions.map((aud) => {
+                  const isSelected = selectedAudienceId === aud.id;
+                  return (
+                    <label
+                      key={aud.id}
+                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-3 ${
+                        isSelected
+                          ? "border-blue-500 dark:border-[#5DD62C] bg-blue-50/40 dark:bg-[#5DD62C]/10 shadow-2xs ring-1 ring-blue-500/20 dark:ring-[#5DD62C]/20"
+                          : "border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] hover:border-slate-300 dark:hover:border-[#383838]"
+                      }`}
                     >
-                      {selectedStudents.length === filteredStudents.length ? "Deselect All" : "Select All Matching"}
-                    </button>
-                  </div>
-
-                  <input
-                    type="text"
-                    value={studentSearch}
-                    onChange={(e) => setStudentSearch(e.target.value)}
-                    placeholder="Search by student name or register number..."
-                    className="w-full rounded-xl border border-slate-300 dark:border-[#292929] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs text-slate-900 dark:text-[#F5F5F5]"
-                  />
-
-                  {loadingStudents ? (
-                    <p className="text-xs text-slate-400 py-3 text-center">Loading student records...</p>
-                  ) : (
-                    <div className="max-h-48 overflow-y-auto space-y-1.5 border border-slate-200 dark:border-[#292929] rounded-xl p-2 bg-white dark:bg-[#181818]">
-                      {filteredStudents.length === 0 ? (
-                        <p className="text-xs text-slate-400 text-center py-2">No matching students found.</p>
-                      ) : (
-                        filteredStudents.map((s) => {
-                          const isChecked = selectedStudents.includes(s.id);
-                          return (
-                            <label
-                              key={s.id}
-                              className={`flex items-center gap-2 p-1.5 rounded-lg text-xs cursor-pointer ${
-                                isChecked
-                                  ? "bg-blue-50 dark:bg-[#5DD62C]/10 text-blue-900 dark:text-[#5DD62C] font-semibold"
-                                  : "hover:bg-slate-50 dark:hover:bg-[#202020] text-slate-700 dark:text-[#A3A3A3]"
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedStudents([...selectedStudents, s.id]);
-                                  } else {
-                                    setSelectedStudents(selectedStudents.filter((id) => id !== s.id));
-                                  }
-                                }}
-                                className="rounded text-blue-600"
-                              />
-                              <span className="font-mono text-[11px] font-bold">{s.register_number || "—"}</span>
-                              <span className="truncate">{s.full_name}</span>
-                              <span className="text-[10px] text-slate-400 ml-auto">{s.section || "Sec A"}</span>
-                            </label>
-                          );
-                        })
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <input
+                          type="radio"
+                          name="audienceOptionCard"
+                          value={aud.id}
+                          checked={isSelected}
+                          onChange={() => {
+                            setSelectedAudienceId(aud.id);
+                            setAudienceType(aud.id === "all" ? "all" : "custom");
+                          }}
+                          className="mt-1 text-blue-600 focus:ring-blue-500 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">
+                            {aud.title}
+                          </p>
+                          {aud.subtitle && (
+                            <p className="text-[11px] font-medium text-blue-600 dark:text-[#5DD62C] mt-0.5 truncate">
+                              {aud.subtitle}
+                            </p>
+                          )}
+                          <p className="text-[11px] text-slate-500 dark:text-[#A3A3A3] mt-1 leading-snug">
+                            {aud.description}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          isSelected
+                            ? "bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black"
+                            : "bg-slate-100 dark:bg-[#252525] text-slate-700 dark:text-slate-300"
+                        }`}
+                      >
+                        {aud.student_count} Students
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -1419,13 +1364,7 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
                       Target Audience:
                     </span>
                     <span className="capitalize px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#262626] font-mono text-[11px]">
-                      {audienceType === "all"
-                        ? "All CCE Students"
-                        : audienceType === "section"
-                        ? `Section ${selectedSection}`
-                        : audienceType === "academic_year"
-                        ? `Year ${selectedYear}`
-                        : `${selectedStudents.length} Specific Students`}
+                      {selectedAudienceOption?.title || "All CCE Students"}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 font-bold text-blue-600 dark:text-[#5DD62C]">

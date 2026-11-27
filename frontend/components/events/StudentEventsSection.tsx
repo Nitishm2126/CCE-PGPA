@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { EventItem, EventFormVersion, EventSubmissionItem } from "@/types/events";
+import { EventItem, EventFormVersion, EventSubmissionItem, PollAggregateResult } from "@/types/events";
 import { eventsApi, resolveEventAssetUrl } from "@/lib/events-api";
 import { getStoredToken } from "@/lib/api-client";
 import { EventStatusBadge, EventModeBadge } from "@/components/events/EventStatusBadge";
@@ -33,6 +33,7 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
   // Registration modal states
   const [registeringEvent, setRegisteringEvent] = useState<EventItem | null>(null);
   const [eventForm, setEventForm] = useState<EventFormVersion | null>(null);
+  const [pollResults, setPollResults] = useState<PollAggregateResult | undefined>(undefined);
   const [existingSubmission, setExistingSubmission] = useState<EventSubmissionItem | null>(null);
   const [loadingForm, setLoadingForm] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -115,6 +116,7 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
     setLoadingForm(true);
     setFormError(null);
     setEventForm(null);
+    setPollResults(undefined);
     setExistingSubmission(null);
     try {
       const formRes = await eventsApi.getStudentEventForm(evt.id);
@@ -122,6 +124,7 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
         setRegisteringEvent((prev) => ({ ...(prev || evt), ...formRes.event }));
       }
       setEventForm(formRes.form);
+      setPollResults(formRes.poll_results);
 
       // If already submitted and editing allowed, fetch submission
       if (evt.has_submitted) {
@@ -785,6 +788,7 @@ export const StudentEventsSection: React.FC<StudentEventsSectionProps> = ({
                   event={registeringEvent}
                   form={eventForm}
                   existingSubmission={existingSubmission}
+                  pollResults={pollResults}
                   onSubmitted={(sub) => {
                     setEvents((prev) =>
                       prev.map((item) =>

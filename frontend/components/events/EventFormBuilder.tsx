@@ -55,11 +55,12 @@ const FIELD_PALETTE: PaletteItem[] = [
   { type: "datetime", label: "Date and Time", category: "datetime", icon: "🗓", defaultLabel: "Appointment Slot", description: "Combined date and time picker" },
   { type: "date_range", label: "Date Range", category: "datetime", icon: "↔", defaultLabel: "Internship Duration", description: "Start and end date pair" },
 
-  // Selection
-  { type: "radio", label: "Multiple Choice", category: "choice", icon: "◉", defaultLabel: "Choose One Option", description: "Single choice radio buttons + Other" },
+  // Selection & Polls
+  { type: "radio", label: "Multiple Choice", category: "choice", icon: "◉", defaultLabel: "Choose One Option", description: "Single choice with optional answer branching" },
   { type: "checkbox", label: "Checkboxes", category: "choice", icon: "☑", defaultLabel: "Areas of Interest", description: "Multiple choices + Other & bounds" },
-  { type: "dropdown", label: "Dropdown", category: "choice", icon: "▼", defaultLabel: "Select Your Track", description: "Single choice from dropdown menu" },
-  { type: "yes_no", label: "Yes / No", category: "choice", icon: "⚖", defaultLabel: "Will you bring your own laptop?", description: "Fast Yes / No toggle buttons" },
+  { type: "dropdown", label: "Dropdown", category: "choice", icon: "▼", defaultLabel: "Select Your Track", description: "Dropdown list with optional section jump" },
+  { type: "poll", label: "Poll", category: "choice", icon: "📊", defaultLabel: "Quick Student Poll", description: "Poll question with configurable live results" },
+  { type: "yes_no", label: "Yes / No", category: "choice", icon: "⚖", defaultLabel: "Did you attend?", description: "Fast Yes / No branching toggle buttons" },
   { type: "multi_select", label: "Multi-Select Tags", category: "choice", icon: "🏷", defaultLabel: "Preferred Technologies", description: "Tag pills with multi-select" },
 
   // Feedback & Rating
@@ -83,17 +84,19 @@ const FIELD_PALETTE: PaletteItem[] = [
   // Repeatable Sections
   { type: "repeatable_group", label: "Repeatable Group", category: "advanced", icon: "👥", defaultLabel: "Team Members List", description: "Dynamic add/remove entry group" },
 
-  // Layout Blocks
+  // Layout Blocks & Page Break
   { type: "heading", label: "Section Heading", category: "layout", icon: "H", defaultLabel: "Participant Information", description: "Visual bold title separator" },
-  { type: "description", label: "Description / Instructions", category: "layout", icon: "📝", defaultLabel: "Read all eligibility instructions carefully before registering.", description: "Formatted instructional text block" },
+  { type: "description", label: "Description / Text", category: "layout", icon: "📝", defaultLabel: "Read all eligibility instructions carefully before registering.", description: "Formatted instructional text block" },
+  { type: "page_break", label: "Page Break (New Section)", category: "layout", icon: "⤓", defaultLabel: "Page Break — Next Section", description: "Splits questions into a new navigable section" },
   { type: "subheading", label: "Subheading", category: "layout", icon: "h2", defaultLabel: "Academic & Contact Details", description: "Secondary section subtitle" },
   { type: "divider", label: "Horizontal Divider", category: "layout", icon: "—", defaultLabel: "Divider", description: "Visual separation line" },
   { type: "info_card", label: "Information Notice", category: "layout", icon: "ℹ", defaultLabel: "Please ensure all details match college records.", description: "Blue informative callout card" },
   { type: "notice", label: "Warning / Important Notice", category: "layout", icon: "⚠️", defaultLabel: "Late registrations will not be entertained.", description: "Amber warning highlight box" },
 ];
 
-const LAYOUT_TYPES = ["heading", "subheading", "description", "rich_text_block", "divider", "info", "info_card", "notice"];
-const CHOICE_TYPES = ["dropdown", "radio", "checkbox", "multi_select"];
+const LAYOUT_TYPES = ["heading", "subheading", "description", "rich_text_block", "divider", "page_break", "info", "info_card", "notice"];
+const CHOICE_TYPES = ["dropdown", "radio", "checkbox", "multi_select", "poll"];
+const BRANCHING_QUESTION_TYPES = ["radio", "yes_no", "dropdown", "poll"];
 const UPLOAD_TYPES = ["file", "pdf_upload", "document_upload", "image_upload", "gallery_upload", "camera_capture", "geo_photo"];
 
 function buildDefaultField(type: FormFieldType, sectionId: string, orderIndex: number, totalCount: number): EventFormField {
@@ -303,8 +306,43 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
   }, [paletteSearch, paletteCategory]);
 
   // Add field to active section OR immediately after a target field ID
+  // Selecting "page_break" inserts a new Page/Section cleanly (splitting after a chosen card if inserted inline!)
   const handleAddField = (type: FormFieldType, afterFieldId?: string, explicitSectionId?: string) => {
     const targetSecId = explicitSectionId || activeSectionId || sections[0]?.id || "sec_default";
+    if (type === "page_break") {
+      const targetIdx = sections.findIndex((s) => s.id === targetSecId);
+      const insertAt = targetIdx !== -1 ? targetIdx + 1 : sections.length;
+      const newSecId = `sec_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
+      const newSec: FormSection = {
+        id: newSecId,
+        title: `Section ${sections.length + 1}`,
+        description: "New page section",
+        order: insertAt,
+        after_section_action: "__next__",
+      };
+      setSections((prev) => {
+        const next = [...prev];
+        next.splice(insertAt, 0, newSec);
+        return next.map((s, idx) => ({ ...s, order: idx }));
+      });
+      if (afterFieldId) {
+        setFields((prev) => {
+          const splitIdx = prev.findIndex((f) => f.id === afterFieldId);
+          if (splitIdx === -1) return prev;
+          return prev.map((f, idx) =>
+            idx > splitIdx && (f.section_id || sections[0]?.id) === targetSecId
+              ? { ...f, section_id: newSecId }
+              : f
+          );
+        });
+      }
+      setActiveSectionId(newSecId);
+      setInsertMenuFieldId(null);
+      setLayoutMode("multi_step");
+      setSaveSuccess("Added new page break / section and switched preview layout to section navigation.");
+      return;
+    }
+
     const newField = buildDefaultField(type, targetSecId, fields.length, fields.length);
 
     setFields((prev) => {
@@ -448,6 +486,74 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
       prev.map((s) => (s.id === secId ? { ...s, ...patch } : s))
     );
   };
+
+  const handleMoveSection = (secId: string, direction: "up" | "down") => {
+    setSections((prev) => {
+      const idx = prev.findIndex((s) => s.id === secId);
+      if (idx === -1) return prev;
+      const target = direction === "up" ? idx - 1 : idx + 1;
+      if (target < 0 || target >= prev.length) return prev;
+      const copy = [...prev];
+      [copy[idx], copy[target]] = [copy[target], copy[idx]];
+      return copy.map((s, i) => ({ ...s, order: i }));
+    });
+  };
+
+  // Detect invalid destination IDs or circular navigation loops across sections & answer branches
+  const navigationWarnings = useMemo(() => {
+    const warnings: string[] = [];
+    const validIds = new Set(sections.map((s) => s.id));
+    const edges = new Map<string, Set<string>>();
+    sections.forEach((s) => edges.set(s.id, new Set()));
+
+    sections.forEach((sec, idx) => {
+      const addEdge = (target: string | undefined, label: string) => {
+        if (!target || target === "__submit__") return;
+        if (target === "__next__") {
+          if (idx + 1 < sections.length) edges.get(sec.id)?.add(sections[idx + 1].id);
+          return;
+        }
+        if (!validIds.has(target)) {
+          warnings.push(`"${sec.title}" (${label}) points to a deleted section.`);
+          return;
+        }
+        if (target === sec.id) {
+          warnings.push(`"${sec.title}" (${label}) loops back to itself.`);
+          return;
+        }
+        edges.get(sec.id)?.add(target);
+      };
+
+      addEdge(sec.after_section_action, "After section");
+      fields
+        .filter((f) => (f.section_id || sections[0]?.id) === sec.id && f.validation_config?.go_to_section_on_answer)
+        .forEach((f) => {
+          const routes = f.validation_config?.option_routes || {};
+          Object.entries(routes).forEach(([optVal, target]) => {
+            addEdge(target, `"${f.label}" = ${optVal}`);
+          });
+        });
+    });
+
+    // DFS cycle check across branching section graph
+    const state = new Map<string, number>(); // 0 unvisited, 1 visiting, 2 visited
+    const hasCycle = (node: string): boolean => {
+      state.set(node, 1);
+      for (const nxt of edges.get(node) || []) {
+        if (state.get(nxt) === 1) return true;
+        if (!state.get(nxt) && hasCycle(nxt)) return true;
+      }
+      state.set(node, 2);
+      return false;
+    };
+    for (const s of sections) {
+      if (!state.get(s.id) && hasCycle(s.id)) {
+        warnings.push("Circular navigation detected between sections. Please ensure branches move forward cleanly or end with 'Submit form'.");
+        break;
+      }
+    }
+    return warnings;
+  }, [sections, fields]);
 
   const handleRemoveSection = (secId: string) => {
     if (sections.length <= 1) {
@@ -601,15 +707,26 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
       setErrorMessage("Please add at least one form field before saving.");
       return;
     }
+    if (navigationWarnings.length > 0) {
+      setErrorMessage(navigationWarnings[0]);
+      return;
+    }
 
     setIsSaving(true);
     setErrorMessage(null);
     setSaveSuccess(null);
 
     try {
+      // Automatically use multi_step when branching or multiple sections are configured
+      const hasBranching =
+        sections.some((s) => Boolean(s.after_section_action && s.after_section_action !== "__next__") || Boolean(s.navigation_rules?.length)) ||
+        fields.some((f) => Boolean(f.validation_config?.go_to_section_on_answer));
+      const effectiveLayout: FormLayoutMode = hasBranching && sections.length > 1 ? "multi_step" : layoutMode;
+
       // Also update event layout mode if changed
-      if (layoutMode !== event.form_layout_mode) {
-        await eventsApi.updateEvent(event.id, { form_layout_mode: layoutMode });
+      if (effectiveLayout !== event.form_layout_mode) {
+        await eventsApi.updateEvent(event.id, { form_layout_mode: effectiveLayout });
+        setLayoutMode(effectiveLayout);
       }
 
       const normalizedFields = fields.map((f, idx) => ({
@@ -622,7 +739,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
       }));
 
       await eventsApi.saveEventForm(event.id, normalizedFields, sections, formSettings);
-      setSaveSuccess("Form fields, sections, and settings saved successfully!");
+      setSaveSuccess("Form fields, sections, branching rules, and settings saved successfully!");
       if (onSaved) onSaved();
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to save form fields. Please try again.");
@@ -815,6 +932,15 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
               Reset to Blank
             </button>
           </div>
+        </div>
+      )}
+
+      {navigationWarnings.length > 0 && (
+        <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+          <p className="font-bold">⚠️ Branching Navigation Warning</p>
+          {navigationWarnings.map((w, idx) => (
+            <p key={idx}>• {w}</p>
+          ))}
         </div>
       )}
 
@@ -1047,29 +1173,57 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
           </div>
 
           {/* ------------------------------------------------------------------- */}
-          {/* PANEL 2 (CENTER): MULTI-SECTION FORM CANVAS                        */}
+          {/* PANEL 2 (CENTER): GOOGLE FORMS-STYLE FORM CANVAS & SECTIONS         */}
           {/* ------------------------------------------------------------------- */}
           <div className="lg:col-span-5 rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-4 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5] uppercase tracking-wider">
                   Form Canvas & Sections
                 </h3>
                 <p className="text-[11px] text-slate-400 dark:text-[#888] mt-0.5">
-                  Click any question to configure or drag to reorder.
+                  Edit inline, insert questions, or configure section branching.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleAddSection}
-                className="px-2.5 py-1 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-[#252525] hover:bg-slate-200 dark:hover:bg-[#303030] text-slate-800 dark:text-slate-200 transition-all flex items-center gap-1 cursor-pointer"
-              >
-                <span>+ Add Section</span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleAddField("page_break")}
+                  className="px-2.5 py-1 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#333] bg-slate-50 dark:bg-[#202020] hover:bg-slate-100 dark:hover:bg-[#2a2a2a] text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+                  title="Insert a Page Break / New Section"
+                >
+                  ⤓ + Page Break
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddSection}
+                  className="px-2.5 py-1 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-[#252525] hover:bg-slate-200 dark:hover:bg-[#303030] text-slate-800 dark:text-slate-200 transition-all flex items-center gap-1 cursor-pointer"
+                >
+                  <span>+ Add Section</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Google Forms-Style Editable Form Title & Description Header Card */}
+            <div className="rounded-2xl border-t-4 border-t-blue-600 dark:border-t-[#5DD62C] border border-slate-200 dark:border-[#2d2d2d] bg-slate-50/60 dark:bg-[#141414] p-3.5 space-y-1.5">
+              <input
+                type="text"
+                value={formSettings.form_title ?? ""}
+                placeholder={event.title}
+                onChange={(e) => setFormSettings((s) => ({ ...s, form_title: e.target.value }))}
+                className="w-full text-sm font-bold text-slate-900 dark:text-[#F5F5F5] bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 dark:focus:border-[#5DD62C] focus:outline-hidden pb-0.5"
+              />
+              <input
+                type="text"
+                value={formSettings.form_description ?? ""}
+                placeholder={event.short_description || "Form description shown to students..."}
+                onChange={(e) => setFormSettings((s) => ({ ...s, form_description: e.target.value }))}
+                className="w-full text-xs text-slate-500 dark:text-[#A3A3A3] bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 dark:focus:border-[#5DD62C] focus:outline-hidden pb-0.5"
+              />
             </div>
 
             {/* Sections Accordions */}
-            <div className="space-y-4 max-h-[700px] overflow-y-auto pr-1">
+            <div className="space-y-4 max-h-[680px] overflow-y-auto pr-1">
               {sections.map((sec, secIdx) => {
                 const secFields = fields.filter((f) => f.section_id === sec.id);
                 const isActive = activeSectionId === sec.id;
@@ -1107,7 +1261,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                             {isCollapsed ? "▸" : "▾"}
                           </button>
                           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-[#2d2d2d] text-slate-700 dark:text-slate-300 shrink-0">
-                            #{secIdx + 1}
+                            Section {secIdx + 1} of {sections.length}
                           </span>
                           <input
                             type="text"
@@ -1127,10 +1281,28 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 shrink-0">
-                        <span className="text-[10px] font-semibold text-slate-400 dark:text-[#777] px-1.5 py-0.5 bg-white dark:bg-[#141414] rounded-md border border-slate-200 dark:border-[#2d2d2d]">
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <span className="text-[10px] font-semibold text-slate-400 dark:text-[#777] px-1.5 py-0.5 bg-white dark:bg-[#141414] rounded-md border border-slate-200 dark:border-[#2d2d2d] mr-0.5">
                           {secFields.length}
                         </span>
+                        <button
+                          type="button"
+                          disabled={secIdx === 0}
+                          onClick={() => handleMoveSection(sec.id, "up")}
+                          className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-25 cursor-pointer text-xs"
+                          title="Move section up"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          disabled={secIdx === sections.length - 1}
+                          onClick={() => handleMoveSection(sec.id, "down")}
+                          className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-25 cursor-pointer text-xs"
+                          title="Move section down"
+                        >
+                          ▼
+                        </button>
                         <button
                           type="button"
                           onClick={() => setEditingSectionLogicId(editingSectionLogicId === sec.id ? null : sec.id)}
@@ -1440,8 +1612,10 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                                       { type: "radio" as FormFieldType, label: "+ Multiple Choice" },
                                       { type: "checkbox" as FormFieldType, label: "+ Checkboxes" },
                                       { type: "dropdown" as FormFieldType, label: "+ Dropdown" },
+                                      { type: "poll" as FormFieldType, label: "+ Poll" },
                                       { type: "yes_no" as FormFieldType, label: "+ Yes/No" },
                                       { type: "file" as FormFieldType, label: "+ File Upload" },
+                                      { type: "page_break" as FormFieldType, label: "⤓ + Page Break" },
                                     ].map((q) => (
                                       <button
                                         key={q.type}
@@ -1457,6 +1631,28 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                               </div>
                             );
                           })
+                        )}
+
+                        {/* Google Forms Section Footer Navigation Rule */}
+                        {sections.length > 1 && (
+                          <div className="pt-2 mt-2 border-t border-slate-200/70 dark:border-[#2d2d2d] flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                            <span className="font-semibold text-slate-500 dark:text-slate-400">
+                              After section {secIdx + 1}:
+                            </span>
+                            <select
+                              value={sec.after_section_action || "__next__"}
+                              onChange={(e) => handleUpdateSection(sec.id, { after_section_action: e.target.value })}
+                              className="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#333] bg-white dark:bg-[#141414] text-slate-800 dark:text-slate-200 cursor-pointer"
+                            >
+                              <option value="__next__">Continue to next section</option>
+                              {sections.map((targetSec, tIdx) => (
+                                <option key={targetSec.id} value={targetSec.id} disabled={targetSec.id === sec.id}>
+                                  Go to Section {tIdx + 1} ({targetSec.title})
+                                </option>
+                              ))}
+                              <option value="__submit__">Submit form</option>
+                            </select>
+                          </div>
                         )}
                       </div>
                     )}
@@ -2228,7 +2424,7 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                       ))}
                     </div>
 
-                    {["radio", "checkbox", "multi_select"].includes(selectedField.field_type) && (
+                    {["radio", "checkbox", "multi_select", "poll"].includes(selectedField.field_type) && (
                       <label className="flex items-center justify-between pt-1 border-t border-slate-200 dark:border-[#2d2d2d] cursor-pointer">
                         <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Add &ldquo;Other&rdquo; option (custom text)</span>
                         <input
@@ -2247,7 +2443,46 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                       </label>
                     )}
 
-                    {["checkbox", "multi_select"].includes(selectedField.field_type) && (
+                    {selectedField.field_type === "poll" && (
+                      <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-[#2d2d2d]">
+                        <span className="text-[11px] font-bold text-slate-800 dark:text-[#F5F5F5] block">Poll Settings</span>
+                        <label className="flex items-center justify-between gap-2 cursor-pointer">
+                          <span className="text-[11px] text-slate-700 dark:text-slate-300">Allow students to view anonymized poll results</span>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(selectedField.validation_config?.show_poll_results)}
+                            onChange={(e) =>
+                              handleUpdateSelectedField({
+                                validation_config: {
+                                  ...(selectedField.validation_config || {}),
+                                  show_poll_results: e.target.checked,
+                                },
+                              })
+                            }
+                            className="w-4 h-4 rounded text-blue-600 dark:text-[#5DD62C] cursor-pointer"
+                          />
+                        </label>
+                        <label className="flex items-center justify-between gap-2 cursor-pointer">
+                          <span className="text-[11px] text-slate-700 dark:text-slate-300">Allow multiple poll choices</span>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(selectedField.validation_config?.poll_allow_multiple)}
+                            onChange={(e) =>
+                              handleUpdateSelectedField({
+                                validation_config: {
+                                  ...(selectedField.validation_config || {}),
+                                  poll_allow_multiple: e.target.checked,
+                                },
+                              })
+                            }
+                            className="w-4 h-4 rounded text-blue-600 dark:text-[#5DD62C] cursor-pointer"
+                          />
+                        </label>
+                      </div>
+                    )}
+
+                    {(["checkbox", "multi_select"].includes(selectedField.field_type) ||
+                      (selectedField.field_type === "poll" && selectedField.validation_config?.poll_allow_multiple)) && (
                       <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200 dark:border-[#2d2d2d]">
                         <div>
                           <label className="block text-[10px] text-slate-500">Min Selections</label>
@@ -2283,6 +2518,87 @@ export const EventFormBuilder: React.FC<EventFormBuilderProps> = ({
                             className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
                           />
                         </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* GOOGLE FORMS ANSWER-BASED SECTION BRANCHING ("Go to section based on answer") */}
+                {BRANCHING_QUESTION_TYPES.includes(selectedField.field_type) && !(selectedField.field_type === "poll" && selectedField.validation_config?.poll_allow_multiple) && (
+                  <div className="p-3 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-2.5">
+                    <label className="flex items-center justify-between gap-2 cursor-pointer">
+                      <div>
+                        <p className="text-xs font-bold text-indigo-900 dark:text-indigo-200">Go to section based on answer</p>
+                        <p className="text-[10px] text-indigo-700/70 dark:text-indigo-300/70">Branch students dynamically after answering</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(selectedField.validation_config?.go_to_section_on_answer)}
+                        onChange={(e) =>
+                          handleUpdateSelectedField({
+                            validation_config: {
+                              ...(selectedField.validation_config || {}),
+                              go_to_section_on_answer: e.target.checked,
+                            },
+                          })
+                        }
+                        className="w-4 h-4 rounded text-indigo-600 cursor-pointer"
+                      />
+                    </label>
+
+                    {selectedField.validation_config?.go_to_section_on_answer && (
+                      <div className="space-y-1.5 pt-1">
+                        {sections.length <= 1 && (
+                          <p className="text-[10px] text-amber-600 dark:text-amber-300 font-semibold">
+                            Tip: Add another section or Page Break on the canvas to jump between sections.
+                          </p>
+                        )}
+                        {(
+                          selectedField.field_type === "yes_no"
+                            ? [
+                                { label: "Yes", value: "yes" },
+                                { label: "No", value: "no" },
+                              ]
+                            : [
+                                ...(selectedField.options_config || []),
+                                ...(selectedField.validation_config?.allow_other ? [{ label: "Other", value: "__other__" }] : []),
+                              ]
+                        ).map((opt) => {
+                          const routes = selectedField.validation_config?.option_routes || {};
+                          const curTarget = routes[opt.value] || "__next__";
+                          return (
+                            <div key={opt.value} className="flex items-center justify-between gap-2 bg-white dark:bg-[#141414] p-1.5 rounded-lg border border-indigo-100 dark:border-[#2d2d2d]">
+                              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate max-w-[100px]" title={opt.label}>
+                                {opt.label}
+                              </span>
+                              <span className="text-[10px] text-slate-400">→</span>
+                              <select
+                                value={curTarget}
+                                onChange={(e) => {
+                                  const nextRoutes = {
+                                    ...(selectedField.validation_config?.option_routes || {}),
+                                    [opt.value]: e.target.value,
+                                  };
+                                  handleUpdateSelectedField({
+                                    validation_config: {
+                                      ...(selectedField.validation_config || {}),
+                                      option_routes: nextRoutes,
+                                    },
+                                  });
+                                }}
+                                className="flex-1 text-[11px] px-2 py-1 rounded border border-slate-200 dark:border-[#2d2d2d] bg-slate-50 dark:bg-[#1c1c1c]"
+                              >
+                                <option value="__next__">Continue to next section</option>
+                                {sections.map((sec, sIdx) => (
+                                  <option key={sec.id} value={sec.id} disabled={sec.id === (selectedField.section_id || sections[0]?.id)}>
+                                    Go to Section {sIdx + 1}: {sec.title}
+                                  </option>
+                                ))}
+                                <option value="__submit__">Submit form</option>
+                              </select>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

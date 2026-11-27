@@ -11,6 +11,7 @@ import {
   FormSection,
   ConditionalRule,
   GeoLocationData,
+  PollAggregateResult,
 } from "@/types/events";
 import { eventsApi, resolveEventAssetUrl } from "@/lib/events-api";
 import { getStoredToken } from "@/lib/api-client";
@@ -22,6 +23,7 @@ const LAYOUT_FIELD_TYPES = [
   "description",
   "rich_text_block",
   "divider",
+  "page_break",
   "info",
   "info_card",
   "image_block",
@@ -40,6 +42,12 @@ const FILE_UPLOAD_TYPES = [
 ];
 
 function getFieldOptions(f: EventFormField): FormFieldOption[] {
+  if (f.field_type === "yes_no" && (!f.options_config || f.options_config.length === 0)) {
+    return [
+      { label: "Yes", value: "yes" },
+      { label: "No", value: "no" },
+    ];
+  }
   const raw =
     f.options_config && f.options_config.length > 0
       ? f.options_config
@@ -56,6 +64,7 @@ interface DynamicStudentFormRendererProps {
   event: EventItem;
   form: EventFormVersion;
   existingSubmission?: EventSubmissionItem | null;
+  pollResults?: PollAggregateResult;
   onSubmitted?: (submission: EventSubmissionItem) => void;
   onCancel?: () => void;
   onViewMySubmission?: () => void;
@@ -66,6 +75,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
   event,
   form,
   existingSubmission,
+  pollResults: initialPollResults,
   onSubmitted,
   onCancel,
   onViewMySubmission,
@@ -241,15 +251,32 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     return [{ id: "default", title: "Registration Details", order: 0 }];
   }, [form.sections_config]);
 
+  // Detect if form uses branching / answer-based routing or multi-step layout
+  const hasBranching = useMemo(() => {
+    const secHasRules = rawSections.some(
+      (s) => Boolean(s.after_section_action && s.after_section_action !== "__next__") || Boolean(s.navigation_rules?.length)
+    );
+    const fieldHasRoutes = (form.fields || []).some((f) => Boolean(f.validation_config?.go_to_section_on_answer));
+    return secHasRules || fieldHasRoutes;
+  }, [rawSections, form.fields]);
+
   const sections: FormSection[] = useMemo(() => {
     const filtered = rawSections.filter((s) => evaluateConditions(s.conditions, formValues));
     return filtered.length > 0 ? filtered : rawSections;
   }, [rawSections, formValues]);
 
-  // Wizard state (for multi-step layout mode)
-  const isMultiStep = event.form_layout_mode === "multi_step" && sections.length > 1;
-  const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
-  const activeStepIndex = Math.min(currentStepIndex, Math.max(0, sections.length - 1));
+  // Wizard / Branching state
+  const isMultiStep = (event.form_layout_mode === "multi_step" || hasBranching) && sections.length > 1;
+  const [navigationHistory, setNavigationHistory] = useState<string[]>(() => [
+    rawSections[0]?.id || "default",
+  ]);
+  const currentSectionId = useMemo(() => {
+    const last = navigationHistory[navigationHistory.length - 1];
+    if (last && sections.some((s) => s.id === last)) return last;
+    return sections[0]?.id || "default";
+  }, [navigationHistory, sections]);
+  const activeStepIndex = Math.max(0, sections.findIndex((s) => s.id === currentSectionId));
+  const [livePollResults, setLivePollResults] = useState<PollAggregateResult | undefined>(initialPollResults);
 
   // Status
   const [uploadingFieldKey, setUploadingFieldKey] = useState<string | null>(null);
@@ -477,8 +504,8 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
   const isFieldVisible = (f: EventFormField): boolean => evaluateConditions(f.conditions, formValues);
 
   // Shared field validator used for both step navigation and final submission
-  const validateFields = (targetFields: EventFormField[]): string | null => {
-    const visibleSectionIds = new Set(sections.map((s) => s.id));
+  const validateFields = (targetFields: EventFormField[], allowedSectionIds?: string[]): string | null => {
+    const visibleSectionIds = new Set(allowedSectionIds || sections.map((s) => s.id));
     const fallbackSecId = rawSections[0]?.id || "default";
 
     for (const f of targetFields) {
@@ -617,15 +644,103 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     return null;
   };
 
+  // Shared helper resolving option-based branching & section navigation target
+  const resolveSectionJumpTarget = (sec: FormSection | undefined, fallbackId: string): string | undefined => {
+    if (!sec) return undefined;
+    const secFields = (form.fields || [])
+      .filter((f) => (f.section_id || fallbackId) === sec.id && f.enabled !== false && isFieldVisible(f))
+      .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+
+    let jumpTarget: string | undefined;
+    for (const f of secFields) {
+      if (!f.validation_config?.go_to_section_on_answer || !f.validation_config?.option_routes) continue;
+      const val = formValues[f.field_key];
+      if (val === undefined || val === null || val === "") continue;
+      const routes = f.validation_config.option_routes;
+      const valStr = String(val).trim();
+      let matched: string | undefined = routes[valStr];
+      if (!matched) {
+        const valLower = valStr.toLowerCase();
+        const entry = Object.entries(routes).find(([k]) => k.trim().toLowerCase() === valLower);
+        matched = entry?.[1];
+      }
+      if (!matched && valStr.startsWith("Other:") && routes.__other__) {
+        matched = routes.__other__;
+      }
+      if (matched && matched !== "__next__") {
+        jumpTarget = matched;
+      }
+    }
+
+    if (!jumpTarget && Array.isArray(sec.navigation_rules)) {
+      for (const nr of sec.navigation_rules) {
+        if (nr.target_section_id && evaluateConditions([nr], formValues)) {
+          jumpTarget = nr.target_section_id;
+          break;
+        }
+      }
+    }
+
+    return jumpTarget || sec.after_section_action;
+  };
+
+  // Determine active path of sections traveled from Section 1 using current answers
+  const computeActiveSectionPath = (): string[] => {
+    if (sections.length <= 1) return sections.map((s) => s.id);
+    const orderedIds = sections.map((s) => s.id);
+    const fallbackId = rawSections[0]?.id || orderedIds[0];
+    const path: string[] = [];
+    const seen = new Set<string>();
+    let currId: string | null = orderedIds[0] || null;
+
+    while (currId && !seen.has(currId) && path.length <= sections.length) {
+      seen.add(currId);
+      path.push(currId);
+      const currSec = sections.find((s) => s.id === currId);
+      if (!currSec) break;
+
+      const jumpTarget = resolveSectionJumpTarget(currSec, fallbackId);
+
+      if (jumpTarget === "__submit__" || jumpTarget === "submit") {
+        break;
+      } else if (jumpTarget && jumpTarget !== "__next__" && jumpTarget !== "next" && orderedIds.includes(jumpTarget)) {
+        currId = jumpTarget;
+      } else {
+        const curIdx = orderedIds.indexOf(currId);
+        currId = curIdx !== -1 && curIdx + 1 < orderedIds.length ? orderedIds[curIdx + 1] : null;
+      }
+    }
+    return path;
+  };
+
+  // Resolve next step target for the currently displayed section
+  const resolveNextTargetForSection = (sectionId: string): string => {
+    const fallbackId = rawSections[0]?.id || sections[0]?.id || "default";
+    const sec = sections.find((s) => s.id === sectionId);
+    const jumpTarget = resolveSectionJumpTarget(sec, fallbackId);
+
+    if (jumpTarget === "__submit__" || jumpTarget === "submit") {
+      return "__submit__";
+    }
+    if (jumpTarget && jumpTarget !== "__next__" && jumpTarget !== "next" && sections.some((s) => s.id === jumpTarget)) {
+      return jumpTarget;
+    }
+    const curIdx = sections.findIndex((s) => s.id === sectionId);
+    if (curIdx !== -1 && curIdx + 1 < sections.length) {
+      return sections[curIdx + 1].id;
+    }
+    return "__submit__";
+  };
+
   // Validate step fields before wizard advance
-  const validateStep = (stepIndex: number): boolean => {
+  const validateStep = (targetSectionId: string): boolean => {
     setErrorMessage(null);
-    const targetSection = sections[stepIndex];
+    const targetSection = sections.find((s) => s.id === targetSectionId);
     if (!targetSection) return true;
 
     const fallbackSecId = rawSections[0]?.id || "default";
     const stepFields = form.fields.filter((f) => (f.section_id || fallbackSecId) === targetSection.id);
-    const err = validateFields(stepFields);
+    const err = validateFields(stepFields, [targetSection.id]);
     if (err) {
       setErrorMessage(err);
       return false;
@@ -639,7 +754,8 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     setErrorMessage(null);
     setPreviewSuccess(null);
 
-    const err = validateFields(form.fields || []);
+    const activePath = isMultiStep ? computeActiveSectionPath() : undefined;
+    const err = validateFields(form.fields || [], activePath);
     if (err) {
       setErrorMessage(err);
       return;
@@ -648,7 +764,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     if (isPreviewMode) {
       setPreviewSuccess(
         formSettings.success_message ||
-          "Preview validation passed! Required checks, min/max bounds, and conditional rules are working correctly."
+          "Preview validation passed! Required checks, min/max bounds, and branching rules are working correctly."
       );
       return;
     }
@@ -662,6 +778,9 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     setIsSubmitting(true);
     try {
       const res = await eventsApi.submitStudentEvent(event.id, payload);
+      if (res.poll_results) {
+        setLivePollResults(res.poll_results);
+      }
       setSubmittedData(res.submission);
       if (onSubmitted) {
         onSubmitted(res.submission);
@@ -713,6 +832,45 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
           </div>
         </div>
 
+        {/* Anonymized Poll Results Summary after submission (only if enabled by Admin/HOD) */}
+        {(() => {
+          const publicPolls = (form.fields || []).filter(
+            (f) => f.field_type === "poll" && f.validation_config?.show_poll_results && livePollResults?.[f.field_key]
+          );
+          if (publicPolls.length === 0) return null;
+          return (
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#202020] border border-slate-200 dark:border-[#292929] max-w-md mx-auto text-left space-y-3">
+              <p className="text-xs font-bold text-slate-800 dark:text-[#F5F5F5]">📊 Live Anonymized Poll Results</p>
+              {publicPolls.map((pf) => {
+                const agg = livePollResults?.[pf.field_key];
+                const total = Math.max(agg?.total || 0, 1);
+                return (
+                  <div key={pf.id} className="space-y-1.5">
+                    <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                      {pf.label} <span className="text-[10px] text-slate-400 font-normal">({agg?.total || 0} votes)</span>
+                    </p>
+                    {getFieldOptions(pf).map((opt) => {
+                      const cnt = agg?.counts?.[opt.value] || 0;
+                      const pct = agg?.total ? Math.round((cnt / total) * 100) : 0;
+                      return (
+                        <div key={opt.value} className="space-y-0.5">
+                          <div className="flex justify-between text-[10px] text-slate-600 dark:text-slate-300">
+                            <span>{opt.label}</span>
+                            <span className="font-mono font-semibold">{pct}% ({cnt})</span>
+                          </div>
+                          <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-[#2f2f2f] overflow-hidden">
+                            <div className="h-full bg-blue-600 dark:bg-[#5DD62C] rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+
         <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
           {onViewMySubmission && (
             <button
@@ -737,8 +895,10 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
     );
   }
 
-  // Active section fields for wizard
-  const visibleSections = isMultiStep ? [sections[activeStepIndex]].filter(Boolean) : sections;
+  // Active section fields for wizard / branching navigation
+  const activeBranchSection = sections.find((s) => s.id === currentSectionId) || sections[0];
+  const visibleSections = isMultiStep ? [activeBranchSection].filter(Boolean) : sections;
+  const nextBranchTarget = isMultiStep && activeBranchSection ? resolveNextTargetForSection(activeBranchSection.id) : "__submit__";
 
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-5 sm:p-7 shadow-xs space-y-6">
@@ -792,40 +952,46 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
             <>
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  Step {activeStepIndex + 1} of {sections.length}: {sections[activeStepIndex]?.title}
+                  Section {activeStepIndex + 1} of {sections.length}: {activeBranchSection?.title}
                 </span>
-                <span className="font-mono text-[11px]">{Math.round(((activeStepIndex + 1) / sections.length) * 100)}%</span>
+                <span className="font-mono text-[11px]">
+                  {nextBranchTarget === "__submit__" ? "Final Step" : `${Math.round(((activeStepIndex + 1) / sections.length) * 100)}%`}
+                </span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-[#252525] h-1.5 rounded-full overflow-hidden">
                 <div
                   className="bg-blue-600 dark:bg-[#5DD62C] h-full transition-all duration-300"
-                  style={{ width: `${((activeStepIndex + 1) / sections.length) * 100}%` }}
+                  style={{ width: `${nextBranchTarget === "__submit__" ? 100 : ((activeStepIndex + 1) / sections.length) * 100}%` }}
                 />
               </div>
             </>
           )}
           {formSettings.show_section_navigation !== false && (
             <div className="flex flex-wrap gap-1.5">
-              {sections.map((s, idx) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => {
-                    if (idx <= activeStepIndex || validateStep(activeStepIndex)) {
-                      setCurrentStepIndex(idx);
-                    }
-                  }}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-                    idx === activeStepIndex
-                      ? "bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black"
-                      : idx < activeStepIndex
-                      ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
-                      : "bg-slate-100 dark:bg-[#202020] text-slate-500"
-                  }`}
-                >
-                  {idx + 1}. {s.title}
-                </button>
-              ))}
+              {navigationHistory.map((histSecId, histIdx) => {
+                const secObj = sections.find((s) => s.id === histSecId);
+                if (!secObj) return null;
+                const isCurrent = histIdx === navigationHistory.length - 1;
+                return (
+                  <button
+                    key={`${histSecId}_${histIdx}`}
+                    type="button"
+                    onClick={() => {
+                      if (!isCurrent) {
+                        setErrorMessage(null);
+                        setNavigationHistory((prev) => prev.slice(0, histIdx + 1));
+                      }
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                      isCurrent
+                        ? "bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black"
+                        : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100"
+                    }`}
+                  >
+                    {secObj.title}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -1000,6 +1166,107 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                                 />
                               )}
                             </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Poll Question (Single or Multi-select + Anonymized Results View when allowed) */}
+                      {f.field_type === "poll" && (
+                        <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2d2d2d] bg-slate-50/40 dark:bg-[#161616] space-y-2">
+                          {fieldOpts.map((opt) => {
+                            const isMulti = Boolean(f.validation_config?.poll_allow_multiple);
+                            const isSelected = isMulti
+                              ? Array.isArray(val) && val.includes(opt.value)
+                              : !otherSelected[f.field_key] && val === opt.value;
+                            const agg = f.validation_config?.show_poll_results ? livePollResults?.[f.field_key] : undefined;
+                            const hasVoted = isMulti ? Array.isArray(val) && val.length > 0 : Boolean(val);
+                            const optCount = agg?.counts?.[opt.value] || 0;
+                            const pct = agg && agg.total > 0 ? Math.round((optCount / agg.total) * 100) : 0;
+
+                            return (
+                              <label
+                                key={opt.value}
+                                className={`block p-2 rounded-xl border transition-all cursor-pointer ${
+                                  isSelected
+                                    ? "border-blue-500 dark:border-[#5DD62C] bg-blue-50/50 dark:bg-[#5DD62C]/10"
+                                    : "border-slate-200 dark:border-[#2a2a2a] bg-white dark:bg-[#141414] hover:border-slate-300"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-2 text-xs">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type={isMulti ? "checkbox" : "radio"}
+                                      name={f.field_key}
+                                      checked={isSelected}
+                                      onChange={() => {
+                                        if (isMulti) {
+                                          handleCheckboxToggle(f.field_key, opt.value);
+                                        } else {
+                                          setOtherSelected((prev) => ({ ...prev, [f.field_key]: false }));
+                                          handleFieldChange(f.field_key, opt.value);
+                                        }
+                                      }}
+                                      className="text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span className="font-semibold text-slate-800 dark:text-slate-200">{opt.label}</span>
+                                  </div>
+                                  {agg && hasVoted && (
+                                    <span className="text-[11px] font-mono text-slate-500">{pct}% ({optCount})</span>
+                                  )}
+                                </div>
+                                {agg && hasVoted && (
+                                  <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-[#2a2a2a] overflow-hidden mt-1.5">
+                                    <div className="h-full bg-blue-600 dark:bg-[#5DD62C] rounded-full transition-all" style={{ width: `${pct}%` }} />
+                                  </div>
+                                )}
+                              </label>
+                            );
+                          })}
+                          {f.validation_config?.allow_other && (
+                            <div className="space-y-1.5 p-1.5 rounded-lg">
+                              <label className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                                <input
+                                  type={f.validation_config?.poll_allow_multiple ? "checkbox" : "radio"}
+                                  name={f.field_key}
+                                  checked={Boolean(otherSelected[f.field_key])}
+                                  onChange={(e) => {
+                                    const checked = f.validation_config?.poll_allow_multiple ? e.target.checked : true;
+                                    setOtherSelected((prev) => ({ ...prev, [f.field_key]: checked }));
+                                    const txt = otherTexts[f.field_key] || "";
+                                    if (f.validation_config?.poll_allow_multiple) {
+                                      const base = (Array.isArray(val) ? val : []).filter((x: any) => !(typeof x === "string" && (x === "__other__" || x.startsWith("Other:"))));
+                                      handleFieldChange(f.field_key, checked ? [...base, txt.trim() ? `Other: ${txt}` : "__other__"] : base);
+                                    } else {
+                                      handleFieldChange(f.field_key, txt.trim() ? `Other: ${txt}` : "__other__");
+                                    }
+                                  }}
+                                />
+                                <span>{f.validation_config?.other_label || "Other"}</span>
+                              </label>
+                              {otherSelected[f.field_key] && (
+                                <input
+                                  type="text"
+                                  value={otherTexts[f.field_key] || ""}
+                                  placeholder="Please specify..."
+                                  onChange={(e) => {
+                                    const txt = e.target.value;
+                                    setOtherTexts((prev) => ({ ...prev, [f.field_key]: txt }));
+                                    if (f.validation_config?.poll_allow_multiple) {
+                                      const base = (Array.isArray(val) ? val : []).filter((x: any) => !(typeof x === "string" && (x === "__other__" || x.startsWith("Other:"))));
+                                      handleFieldChange(f.field_key, [...base, txt.trim() ? `Other: ${txt}` : "__other__"]);
+                                    } else {
+                                      handleFieldChange(f.field_key, txt.trim() ? `Other: ${txt}` : "__other__");
+                                    }
+                                  }}
+                                  className="ml-6 w-[calc(100%-1.5rem)] text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#2d2d2d] bg-white dark:bg-[#141414]"
+                                />
+                              )}
+                            </div>
+                          )}
+                          {f.validation_config?.show_poll_results && !livePollResults?.[f.field_key] && (
+                            <p className="text-[10px] text-slate-400">
+                              Anonymized poll percentages will be shown once votes are recorded.
+                            </p>
                           )}
                         </div>
                       )}
@@ -1511,7 +1778,7 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
 
                       {/* Standard text, number, email, phone, url, date, time, datetime */}
                       {![
-                        "dropdown", "radio", "checkbox", "multi_select", "yes_no",
+                        "dropdown", "radio", "poll", "checkbox", "multi_select", "yes_no",
                         "star_rating", "satisfaction_rating", "difficulty_rating", "numeric_rating", "custom_scale",
                         "geo_photo", "repeatable_group", "gallery_upload", "file", "pdf_upload",
                         "image_upload", "document_upload", "camera_capture", "date_range", "textarea", "rich_text",
@@ -1594,22 +1861,29 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
           </div>
 
           <div className="flex items-center gap-2">
-            {isMultiStep && formSettings.show_section_navigation !== false && activeStepIndex > 0 && (
+            {isMultiStep && formSettings.show_section_navigation !== false && navigationHistory.length > 1 && (
               <button
                 type="button"
-                onClick={() => setCurrentStepIndex(Math.max(0, activeStepIndex - 1))}
+                onClick={() => {
+                  setErrorMessage(null);
+                  setNavigationHistory((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+                }}
                 className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-300 dark:border-[#333] bg-white dark:bg-[#202020] text-slate-700 dark:text-slate-300 cursor-pointer"
               >
                 ← Back
               </button>
             )}
 
-            {isMultiStep && formSettings.show_section_navigation !== false && activeStepIndex < sections.length - 1 ? (
+            {isMultiStep && formSettings.show_section_navigation !== false && nextBranchTarget !== "__submit__" ? (
               <button
                 type="button"
                 onClick={() => {
-                  if (validateStep(activeStepIndex)) {
-                    setCurrentStepIndex(Math.min(sections.length - 1, activeStepIndex + 1));
+                  if (activeBranchSection && validateStep(activeBranchSection.id)) {
+                    const resolved = resolveNextTargetForSection(activeBranchSection.id);
+                    if (resolved === "__submit__") return;
+                    setNavigationHistory((prev) =>
+                      prev[prev.length - 1] === resolved || prev.includes(resolved) ? prev : [...prev, resolved]
+                    );
                   }
                 }}
                 className="px-5 py-2 text-xs font-semibold rounded-xl bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black cursor-pointer shadow-xs"

@@ -13,7 +13,34 @@ export type EffectiveEventStatus =
   | "registration_closed"
   | "completed";
 
-export type AudienceType = "all" | "specific_students" | "section" | "academic_year" | "custom";
+export type AudienceType = "all" | "mentor_mentees" | "specific_students" | "section" | "academic_year" | "custom";
+
+export interface EventAudienceOption {
+  id: string;
+  audience_type: AudienceType;
+  mentor_key: string;
+  mentor_id?: string | null;
+  mentor_name?: string;
+  mentor_email?: string;
+  title: string;
+  subtitle?: string;
+  description: string;
+  student_count: number;
+  audience_payload: any;
+}
+
+export interface EventAudienceSummaryResponse {
+  total_students: number;
+  options: EventAudienceOption[];
+}
+
+export type PollAggregateResult = Record<
+  string,
+  {
+    total: number;
+    counts: Record<string, number>;
+  }
+>;
 
 export type FormLayoutMode = "single_page" | "multi_step";
 
@@ -129,6 +156,8 @@ export interface FormSection {
   description?: string;
   order: number;
   conditions?: ConditionalRule[] | ConditionalConfig | any;
+  after_section_action?: string; // "__next__" | "__submit__" | target section ID
+  navigation_rules?: Array<ConditionalRule & { target_section_id?: string }>;
   collapsed?: boolean;
 }
 
@@ -153,6 +182,10 @@ export interface FormFieldValidationConfig {
   help_text?: string;
   allow_other?: boolean;
   other_label?: string;
+  go_to_section_on_answer?: boolean;
+  option_routes?: Record<string, string>;
+  show_poll_results?: boolean;
+  poll_allow_multiple?: boolean;
 }
 
 export interface FormSettings {
