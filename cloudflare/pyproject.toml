@@ -1,0 +1,16 @@
+[project]
+name = "cce-pgpa-worker"
+version = "0.1.0"
+description = "Cloudflare Python Worker backend for CCE-PGPA Achievement Management System"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+]
+
+[dependency-groups]
+dev = [
+    "workers-py>=0.0.8",
+    "workers-runtime-sdk>=0.0.1",
+    "pytest>=8.0.0",
+    "httpx>=0.27.0",
+]

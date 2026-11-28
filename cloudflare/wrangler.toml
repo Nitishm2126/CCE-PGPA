@@ -1,0 +1,42 @@
+name = "cce-pgpa-staging"
+main = "src/main.py"
+compatibility_date = "2026-11-14"
+compatibility_flags = ["python_workers", "disable_python_external_sdk"]
+
+[vars]
+APP_NAME = "CCE Achieve API (Cloudflare Staging)"
+APP_ENV = "staging"
+DEBUG = "true"
+API_V1_PREFIX = "/api/v1"
+STORAGE_PROVIDER = "google_drive"
+GOOGLE_OAUTH_CLIENT_ID = "1048685997432-ek91k3l6rkqtq43i0750h0l5jdmfo8vu.apps.googleusercontent.com"
+GOOGLE_DRIVE_FOLDER_ID = "1Qdkvrmb8XDZQSEAhSbrbuIRzaYbR2gWI"
+GOOGLE_OAUTH_REDIRECT_URI = "https://cce-pgpa-staging.nitishms007.workers.dev/api/v1/auth/google/callback"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cce-pgpa-db-staging"
+database_id = "712c3d22-e6ab-4257-90eb-976626a8511a"
+
+[assets]
+directory = "frontend/out"
+binding = "ASSETS"
+run_worker_first = false
+
+[env.production]
+name = "cce-pgpa-prod"
+
+[env.production.vars]
+APP_NAME = "CCE Achieve API (Production)"
+APP_ENV = "production"
+DEBUG = "false"
+API_V1_PREFIX = "/api/v1"
+STORAGE_PROVIDER = "google_drive"
+GOOGLE_OAUTH_CLIENT_ID = "1048685997432-ek91k3l6rkqtq43i0750h0l5jdmfo8vu.apps.googleusercontent.com"
+GOOGLE_DRIVE_FOLDER_ID = "1Qdkvrmb8XDZQSEAhSbrbuIRzaYbR2gWI"
+GOOGLE_OAUTH_REDIRECT_URI = "https://cce-pgpa-prod.nitishms007.workers.dev/api/v1/auth/google/callback"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "cce-pgpa-db-prod"
+database_id = "81a64842-37d3-470b-99cd-63131df95819"
