@@ -16,8 +16,19 @@ import {
 import { eventsApi, resolveEventAssetUrl } from "@/lib/events-api";
 import { getStoredToken } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
+import {
+  getBodySizeClass,
+  getFontFamilyCss,
+  getHeadingSizeClass,
+  getRadiusClass,
+  getResolvedTheme,
+  normalizeGoogleDriveImageUrl,
+  parseVideoEmbedUrl,
+  sanitizeRichHtml,
+} from "@/lib/form-utils";
 
 const LAYOUT_FIELD_TYPES = [
+  "title_block",
   "heading",
   "subheading",
   "description",
@@ -27,6 +38,7 @@ const LAYOUT_FIELD_TYPES = [
   "info",
   "info_card",
   "image_block",
+  "video_block",
   "pdf_link",
   "notice",
 ];
@@ -124,6 +136,34 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
   });
 
   const formSettings = form.form_settings || {};
+  const hasCustomTheme = Boolean(formSettings.theme);
+  const theme = useMemo(() => getResolvedTheme(formSettings.theme), [formSettings.theme]);
+  const radiusClass = getRadiusClass(theme.corner_radius);
+  const headingSizeClass = getHeadingSizeClass(theme.heading_font_size);
+  const bodySizeClass = getBodySizeClass(theme.body_font_size);
+  const fontFamilyCss = getFontFamilyCss(theme.font_family);
+  const buttonShapeClass =
+    theme.button_style === "pill"
+      ? "rounded-full"
+      : theme.button_style === "outline"
+      ? "rounded-xl bg-transparent border-2"
+      : radiusClass;
+  const cardAppearanceClass =
+    theme.card_appearance === "soft"
+      ? "shadow-none bg-slate-50/90 dark:bg-[#1b1b1b]"
+      : theme.card_appearance === "bordered"
+      ? "shadow-none border-2"
+      : "shadow-xs";
+  const borderStyleClass =
+    theme.border_style === "none"
+      ? "border-transparent"
+      : theme.border_style === "subtle"
+      ? "border-slate-100 dark:border-[#242424]"
+      : "border-slate-200 dark:border-[#292929]";
+  const alignClass =
+    theme.content_alignment === "center"
+      ? "text-center"
+      : "text-left";
 
   // Track "Other" free-text inputs for choice fields when allow_other is enabled
   const [otherSelected, setOtherSelected] = useState<Record<string, boolean>>(() => {
@@ -901,49 +941,79 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
   const nextBranchTarget = isMultiStep && activeBranchSection ? resolveNextTargetForSection(activeBranchSection.id) : "__submit__";
 
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] p-5 sm:p-7 shadow-xs space-y-6">
-      {/* Event / Form Header Card */}
-      <div className="border-b border-slate-100 dark:border-[#282828] pb-5">
-        <div className="flex items-center gap-2">
-          {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
-              title="Back"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-          )}
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-[#5DD62C]/10 text-blue-600 dark:text-[#5DD62C] uppercase tracking-wider">
-            {event.category}
-          </span>
-          {event.mode && (
-            <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-              • {event.mode} Mode
-            </span>
-          )}
-        </div>
-        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#F5F5F5] mt-1">
-          {formSettings.form_title || event.title}
-        </h2>
-        {event.subtitle && (
-          <p className="text-xs font-medium text-blue-600 dark:text-[#5DD62C] mt-0.5">{event.subtitle}</p>
-        )}
-        {(formSettings.form_description || event.short_description) && (
-          <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-2 leading-relaxed">
-            {formSettings.form_description || event.short_description}
-          </p>
-        )}
-        {formSettings.custom_instructions && (
-          <div className="mt-3 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900 text-xs text-blue-900 dark:text-blue-200 leading-relaxed whitespace-pre-line">
-            <span className="font-bold">Instructions: </span>
-            {formSettings.custom_instructions}
+    <div
+      className={`${radiusClass} p-3 sm:p-5 transition-colors`}
+      style={{
+        backgroundColor: hasCustomTheme ? theme.background_color : undefined,
+        fontFamily: hasCustomTheme ? fontFamilyCss : undefined,
+      }}
+    >
+      <div
+        className={`${radiusClass} border ${borderStyleClass} ${cardAppearanceClass} bg-white dark:bg-[#181818] overflow-hidden shadow-xs space-y-6`}
+      >
+        {/* Top Accent Strip + Optional Theme Banner */}
+        <div className="h-2.5 w-full" style={{ backgroundColor: theme.theme_color }} />
+        {theme.banner_image_url && (
+          <div className="w-full max-h-48 overflow-hidden border-b border-slate-100 dark:border-[#282828] -mt-6">
+            <img
+              src={resolveEventAssetUrl(normalizeGoogleDriveImageUrl(theme.banner_image_url), authToken)}
+              alt={formSettings.form_title || event.title}
+              className="w-full h-40 sm:h-48 object-cover"
+            />
           </div>
         )}
-      </div>
+
+        <div className="px-5 sm:px-7 pb-6 pt-1 space-y-6">
+          {/* Event / Form Header Card */}
+          <div className={`border-b border-slate-100 dark:border-[#282828] pb-5 ${alignClass}`}>
+            <div className={`flex items-center gap-2 ${theme.content_alignment === "center" ? "justify-center" : ""}`}>
+              {onCancel && (
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+                  title="Back"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+              <span
+                className="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider"
+                style={{
+                  backgroundColor: `${theme.theme_color}18`,
+                  color: theme.theme_color,
+                }}
+              >
+                {event.category}
+              </span>
+              {event.mode && (
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                  • {event.mode} Mode
+                </span>
+              )}
+            </div>
+            <h2 className={`${headingSizeClass} font-bold text-slate-900 dark:text-[#F5F5F5] mt-2`}>
+              {formSettings.form_title || event.title}
+            </h2>
+            {event.subtitle && (
+              <p className="text-xs font-medium mt-0.5" style={{ color: theme.theme_color }}>
+                {event.subtitle}
+              </p>
+            )}
+            {(formSettings.form_description || event.short_description) && (
+              <p className={`${bodySizeClass} text-slate-500 dark:text-[#A3A3A3] mt-2 leading-relaxed`}>
+                {formSettings.form_description || event.short_description}
+              </p>
+            )}
+            {formSettings.custom_instructions && (
+              <div className="mt-3 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900 text-xs text-blue-900 dark:text-blue-200 leading-relaxed whitespace-pre-line text-left">
+                <span className="font-bold">Instructions: </span>
+                {formSettings.custom_instructions}
+              </div>
+            )}
+          </div>
 
       {/* Multi-Step Wizard Progress & Section Navigation Pills */}
       {isMultiStep && (formSettings.show_progress_indicator !== false || formSettings.show_section_navigation !== false) && (
@@ -1037,19 +1107,89 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                   const val = formValues[f.field_key];
                   const fieldOpts = getFieldOptions(f);
 
-                  // 1. Layout Blocks
+                  // 1. Layout & Content Blocks
                   if (LAYOUT_FIELD_TYPES.includes(f.field_type)) {
-                    if (f.field_type === "heading") {
-                      return <h3 key={f.id} className="text-sm font-bold text-slate-900 dark:text-white pt-2">{f.label}</h3>;
+                    const blockStyle = f.validation_config?.block_style;
+                    const mediaCfg = f.validation_config?.media_config;
+                    const richHtml = f.validation_config?.rich_html;
+                    const textAlign =
+                      blockStyle?.alignment === "center"
+                        ? "text-center"
+                        : blockStyle?.alignment === "right"
+                        ? "text-right"
+                        : "text-left";
+                    const blockFontSize =
+                      blockStyle?.font_size === "xl"
+                        ? "text-xl sm:text-2xl"
+                        : blockStyle?.font_size === "lg"
+                        ? "text-base sm:text-lg"
+                        : blockStyle?.font_size === "sm"
+                        ? "text-xs"
+                        : "text-sm";
+
+                    if (f.field_type === "title_block" || f.field_type === "heading") {
+                      return (
+                        <div key={f.id} className={`pt-2 pb-1 border-b border-slate-100 dark:border-[#262626] ${textAlign}`}>
+                          <h3
+                            className={`${blockStyle?.font_size ? blockFontSize : headingSizeClass} ${
+                              blockStyle?.font_weight === "medium"
+                                ? "font-medium"
+                                : blockStyle?.font_weight === "semibold"
+                                ? "font-semibold"
+                                : "font-bold"
+                            } text-slate-900 dark:text-white`}
+                            style={blockStyle?.text_color ? { color: blockStyle.text_color } : undefined}
+                          >
+                            {f.label}
+                          </h3>
+                          {(blockStyle?.subtitle || f.description) && (
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                              {blockStyle?.subtitle || f.description}
+                            </p>
+                          )}
+                        </div>
+                      );
                     }
                     if (f.field_type === "subheading") {
-                      return <h4 key={f.id} className="text-xs font-semibold text-slate-700 dark:text-slate-300 pt-1">{f.label}</h4>;
+                      return (
+                        <h4
+                          key={f.id}
+                          className={`text-xs font-semibold text-slate-700 dark:text-slate-300 pt-1 ${textAlign}`}
+                          style={blockStyle?.text_color ? { color: blockStyle.text_color } : undefined}
+                        >
+                          {f.label}
+                        </h4>
+                      );
                     }
                     if (f.field_type === "description" || f.field_type === "rich_text_block") {
+                      const safeHtml = richHtml ? sanitizeRichHtml(richHtml) : "";
+                      const variantBox =
+                        blockStyle?.variant === "instructions"
+                          ? "p-3.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900"
+                          : blockStyle?.variant === "note"
+                          ? "p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900"
+                          : blockStyle?.variant === "announcement"
+                          ? "p-3.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900"
+                          : "";
                       return (
-                        <div key={f.id} className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
-                          <p className="font-semibold text-slate-800 dark:text-slate-100">{f.label}</p>
-                          {f.description && <p className="mt-0.5 text-slate-500 dark:text-slate-400">{f.description}</p>}
+                        <div
+                          key={f.id}
+                          className={`${variantBox} ${textAlign} ${blockStyle?.font_size ? blockFontSize : bodySizeClass} text-slate-600 dark:text-slate-300 leading-relaxed space-y-1`}
+                          style={blockStyle?.text_color ? { color: blockStyle.text_color } : undefined}
+                        >
+                          {f.label && (
+                            <p className="font-semibold text-slate-800 dark:text-slate-100">{f.label}</p>
+                          )}
+                          {safeHtml ? (
+                            <div
+                              className="prose prose-xs dark:prose-invert max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-blue-600 [&_a]:underline"
+                              dangerouslySetInnerHTML={{ __html: safeHtml }}
+                            />
+                          ) : (
+                            f.description && (
+                              <p className="whitespace-pre-line text-slate-500 dark:text-slate-400">{f.description}</p>
+                            )
+                          )}
                         </div>
                       );
                     }
@@ -1063,11 +1203,67 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                         </div>
                       );
                     }
-                    if (f.field_type === "image_block" && (f.placeholder || f.default_value)) {
+                    if (f.field_type === "image_block") {
+                      const imgUrl = normalizeGoogleDriveImageUrl(
+                        mediaCfg?.image_url || f.default_value || f.placeholder
+                      );
+                      if (!imgUrl) return null;
+                      const widthPercent = Math.min(100, Math.max(25, Number(mediaCfg?.width_percent || 100)));
+                      const justifyClass =
+                        mediaCfg?.alignment === "center"
+                          ? "mx-auto"
+                          : mediaCfg?.alignment === "right"
+                          ? "ml-auto"
+                          : "mr-auto";
                       return (
-                        <div key={f.id} className="rounded-xl overflow-hidden border border-slate-200 dark:border-[#292929]">
-                          <img src={resolveEventAssetUrl(f.default_value || f.placeholder, authToken)} alt={f.label} className="w-full max-h-64 object-cover" />
-                          {f.label && <p className="px-3 py-1.5 text-[11px] text-slate-500 bg-slate-50 dark:bg-[#202020]">{f.label}</p>}
+                        <div key={f.id} className="py-1">
+                          <figure
+                            className={`rounded-xl overflow-hidden border border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#1e1e1e] ${justifyClass}`}
+                            style={{ width: `${widthPercent}%` }}
+                          >
+                            <img
+                              src={resolveEventAssetUrl(imgUrl, authToken)}
+                              alt={mediaCfg?.caption || f.label || "Form Image"}
+                              className="w-full max-h-80 object-contain mx-auto"
+                            />
+                            {(mediaCfg?.caption || f.label) && (
+                              <figcaption className="px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300 border-t border-slate-100 dark:border-[#292929]">
+                                {mediaCfg?.caption || f.label}
+                              </figcaption>
+                            )}
+                          </figure>
+                        </div>
+                      );
+                    }
+                    if (f.field_type === "video_block") {
+                      const parsed = parseVideoEmbedUrl(
+                        mediaCfg?.video_url || f.default_value || f.placeholder
+                      );
+                      if (!parsed.valid || !parsed.embedUrl) return null;
+                      return (
+                        <div
+                          key={f.id}
+                          className="rounded-xl overflow-hidden border border-slate-200 dark:border-[#292929] bg-slate-50 dark:bg-[#1e1e1e]"
+                        >
+                          {f.label && (
+                            <div className="px-3.5 py-2 border-b border-slate-200 dark:border-[#292929]">
+                              <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{f.label}</p>
+                              {(mediaCfg?.video_description || f.description) && (
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                  {mediaCfg?.video_description || f.description}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          <div className="aspect-video w-full bg-black">
+                            <iframe
+                              src={parsed.embedUrl}
+                              title={f.label || "Embedded Video"}
+                              className="w-full h-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
                         </div>
                       );
                     }
@@ -1886,7 +2082,12 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
                     );
                   }
                 }}
-                className="px-5 py-2 text-xs font-semibold rounded-xl bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black cursor-pointer shadow-xs"
+                className={`px-5 py-2 text-xs font-semibold ${buttonShapeClass} cursor-pointer shadow-xs`}
+                style={
+                  theme.button_style === "outline"
+                    ? { borderColor: theme.theme_color, color: theme.theme_color }
+                    : { backgroundColor: theme.theme_color, color: "#ffffff" }
+                }
               >
                 Next Step →
               </button>
@@ -1894,7 +2095,12 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl bg-blue-600 dark:bg-[#5DD62C] hover:bg-blue-700 dark:hover:bg-[#4cb824] text-white dark:text-black font-semibold text-xs px-6 py-2.5 shadow-2xs active:scale-95 transition-all cursor-pointer disabled:opacity-50 min-h-[38px] flex items-center gap-2"
+                className={`${buttonShapeClass} font-semibold text-xs px-6 py-2.5 shadow-2xs active:scale-95 transition-all cursor-pointer disabled:opacity-50 min-h-[38px] flex items-center gap-2`}
+                style={
+                  theme.button_style === "outline"
+                    ? { borderColor: theme.theme_color, color: theme.theme_color }
+                    : { backgroundColor: theme.theme_color, color: "#ffffff" }
+                }
               >
                 {isSubmitting ? (
                   <>
@@ -1916,6 +2122,8 @@ export const DynamicStudentFormRenderer: React.FC<DynamicStudentFormRendererProp
           </div>
         </div>
       </form>
+        </div>
+      </div>
     </div>
   );
 };

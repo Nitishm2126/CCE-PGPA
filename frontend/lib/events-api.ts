@@ -174,6 +174,14 @@ export const eventsApi = {
     );
   },
 
+  duplicateEvent: async (
+    eventId: string
+  ): Promise<{ message: string; event: EventItem }> => {
+    return request<{ message: string; event: EventItem }>(`/events/${eventId}/duplicate`, {
+      method: "POST",
+    });
+  },
+
   publishEvent: async (eventId: string): Promise<{ message: string; event: EventItem }> => {
     return request<{ message: string; event: EventItem }>(`/events/${eventId}/publish`, {
       method: "POST",

@@ -321,14 +321,14 @@ export const EventResponsesManager: React.FC<EventResponsesManagerProps> = ({ ev
                 </span>
 
                 {selectedSubmission.form_version?.fields?.map((field) => {
-                  if (field.field_type === "heading" || field.field_type === "subheading") {
+                  if (field.field_type === "title_block" || field.field_type === "heading" || field.field_type === "subheading") {
                     return (
                       <div key={field.id} className="pt-3 border-t border-slate-100 dark:border-[#292929]">
                         <h4 className="text-xs font-bold text-slate-900 dark:text-[#F5F5F5]">{field.label}</h4>
                       </div>
                     );
                   }
-                  if (["description", "rich_text_block", "divider", "info", "info_card", "image_block", "pdf_link", "notice"].includes(field.field_type)) {
+                  if (["description", "rich_text_block", "divider", "info", "info_card", "image_block", "video_block", "pdf_link", "notice"].includes(field.field_type)) {
                     return null;
                   }
 

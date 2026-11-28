@@ -181,11 +181,16 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
   if (viewState === "form_builder" && activeEvent) {
     return (
       <EventFormBuilder
+        key={activeEvent.id}
         event={activeEvent}
         initialFields={activeEvent.current_form?.fields}
         initialSections={activeEvent.current_form?.sections_config}
         initialFormSettings={activeEvent.current_form?.form_settings}
         onBack={handleBackToList}
+        onSwitchEvent={(cloned) => {
+          setActiveEvent(cloned);
+          loadEvents();
+        }}
         onSaved={async () => {
           await loadEvents();
           try {
@@ -297,29 +302,28 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
         </div>
       </div>
 
-          {/* Action Feedback Banner (Success / Error) */}
-          {actionFeedback && (
-            <div
-              className={`rounded-2xl border px-4 py-3 text-xs font-semibold flex items-center justify-between gap-3 animate-in fade-in duration-150 ${
-                actionFeedback.type === "success"
-                  ? "border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300"
-                  : "border-rose-200 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/30 text-rose-800 dark:text-rose-300"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <span>{actionFeedback.type === "success" ? "✓" : "⚠️"}</span>
-                <span>{actionFeedback.message}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActionFeedback(null)}
-                className="text-current opacity-70 hover:opacity-100 px-1 cursor-pointer"
-                aria-label="Dismiss notification"
-              >
-                ✕
-              </button>
-            </div>
-          )}
+      {/* Action Feedback Banner (Success / Error) */}
+      {actionFeedback && (
+        <div
+          className={`rounded-2xl border px-4 py-3 text-xs font-semibold flex items-center justify-between gap-3 animate-in fade-in duration-150 ${actionFeedback.type === "success"
+            ? "border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300"
+            : "border-rose-200 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/30 text-rose-800 dark:text-rose-300"
+            }`}
+        >
+          <div className="flex items-center gap-2">
+            <span>{actionFeedback.type === "success" ? "✓" : "⚠️"}</span>
+            <span>{actionFeedback.message}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionFeedback(null)}
+            className="text-current opacity-70 hover:opacity-100 px-1 cursor-pointer"
+            aria-label="Dismiss notification"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Events Grid / Listing with Adaptive Empty State and Reliable Skeletons */}
       {loading ? (
@@ -605,94 +609,94 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
         </div>
       )}
 
-          {/* Delete Event Confirmation Dialog */}
-          {deletingEvent && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
-              <div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="delete-event-dialog-title"
-                className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
-              >
-                <div className="p-5 space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 shrink-0 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 id="delete-event-dialog-title" className="text-base font-bold text-slate-900 dark:text-[#F5F5F5]">
-                        Delete Event
-                      </h3>
-                      <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5 break-words">
-                        &ldquo;{deletingEvent.title}&rdquo;
-                      </p>
-                    </div>
-                  </div>
-
-                  {(deletingEvent.total_submissions || 0) > 0 ? (
-                    <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 space-y-1.5">
-                      <p className="font-bold">Safe Soft-Delete / Archive Protection</p>
-                      <p className="leading-relaxed">
-                        This event has <span className="font-bold">{deletingEvent.total_submissions}</span> student submission(s). To preserve student responses and Google Drive evidence, confirming will{" "}
-                        <span className="font-semibold">archive</span> the event and remove it from active student portals without destroying historical data.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60 text-xs text-rose-900 dark:text-rose-200 space-y-1.5">
-                      <p className="font-bold">This action cannot be reversed.</p>
-                      <p className="leading-relaxed">
-                        This event has 0 student registrations. Confirming will permanently delete the event, its form builder configuration, and any linked student notification.
-                      </p>
-                    </div>
-                  )}
-
-                  {deleteError && (
-                    <div className="p-3 rounded-xl bg-rose-100 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-xs font-semibold text-rose-800 dark:text-rose-200">
-                      ⚠️ {deleteError}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-end gap-2.5 pt-1">
-                    <button
-                      type="button"
-                      disabled={isDeleting}
-                      onClick={() => {
-                        setDeletingEvent(null);
-                        setDeleteError(null);
-                      }}
-                      className="px-4 py-2 rounded-xl border border-slate-300 dark:border-[#333] bg-white dark:bg-[#202020] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#282828] text-xs font-semibold cursor-pointer disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isDeleting}
-                      onClick={handleConfirmDelete}
-                      className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs cursor-pointer disabled:opacity-60 inline-flex items-center gap-1.5"
-                    >
-                      {isDeleting ? (
-                        <>
-                          <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                          </svg>
-                          <span>Deleting...</span>
-                        </>
-                      ) : (
-                        <span>{(deletingEvent.total_submissions || 0) > 0 ? "Confirm Archive" : "Confirm Delete"}</span>
-                      )}
-                    </button>
-                  </div>
+      {/* Delete Event Confirmation Dialog */}
+      {deletingEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-event-dialog-title"
+            className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-[#292929] bg-white dark:bg-[#181818] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+          >
+            <div className="p-5 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="h-10 w-10 shrink-0 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 id="delete-event-dialog-title" className="text-base font-bold text-slate-900 dark:text-[#F5F5F5]">
+                    Delete Event
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5 break-words">
+                    &ldquo;{deletingEvent.title}&rdquo;
+                  </p>
                 </div>
               </div>
+
+              {(deletingEvent.total_submissions || 0) > 0 ? (
+                <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 space-y-1.5">
+                  <p className="font-bold">Safe Soft-Delete / Archive Protection</p>
+                  <p className="leading-relaxed">
+                    This event has <span className="font-bold">{deletingEvent.total_submissions}</span> student submission(s). To preserve student responses and Google Drive evidence, confirming will{" "}
+                    <span className="font-semibold">archive</span> the event and remove it from active student portals without destroying historical data.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60 text-xs text-rose-900 dark:text-rose-200 space-y-1.5">
+                  <p className="font-bold">This action cannot be reversed.</p>
+                  <p className="leading-relaxed">
+                    This event has 0 student registrations. Confirming will permanently delete the event, its form builder configuration, and any linked student notification.
+                  </p>
+                </div>
+              )}
+
+              {deleteError && (
+                <div className="p-3 rounded-xl bg-rose-100 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-xs font-semibold text-rose-800 dark:text-rose-200">
+                  ⚠️ {deleteError}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2.5 pt-1">
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => {
+                    setDeletingEvent(null);
+                    setDeleteError(null);
+                  }}
+                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-[#333] bg-white dark:bg-[#202020] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#282828] text-xs font-semibold cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs cursor-pointer disabled:opacity-60 inline-flex items-center gap-1.5"
+                >
+                  {isDeleting ? (
+                    <>
+                      <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <span>{(deletingEvent.total_submissions || 0) > 0 ? "Confirm Archive" : "Confirm Delete"}</span>
+                  )}
+                </button>
+              </div>
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
       {/* Event Create / Edit Modal */}
       <EventCreateModal

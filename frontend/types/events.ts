@@ -62,6 +62,7 @@ export type FormFieldType =
   | "dropdown"
   | "radio"
   | "checkbox"
+  | "poll"
   | "yes_no"
   | "multi_select"
   // Feedback & Rating
@@ -79,15 +80,18 @@ export type FormFieldType =
   | "gallery_upload"
   // Geo Photo
   | "geo_photo"
-  // Layout Blocks
+  // Layout & Rich Content Blocks
+  | "title_block"
   | "heading"
   | "subheading"
   | "description"
   | "rich_text_block"
   | "divider"
+  | "page_break"
   | "info"
   | "info_card"
   | "image_block"
+  | "video_block"
   | "pdf_link"
   | "notice"
   // Repeatable
@@ -161,6 +165,40 @@ export interface FormSection {
   collapsed?: boolean;
 }
 
+export interface ContentBlockStyle {
+  subtitle?: string;
+  alignment?: "left" | "center" | "right";
+  font_size?: "sm" | "md" | "lg" | "xl" | "2xl";
+  font_weight?: "normal" | "medium" | "semibold" | "bold" | "extrabold";
+  text_color?: string;
+  variant?: "plain" | "instructions" | "note" | "announcement";
+}
+
+export interface MediaBlockConfig {
+  image_url?: string;
+  drive_file_id?: string;
+  caption?: string;
+  alignment?: "left" | "center" | "right";
+  width_percent?: number;
+  video_url?: string;
+  embed_url?: string;
+  video_description?: string;
+}
+
+export interface FormThemeConfig {
+  background_color?: string;
+  theme_color?: string;
+  banner_image_url?: string;
+  font_family?: "sans" | "serif" | "mono" | "display";
+  heading_font_size?: "sm" | "md" | "lg" | "xl";
+  body_font_size?: "sm" | "md" | "lg";
+  card_appearance?: "elevated" | "bordered" | "soft";
+  border_style?: "solid" | "subtle" | "none";
+  corner_radius?: "none" | "md" | "xl" | "2xl";
+  content_alignment?: "left" | "center";
+  button_style?: "solid" | "pill" | "outline";
+}
+
 export interface FormFieldValidationConfig {
   min_len?: number;
   max_len?: number;
@@ -186,6 +224,9 @@ export interface FormFieldValidationConfig {
   option_routes?: Record<string, string>;
   show_poll_results?: boolean;
   poll_allow_multiple?: boolean;
+  block_style?: ContentBlockStyle;
+  media_config?: MediaBlockConfig;
+  rich_html?: string;
 }
 
 export interface FormSettings {
@@ -201,6 +242,7 @@ export interface FormSettings {
   submission_deadline?: string | null;
   show_progress_indicator?: boolean;
   show_section_navigation?: boolean;
+  theme?: FormThemeConfig;
 }
 
 export interface FormFieldOption {
