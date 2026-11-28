@@ -612,6 +612,25 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
           </button>
         </div>
 
+        {/* 2-Step Creation Flow Indicator */}
+        {!isEdit && (
+          <div className="px-5 py-2.5 bg-blue-50/70 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/40 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 font-bold text-blue-900 dark:text-blue-200">
+              <span className="flex items-center justify-center w-4 h-4 rounded-full bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black text-[10px]">
+                1
+              </span>
+              <span>Step 1: Event Details &amp; Audience</span>
+            </div>
+            <span className="text-slate-400 dark:text-slate-500 text-xs">➔</span>
+            <div className="flex items-center gap-1.5 font-medium text-slate-500 dark:text-slate-400">
+              <span className="flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold">
+                2
+              </span>
+              <span>Step 2: Google Forms-Style Visual Editor</span>
+            </div>
+          </div>
+        )}
+
         {/* Tab Navigation */}
         <div className="flex border-b border-slate-100 dark:border-[#292929] bg-slate-50/50 dark:bg-[#202020]/40 px-5 gap-2 pt-2 overflow-x-auto">
           {[
@@ -1622,9 +1641,18 @@ export const EventCreateModal: React.FC<EventCreateModalProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl bg-blue-600 dark:bg-[#5DD62C] hover:bg-blue-700 dark:hover:bg-[#4cb824] text-white dark:text-black font-semibold text-xs px-5 py-2 shadow-2xs active:scale-95 transition-all cursor-pointer disabled:opacity-50 min-h-[38px]"
+                className="rounded-xl bg-blue-600 dark:bg-[#5DD62C] hover:bg-blue-700 dark:hover:bg-[#4cb824] text-white dark:text-black font-semibold text-xs px-5 py-2 shadow-2xs active:scale-95 transition-all cursor-pointer disabled:opacity-50 min-h-[38px] flex items-center gap-1.5"
               >
-                {isSubmitting ? "Saving Event..." : isEdit ? "Update Event Details" : "Create Event & Configure Form"}
+                {isSubmitting ? (
+                  "Saving Event..."
+                ) : isEdit ? (
+                  "Update Event Details"
+                ) : (
+                  <>
+                    <span>Next: Design in Google Forms Editor</span>
+                    <span className="text-sm font-bold">→</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

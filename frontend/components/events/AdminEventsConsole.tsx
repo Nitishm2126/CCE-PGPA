@@ -219,8 +219,8 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
             <h2 className="text-base font-bold text-slate-900 dark:text-[#F5F5F5]">
               CCE Events &amp; Forms Console
             </h2>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 uppercase">
-              Phase 1.2 &amp; 2
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 uppercase border border-purple-200 dark:border-purple-800/50">
+              Google Forms Visual Editor
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
@@ -392,9 +392,9 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
                 setEditingEvent(null);
                 setIsCreateModalOpen(true);
               }}
-              className="rounded-xl bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black font-semibold text-xs px-4 py-2 cursor-pointer shadow-2xs hover:opacity-90"
+              className="rounded-xl bg-blue-600 dark:bg-[#5DD62C] text-white dark:text-black font-semibold text-xs px-4 py-2 cursor-pointer shadow-2xs hover:opacity-90 flex items-center gap-1.5"
             >
-              + Create Your First Event
+              <span>+</span> Create Event &amp; Open Google Forms Editor
             </button>
           </div>
         </div>
@@ -527,9 +527,9 @@ export const AdminEventsConsole: React.FC<AdminEventsConsoleProps> = ({ userRole
                       <button
                         type="button"
                         onClick={() => handleOpenFormBuilder(evt)}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#202020] hover:bg-slate-200 dark:hover:bg-[#282828] text-slate-800 dark:text-[#F5F5F5] font-semibold text-xs transition-all cursor-pointer text-center"
+                        className="px-2.5 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 font-semibold text-xs transition-all cursor-pointer text-center flex items-center justify-center gap-1"
                       >
-                        🛠 Form Builder
+                        <span>🎨</span> Google Forms Editor
                       </button>
                       <button
                         type="button"
